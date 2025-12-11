@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  /* Default (Dark) */
+  --background: #000000;
+  --foreground: #ffffff;
+  --grid-color: rgba(255, 255, 255, 0.05);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --accent-gradient-from: #e4e4e7;
+  --accent-gradient-to: #71717a;
+}
+
+[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --grid-color: rgba(0, 0, 0, 0.05);
+  --card-bg: rgba(0, 0, 0, 0.03);
+  --card-border: rgba(0, 0, 0, 0.1);
+  --accent-gradient-from: #09090b;
+  --accent-gradient-to: #52525b;
+}
+
+[data-theme='cream'] {
+  --background: #EAE0D5; /* Vintage Parchment - much easier on eyes */
+  --foreground: #3E3028; /* Deep Coffee Brown */
+  --grid-color: rgba(62, 48, 40, 0.08);
+  --card-bg: rgba(62, 48, 40, 0.05);
+  --card-border: rgba(62, 48, 40, 0.12);
+  --accent-gradient-from: #3E3028;
+  --accent-gradient-to: #8A6A4B;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Custom Grid Background Utility */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
