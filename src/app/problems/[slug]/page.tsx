@@ -83,26 +83,28 @@ export default async function Workspace({ params }: WorkspaceProps) {
   }
 
   let allTestSets: { examples: any[], hidden: any[] } = { examples: [], hidden: [] };
-  console.log("Value of problem.testSets before parsing:", problem.testSets);
   const rawTestSets = problem.testSets;
 
-  if (typeof rawTestSets === 'string' && rawTestSets.trim() !== '') {
-    try {
-      const parsed = JSON.parse(rawTestSets);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) { // Ensure it's an object, not an array or null
-        allTestSets = {
-          examples: Array.isArray(parsed.examples) ? parsed.examples : [],
-          hidden: Array.isArray(parsed.hidden) ? parsed.hidden : [],
-        };
-      } else {
-        console.error("Parsed problem.testSets is not an object or is null:", parsed, rawTestSets);
-      }
-    } catch (e) {
-      console.error("Error parsing problem.testSets:", e, rawTestSets);
+  if (rawTestSets) {
+    let parsed = rawTestSets;
+    if (typeof rawTestSets === 'string' && rawTestSets.trim() !== '') {
+       try {
+         parsed = JSON.parse(rawTestSets);
+       } catch(e) {
+         console.error("Error parsing problem.testSets string:", e, rawTestSets);
+         parsed = null;
+       }
     }
-  } else {
-    // If rawTestSets is not a string, or is an empty string, it defaults to { examples: [], hidden: [] }
-    console.log("problem.testSets is not a non-empty string, defaulting.", rawTestSets);
+
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      allTestSets = {
+        examples: Array.isArray(parsed.examples) ? parsed.examples : [],
+        hidden: Array.isArray(parsed.hidden) ? parsed.hidden : [],
+      };
+    } else if (Array.isArray(parsed)) {
+       // Handle legacy format if any (array of test cases)
+       allTestSets = { examples: parsed, hidden: [] };
+    }
   }
   const examples = allTestSets.examples || [];
 
