@@ -26,7 +26,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         submissions: {
           select: {
             createdAt: true,
-            status: true
+            status: true,
+            problemId: true,
+            problem: {
+              select: {
+                difficulty: true
+              }
+            }
           }
         },
         _count: {
@@ -43,13 +49,34 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Format Data for Contribution Calendar
+    // Calculate Solved Counts (Unique problems only)
+    const solvedProblems = new Set<string>();
+    const solvedByDifficulty = {
+      Easy: new Set<string>(),
+      Medium: new Set<string>(),
+      Hard: new Set<string>()
+    };
+
     const submissionCounts: Record<string, number> = {};
+    
     if (user.submissions && Array.isArray(user.submissions)) {
         user.submissions.forEach(sub => {
+          // Heatmap Data
           if (sub.createdAt) {
               const date = new Date(sub.createdAt).toISOString().split("T")[0];
               submissionCounts[date] = (submissionCounts[date] || 0) + 1;
+          }
+
+          // Solved Counts
+          if (sub.status === "Accepted") {
+            solvedProblems.add(sub.problemId);
+            if (sub.problem && sub.problem.difficulty) {
+               // Normalize difficulty case just in case
+               const diff = sub.problem.difficulty as "Easy" | "Medium" | "Hard";
+               if (solvedByDifficulty[diff]) {
+                 solvedByDifficulty[diff].add(sub.problemId);
+               }
+            }
           }
         });
     }
@@ -75,6 +102,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         isBanned: user.isBanned,
         followersCount: user._count.followedBy,
         followingCount: user._count.following,
+        solvedCount: solvedProblems.size,
+        solvedEasy: solvedByDifficulty.Easy.size,
+        solvedMedium: solvedByDifficulty.Medium.size,
+        solvedHard: solvedByDifficulty.Hard.size,
       },
       ratingHistory: ratingHistoryData,
       calendarData

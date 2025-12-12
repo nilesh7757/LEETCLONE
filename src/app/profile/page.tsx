@@ -3,7 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { UserCircle, Mail, LogOut, Globe, FileText, Camera, Save, Loader2, TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban } from "lucide-react";
+import { UserCircle, Mail, LogOut, Globe, FileText, Camera, Save, Loader2, TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban, CheckCircle, Award } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -303,6 +303,49 @@ export default function ProfilePage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-7 xl:col-span-8 space-y-8"
         >
+            {/* Solved Problems Card */}
+            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)]">
+                        <Award className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-[var(--foreground)]">Solved Problems</h3>
+                        <p className="text-sm text-[var(--foreground)]/60">Total Solved: <span className="font-mono font-bold text-[var(--accent-gradient-to)]">{stats?.user?.solvedCount || 0}</span></p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-xl bg-[var(--background)]/50 border border-[var(--card-border)] flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-[var(--foreground)]/60 font-medium uppercase tracking-wider mb-1">Easy</p>
+                            <p className="text-2xl font-bold text-green-500">{stats?.user?.solvedEasy || 0}</p>
+                        </div>
+                        <div className="p-2 bg-green-500/10 rounded-full text-green-500">
+                            <CheckCircle className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[var(--background)]/50 border border-[var(--card-border)] flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-[var(--foreground)]/60 font-medium uppercase tracking-wider mb-1">Medium</p>
+                            <p className="text-2xl font-bold text-yellow-500">{stats?.user?.solvedMedium || 0}</p>
+                        </div>
+                        <div className="p-2 bg-yellow-500/10 rounded-full text-yellow-500">
+                            <CheckCircle className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[var(--background)]/50 border border-[var(--card-border)] flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-[var(--foreground)]/60 font-medium uppercase tracking-wider mb-1">Hard</p>
+                            <p className="text-2xl font-bold text-red-500">{stats?.user?.solvedHard || 0}</p>
+                        </div>
+                        <div className="p-2 bg-red-500/10 rounded-full text-red-500">
+                            <CheckCircle className="w-5 h-5" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Rating Graph Card */}
             <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
                 <div className="flex items-center gap-3 mb-6">

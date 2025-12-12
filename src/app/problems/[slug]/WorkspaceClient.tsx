@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DiscussionSection from "@/components/Discussion/DiscussionSection";
 import { useTheme } from "next-themes";
+import { languages, getStarterCode } from "@/lib/starterCode";
 
 interface Problem {
   id: string;
@@ -27,163 +28,6 @@ interface WorkspaceClientProps {
   problem: Problem;
   examples: any[];
 }
-
-const languages = [
-  { value: "javascript", label: "JavaScript" },
-  { value: "python", label: "Python" },
-  { value: "java", label: "Java" },
-  { value: "cpp", label: "C++" },
-  { value: "csharp", label: "C#" },
-  { value: "go", label: "Go" },
-  { value: "ruby", label: "Ruby" },
-  { value: "swift", label: "Swift" },
-  { value: "rust", label: "Rust" },
-  { value: "php", label: "PHP" },
-];
-
-const getStarterCode = (language: string) => {
-  const templates: Record<string, string> = {
-    javascript: `// Read input (example: single line, space-separated numbers)
-// const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split(' ').map(Number);
-// console.log(input);
-
-// Write your solution below
-`,
-    python: `import sys
-
-# Read input (example: single line, space-separated numbers)
-# input = sys.stdin.readline
-# line = list(map(int, input().split()))
-# print(line)
-
-# Write your solution below
-`,
-    java: `import java.io.*;
-import java.util.*;
-
-public class Main {
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        // Read input (example: single line, space-separated numbers)
-        // String[] line = br.readLine().split(" ");
-        // int[] numbers = new int[line.length];
-        // for (int i = 0; i < line.length; i++) {
-        //     numbers[i] = Integer.parseInt(line[i]);
-        // }
-        // System.out.println(Arrays.toString(numbers));
-
-        // Write your solution below
-
-        br.close();
-    }
-}
-`,
-    cpp: `
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm> // Often useful
-
-int main() {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(NULL);
-    // Read input (example: single line, space-separated numbers)
-    // int num;
-    // std::vector<int> numbers;
-    // while (std::cin >> num) {
-    //     numbers.push_back(num);
-    //     if (std::cin.peek() == '\\n') break; // Read until newline
-    // }
-    // for (int n : numbers) {
-    //     std::cout << n << " ";
-    // }
-    // std::cout << std::endl;
-
-    // Write your solution below
-
-    return 0;
-}
-`,
-    csharp: `using System;
-using System.Collections.Generic;
-using System.Linq;
-
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        // Read input
-        // string line = Console.ReadLine();
-        // int[] nums = line.Split(' ').Select(int.Parse).ToArray();
-        // Console.WriteLine(string.Join(" ", nums));
-
-        // Write your solution below
-    }
-}
-`,
-    go: `package main
-
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-    // "strconv"
-)
-
-func main() {
-    // scanner := bufio.NewScanner(os.Stdin)
-    // scanner.Scan()
-    // line := scanner.Text()
-    // parts := strings.Fields(line)
-    // fmt.Println(parts)
-
-    // Write your solution below
-}
-`,
-    ruby: `# Read input
-# input = gets.chomp.split.map(&:to_i)
-# puts input.join(" ")
-
-# Write your solution below
-`,
-    swift: `import Foundation
-
-// Read input
-// if let line = readLine() {
-//     let nums = line.split(separator: " ").compactMap { Int($0) }
-//     print(nums)
-// }
-
-// Write your solution below
-`,
-    rust: `use std::io::{self, BufRead};
-
-fn main() {
-    let stdin = io::stdin();
-    let mut lines = stdin.lock().lines();
-
-    // if let Some(Ok(line)) = lines.next() {
-    //     let nums: Vec<i32> = line.split_whitespace()
-    //         .map(|s| s.parse().unwrap())
-    //         .collect();
-    //     println!("{:?}", nums);
-    // }
-
-    // Write your solution below
-}
-`,
-    php: `<?php
-// $input = fgets(STDIN);
-// $nums = array_map('intval', explode(' ', trim($input)));
-// echo implode(" ", $nums);
-
-// Write your solution below
-`
-  };
-
-  return templates[language] || "";
-};
 
 export default function WorkspaceClient({ problem, examples }: WorkspaceClientProps) {
   const [code, setCode] = useState(getStarterCode("javascript"));
@@ -270,9 +114,27 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     }
   }, []);
 
+  // Autosave & Load Draft
   useEffect(() => {
-    setCode(getStarterCode(language));
-  }, [language]);
+    // When language changes, try to load draft
+    const draftKey = `draft_${problem.id}_${language}`;
+    const savedDraft = localStorage.getItem(draftKey);
+    
+    if (savedDraft) {
+      setCode(savedDraft);
+    } else {
+      setCode(getStarterCode(language));
+    }
+  }, [language, problem.id]);
+
+  useEffect(() => {
+    // Save draft on code change
+    const draftKey = `draft_${problem.id}_${language}`;
+    // Debounce saving slightly if needed, but for local storage direct write is usually fine for text
+    if (code !== getStarterCode(language)) {
+        localStorage.setItem(draftKey, code);
+    }
+  }, [code, language, problem.id]);
 
   useEffect(() => {
     if (activeLeftTab === 'submissions') {
@@ -567,7 +429,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         >
           {/* Code Editor Section */}
           <div className="flex flex-col h-full min-h-0">
-            <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0 z-20">
+            <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
               <div className="relative" ref={langDropdownRef}>
                 <button
                   onClick={() => setIsLangOpen(!isLangOpen)}
