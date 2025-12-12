@@ -35,7 +35,7 @@ interface ProblemFormData {
 }
 
 const difficulties = ["Easy", "Medium", "Hard"];
-const categories = ["Arrays", "Strings", "Trees", "Graphs", "Dynamic Programming"];
+const categories = ["Arrays", "Strings", "Trees", "Graphs", "Dynamic Programming", "Other"];
 const languages = [
   { value: "javascript", label: "JavaScript" },
   { value: "python", label: "Python" },
@@ -50,6 +50,7 @@ export default function CreateProblemPage() {
   const contestId = searchParams.get("contestId");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
   const editorConsoleSplitRef = useRef<any>(null);
 
   const {
@@ -79,6 +80,7 @@ export default function CreateProblemPage() {
   const problemTitle = watch("title");
   const language = watch("language");
   const referenceSolution = watch("referenceSolution");
+  const selectedCategory = watch("category");
 
   useEffect(() => {
     if (problemTitle) {
@@ -103,9 +105,16 @@ export default function CreateProblemPage() {
     setIsSubmitting(true);
     toast.info("Creating problem and generating test case outputs...");
 
+    if (data.category === "Other" && !customCategory.trim()) {
+      toast.error("Please specify the custom category.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const apiData = {
         ...data,
+        category: data.category === "Other" ? customCategory.trim() : data.category,
         examplesInput: data.examplesInput,
         testCasesInput: data.testCasesInput,
         contestId: contestId, // Pass contestId to API
@@ -152,7 +161,7 @@ export default function CreateProblemPage() {
         <div className="flex items-center gap-2">
             <button 
                 onClick={() => router.back()} 
-                className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+                className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
                 title="Back"
             >
                 <ChevronLeft className="w-5 h-5" />
@@ -163,7 +172,7 @@ export default function CreateProblemPage() {
             type="button" // Important for form submit
             onClick={handleSubmit(onSubmit)}
             disabled={isSubmitting}
-            className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50"
+            className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50 cursor-pointer"
         >
             {isSubmitting ? <Loader /> : <PlusCircle className="w-4 h-4" />} Create Problem
         </button>
@@ -263,6 +272,17 @@ export default function CreateProblemPage() {
                       <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
                     )}
                   </div>
+                  {selectedCategory === "Other" && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={customCategory}
+                          onChange={(e) => setCustomCategory(e.target.value)}
+                          placeholder="Enter custom category"
+                          className="w-full px-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                        />
+                      </div>
+                  )}
                 </div>
               </div>
 

@@ -20,11 +20,6 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] text-xs font-medium text-[var(--foreground)]/80 mb-8 backdrop-blur-sm">
-            <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-            Over 2000+ Questions Available
-          </div>
-
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[var(--foreground)] mb-6">
             Master the Code. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)]">

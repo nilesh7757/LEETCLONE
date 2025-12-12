@@ -63,14 +63,14 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
         <div className="flex items-center gap-1 bg-[var(--card-border)]/50 rounded-full px-2 py-0.5">
           <button 
             onClick={() => onVote(comment.id, "UP")}
-            className={`p-1 rounded hover:bg-[var(--foreground)]/10 transition-colors ${userVote?.type === "UP" ? "text-green-500" : ""}`}
+            className={`p-1 rounded hover:bg-[var(--foreground)]/10 transition-colors cursor-pointer ${userVote?.type === "UP" ? "text-green-500" : ""}`}
           >
             <ThumbsUp className="w-4 h-4" />
           </button>
           <span className="font-mono font-medium min-w-[20px] text-center">{score}</span>
           <button 
             onClick={() => onVote(comment.id, "DOWN")}
-            className={`p-1 rounded hover:bg-[var(--foreground)]/10 transition-colors ${userVote?.type === "DOWN" ? "text-red-500" : ""}`}
+            className={`p-1 rounded hover:bg-[var(--foreground)]/10 transition-colors cursor-pointer ${userVote?.type === "DOWN" ? "text-red-500" : ""}`}
           >
             <ThumbsDown className="w-4 h-4" />
           </button>
@@ -78,7 +78,7 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
 
         <button 
           onClick={() => setIsReplying(!isReplying)}
-          className="flex items-center gap-1 hover:text-[var(--accent-gradient-to)] transition-colors"
+          className="flex items-center gap-1 hover:text-[var(--accent-gradient-to)] transition-colors cursor-pointer"
         >
           <Reply className="w-4 h-4" /> Reply
         </button>
@@ -94,14 +94,14 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
            <div className="flex justify-end gap-2 mt-2">
              <button 
                onClick={() => setIsReplying(false)}
-               className="px-3 py-1.5 text-xs font-medium text-[var(--foreground)]/70 hover:text-[var(--foreground)] transition-colors"
+               className="px-3 py-1.5 text-xs font-medium text-[var(--foreground)]/70 hover:text-[var(--foreground)] transition-colors cursor-pointer"
              >
                Cancel
              </button>
              <button 
                onClick={handleReplySubmit}
                disabled={isSubmitting}
-               className="px-3 py-1.5 text-xs font-medium bg-[var(--foreground)] text-[var(--background)] rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
+               className="px-3 py-1.5 text-xs font-medium bg-[var(--foreground)] text-[var(--background)] rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
              >
                {isSubmitting ? "Posting..." : "Reply"}
              </button>

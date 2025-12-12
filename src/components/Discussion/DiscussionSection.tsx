@@ -282,7 +282,7 @@ export default function DiscussionSection({ problemId }: DiscussionSectionProps)
           <button
             onClick={handlePostComment}
             disabled={isSubmitting}
-            className="px-6 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />

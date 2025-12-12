@@ -121,7 +121,7 @@ const BulkImportModal = ({
       <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
           <h3 className="text-lg font-semibold text-[var(--foreground)]">Bulk Import Test Cases</h3>
-          <button onClick={onClose} className="text-[var(--foreground)]/50 hover:text-[var(--foreground)]">
+          <button onClick={onClose} className="text-[var(--foreground)]/50 hover:text-[var(--foreground)] cursor-pointer">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -129,7 +129,7 @@ const BulkImportModal = ({
         <div className="p-4 flex-1 overflow-y-auto">
           <div className="flex space-x-4 mb-4">
             <button
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
                 activeTab === "text"
                   ? "bg-[var(--accent-gradient-to)] text-white"
                   : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
@@ -139,7 +139,7 @@ const BulkImportModal = ({
               Paste Text / JSON
             </button>
             <button
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
                 activeTab === "file"
                   ? "bg-[var(--accent-gradient-to)] text-white"
                   : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
@@ -202,14 +202,14 @@ const BulkImportModal = ({
         <div className="p-4 border-t border-[var(--card-border)] flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10 rounded-md transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10 rounded-md transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleImport}
             disabled={!textContent.trim()}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] rounded-md shadow-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] rounded-md shadow-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Import Test Cases
@@ -253,7 +253,7 @@ const TestCaseEditor = ({ name, label, showOutputs = true, control, register }: 
           <button
             type="button"
             onClick={handleAddTestCase}
-            className="inline-flex items-center px-3 py-1.5 border border-[var(--card-border)] rounded-md shadow-sm text-sm font-medium text-[var(--foreground)]/70 bg-[var(--background)] hover:bg-[var(--foreground)]/10 transition-colors"
+            className="inline-flex items-center px-3 py-1.5 border border-[var(--card-border)] rounded-md shadow-sm text-sm font-medium text-[var(--foreground)]/70 bg-[var(--background)] hover:bg-[var(--foreground)]/10 transition-colors cursor-pointer"
           >
             <PlusCircle className="-ml-0.5 mr-2 h-4 w-4" />
             Add Test Case
@@ -278,7 +278,7 @@ const TestCaseEditor = ({ name, label, showOutputs = true, control, register }: 
             <button
               type="button"
               onClick={() => remove(index)}
-              className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors"
+              className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
               title="Remove Test Case"
             >
               <Trash2 className="h-4 w-4" />

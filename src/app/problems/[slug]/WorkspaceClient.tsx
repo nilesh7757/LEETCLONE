@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import { Editor } from "@monaco-editor/react";
-import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, Clock, X, MessageSquare, Flag } from "lucide-react";
+import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, Clock, X, MessageSquare, Flag, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +27,19 @@ interface WorkspaceClientProps {
   problem: Problem;
   examples: any[];
 }
+
+const languages = [
+  { value: "javascript", label: "JavaScript" },
+  { value: "python", label: "Python" },
+  { value: "java", label: "Java" },
+  { value: "cpp", label: "C++" },
+  { value: "csharp", label: "C#" },
+  { value: "go", label: "Go" },
+  { value: "ruby", label: "Ruby" },
+  { value: "swift", label: "Swift" },
+  { value: "rust", label: "Rust" },
+  { value: "php", label: "PHP" },
+];
 
 const getStarterCode = (language: string) => {
   const templates: Record<string, string> = {
@@ -90,6 +103,82 @@ int main() {
 
     return 0;
 }
+`,
+    csharp: `using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Read input
+        // string line = Console.ReadLine();
+        // int[] nums = line.Split(' ').Select(int.Parse).ToArray();
+        // Console.WriteLine(string.Join(" ", nums));
+
+        // Write your solution below
+    }
+}
+`,
+    go: `package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+    // "strconv"
+)
+
+func main() {
+    // scanner := bufio.NewScanner(os.Stdin)
+    // scanner.Scan()
+    // line := scanner.Text()
+    // parts := strings.Fields(line)
+    // fmt.Println(parts)
+
+    // Write your solution below
+}
+`,
+    ruby: `# Read input
+# input = gets.chomp.split.map(&:to_i)
+# puts input.join(" ")
+
+# Write your solution below
+`,
+    swift: `import Foundation
+
+// Read input
+// if let line = readLine() {
+//     let nums = line.split(separator: " ").compactMap { Int($0) }
+//     print(nums)
+// }
+
+// Write your solution below
+`,
+    rust: `use std::io::{self, BufRead};
+
+fn main() {
+    let stdin = io::stdin();
+    let mut lines = stdin.lock().lines();
+
+    // if let Some(Ok(line)) = lines.next() {
+    //     let nums: Vec<i32> = line.split_whitespace()
+    //         .map(|s| s.parse().unwrap())
+    //         .collect();
+    //     println!("{:?}", nums);
+    // }
+
+    // Write your solution below
+}
+`,
+    php: `<?php
+// $input = fgets(STDIN);
+// $nums = array_map('intval', explode(' ', trim($input)));
+// echo implode(" ", $nums);
+
+// Write your solution below
 `
   };
 
@@ -109,6 +198,10 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
 
+  // Language Dropdown State
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
+
   // Reporting State
   const [isReporting, setIsReporting] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -119,6 +212,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
 
   useEffect(() => {
     setMounted(true);
+    
+    // Click outside handler for language dropdown
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleEditorWillMount = (monaco: any) => {
@@ -314,14 +416,14 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           <button 
             onClick={handleRun}
             disabled={isRunning}
-            className="px-4 py-1.5 text-sm font-medium text-[var(--foreground)]/80 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+            className="px-4 py-1.5 text-sm font-medium text-[var(--foreground)]/80 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Play className="w-4 h-4 text-[var(--foreground)]/60" /> {isRunning ? "Running..." : "Run"}
           </button>
           <button 
             onClick={handleSubmit}
             disabled={isSubmitting || isRunning}
-            className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50"
+            className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? <span className="animate-spin">⌛</span> : <Send className="w-4 h-4" />} Submit
           </button>
@@ -343,19 +445,19 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           <div className="h-10 border-b border-[var(--card-border)] flex items-center gap-1 px-2 bg-[var(--card-bg)] shrink-0">
             <button
               onClick={() => setActiveLeftTab('description')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors ${activeLeftTab === 'description' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeLeftTab === 'description' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
             >
               <FileText className="w-3.5 h-3.5" /> Description
             </button>
             <button
               onClick={() => setActiveLeftTab('submissions')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors ${activeLeftTab === 'submissions' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeLeftTab === 'submissions' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
             >
               <History className="w-3.5 h-3.5" /> Submissions
             </button>
             <button
               onClick={() => setActiveLeftTab('discussion')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors ${activeLeftTab === 'discussion' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeLeftTab === 'discussion' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
             >
               <MessageSquare className="w-3.5 h-3.5" /> Discussion
             </button>
@@ -465,21 +567,46 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         >
           {/* Code Editor Section */}
           <div className="flex flex-col h-full min-h-0">
-            <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0">
-              <select
-                value={language}
-                onChange={(e) => {
-                  const newLanguage = e.target.value;
-                  setLanguage(newLanguage);
-                  localStorage.setItem("preferredLanguage", newLanguage);
-                }}
-                className="bg-transparent text-sm text-[var(--foreground)] outline-none cursor-pointer"
-              >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="cpp">C++</option>
-              </select>
+            <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0 z-20">
+              <div className="relative" ref={langDropdownRef}>
+                <button
+                  onClick={() => setIsLangOpen(!isLangOpen)}
+                  className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-colors px-2 py-1.5 rounded-md hover:bg-[var(--foreground)]/5 cursor-pointer"
+                >
+                  <Code2 className="w-4 h-4 text-green-500" />
+                  {languages.find(l => l.value === language)?.label}
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isLangOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                      transition={{ duration: 0.1 }}
+                      className="absolute top-full left-0 mt-1 w-48 bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-xl overflow-hidden py-1 z-50"
+                    >
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.value}
+                          onClick={() => {
+                            setLanguage(lang.value);
+                            localStorage.setItem("preferredLanguage", lang.value);
+                            setIsLangOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${
+                            language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
+                          }`}
+                        >
+                          {lang.label}
+                          {language === lang.value && <CheckCircle className="w-3 h-3" />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               <div className="flex items-center gap-3">
                 {syntaxError && (
                   <div className="flex items-center gap-1.5 text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded animate-pulse">
@@ -488,14 +615,14 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                   </div>
                 )}
                 <button
-                  className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+                  className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
                   title="Reset Code"
                   onClick={() => setCode(getStarterCode(language) || "")}
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
                 <button
-                  className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+                  className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
                   title="Settings"
                 >
                   <Settings className="w-4 h-4" />
@@ -541,7 +668,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                 )}
               </div>
               <button 
-                className="text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+                className="text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
                 title={editorAndConsoleSizes[1] < 5 ? "Show Console" : "Hide Console"}
               >
                 {editorAndConsoleSizes[1] < 5 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -556,7 +683,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     <button
                       key={idx}
                       onClick={() => setActiveTestCaseId(idx)}
-                      className={`px-4 py-3 text-sm text-left flex items-center gap-2 hover:bg-[var(--foreground)]/5 transition-colors ${activeTestCaseId === idx ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60"}`}
+                      className={`px-4 py-3 text-sm text-left flex items-center gap-2 hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${activeTestCaseId === idx ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60"}`}
                     >
                       {result.status === "Accepted" ? (
                         <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />

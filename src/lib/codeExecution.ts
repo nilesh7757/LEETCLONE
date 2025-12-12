@@ -30,6 +30,12 @@ export async function executeCode(
     python: { language: "python", version: "3.10.0" },
     java: { language: "java", version: "15.0.2" },
     cpp: { language: "c++", version: "10.2.0" },
+    csharp: { language: "csharp", version: "6.12.0" },
+    go: { language: "go", version: "1.16.2" },
+    ruby: { language: "ruby", version: "3.0.1" },
+    swift: { language: "swift", version: "5.3.3" },
+    rust: { language: "rust", version: "1.50.0" },
+    php: { language: "php", version: "8.2.3" },
   };
 
   const config = languageMap[language];
@@ -41,6 +47,7 @@ export async function executeCode(
 
   for (const testCase of testCases) {
     try {
+      const startTime = performance.now();
       const response = await axios.post(PISTON_API, {
         language: config.language,
         version: config.version,
@@ -51,9 +58,16 @@ export async function executeCode(
         run_timeout: timeLimit * 1000,
         memory_limit: memoryLimit * 1024,
       });
+      const endTime = performance.now();
+      const networkTime = Math.ceil(endTime - startTime);
+
       const { run } = response.data;
       let status: ExecutionResult['status'] = "Accepted";
       let error: string | undefined;
+
+      // Use Piston's reported time if available, otherwise fallback to network time
+      // Piston returns time in seconds, we convert to ms.
+      const runtime = run.time !== undefined ? Math.max(1, Math.ceil(run.time * 1000)) : networkTime;
 
       if (run.code !== 0) {
         status = "Runtime Error";
@@ -97,7 +111,7 @@ export async function executeCode(
         actual: run.stdout,
         status,
         error: error || run.stderr || (status === "Accepted" || status === "Wrong Answer" ? undefined : "Unknown error"),
-        runtime: run.time !== undefined ? Math.max(1, Math.ceil(run.time * 1000)) : 1, // Ensure at least 1ms if time is not reported (very fast execution)
+        runtime, 
         memory: run.memory ? Math.round(run.memory / 1024) : undefined, // Piston memory is in bytes
       });
 

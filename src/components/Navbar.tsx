@@ -93,7 +93,7 @@ export default function Navbar() {
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+              className="p-2 text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
             >
               {isOpen ? <X /> : <Menu />}
             </button>
