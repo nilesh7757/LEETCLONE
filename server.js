@@ -61,6 +61,12 @@ io.on("connection", (socket) => {
     socket.to(data.receiverId).emit("friend_request_received", data.request);
   });
 
+  // Generic Notification System
+  socket.on("send_notification", (data) => {
+    // data: { recipientId, notification }
+    socket.to(data.recipientId).emit("notification_received", data.notification);
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });

@@ -89,7 +89,7 @@ export default function UserSearch() {
       </div>
 
       {isOpen && (results.length > 0 || loading) && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-black border border-[var(--card-border)] rounded-lg shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full left-0 mt-1 w-full bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
            {loading && results.length === 0 ? (
               <div className="p-4 text-center text-xs text-[var(--foreground)]/60">Searching...</div>
            ) : results.length > 0 ? (

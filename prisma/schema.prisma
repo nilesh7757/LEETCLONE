@@ -146,6 +146,25 @@ model User {
   // Chat System
   conversations   ConversationParticipant[]
   messages        Message[]
+
+  // Notifications
+  notifications     Notification[] @relation("UserNotifications")
+  sentNotifications Notification[] @relation("UserSentNotifications")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // COMMENT_REPLY, FOLLOW, CONTEST_START, SYSTEM
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  senderId  String?
+  sender    User?    @relation("UserSentNotifications", fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {

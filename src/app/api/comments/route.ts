@@ -51,7 +51,32 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({ comment });
+    let notification = null;
+
+    // Notification Logic
+    if (parentId) {
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: parentId },
+        select: { userId: true }
+      });
+
+      if (parentComment && parentComment.userId !== session.user.id) {
+        notification = await prisma.notification.create({
+          data: {
+            type: "COMMENT_REPLY",
+            userId: parentComment.userId, // Recipient
+            senderId: session.user.id,
+            message: `${session.user.name || "Someone"} replied to your comment.`,
+            link: `/problems/${problemId}`, // TODO: Add deep link to comment
+          },
+          include: {
+            sender: { select: { id: true, name: true, image: true } }
+          }
+        });
+      }
+    }
+
+    return NextResponse.json({ comment, notification });
   } catch (error) {
     console.error("Failed to post comment:", error);
     return NextResponse.json({ error: "Failed to post comment" }, { status: 500 });

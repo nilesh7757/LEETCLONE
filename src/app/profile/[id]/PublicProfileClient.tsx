@@ -10,8 +10,11 @@ import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import FollowsModal from "@/components/Profile/FollowsModal";
+import { io, Socket } from "socket.io-client";
 
 const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false });
+
+let socket: Socket;
 
 interface PublicProfileClientProps {
   user: {
@@ -36,6 +39,14 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
   
   const [friendStatus, setFriendStatus] = useState<"NONE" | "FOLLOWING" | "SELF">("NONE");
   const [activeModal, setActiveModal] = useState<"followers" | "following" | null>(null);
+
+  // Socket Init
+  useEffect(() => {
+    socket = io("http://localhost:3001", { transports: ["websocket"] });
+    return () => {
+        socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -70,8 +81,12 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
 
   const handleFollow = async () => {
     try {
-        await axios.post("/api/friends/add", { targetId: user.id });
+        const { data } = await axios.post("/api/friends/add", { targetId: user.id });
         setFriendStatus("FOLLOWING");
+
+        if (data.notification) {
+            socket.emit("send_notification", { recipientId: user.id, notification: data.notification });
+        }
     } catch (error) {
         console.error("Follow failed", error);
     }

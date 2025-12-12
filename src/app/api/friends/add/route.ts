@@ -24,7 +24,21 @@ export async function POST(req: Request) {
         }
     });
 
-    return NextResponse.json({ message: "Followed successfully" });
+    // Notification Logic
+    const notification = await prisma.notification.create({
+      data: {
+        type: "FOLLOW",
+        userId: targetId,
+        senderId: session.user.id,
+        message: `${session.user.name || "Someone"} followed you.`,
+        link: `/profile/${session.user.id}`,
+      },
+      include: {
+        sender: { select: { id: true, name: true, image: true } }
+      }
+    });
+
+    return NextResponse.json({ message: "Followed successfully", notification });
   } catch (error) {
     console.error("Follow error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -224,6 +224,13 @@ export default function DiscussionSection({ problemId }: DiscussionSectionProps)
         const newComment = data.comment;
         handleNewCommentReceived(newComment);
         socket.emit("new_comment", { problemId, comment: newComment });
+
+        if (data.notification) {
+           socket.emit("send_notification", { 
+              recipientId: data.notification.userId, 
+              notification: data.notification 
+           });
+        }
         
         toast.success("Reply posted");
      } catch (error) {

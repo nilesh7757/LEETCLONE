@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { useSession } from "next-auth/react";
 import UserSearch from "./UserSearch";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +61,7 @@ export default function Navbar() {
 
           {/* Right Section: Theme Toggle, Auth/Profile, Mobile Menu Button */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0" ref={dropdownRef}>
+            <NotificationBell />
             <ThemeToggle />
             
             {/* Desktop Auth/Profile */}
