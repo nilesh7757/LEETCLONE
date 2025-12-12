@@ -105,7 +105,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Problem is not currently accessible" }, { status: 403 });
     }
 
-    let allTestSets: { examples: { input: string, output: string }[], hidden: { input: string, output: string }[] } = { examples: [], hidden: [] };
+    let allTestSets: { examples: { input: string, output?: string, expectedOutput?: string }[], hidden: { input: string, output?: string, expectedOutput?: string }[] } = { examples: [], hidden: [] };
     const rawTestSets = problem.testSets;
 
     if (rawTestSets) {
@@ -128,9 +128,13 @@ export async function POST(req: Request) {
     }
     
     // Combine all test cases (examples and hidden) for submission evaluation
-    const combinedTestCases: TestInputOutput[] = (allTestSets.examples || [])
-      .concat(allTestSets.hidden || [])
-      .map(tc => ({ input: tc.input, expectedOutput: tc.output }));
+    const combinedTestCases: TestInputOutput[] = (allTestSets.examples || []).map(tc => ({
+      input: tc.input,
+      expectedOutput: tc.expectedOutput || tc.output || "",
+    })).concat((allTestSets.hidden || []).map(tc => ({
+      input: tc.input,
+      expectedOutput: tc.expectedOutput || tc.output || "",
+    })));
 
     // 2. Execute Code
     let results;
