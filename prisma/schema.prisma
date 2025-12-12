@@ -21,6 +21,7 @@ model Problem {
   memoryLimit Int      @default(256) // Memory limit in MB
   testSets    Json     @default("[]") // New field to store structured test cases
   referenceSolution String? // Added field for reference solution code
+  editorial   String?  @db.Text // Explanation and multi-language solutions
   isPublic    Boolean  @default(true) // Determines if the problem is visible in the public library
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

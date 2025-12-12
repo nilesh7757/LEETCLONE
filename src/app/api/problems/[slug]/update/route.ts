@@ -33,7 +33,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       language,
       timeLimit,
       memoryLimit,
-      isPublic
+      isPublic,
+      editorial // Added
     } = await req.json();
 
     // Re-generate test cases if provided
@@ -97,6 +98,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
         memoryLimit,
         isPublic,
         referenceSolution,
+        editorial, // Update editorial
         testSets: newTestSets || problem.testSets // Keep old if not updating
       }
     });

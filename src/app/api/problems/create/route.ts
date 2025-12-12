@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       memoryLimit,
       isPublic, // New field
       contestId, // Optional contest ID
+      editorial, // Added editorial
       // starterCode, // Removed
     } = await req.json();
 
@@ -122,6 +123,7 @@ export async function POST(req: Request) {
           hidden: processedTestCases,
         }),
         referenceSolution,
+        editorial, // Save editorial
         creatorId: session.user.id, // Link to creator
         contests: contestId ? {
           connect: { id: contestId }
