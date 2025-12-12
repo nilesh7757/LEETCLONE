@@ -1,27 +1,27 @@
 // src/lib/starterCode.ts
 
 export const languages = [
-  { value: "javascript", label: "JavaScript" },
-  { value: "python", label: "Python" },
-  { value: "java", label: "Java" },
-  { value: "cpp", label: "C++" },
-  { value: "csharp", label: "C#" },
-  { value: "go", label: "Go" },
-  { value: "ruby", label: "Ruby" },
-  { value: "swift", label: "Swift" },
-  { value: "rust", label: "Rust" },
-  { value: "php", label: "PHP" },
+    { value: "javascript", label: "JavaScript" },
+    { value: "python", label: "Python" },
+    { value: "java", label: "Java" },
+    { value: "cpp", label: "C++" },
+    { value: "csharp", label: "C#" },
+    { value: "go", label: "Go" },
+    { value: "ruby", label: "Ruby" },
+    { value: "swift", label: "Swift" },
+    { value: "rust", label: "Rust" },
+    { value: "php", label: "PHP" },
 ];
 
 export const getStarterCode = (language: string) => {
-  const templates: Record<string, string> = {
-    javascript: `// Read input (example: single line, space-separated numbers)
+    const templates: Record<string, string> = {
+        javascript: `// Read input (example: single line, space-separated numbers)
 // const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split(' ').map(Number);
 // console.log(input);
 
 // Write your solution below
 `,
-    python: `import sys
+        python: `import sys
 
 # Read input (example: single line, space-separated numbers)
 # input = sys.stdin.readline
@@ -30,7 +30,7 @@ export const getStarterCode = (language: string) => {
 
 # Write your solution below
 `,
-    java: `import java.io.*;
+        java: `import java.io.*;
 import java.util.*;
 
 public class Main {
@@ -50,33 +50,19 @@ public class Main {
     }
 }
 `,
-    cpp: `
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm> // Often useful
+        cpp: `#include <bits/stdc++.h>
+using namespace std;
 
 int main() {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(NULL);
-    // Read input (example: single line, space-separated numbers)
-    // int num;
-    // std::vector<int> numbers;
-    // while (std::cin >> num) {
-    //     numbers.push_back(num);
-    //     if (std::cin.peek() == '\n') break; // Read until newline
-    // }
-    // for (int n : numbers) {
-    //     std::cout << n << " ";
-    // }
-    // std::cout << std::endl;
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
 
     // Write your solution below
 
     return 0;
 }
 `,
-    csharp: `using System;
+        csharp: `using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -93,7 +79,7 @@ public class Program
     }
 }
 `,
-    go: `package main
+        go: `package main
 
 import (
 	"bufio"
@@ -113,13 +99,13 @@ func main() {
     // Write your solution below
 }
 `,
-    ruby: `# Read input
+        ruby: `# Read input
 # input = gets.chomp.split.map(&:to_i)
 # puts input.join(" ")
 
 # Write your solution below
 `,
-    swift: `import Foundation
+        swift: `import Foundation
 
 // Read input
 // if let line = readLine() {
@@ -129,7 +115,7 @@ func main() {
 
 // Write your solution below
 `,
-    rust: `use std::io::{self, BufRead};
+        rust: `use std::io::{self, BufRead};
 
 fn main() {
     let stdin = io::stdin();
@@ -145,14 +131,14 @@ fn main() {
     // Write your solution below
 }
 `,
-    php: `<?php
+        php: `<?php
 // $input = fgets(STDIN);
 // $nums = array_map('intval', explode(' ', trim($input)));
 // echo implode(" ", $nums);
 
 // Write your solution below
 `
-  };
+    };
 
-  return templates[language] || "";
+    return templates[language] || "";
 };

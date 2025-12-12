@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Split from "react-split";
-import { Editor } from "@monaco-editor/react";
-import { toast } from "sonner";
-import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
-import { motion, AnimatePresence } from "framer-motion";
-import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+import Split from "react-split";
+import Editor from "@monaco-editor/react";
+import { AnimatePresence, motion } from "framer-motion";
+
+import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
 
@@ -27,6 +28,7 @@ export interface ProblemFormData {
   difficulty: string;
   category: string;
   description: string;
+  editorial: string; // Added editorial
   examplesInput: TestCase[];
   testCasesInput: TestCase[];
   referenceSolution: string;
@@ -50,19 +52,21 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
   const { data: session } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingEditorial, setIsGeneratingEditorial] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
+  const [activeTab, setActiveTab] = useState<"details" | "editorial">("details"); // Tab state
   const editorConsoleSplitRef = useRef<any>(null);
-  
+
   // Language Dropdown State
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Click outside handler for language dropdown
     const handleClickOutside = (event: MouseEvent) => {
       if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
@@ -97,6 +101,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<ProblemFormData>({
     defaultValues: initialData || {
@@ -105,12 +110,13 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       difficulty: difficulties[0],
       category: categories[0],
       description: "",
-      examplesInput: [], 
-      testCasesInput: [], 
-      referenceSolution: "",
+      editorial: "", // Default empty
+      examplesInput: [],
+      testCasesInput: [],
+      referenceSolution: getStarterCode("javascript"),
       language: "javascript",
-      timeLimit: 2, 
-      memoryLimit: 256, 
+      timeLimit: 2,
+      memoryLimit: 256,
       isPublic: false,
     },
   });
@@ -119,6 +125,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
   const language = watch("language");
   const referenceSolution = watch("referenceSolution");
   const selectedCategory = watch("category");
+  const problemSlug = watch("slug"); // Watch slug for API call
 
   useEffect(() => {
     if (!isEditing && problemTitle) {
@@ -135,15 +142,43 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
   // Handle category other
   useEffect(() => {
-      if (initialData && !categories.includes(initialData.category)) {
-          setValue("category", "Other");
-          setCustomCategory(initialData.category);
-      }
+    if (initialData && !categories.includes(initialData.category)) {
+      setValue("category", "Other");
+      setCustomCategory(initialData.category);
+    }
   }, [initialData, setValue]);
+
+  const handleGenerateEditorial = async () => {
+    if (!isEditing) {
+      toast.error("Please save the problem first to generate an editorial.");
+      return;
+    }
+    const currentSolution = getValues("referenceSolution");
+    if (!currentSolution) {
+      toast.error("Please provide a reference solution first.");
+      return;
+    }
+
+    setIsGeneratingEditorial(true);
+    toast.info("Generating editorial with AI... This may take a minute.");
+
+    try {
+      const { data } = await axios.post(`/api/problems/${problemSlug}/generate-editorial`, {
+        language: getValues("language")
+      });
+      setValue("editorial", data.editorial);
+      toast.success("Editorial generated successfully!");
+    } catch (error: any) {
+      console.error("Editorial generation error:", error);
+      toast.error(error.response?.data?.error || "Failed to generate editorial.");
+    } finally {
+      setIsGeneratingEditorial(false);
+    }
+  };
 
   const handleFormSubmit = async (data: ProblemFormData) => {
     setIsSubmitting(true);
-    
+
     if (data.category === "Other" && !customCategory.trim()) {
       toast.error("Please specify the custom category.");
       setIsSubmitting(false);
@@ -151,8 +186,8 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
     }
 
     const finalData = {
-        ...data,
-        category: data.category === "Other" ? customCategory.trim() : data.category,
+      ...data,
+      category: data.category === "Other" ? customCategory.trim() : data.category,
     };
 
     try {
@@ -161,28 +196,28 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="flex flex-col h-full">
       <div className="h-14 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0">
         <div className="flex items-center gap-2">
-            <button 
-                onClick={() => router.back()} 
-                className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
-                title="Back"
-            >
-                <ChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="font-semibold text-[var(--foreground)]">{isEditing ? "Edit Problem" : "Create New Problem"}</span>
+          <button
+            onClick={() => router.back()}
+            className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+            title="Back"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="font-semibold text-[var(--foreground)]">{isEditing ? "Edit Problem" : "Create New Problem"}</span>
         </div>
-        <button 
-            type="button"
-            onClick={handleSubmit(handleFormSubmit)}
-            disabled={isSubmitting}
-            className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50 cursor-pointer"
+        <button
+          type="button"
+          onClick={handleSubmit(handleFormSubmit)}
+          disabled={isSubmitting}
+          className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50 cursor-pointer"
         >
-            {isSubmitting ? <Loader /> : isEditing ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />} 
-            {isEditing ? "Save Changes" : "Create Problem"}
+          {isSubmitting ? <Loader /> : isEditing ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+          {isEditing ? "Save Changes" : "Create Problem"}
         </button>
       </div>
 
@@ -195,92 +230,112 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
         snapOffset={30}
         dragInterval={1}
       >
-        {/* Left Panel: Problem Details Form */}
-        <div className="h-full flex flex-col bg-[var(--background)] overflow-y-auto p-6 custom-scrollbar">
-          <form className="space-y-6">
-              {/* Problem Title */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                  Problem Title
-                </label>
-                <div className="relative">
-                  <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                  <input
-                    id="title"
-                    type="text"
-                    {...register("title", { required: "Problem title is required" })}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
-                    placeholder="e.g., Two Sum"
-                  />
-                  {errors.title && (
-                    <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
-                  )}
-                </div>
-              </div>
-              
-              {/* Problem Slug */}
-              <div>
-                <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                  Problem Slug
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                  <input
-                    id="slug"
-                    type="text"
-                    readOnly={isEditing} // Read-only in edit mode typically, unless you want to allow changing URL
-                    {...register("slug", { required: "Problem slug is required" })}
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)]/80 focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none ${isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
-                    placeholder="e.g., two-sum (auto-generated)"
-                  />
-                  {errors.slug && (
-                    <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>
-                  )}
-                </div>
-              </div>
+        {/* Left Panel: Details & Editorial Tabs */}
+        <div className="h-full flex flex-col bg-[var(--background)] overflow-hidden">
+          {/* Tabs */}
+          <div className="h-10 border-b border-[var(--card-border)] flex items-center gap-1 px-2 bg-[var(--card-bg)] shrink-0">
+            <button
+              type="button"
+              onClick={() => setActiveTab('details')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'details' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+            >
+              <FileText className="w-3.5 h-3.5" /> Problem Details
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('editorial')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'editorial' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+            >
+              <BookOpen className="w-3.5 h-3.5" /> Editorial
+            </button>
+          </div>
 
-              {/* Difficulty and Category */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            {activeTab === 'details' ? (
+              <form className="space-y-6">
+                {/* Problem Title */}
                 <div>
-                  <label htmlFor="difficulty" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Difficulty
+                  <label htmlFor="title" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                    Problem Title
                   </label>
                   <div className="relative">
-                    <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                    <select
-                      id="difficulty"
-                      {...register("difficulty", { required: "Difficulty is required" })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
-                    >
-                      {difficulties.map(d => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </select>
-                    {errors.difficulty && (
-                      <p className="text-red-500 text-xs mt-1">{errors.difficulty.message}</p>
+                    <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <input
+                      id="title"
+                      type="text"
+                      {...register("title", { required: "Problem title is required" })}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                      placeholder="e.g., Two Sum"
+                    />
+                    {errors.title && (
+                      <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
                     )}
                   </div>
                 </div>
+
+                {/* Problem Slug */}
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Category
+                  <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                    Problem Slug
                   </label>
                   <div className="relative">
-                    <ListChecks className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                    <select
-                      id="category"
-                      {...register("category", { required: "Category is required" })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
-                    >
-                      {categories.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                    {errors.category && (
-                      <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <input
+                      id="slug"
+                      type="text"
+                      readOnly={isEditing}
+                      {...register("slug", { required: "Problem slug is required" })}
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)]/80 focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none ${isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
+                      placeholder="e.g., two-sum (auto-generated)"
+                    />
+                    {errors.slug && (
+                      <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>
                     )}
                   </div>
-                  {selectedCategory === "Other" && (
+                </div>
+
+                {/* Difficulty and Category */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="difficulty" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                      Difficulty
+                    </label>
+                    <div className="relative">
+                      <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                      <select
+                        id="difficulty"
+                        {...register("difficulty", { required: "Difficulty is required" })}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
+                      >
+                        {difficulties.map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                      {errors.difficulty && (
+                        <p className="text-red-500 text-xs mt-1">{errors.difficulty.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                      Category
+                    </label>
+                    <div className="relative">
+                      <ListChecks className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                      <select
+                        id="category"
+                        {...register("category", { required: "Category is required" })}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
+                      >
+                        {categories.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      {errors.category && (
+                        <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
+                      )}
+                    </div>
+                    {selectedCategory === "Other" && (
                       <div className="mt-2">
                         <input
                           type="text"
@@ -290,87 +345,121 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                           className="w-full px-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
                         />
                       </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Visibility - Conditional Render */}
+                {!contestId && (
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                      Visibility
+                    </label>
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50">
+                      <input
+                        id="isPublic"
+                        type="checkbox"
+                        {...register("isPublic")}
+                        className="w-5 h-5 rounded border-gray-300 text-[var(--accent-gradient-to)] focus:ring-[var(--accent-gradient-to)]"
+                      />
+                      <label htmlFor="isPublic" className="text-sm text-[var(--foreground)] cursor-pointer select-none">
+                        Make this problem <span className="font-bold">Public</span>?
+                        <p className="text-xs text-[var(--foreground)]/50 font-normal">
+                          Uncheck to keep it Private.
+                        </p>
+                      </label>
+                    </div>
+                  </div>
+                )}
+                {contestId && (
+                  <input type="hidden" {...register("isPublic")} value="false" />
+                )}
+
+                {/* Time Limit and Memory Limit */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="timeLimit" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                      Time Limit (seconds)
+                    </label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                      <input
+                        id="timeLimit"
+                        type="number"
+                        {...register("timeLimit", { required: "Time limit is required", valueAsNumber: true, min: 0.1 })}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                        placeholder="e.g., 2"
+                        step="0.1"
+                      />
+                      {errors.timeLimit && (
+                        <p className="text-red-500 text-xs mt-1">{errors.timeLimit.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="memoryLimit" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                      Memory Limit (MB)
+                    </label>
+                    <div className="relative">
+                      <HardDrive className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                      <input
+                        id="memoryLimit"
+                        type="number"
+                        {...register("memoryLimit", { required: "Memory limit is required", valueAsNumber: true, min: 1 })}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                        placeholder="e.g., 256"
+                      />
+                      {errors.memoryLimit && (
+                        <p className="text-red-500 text-xs mt-1">{errors.memoryLimit.message}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+
+                {/* Problem Description (Rich Text Editor) */}
+                <div>
+                  <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                    Problem Description (Rich Text Editor)
+                  </label>
+                  <Controller
+                    name="description"
+                    control={control}
+                    rules={{ required: "Problem description is required" }}
+                    render={({ field }) => (
+                      <TiptapEditor
+                        description={field.value || ''}
+                        onChange={field.onChange}
+                      />
+                    )}
+                  />
+                  {errors.description && (
+                    <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
                   )}
                 </div>
-              </div>
-
-              {/* Visibility - Conditional Render */}
-              {!contestId && (
-              <div>
-                 <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Visibility
-                 </label>
-                 <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50">
-                    <input
-                      id="isPublic"
-                      type="checkbox"
-                      {...register("isPublic")}
-                      className="w-5 h-5 rounded border-gray-300 text-[var(--accent-gradient-to)] focus:ring-[var(--accent-gradient-to)]"
-                    />
-                    <label htmlFor="isPublic" className="text-sm text-[var(--foreground)] cursor-pointer select-none">
-                       Make this problem <span className="font-bold">Public</span>?
-                       <p className="text-xs text-[var(--foreground)]/50 font-normal">
-                         Uncheck to keep it Private.
-                       </p>
-                    </label>
-                 </div>
-              </div>
-              )}
-              {contestId && (
-                  <input type="hidden" {...register("isPublic")} value="false" />
-              )}
-
-              {/* Time Limit and Memory Limit */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="timeLimit" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Time Limit (seconds)
-                  </label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                    <input
-                      id="timeLimit"
-                      type="number"
-                      {...register("timeLimit", { required: "Time limit is required", valueAsNumber: true, min: 0.1 })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
-                      placeholder="e.g., 2"
-                      step="0.1"
-                    />
-                    {errors.timeLimit && (
-                      <p className="text-red-500 text-xs mt-1">{errors.timeLimit.message}</p>
-                    )}
+              </form>
+            ) : (
+              // Editorial Tab
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h3 className="text-sm font-medium text-[var(--foreground)]/70">Problem Editorial</h3>
+                    <p className="text-xs text-[var(--foreground)]/50">Explain the solution and provide code in multiple languages.</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateEditorial}
+                    disabled={isGeneratingEditorial || !isEditing}
+                    className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+                  >
+                    {isGeneratingEditorial ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                    Generate with AI
+                  </button>
                 </div>
-                <div>
-                  <label htmlFor="memoryLimit" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Memory Limit (MB)
-                  </label>
-                  <div className="relative">
-                    <HardDrive className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                    <input
-                      id="memoryLimit"
-                      type="number"
-                      {...register("memoryLimit", { required: "Memory limit is required", valueAsNumber: true, min: 1 })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
-                      placeholder="e.g., 256"
-                    />
-                    {errors.memoryLimit && (
-                      <p className="text-red-500 text-xs mt-1">{errors.memoryLimit.message}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
 
-
-              {/* Problem Description (Rich Text Editor) */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                  Problem Description (Rich Text Editor)
-                </label>
                 <Controller
-                  name="description"
+                  name="editorial"
                   control={control}
-                  rules={{ required: "Problem description is required" }}
                   render={({ field }) => (
                     <TiptapEditor
                       description={field.value || ''}
@@ -378,11 +467,9 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                     />
                   )}
                 />
-                {errors.description && (
-                  <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
-                )}
               </div>
-          </form>
+            )}
+          </div>
         </div>
 
         {/* Right Panel: Reference Solution Editor and Test Cases */}
@@ -425,11 +512,11 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                           key={lang.value}
                           onClick={() => {
                             setValue("language", lang.value);
+                            setValue("referenceSolution", getStarterCode(lang.value));
                             setIsLangOpen(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${
-                            language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
-                          }`}
+                          className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
+                            }`}
                         >
                           {lang.label}
                           {language === lang.value && <CheckCircle className="w-3 h-3" />}
@@ -440,7 +527,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                 </AnimatePresence>
               </div>
             </div>
-            
+
             <div className="flex-1 relative min-h-0">
               <Editor
                 height="100%"
@@ -467,14 +554,14 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
             <Controller
               name="examplesInput"
               control={control}
-              rules={{ 
+              rules={{
                 validate: (value) => value.length > 0 || "At least one example test case is required",
               }}
               render={({ field }) => (
-                <TestCaseEditor 
-                  name={field.name} 
-                  label="Example Test Cases" 
-                  showOutputs={true} 
+                <TestCaseEditor
+                  name={field.name}
+                  label="Example Test Cases"
+                  showOutputs={true}
                   control={control} // Pass control
                   register={register} // Pass register
                 />
@@ -488,14 +575,14 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
             <Controller
               name="testCasesInput"
               control={control}
-              rules={{ 
+              rules={{
                 validate: (value) => value.length > 0 || "At least one hidden test case is required",
               }}
               render={({ field }) => (
-                <TestCaseEditor 
-                  name={field.name} 
-                  label="Hidden Test Cases (Inputs Only)" 
-                  showOutputs={false} 
+                <TestCaseEditor
+                  name={field.name}
+                  label="Hidden Test Cases (Inputs Only)"
+                  showOutputs={false}
                   control={control} // Pass control
                   register={register} // Pass register
                 />
