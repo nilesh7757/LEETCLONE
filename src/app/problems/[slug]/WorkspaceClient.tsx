@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import { Editor } from "@monaco-editor/react";
-import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, Clock, X, MessageSquare, Flag, Code2 } from "lucide-react";
+import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, Clock, X, MessageSquare, Flag, Code2, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -41,6 +41,10 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [activeLeftTab, setActiveLeftTab] = useState<'description' | 'submissions' | 'discussion'>('description');
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  
+  // Test Cases State
+  const [localTestCases, setLocalTestCases] = useState<any[]>(examples);
+  const [consoleTab, setConsoleTab] = useState<'testcases' | 'results'>('testcases');
 
   // Language Dropdown State
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -175,13 +179,14 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     setIsRunning(true);
     setResults(null);
     setSyntaxError(null);
+    setConsoleTab('results');
     toast.info("Running code...");
 
     try {
       const { data } = await axios.post("/api/run", {
         language,
         code,
-        testCases: examples.map(e => ({ 
+        testCases: localTestCases.map(e => ({ 
           input: e.input, 
           expectedOutput: (e.expectedOutput === null || e.expectedOutput === undefined) ? "" : String(e.expectedOutput) 
         })), // Safely handle undefined/null output
@@ -515,10 +520,19 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           {/* Console Panel Section */}
           <div className="flex flex-col h-full bg-[var(--background)] min-h-0 border-t border-[var(--card-border)]">
             <div className="flex items-center justify-between px-4 h-10 bg-[var(--card-bg)] border-b border-[var(--card-border)] shrink-0 cursor-pointer" onClick={toggleConsoleHeight}>
-              <div className="flex gap-4 items-center">
-                <span className="text-sm font-medium text-[var(--foreground)] border-b-2 border-[var(--foreground)] pb-2 translate-y-2.5">
+              <div className="flex gap-4 items-center h-full">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setConsoleTab('testcases'); }}
+                  className={`text-sm font-medium h-full flex items-center border-b-2 transition-colors ${consoleTab === 'testcases' ? 'border-[var(--foreground)] text-[var(--foreground)]' : 'border-transparent text-[var(--foreground)]/60 hover:text-[var(--foreground)]'}`}
+                >
+                  Test Cases
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setConsoleTab('results'); }}
+                  className={`text-sm font-medium h-full flex items-center border-b-2 transition-colors ${consoleTab === 'results' ? 'border-[var(--foreground)] text-[var(--foreground)]' : 'border-transparent text-[var(--foreground)]/60 hover:text-[var(--foreground)]'}`}
+                >
                   Test Results
-                </span>
+                </button>
                 {results && (
                   <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                     results.every((r: any) => r.status === "Accepted") 
@@ -538,75 +552,149 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             </div>
 
             <div className="flex-1 overflow-hidden flex">
-              {/* Test Case Tabs */}
-              <div className="w-40 border-r border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col overflow-y-auto custom-scrollbar">
-                {results ? (
-                  results.map((result: any, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveTestCaseId(idx)}
-                      className={`px-4 py-3 text-sm text-left flex items-center gap-2 hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${activeTestCaseId === idx ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60"}`}
-                    >
-                      {result.status === "Accepted" ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                      ) : result.status === "Runtime Error" ? (
-                        <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0" />
+              {consoleTab === 'testcases' ? (
+                 <div className="flex-1 flex overflow-hidden">
+                    {/* Test Case Selector */}
+                    <div className="w-40 border-r border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col overflow-y-auto custom-scrollbar">
+                        {localTestCases.map((_, idx) => (
+                           <button
+                              key={idx}
+                              onClick={() => setActiveTestCaseId(idx)}
+                              className={`px-4 py-3 text-sm text-left flex items-center justify-between gap-2 hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${activeTestCaseId === idx ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60"}`}
+                           >
+                              <span className="truncate">Case {idx + 1}</span>
+                              <X 
+                                className="w-3 h-3 hover:text-red-500" 
+                                onClick={(e) => {
+                                   e.stopPropagation();
+                                   const newCases = localTestCases.filter((__, i) => i !== idx);
+                                   setLocalTestCases(newCases);
+                                   if (activeTestCaseId >= newCases.length) setActiveTestCaseId(Math.max(0, newCases.length - 1));
+                                }} 
+                              />
+                           </button>
+                        ))}
+                        <button
+                           onClick={() => {
+                              setLocalTestCases([...localTestCases, { input: "", expectedOutput: "" }]);
+                              setActiveTestCaseId(localTestCases.length);
+                           }}
+                           className="px-4 py-3 text-sm text-center text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer border-t border-[var(--card-border)]"
+                        >
+                           + Add Case
+                        </button>
+                    </div>
+                    {/* Test Case Editor */}
+                    <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
+                       {localTestCases.length > 0 && localTestCases[activeTestCaseId] ? (
+                          <div className="space-y-4 font-mono text-sm">
+                             <div>
+                                <div className="text-[var(--foreground)]/60 mb-2 text-xs uppercase tracking-wider">Input</div>
+                                <textarea
+                                   value={localTestCases[activeTestCaseId].input}
+                                   onChange={(e) => {
+                                      const newCases = [...localTestCases];
+                                      newCases[activeTestCaseId] = { ...newCases[activeTestCaseId], input: e.target.value };
+                                      setLocalTestCases(newCases);
+                                   }}
+                                   className="w-full p-3 bg-[var(--foreground)]/5 rounded-lg text-[var(--foreground)] outline-none focus:ring-1 focus:ring-[var(--foreground)]/20 resize-y min-h-[100px]"
+                                   placeholder="Enter input..."
+                                />
+                             </div>
+                             <div>
+                                <div className="text-[var(--foreground)]/60 mb-2 text-xs uppercase tracking-wider">Expected Output</div>
+                                <textarea
+                                   value={localTestCases[activeTestCaseId].expectedOutput}
+                                   onChange={(e) => {
+                                      const newCases = [...localTestCases];
+                                      newCases[activeTestCaseId] = { ...newCases[activeTestCaseId], expectedOutput: e.target.value };
+                                      setLocalTestCases(newCases);
+                                   }}
+                                   className="w-full p-3 bg-[var(--foreground)]/5 rounded-lg text-[var(--foreground)] outline-none focus:ring-1 focus:ring-[var(--foreground)]/20 resize-y min-h-[100px]"
+                                   placeholder="Enter expected output..."
+                                />
+                             </div>
+                          </div>
+                       ) : (
+                          <div className="text-[var(--foreground)]/60 text-center mt-20">
+                             No test cases selected
+                          </div>
+                       )}
+                    </div>
+                 </div>
+              ) : (
+                 <>
+                    {/* Test Results View (Existing) */}
+                    <div className="w-40 border-r border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col overflow-y-auto custom-scrollbar">
+                      {results ? (
+                        results.map((result: any, idx: number) => (
+                          <button
+                            key={idx}
+                            onClick={() => setActiveTestCaseId(idx)}
+                            className={`px-4 py-3 text-sm text-left flex items-center gap-2 hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${activeTestCaseId === idx ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60"}`}
+                          >
+                            {result.status === "Accepted" ? (
+                              <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                            ) : result.status === "Runtime Error" ? (
+                              <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                            )}
+                            <span className="truncate">Case {idx + 1}</span>
+                          </button>
+                        ))
                       ) : (
-                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        <div className="p-4 text-xs text-[var(--foreground)]/60 text-center">No results yet</div>
                       )}
-                      <span className="truncate">Case {idx + 1}</span>
-                    </button>
-                  ))
-                ) : (
-                  <div className="p-4 text-xs text-[var(--foreground)]/60 text-center">No results yet</div>
-                )}
-              </div>
+                    </div>
 
-              {/* Result Details */}
-              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                {results && results[activeTestCaseId] ? (
-                  <div className="space-y-4 font-mono text-sm">
-                    {results[activeTestCaseId].status === "Accepted" ? (
-                      <div className="text-green-500 font-semibold text-lg mb-4">Accepted</div>
-                    ) : results[activeTestCaseId].status === "Runtime Error" ? (
-                      <div className="text-red-500 font-semibold text-lg mb-4">Runtime Error</div>
-                    ) : (
-                      <div className="text-red-500 font-semibold text-lg mb-4">Wrong Answer</div>
-                    )}
+                    {/* Result Details */}
+                    <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
+                      {results && results[activeTestCaseId] ? (
+                        <div className="space-y-4 font-mono text-sm">
+                          {results[activeTestCaseId].status === "Accepted" ? (
+                            <div className="text-green-500 font-semibold text-lg mb-4">Accepted</div>
+                          ) : results[activeTestCaseId].status === "Runtime Error" ? (
+                            <div className="text-red-500 font-semibold text-lg mb-4">Runtime Error</div>
+                          ) : (
+                            <div className="text-red-500 font-semibold text-lg mb-4">Wrong Answer</div>
+                          )}
 
-                    {results[activeTestCaseId].error ? (
-                      <div className="p-4 bg-red-900/20 border border-red-500/20 text-red-400 rounded-lg whitespace-pre-wrap">
-                        {results[activeTestCaseId].error}
-                      </div>
-                    ) : (
-                      <>
-                        <div>
-                          <div className="text-[var(--foreground)]/60 mb-1 text-xs uppercase tracking-wider">Input</div>
-                          <div className="p-3 bg-[var(--foreground)]/5 rounded-lg text-[var(--foreground)] whitespace-pre-wrap mt-1">
-                            {results[activeTestCaseId].input}
-                          </div>
+                          {results[activeTestCaseId].error ? (
+                            <div className="p-4 bg-red-900/20 border border-red-500/20 text-red-400 rounded-lg whitespace-pre-wrap">
+                              {results[activeTestCaseId].error}
+                            </div>
+                          ) : (
+                            <>
+                              <div>
+                                <div className="text-[var(--foreground)]/60 mb-1 text-xs uppercase tracking-wider">Input</div>
+                                <div className="p-3 bg-[var(--foreground)]/5 rounded-lg text-[var(--foreground)] whitespace-pre-wrap mt-1">
+                                  {results[activeTestCaseId].input}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[var(--foreground)]/60 mb-1 text-xs uppercase tracking-wider">Output</div>
+                                <div className={`p-3 rounded-lg ${results[activeTestCaseId].status === "Accepted" ? "bg-[var(--foreground)]/5 text-[var(--foreground)]" : "bg-red-900/20 text-red-300"} whitespace-pre-wrap mt-1`}>
+                                  {results[activeTestCaseId].actual}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[var(--foreground)]/60 mb-1 text-xs uppercase tracking-wider">Expected</div>
+                                <div className="p-3 bg-[var(--foreground)]/5 rounded-lg text-[var(--foreground)] whitespace-pre-wrap mt-1">
+                                  {results[activeTestCaseId].expected}
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
-                        <div>
-                          <div className="text-[var(--foreground)]/60 mb-1 text-xs uppercase tracking-wider">Output</div>
-                          <div className={`p-3 rounded-lg ${results[activeTestCaseId].status === "Accepted" ? "bg-[var(--foreground)]/5 text-[var(--foreground)]" : "bg-red-900/20 text-red-300"} whitespace-pre-wrap mt-1`}>
-                            {results[activeTestCaseId].actual}
-                          </div>
+                      ) : (
+                        <div className="text-[var(--foreground)]/60 text-center mt-20">
+                          Run your code to see results
                         </div>
-                        <div>
-                          <div className="text-[var(--foreground)]/60 mb-1 text-xs uppercase tracking-wider">Expected</div>
-                          <div className="p-3 bg-[var(--foreground)]/5 rounded-lg text-[var(--foreground)] whitespace-pre-wrap mt-1">
-                            {results[activeTestCaseId].expected}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-[var(--foreground)]/60 text-center mt-20">
-                    Run your code to see results
-                  </div>
-                )}
-              </div>
+                      )}
+                    </div>
+                 </>
+              )}
             </div>
           </div>
         </Split>
@@ -687,10 +775,59 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                    <div className="font-bold text-lg text-[var(--foreground)]">{selectedSubmission.spaceComplexity || 'N/A'}</div>
                 </div>
                 {selectedSubmission.testCaseResults && Array.isArray(selectedSubmission.testCaseResults) && (
-                  <div className="p-4 bg-[var(--background)] rounded-lg border border-[var(--card-border)] flex flex-col items-center justify-center text-center">
-                    <div className="text-xs text-[var(--foreground)]/60 mb-1 uppercase tracking-wider">Test Cases</div>
-                    <div className="font-bold text-lg text-[var(--foreground)]">
-                      {selectedSubmission.testCaseResults.filter((r: any) => r.status === "Accepted").length} / {selectedSubmission.testCaseResults.length}
+                  <div className="col-span-2 md:col-span-4 p-4 bg-[var(--background)] rounded-lg border border-[var(--card-border)]">
+                    <div className="text-xs text-[var(--foreground)]/60 mb-3 uppercase tracking-wider font-semibold">Test Case Details</div>
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                      {selectedSubmission.testCaseResults.map((result: any, idx: number) => (
+                        <div key={idx} className="p-3 rounded-md bg-[var(--card-bg)] border border-[var(--card-border)] text-sm">
+                           <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-[var(--foreground)]/80">Case {idx + 1}</span>
+                              <div className="flex items-center gap-2">
+                                 {result.status !== "Accepted" && (
+                                    <button
+                                       onClick={() => {
+                                          const newCases = [...localTestCases, { 
+                                             input: result.input, 
+                                             expectedOutput: result.expected 
+                                          }];
+                                          setLocalTestCases(newCases);
+                                          setConsoleTab('testcases');
+                                          setActiveTestCaseId(newCases.length - 1);
+                                          setSelectedSubmission(null);
+                                          toast.success("Test case added to console");
+                                          if (editorAndConsoleSizes[1] < 10) {
+                                            setEditorAndConsoleSizes([60, 40]);
+                                            editorConsoleSplitRef.current?.setSizes([60, 40]);
+                                          }
+                                       }}
+                                       className="text-xs flex items-center gap-1 text-[var(--foreground)]/60 hover:text-[var(--foreground)] bg-[var(--foreground)]/5 px-2 py-1 rounded hover:bg-[var(--foreground)]/10 transition-colors"
+                                    >
+                                       <PlusCircle className="w-3 h-3" /> Use Test Case
+                                    </button>
+                                 )}
+                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${result.status === "Accepted" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
+                                    {result.status}
+                                 </span>
+                              </div>
+                           </div>
+                           {result.status !== "Accepted" && (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 font-mono text-xs">
+                                 <div>
+                                    <div className="text-[var(--foreground)]/40 mb-1">Input</div>
+                                    <div className="p-2 bg-[var(--foreground)]/5 rounded text-[var(--foreground)]/80 break-all">{result.input}</div>
+                                 </div>
+                                 <div>
+                                    <div className="text-[var(--foreground)]/40 mb-1">Output</div>
+                                    <div className="p-2 bg-red-500/5 text-red-400 rounded break-all">{result.actual}</div>
+                                 </div>
+                                 <div>
+                                    <div className="text-[var(--foreground)]/40 mb-1">Expected</div>
+                                    <div className="p-2 bg-green-500/5 text-green-500 rounded break-all">{result.expected}</div>
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

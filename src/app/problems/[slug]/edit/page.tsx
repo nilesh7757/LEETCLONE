@@ -66,7 +66,8 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
         language: "javascript", // Default or detect from solution? we don't store language of ref solution separately but can infer or default.
         timeLimit: p.timeLimit,
         memoryLimit: p.memoryLimit,
-        isPublic: p.isPublic
+        isPublic: p.isPublic,
+        editorial: p.editorial || ""
       });
     } catch (error) {
       console.error(error);

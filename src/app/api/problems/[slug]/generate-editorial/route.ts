@@ -18,11 +18,9 @@ Generate a comprehensive editorial for the following coding problem.
 ${description}
 
 **Reference Solution (${language}):**
-`\
-```${language}
+\`\`\`${language}
 ${referenceSolution}
-`\
-`
+\`\`\`
 
 **Requirements:**
 1.  **Explanation:** Explain the intuition, approach, and algorithm used in the reference solution. Be clear and concise.

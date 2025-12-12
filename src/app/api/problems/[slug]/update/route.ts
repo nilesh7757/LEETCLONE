@@ -99,7 +99,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
         isPublic,
         referenceSolution,
         editorial, // Update editorial
-        testSets: newTestSets || problem.testSets // Keep old if not updating
+        testSets: (newTestSets || problem.testSets) as any // Keep old if not updating
       }
     });
 
