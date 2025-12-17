@@ -8,63 +8,70 @@ export async function POST(req: Request) {
     const { 
       language, 
       code, 
-      problemId, // Only problemId is needed from req.json() for problem fetching
+      problemId,
+      type, // Allow passing type directly for new problems
+      initialSchema,
+      initialData,
+      timeLimit,
+      memoryLimit,
+      testCases,
     } = await req.json();
 
     // Basic validation
-    if (!code || !problemId) {
-      return NextResponse.json({ error: "Missing code or problem ID" }, { status: 400 });
+    if (!code) {
+      return NextResponse.json({ error: "Missing code" }, { status: 400 });
     }
 
-    const problem = await prisma.problem.findUnique({
-      where: { id: problemId },
-      select: {
-        type: true,
-        timeLimit: true,
-        memoryLimit: true,
-        initialSchema: true,
-        initialData: true,
-        testSets: true,
-      },
-    });
-
-    if (!problem) {
-      return NextResponse.json({ error: "Problem not found" }, { status: 404 });
+    let problem = null;
+    if (problemId) {
+      problem = await prisma.problem.findUnique({
+        where: { id: problemId },
+        select: {
+          type: true,
+          timeLimit: true,
+          memoryLimit: true,
+          initialSchema: true,
+          initialData: true,
+          testSets: true,
+        },
+      });
     }
 
     // Filter for example test cases
-    let allTestSets: TestInputOutput[] = [];
-    if (Array.isArray(problem.testSets)) {
-      allTestSets = problem.testSets as unknown as TestInputOutput[];
-    } else {
-      console.error("api/run/route.ts: problem.testSets was not an array or expected format:", problem.testSets);
-      allTestSets = [];
+    let exampleTestCases: TestInputOutput[] = [];
+    
+    if (problem) {
+      let allTestSets: TestInputOutput[] = [];
+      if (Array.isArray(problem.testSets)) {
+        allTestSets = problem.testSets as unknown as TestInputOutput[];
+      }
+      exampleTestCases = allTestSets.filter(tc => tc.isExample === true);
+    } else if (testCases) {
+      exampleTestCases = testCases;
     }
-
-    const exampleTestCases = allTestSets.filter(tc => tc.isExample === true);
 
     try {
       let results;
+      const finalType = (problem?.type || type) as ProblemType;
+      
       const commonParams = {
-        problemId,
-        type: problem.type,
+        problemId: problemId || "new-problem",
+        type: finalType,
         code,
-        testCases: exampleTestCases, // Pass only example test cases
-        timeLimit: problem.timeLimit,
-        memoryLimit: problem.memoryLimit,
-        initialSchema: problem.initialSchema ?? undefined,
-        initialData: problem.initialData ?? undefined,
+        testCases: exampleTestCases,
+        timeLimit: problem?.timeLimit || timeLimit || 2,
+        memoryLimit: problem?.memoryLimit || memoryLimit || 256,
+        initialSchema: (problem?.initialSchema || initialSchema) ?? undefined,
+        initialData: (problem?.initialData || initialData) ?? undefined,
       };
 
-      if (problem.type === ProblemType.CODING) {
-        if (!language) {
-          return NextResponse.json({ error: "Missing language for CODING problem" }, { status: 400 });
-        }
-        results = await executeCode({ ...commonParams, language });
-      } else if (problem.type === ProblemType.SQL) {
+      if (finalType === ProblemType.CODING) {
+        const finalLanguage = language || "javascript";
+        results = await executeCode({ ...commonParams, language: finalLanguage });
+      } else if (finalType === ProblemType.SQL) {
          results = await executeCode(commonParams);
       } else {
-        return NextResponse.json({ error: `Unsupported problem type: ${problem.type}` }, { status: 400 });
+        return NextResponse.json({ error: `Unsupported problem type: ${finalType}` }, { status: 400 });
       }
       
       return NextResponse.json({ results });

@@ -37,6 +37,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       isPublic,
       editorial,
       problemType, // New
+      initialSchema, // Added
+      initialData, // Added
     } = await req.json();
 
     // Re-generate test cases if provided (ONLY FOR CODING)
@@ -83,6 +85,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
             examples: processedExamples,
             hidden: processedTestCases
         });
+    } else if (problemType === "SQL" || problemType === "SYSTEM_DESIGN") {
+        // For SQL/System Design, we just store what's given without re-running code
+        newTestSets = JSON.stringify({
+            examples: examplesInput ? examplesInput.map((ex: any) => ({ input: ex.input, expectedOutput: ex.output })) : [],
+            hidden: testCasesInput ? testCasesInput.map((tc: any) => ({ input: tc.input, expectedOutput: tc.output || "" })) : []
+        });
     }
 
     const updatedProblem = await prisma.problem.update({
@@ -97,6 +105,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
         isPublic,
         referenceSolution,
         editorial,
+        initialSchema,
+        initialData,
         type: problemType as ProblemType,
         testSets: (newTestSets || problem.testSets) as any 
       }

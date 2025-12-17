@@ -649,7 +649,13 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
           {/* Bottom section of right panel: Test Case Editors */}
           <div className="flex flex-col h-full bg-[var(--background)] min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-            {problemType === "SQL" ? (
+            {problemType === "SYSTEM_DESIGN" ? (
+               <div className="flex flex-col items-center justify-center h-full text-[var(--foreground)]/40 text-center p-8">
+                  <LayoutTemplate className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="font-medium">System Design Mode</p>
+                  <p className="text-xs max-w-[200px] mt-1">Test cases are not required for system design problems. AI will evaluate the textual answer.</p>
+               </div>
+            ) : problemType === "SQL" ? (
                <div className="text-sm text-[var(--foreground)]/60">
                   <div className="flex justify-between items-center mb-2">
                      <p>For SQL problems, provide the expected output table below.</p>
@@ -713,51 +719,56 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                </div>
             ) : (
               <>
-                <Controller
-                  name="examplesInput"
-                  control={control}
-                  rules={{
-                    validate: (value) => {
-                       if (value.length === 0) return "At least one example test case is required";
-                       if (value.some(tc => !tc.input.trim() || !tc.output.trim())) return "Input and Output cannot be blank for example test cases.";
-                       return true;
-                    },
-                  }}
-                  render={({ field }) => (
-                    <TestCaseEditor
-                      name={field.name}
-                      label="Example Test Cases"
-                      showOutputs={true}
-                      control={control} // Pass control
-                      register={register} // Pass register
-                    />
-                  )}
-                />
-                {errors.examplesInput && (
-                  <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
-                )}
-
-                            {(
-                              <Controller
-                                name="testCasesInput"
-                                control={control}
-                                rules={{
-                                  validate: (value) => value.length > 0 || "At least one hidden test case is required",
-                                }}
-                                render={({ field }) => (
-                                  <TestCaseEditor
-                                    name={field.name}
-                                    label="Hidden Test Cases (Inputs Only)"
-                                    showOutputs={false}
-                                    control={control} // Pass control
-                                    register={register} // Pass register
-                                  />
+                                <Controller
+                                  name="examplesInput"
+                                  control={control}
+                                  rules={{
+                                    validate: (value) => {
+                                       if (problemType === "SYSTEM_DESIGN") return true;
+                                       if (value.length === 0) return "At least one example test case is required";
+                                       if (value.some(tc => !tc.input.trim() || !tc.output.trim())) return "Input and Output cannot be blank for example test cases.";
+                                       return true;
+                                    },
+                                  }}
+                                  render={({ field }) => (
+                                    <TestCaseEditor
+                                      name={field.name}
+                                      label="Example Test Cases"
+                                      showOutputs={true}
+                                      control={control} // Pass control
+                                      register={register} // Pass register
+                                    />
+                                  )}
+                                />
+                                {errors.examplesInput && (
+                                  <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
                                 )}
-                              />
-                            )}
-                            {errors.testCasesInput && (
-                              <p className="text-red-500 text-xs mt-1">{errors.testCasesInput.message}</p>
-                            )}              </>
+                
+                                            {(
+                                              <Controller
+                                                name="testCasesInput"
+                                                control={control}
+                                                rules={{
+                                                  validate: (value) => {
+                                                    if (problemType === "SYSTEM_DESIGN") return true;
+                                                    return value.length > 0 || "At least one hidden test case is required";
+                                                  }
+                                                }}
+                                                render={({ field }) => (
+                                                  <TestCaseEditor
+                                                    name={field.name}
+                                                    label="Hidden Test Cases (Inputs Only)"
+                                                    showOutputs={false}
+                                                    control={control} // Pass control
+                                                    register={register} // Pass register
+                                                  />
+                                                )}
+                                              />
+                                            )}
+                                            {errors.testCasesInput && (
+                                              <p className="text-red-500 text-xs mt-1">{errors.testCasesInput.message}</p>
+                                            )}
+                              </>
             )}
             
             {syntaxError && (
