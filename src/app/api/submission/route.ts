@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { executeCode, TestInputOutput } from "@/lib/codeExecution"; // Import TestInputOutput
+import { executeCode, TestInputOutput, ExecutionResult } from "@/lib/codeExecution"; // Import TestInputOutput
 import { analyzeCodeComplexity, evaluateSystemDesign } from "@/lib/gemini";
 import { io as ClientIO } from "socket.io-client"; // Import as ClientIO to avoid conflict
 
@@ -159,7 +159,7 @@ export async function POST(req: Request) {
             expected: "N/A",
             actual: evalResult.feedback,
             status: "Accepted"
-         }];
+         }] as ExecutionResult[];
          // ...
       } else {
         return NextResponse.json({ error: `Unsupported problem type for submission: ${problem.type}` }, { status: 400 });
