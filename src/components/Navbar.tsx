@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Code2, Menu, X, UserCircle, MessageSquare } from "lucide-react";
+import { Code2, Menu, X, UserCircle, MessageSquare, Flame } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
@@ -9,8 +9,11 @@ import { useSession } from "next-auth/react";
 import UserSearch from "./UserSearch";
 import NotificationBell from "./NotificationBell";
 
+import axios from "axios";
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [dailySlug, setDailySlug] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
 
@@ -23,6 +26,21 @@ export default function Navbar() {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Fetch Daily Problem Slug
+  useEffect(() => {
+    const fetchDaily = async () => {
+      try {
+        const { data } = await axios.get("/api/problems/daily");
+        if (data.problem?.slug) {
+          setDailySlug(data.problem.slug);
+        }
+      } catch (error) {
+        console.error("Failed to fetch daily problem for streak link", error);
+      }
+    };
+    fetchDaily();
   }, []);
 
   return (
@@ -44,6 +62,7 @@ export default function Navbar() {
             {/* Desktop Nav Links (hidden on mobile) */}
             <div className="hidden md:flex items-center gap-6">
               <NavLink href="/problems">Problems</NavLink>
+              <NavLink href="/study-plans">Study Plans</NavLink>
               <NavLink href="/contest">Contest</NavLink>
               <NavLink href="/blog">Blog</NavLink>
               <NavLink href="/leaderboard">Leaderboard</NavLink>
@@ -61,6 +80,16 @@ export default function Navbar() {
 
           {/* Right Section: Theme Toggle, Auth/Profile, Mobile Menu Button */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0" ref={dropdownRef}>
+            {status === "authenticated" && (
+              <Link 
+                href={dailySlug ? `/problems/${dailySlug}` : "/problems"}
+                className="flex items-center gap-1 text-orange-500 font-medium mr-1 sm:mr-2 hover:bg-orange-500/10 px-2 py-1 rounded-md transition-colors" 
+                title="Daily Streak - Click to solve Daily Problem"
+              >
+                <Flame className="w-5 h-5 fill-orange-500" />
+                <span>{session.user.streak || 0}</span>
+              </Link>
+            )}
             <NotificationBell />
             <ThemeToggle />
             
@@ -123,6 +152,7 @@ export default function Navbar() {
               >
                 <div className="px-2 space-y-1">
                   <MobileNavLink href="/problems">Problems</MobileNavLink>
+                  <MobileNavLink href="/study-plans">Study Plans</MobileNavLink>
                   <MobileNavLink href="/contest">Contest</MobileNavLink>
                   <MobileNavLink href="/blog">Blog</MobileNavLink>
                   <MobileNavLink href="/leaderboard">Leaderboard</MobileNavLink>

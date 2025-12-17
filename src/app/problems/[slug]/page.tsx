@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import WorkspaceClient from "./WorkspaceClient";
 import { auth } from "@/auth";
+import { TestInputOutput } from "@/lib/codeExecution";
 
 interface WorkspaceProps {
   params: Promise<{ slug: string }>;
@@ -22,6 +23,8 @@ interface Problem {
   memoryLimit: number;
   testSets: any;
   referenceSolution: string | null;
+  initialSchema: string | null;
+  initialData: string | null;
   createdAt: Date;
   updatedAt: Date;
   isPublic: boolean;
@@ -30,6 +33,8 @@ interface Problem {
     startTime: Date;
     creatorId: string;
   }[];
+  // New fields for diverse problem types
+  type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL"; // Corrected from problemType to type
 }
 
 export default async function Workspace({ params }: WorkspaceProps) {
@@ -60,6 +65,10 @@ export default async function Workspace({ params }: WorkspaceProps) {
           creatorId: true,
         },
       },
+      // Select new problem type fields
+      type: true,
+      initialSchema: true,
+      initialData: true,
     }
   }) as Problem;
 
@@ -82,36 +91,33 @@ export default async function Workspace({ params }: WorkspaceProps) {
     notFound(); // Or redirect to /problems
   }
 
-  let allTestSets: { examples: any[], hidden: any[] } = { examples: [], hidden: [] };
+  let allTestCases: TestInputOutput[] = [];
   const rawTestSets = problem.testSets;
 
-  if (rawTestSets) {
-    let parsed = rawTestSets;
-    if (typeof rawTestSets === 'string' && rawTestSets.trim() !== '') {
-       try {
-         parsed = JSON.parse(rawTestSets);
-       } catch(e) {
-         console.error("Error parsing problem.testSets string:", e, rawTestSets);
-         parsed = null;
-       }
-    }
-
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      allTestSets = {
-        examples: Array.isArray(parsed.examples) ? parsed.examples : [],
-        hidden: Array.isArray(parsed.hidden) ? parsed.hidden : [],
-      };
-    } else if (Array.isArray(parsed)) {
-       // Handle legacy format if any (array of test cases)
-       allTestSets = { examples: parsed, hidden: [] };
-    }
+  if (Array.isArray(rawTestSets)) {
+    allTestCases = rawTestSets;
+  } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in rawTestSets && 'hidden' in rawTestSets) {
+    (rawTestSets.examples as TestInputOutput[]).forEach(tc => allTestCases.push({ ...tc, isExample: true }));
+    (rawTestSets.hidden as TestInputOutput[]).forEach(tc => allTestCases.push({ ...tc, isExample: false }));
+  } else {
+    console.error("page.tsx: Unexpected format for problem.testSets:", rawTestSets);
+    allTestCases = [];
   }
-  const examples = allTestSets.examples || [];
+
+  // Filter for only example test cases to pass to WorkspaceClient
+  const examplesForClient = allTestCases.filter(tc => tc.isExample === true);
 
   return (
     <main className="h-screen flex flex-col pt-16 overflow-hidden bg-[var(--background)]">
       {/* Main Workspace - Client Component for Interactive Elements */}
-      <WorkspaceClient problem={problem} examples={examples} />
+      <WorkspaceClient 
+        problem={{
+          ...problem,
+          initialSchema: problem.initialSchema || undefined,
+          initialData: problem.initialData || undefined,
+        }}
+        examples={examplesForClient} // Pass only the example test cases
+      />
     </main>
   );
 }

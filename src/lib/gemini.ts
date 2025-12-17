@@ -97,3 +97,60 @@ If complexity cannot be determined, state 'N/A' for the respective field.`;
   console.error("All Gemini models failed to analyze code complexity.");
   return { timeComplexity: "N/A", spaceComplexity: "N/A" };
 }
+
+export async function evaluateSystemDesign(question: string, answer: string): Promise<{ feedback: string; score: number }> {
+  if (!GEMINI_API_KEY) {
+    return { feedback: "AI evaluation unavailable (API Key missing).", score: 0 };
+  }
+
+  const prompt = `You are a Senior Staff Engineer conducting a System Design interview.
+  
+Evaluate the following candidate's answer based on the problem description.
+
+Problem:
+${question}
+
+Candidate's Answer:
+${answer}
+
+Tasks:
+1. Score the answer from 0 to 100 based on completeness, correctness, and understanding of system design concepts (scalability, availability, consistency, etc.).
+2. Provide concise, constructive feedback. Highlight missing components or good points.
+
+Output Format (JSON):
+{
+  "score": 85,
+  "feedback": "Good high-level overview. You mentioned load balancing and caching, which is great. However, you missed discussing the database schema and potential bottlenecks in the notification service."
+}`;
+
+  for (const model of MODELS) {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0.3,
+          },
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const candidate = response.data.candidates?.[0];
+      let text = candidate?.content?.parts?.[0]?.text || "";
+      const cleanJson = text.replace(/```json\n?|```/g, "").trim();
+      const result = JSON.parse(cleanJson);
+
+      return {
+        score: result.score || 0,
+        feedback: result.feedback || "No feedback provided.",
+      };
+
+    } catch (error: any) {
+      console.warn(`Model ${model} failed for system design eval:`, error.message);
+    }
+  }
+
+  return { feedback: "Failed to evaluate answer.", score: 0 };
+}

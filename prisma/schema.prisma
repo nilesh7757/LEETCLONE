@@ -10,29 +10,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ProblemType {
+  CODING
+  SHELL
+  INTERACTIVE
+  SYSTEM_DESIGN
+  SQL
+}
+
 model Problem {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   title       String
-  slug        String   @unique
-  difficulty  String   // "Easy", "Medium", "Hard"
+  slug        String      @unique
+  difficulty  String      // "Easy", "Medium", "Hard"
   category    String
   description String
-  timeLimit   Int      @default(2) // Time limit in seconds
-  memoryLimit Int      @default(256) // Memory limit in MB
-  testSets    Json     @default("[]") // New field to store structured test cases
+  timeLimit   Int         @default(2) // Time limit in seconds
+  memoryLimit Int         @default(256) // Memory limit in MB
+  testSets    Json        @default("[]") // New field to store structured test cases
   referenceSolution String? // Added field for reference solution code
-  editorial   String?  @db.Text // Explanation and multi-language solutions
-  isPublic    Boolean  @default(true) // Determines if the problem is visible in the public library
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  creatorId   String?  // Optional for existing problems
-  creator     User?    @relation("CreatedProblems", fields: [creatorId], references: [id])
+  initialSchema     String? // SQL Schema creation script
+  initialData       String? // SQL Data insertion script
+  editorial   String?     @db.Text // Explanation and multi-language solutions
+  isPublic    Boolean     @default(true) // Determines if the problem is visible in the public library
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Problem Type Fields
+  type          ProblemType @default(CODING) // New field for problem type
+
+  creatorId   String?     // Optional for existing problems
+  creator     User?       @relation("CreatedProblems", fields: [creatorId], references: [id])
 
   submissions Submission[]
-  contests    Contest[] // Implicit many-to-many
+  contests    Contest[]   // Implicit many-to-many
+  studyPlans  StudyPlan[] // Implicit many-to-many
   comments    Comment[]
   blogPosts   BlogPost[]
+}
+
+model StudyPlan {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  description String
+  coverImage  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  problems    Problem[]
 }
 
 model Comment {
@@ -129,6 +155,10 @@ model User {
   warnings        Int           @default(0)
   isBanned        Boolean       @default(false)
   reportsMade     Report[]      @relation("Reporter")
+
+  // Streak System
+  streak          Int           @default(0)
+  lastSolvedDate  DateTime?
 
   // Verification
   otp             String?

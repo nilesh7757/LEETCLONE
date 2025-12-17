@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import { Editor } from "@monaco-editor/react";
-import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, Clock, X, MessageSquare, Flag, Code2, PlusCircle } from "lucide-react";
+import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, X, MessageSquare, Flag, Code2, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DiscussionSection from "@/components/Discussion/DiscussionSection";
 import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
 import { languages, getStarterCode } from "@/lib/starterCode";
 
 interface Problem {
@@ -22,6 +23,10 @@ interface Problem {
   description: string;
   timeLimit: number;
   memoryLimit: number;
+  initialSchema?: string;
+  initialData?: string;
+  // Added fields from Prisma schema
+  type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL";
 }
 
 interface WorkspaceClientProps {
@@ -30,8 +35,13 @@ interface WorkspaceClientProps {
 }
 
 export default function WorkspaceClient({ problem, examples }: WorkspaceClientProps) {
-  const [code, setCode] = useState(getStarterCode("javascript"));
-  const [language, setLanguage] = useState("javascript");
+  const initialCode = problem.type === "SQL" 
+      ? "SELECT * FROM Users;" 
+      : getStarterCode("javascript"); 
+  const initialLanguage = problem.type === "SQL" ? "sql" : "javascript";
+
+  const [code, setCode] = useState(initialCode);
+  const [language, setLanguage] = useState(initialLanguage);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
@@ -56,6 +66,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   const { resolvedTheme } = useTheme();
+  const { update } = useSession();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -112,11 +123,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const contestId = searchParams.get("contestId");
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem("preferredLanguage");
-    if (savedLanguage) {
-      setLanguage(savedLanguage);
+    if (problem.type === "CODING") {
+      const savedLanguage = localStorage.getItem("preferredLanguage");
+      if (savedLanguage) {
+        setLanguage(savedLanguage);
+      }
     }
-  }, []);
+  }, [problem.type]);
 
   // Autosave & Load Draft
   useEffect(() => {
@@ -127,18 +140,23 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     if (savedDraft) {
       setCode(savedDraft);
     } else {
-      setCode(getStarterCode(language));
+      if (problem.type === "CODING") {
+        setCode(getStarterCode(language));
+      } else if (problem.type === "SQL") {
+        setCode("SELECT * FROM Users;"); // Reset to default if no draft
+      }
     }
-  }, [language, problem.id]);
+  }, [language, problem.id, problem.type]); // Add problem.type to dependencies
 
   useEffect(() => {
     // Save draft on code change
     const draftKey = `draft_${problem.id}_${language}`;
     // Debounce saving slightly if needed, but for local storage direct write is usually fine for text
-    if (code !== getStarterCode(language)) {
+    const defaultCode = problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language);
+    if (code !== defaultCode) {
         localStorage.setItem(draftKey, code);
     }
-  }, [code, language, problem.id]);
+  }, [code, language, problem.id, problem.type]);
 
   useEffect(() => {
     if (activeLeftTab === 'submissions') {
@@ -183,16 +201,34 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     toast.info("Running code...");
 
     try {
-      const { data } = await axios.post("/api/run", {
-        language,
+      let requestBody: any = {
+        problemId: problem.id, // Always send problemId
         code,
-        testCases: localTestCases.map(e => ({ 
-          input: e.input, 
-          expectedOutput: (e.expectedOutput === null || e.expectedOutput === undefined) ? "" : String(e.expectedOutput) 
-        })), // Safely handle undefined/null output
-        timeLimit: problem.timeLimit,
-        memoryLimit: problem.memoryLimit,
-      });
+        type: problem.type, // Send problem type
+      };
+
+      if (problem.type === "CODING") {
+        requestBody = {
+          ...requestBody,
+          language,
+          testCases: localTestCases.map(e => ({ 
+            input: e.input, 
+            expectedOutput: (e.expectedOutput === null || e.expectedOutput === undefined) ? "" : String(e.expectedOutput) 
+          })), // Safely handle undefined/null output
+          timeLimit: problem.timeLimit,
+          memoryLimit: problem.memoryLimit,
+        };
+      } else if (problem.type === "SQL") {
+         requestBody = {
+            ...requestBody,
+            initialSchema: problem.initialSchema,
+            initialData: problem.initialData,
+            testCases: localTestCases.length > 0 ? localTestCases : [],
+         }
+      }
+      // Add other problem types here
+
+      const { data } = await axios.post("/api/run", requestBody);
 
       setResults(data.results);
       
@@ -207,7 +243,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
       }
       if (editorAndConsoleSizes[1] < 10) {
           setEditorAndConsoleSizes([60, 40]);
-          editorConsoleSplitRef.current?.setSizes([60, 40]);
       }
 
     } catch (error: any) {
@@ -223,14 +258,33 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     toast.info("Submitting solution...");
 
     try {
-      const { data } = await axios.post("/api/submission", {
+      let requestBody: any = {
+        problemId: problem.id,
         code,
-        language,
-        problemId: problem.id
-      });
+        type: problem.type, // Send problem type
+      };
+
+      if (problem.type === "CODING") {
+        requestBody = {
+          ...requestBody,
+          language,
+          // For submission, test cases are not sent from client. Server uses problem.testSets
+        };
+      } else if (problem.type === "SQL") {
+          requestBody = {
+            ...requestBody,
+            // SQL might need schemas on server side too if checking against hidden cases
+          }
+      }
+      // Add other problem types here
+
+      const { data } = await axios.post("/api/submission", requestBody);
 
       if (data.submission.status === "Accepted") {
         toast.success("Accepted! 🎉");
+        if (data.newStreak) {
+           update({ streak: data.newStreak });
+        }
       } else {
         const failed = data.failedTestCase;
         if (failed) {
@@ -258,10 +312,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const toggleConsoleHeight = () => {
     if (editorAndConsoleSizes[1] < 5) {
       setEditorAndConsoleSizes([70, 30]);
-      editorConsoleSplitRef.current?.setSizes([70, 30]);
     } else {
       setEditorAndConsoleSizes([100, 0]);
-      editorConsoleSplitRef.current?.setSizes([100, 0]);
     }
   };
 
@@ -280,13 +332,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           <span className="font-semibold text-[var(--foreground)]">{problem.title}</span>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={handleRun}
-            disabled={isRunning}
-            className="px-4 py-1.5 text-sm font-medium text-[var(--foreground)]/80 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <Play className="w-4 h-4 text-[var(--foreground)]/60" /> {isRunning ? "Running..." : "Run"}
-          </button>
+          {problem.type !== "SYSTEM_DESIGN" && (
+            <button 
+              onClick={handleRun}
+              disabled={isRunning}
+              className="px-4 py-1.5 text-sm font-medium text-[var(--foreground)]/80 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Play className="w-4 h-4 text-[var(--foreground)]/60" /> {isRunning ? "Running..." : "Run"}
+            </button>
+          )}
           <button 
             onClick={handleSubmit}
             disabled={isSubmitting || isRunning}
@@ -420,6 +474,28 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         </div>
 
         {/* Right Panel: Code Editor & Console */}
+        {problem.type === "SYSTEM_DESIGN" ? (
+          <div className="flex flex-col h-full bg-[var(--background)] border-l border-[var(--card-border)]">
+             <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0">
+                <div className="text-sm font-medium text-[var(--foreground)]">Design Answer (Markdown)</div>
+                <div className="flex items-center gap-3">
+                   <button
+                      className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                      title="Reset"
+                      onClick={() => setCode("")}
+                   >
+                      <RotateCcw className="w-4 h-4" />
+                   </button>
+                </div>
+             </div>
+             <textarea
+                className="flex-1 w-full h-full p-4 bg-transparent text-[var(--foreground)] outline-none resize-none font-mono text-sm"
+                placeholder="Describe your system design here... (Markdown supported)"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+             />
+          </div>
+        ) : (
         <Split
           ref={editorConsoleSplitRef}
           direction="vertical"
@@ -432,90 +508,104 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           className="flex flex-col bg-[var(--background)] h-full"
           onDragEnd={(newSizes) => setEditorAndConsoleSizes(newSizes)}
         >
-          {/* Code Editor Section */}
-          <div className="flex flex-col h-full min-h-0">
-            <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
-              <div className="relative" ref={langDropdownRef}>
-                <button
-                  onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-colors px-2 py-1.5 rounded-md hover:bg-[var(--foreground)]/5 cursor-pointer"
-                >
-                  <Code2 className="w-4 h-4 text-green-500" />
-                  {languages.find(l => l.value === language)?.label}
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                <AnimatePresence>
-                  {isLangOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                      transition={{ duration: 0.1 }}
-                      className="absolute top-full left-0 mt-1 w-48 bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-xl overflow-hidden py-1 z-50"
+          {problem.type === "CODING" || problem.type === "SQL" ? (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
+                {problem.type === "CODING" && (
+                  <div className="relative" ref={langDropdownRef}>
+                    <button
+                      onClick={() => setIsLangOpen(!isLangOpen)}
+                      className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-colors px-2 py-1.5 rounded-md hover:bg-[var(--foreground)]/5 cursor-pointer"
                     >
-                      {languages.map((lang) => (
-                        <button
-                          key={lang.value}
-                          onClick={() => {
-                            setLanguage(lang.value);
-                            localStorage.setItem("preferredLanguage", lang.value);
-                            setIsLangOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${
-                            language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
-                          }`}
+                      <Code2 className="w-4 h-4 text-green-500" />
+                      {languages.find(l => l.value === language)?.label}
+                      <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isLangOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                          transition={{ duration: 0.1 }}
+                          className="absolute top-full left-0 mt-1 w-48 bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-xl overflow-hidden py-1 z-50"
                         >
-                          {lang.label}
-                          {language === lang.value && <CheckCircle className="w-3 h-3" />}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              <div className="flex items-center gap-3">
-                {syntaxError && (
-                  <div className="flex items-center gap-1.5 text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded animate-pulse">
-                    <AlertCircle className="w-3 h-3" />
-                    <span className="truncate max-w-[150px]">{syntaxError}</span>
+                          {languages.map((lang) => (
+                            <button
+                              key={lang.value}
+                              onClick={() => {
+                                setLanguage(lang.value);
+                                localStorage.setItem("preferredLanguage", lang.value);
+                                setIsLangOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${
+                                language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
+                              }`}
+                            >
+                              {lang.label}
+                              {language === lang.value && <CheckCircle className="w-3 h-3" />}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
-                <button
-                  className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
-                  title="Reset Code"
-                  onClick={() => setCode(getStarterCode(language) || "")}
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-                <button
-                  className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
-                  title="Settings"
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
+                {problem.type === "SQL" && (
+                   <div className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] px-2 py-1.5">
+                      <Code2 className="w-4 h-4 text-blue-500" /> SQL Query
+                   </div>
+                )}
+                
+                <div className="flex items-center gap-3">
+                  {syntaxError && (
+                    <div className="flex items-center gap-1.5 text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded animate-pulse">
+                      <AlertCircle className="w-3 h-3" />
+                      <span className="truncate max-w-[150px]">{syntaxError}</span>
+                    </div>
+                  )}
+                  <button
+                    className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                    title="Reset Code"
+                    onClick={() => setCode(problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language) || "")}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                    title="Settings"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex-1 relative min-h-0">
+                <Editor
+                  height="100%"
+                  language={language}
+                  theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
+                  beforeMount={handleEditorWillMount}
+                  value={code}
+                  onChange={(value) => setCode(value || "")}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    padding: { top: 16, bottom: 16 },
+                    renderValidationDecorations: "on",
+                  }}
+                />
               </div>
             </div>
-            
-            <div className="flex-1 relative min-h-0">
-              <Editor
-                height="100%"
-                language={language}
-                theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
-                beforeMount={handleEditorWillMount}
-                value={code}
-                onChange={(value) => setCode(value || "")}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  padding: { top: 16, bottom: 16 },
-                  renderValidationDecorations: "on",
-                }}
-              />
+          ) : (
+            <div className="flex flex-col h-full min-h-0 justify-center items-center text-[var(--foreground)]/60 text-lg">
+              <p>Editor not available for this problem type.</p>
+              <p>Please select a different problem type.</p>
             </div>
-          </div>
+          )}
 
           {/* Console Panel Section */}
           <div className="flex flex-col h-full bg-[var(--background)] min-h-0 border-t border-[var(--card-border)]">
@@ -698,6 +788,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             </div>
           </div>
         </Split>
+        )}
       </Split>
 
       {/* Submission Details Modal */}
@@ -795,11 +886,9 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                           setActiveTestCaseId(newCases.length - 1);
                                           setSelectedSubmission(null);
                                           toast.success("Test case added to console");
-                                          if (editorAndConsoleSizes[1] < 10) {
-                                            setEditorAndConsoleSizes([60, 40]);
-                                            editorConsoleSplitRef.current?.setSizes([60, 40]);
-                                          }
-                                       }}
+                                                                                     if (editorAndConsoleSizes[1] < 10) {
+                                                                                       setEditorAndConsoleSizes([60, 40]);
+                                                                                     }                                       }}
                                        className="text-xs flex items-center gap-1 text-[var(--foreground)]/60 hover:text-[var(--foreground)] bg-[var(--foreground)]/5 px-2 py-1 rounded hover:bg-[var(--foreground)]/10 transition-colors"
                                     >
                                        <PlusCircle className="w-3 h-3" /> Use Test Case
@@ -810,20 +899,26 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                  </span>
                               </div>
                            </div>
-                           {result.status !== "Accepted" && (
+                           {(result.status !== "Accepted" || problem.type === "SYSTEM_DESIGN") && (
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 font-mono text-xs">
                                  <div>
                                     <div className="text-[var(--foreground)]/40 mb-1">Input</div>
-                                    <div className="p-2 bg-[var(--foreground)]/5 rounded text-[var(--foreground)]/80 break-all">{result.input}</div>
+                                    <div className="p-2 bg-[var(--foreground)]/5 rounded text-[var(--foreground)]/80 break-words whitespace-pre-wrap">{result.input}</div>
                                  </div>
-                                 <div>
-                                    <div className="text-[var(--foreground)]/40 mb-1">Output</div>
-                                    <div className="p-2 bg-red-500/5 text-red-400 rounded break-all">{result.actual}</div>
+                                 <div className="md:col-span-2">
+                                    <div className="text-[var(--foreground)]/40 mb-1">
+                                       {problem.type === "SYSTEM_DESIGN" ? "AI Feedback" : "Output"}
+                                    </div>
+                                    <div className={`p-2 rounded break-words whitespace-pre-wrap ${result.status === "Accepted" ? "bg-green-500/5 text-green-600" : "bg-red-500/5 text-red-400"}`}>
+                                       {result.actual}
+                                    </div>
                                  </div>
-                                 <div>
-                                    <div className="text-[var(--foreground)]/40 mb-1">Expected</div>
-                                    <div className="p-2 bg-green-500/5 text-green-500 rounded break-all">{result.expected}</div>
-                                 </div>
+                                 {problem.type !== "SYSTEM_DESIGN" && (
+                                    <div>
+                                       <div className="text-[var(--foreground)]/40 mb-1">Expected</div>
+                                       <div className="p-2 bg-green-500/5 text-green-500 rounded break-all">{result.expected}</div>
+                                    </div>
+                                 )}
                               </div>
                            )}
                         </div>

@@ -63,11 +63,14 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
         examplesInput: (parsedTestSets.examples || []).map((t: any) => ({ input: t.input, output: t.expectedOutput })),
         testCasesInput: (parsedTestSets.hidden || []).map((t: any) => ({ input: t.input, output: t.expectedOutput })),
         referenceSolution: p.referenceSolution || "",
-        language: "javascript", // Default or detect from solution? we don't store language of ref solution separately but can infer or default.
+        initialSchema: p.initialSchema || "",
+        initialData: p.initialData || "",
+        language: "javascript", 
         timeLimit: p.timeLimit,
         memoryLimit: p.memoryLimit,
         isPublic: p.isPublic,
-        editorial: p.editorial || ""
+        editorial: p.editorial || "",
+        problemType: p.type || "CODING"
       });
     } catch (error) {
       console.error(error);

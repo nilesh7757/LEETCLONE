@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { executeCode, TestInputOutput } from "@/lib/codeExecution"; // Import TestInputOutput
+import { ProblemType } from "@prisma/client";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -28,7 +29,9 @@ export async function POST(req: Request) {
       isPublic, // New field
       contestId, // Optional contest ID
       editorial, // Added editorial
-      // starterCode, // Removed
+      problemType, // New: Problem Type
+      initialSchema, // New: SQL Schema
+      initialData, // New: SQL Data
     } = await req.json();
 
     if (
@@ -38,11 +41,10 @@ export async function POST(req: Request) {
       !category ||
       !description ||
       !referenceSolution ||
-      !language ||
-      !examplesInput ||
-      !testCasesInput ||
-      timeLimit === undefined || // Updated validation
-      memoryLimit === undefined // Updated validation
+      !problemType || // Validate problemType
+      (problemType === "CODING" && (!language || !examplesInput || !testCasesInput)) ||
+      timeLimit === undefined || 
+      memoryLimit === undefined
     ) {
       return NextResponse.json({ error: "Missing required problem fields" }, { status: 400 });
     }
@@ -76,21 +78,24 @@ export async function POST(req: Request) {
     }
 
     // 1. Examples are now sent with both input and expectedOutput from the frontend
-    const processedExamples: TestInputOutput[] = examplesInput.map((ex: any) => ({ input: ex.input, expectedOutput: ex.output }));
+    const processedExamples: TestInputOutput[] = examplesInput ? examplesInput.map((ex: any) => ({ input: ex.input, expectedOutput: ex.output })) : [];
 
-    // 2. Generate outputs for hidden test cases using the reference solution
+    // 2. Generate outputs for hidden test cases (Only for CODING)
     const processedTestCases: TestInputOutput[] = [];
-    if (testCasesInput && testCasesInput.length > 0) {
+    
+    if (problemType === "CODING" && testCasesInput && testCasesInput.length > 0) {
       let testCaseResults;
       try {
-        testCaseResults = await executeCode(
+        testCaseResults = await executeCode({
+          problemId: "temp-create", // Dummy ID
+          type: "CODING",
           language,
-          referenceSolution,
-          testCasesInput.map((tc: { input: string }) => ({ input: tc.input, expectedOutput: "" })), // Dummy expectedOutput still needed for type
-          timeLimit, // Pass timeLimit
-          memoryLimit, // Pass memoryLimit
-          true // isOutputGeneration: true
-        );
+          code: referenceSolution,
+          testCases: testCasesInput.map((tc: { input: string }) => ({ input: tc.input, expectedOutput: "" })),
+          timeLimit,
+          memoryLimit,
+          isOutputGeneration: true
+        });
       } catch (execError: any) {
         console.error("Execution failed completely:", execError);
         return NextResponse.json({ error: `Execution service failed: ${execError.message}` }, { status: 500 });
@@ -117,14 +122,17 @@ export async function POST(req: Request) {
         description,
         timeLimit,
         memoryLimit,
-        isPublic: isPublic !== undefined ? isPublic : false, // Default to false if not provided
+        isPublic: isPublic !== undefined ? isPublic : false,
         testSets: JSON.stringify({
           examples: processedExamples,
-          hidden: processedTestCases,
+          hidden: processedTestCases, 
         }),
         referenceSolution,
-        editorial, // Save editorial
-        creatorId: session.user.id, // Link to creator
+        editorial,
+        initialSchema,
+        initialData,
+        type: problemType as ProblemType, // Save problem type
+        creatorId: session.user.id,
         contests: contestId ? {
           connect: { id: contestId }
         } : undefined,

@@ -11,11 +11,13 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       role?: string | null; // Add role property
+      streak?: number; // Add streak property
     } & DefaultSession["user"];
   }
 
   interface JWT {
     role?: string | null; // Add role to JWT
+    streak?: number; // Add streak to JWT
   }
 }
 
@@ -40,6 +42,9 @@ export const authConfig = {
       if (token?.role) { // Add role to session
         session.user.role = token.role as string;
       }
+      if (token?.streak !== undefined) {
+        session.user.streak = token.streak as number;
+      }
       return session;
     },
     async jwt({ token, user, trigger, session }) {
@@ -47,24 +52,29 @@ export const authConfig = {
         // On sign-in, fetch user from DB to get the role and update token
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true, name: true, image: true },
+          select: { role: true, name: true, image: true, streak: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
           token.name = dbUser.name;
           token.picture = dbUser.image;
+          token.streak = dbUser.streak;
         } else {
             // Fallback if dbUser not found, though user object should have it
             token.role = (user as any).role || "USER"; // Default to USER
+            token.streak = (user as any).streak || 0;
         }
         token.sub = user.id; // ensure sub is always user.id
       }
       if (trigger === "update" && session) {
-        token.name = session.name;
-        token.picture = session.image;
+        if (session.name) token.name = session.name;
+        if (session.image) token.picture = session.image;
         // If role could be updated from profile, handle it here as well
         if ((session as any).role) { // Cast to any to access role
             token.role = (session as any).role;
+        }
+        if ((session as any).streak !== undefined) {
+            token.streak = (session as any).streak;
         }
       }
       return token;

@@ -13,6 +13,7 @@ interface TestCaseEditorProps {
   name: string;
   label: string;
   showOutputs?: boolean;
+  hideInput?: boolean;
   control: Control<any>;
   register: UseFormRegister<any>;
 }
@@ -43,10 +44,6 @@ const BulkImportModal = ({
       if (activeTab === "text") {
         cases = parseContent(textContent);
       } else {
-        // File import is handled in handleFileChange, but if user clicked import after selecting file...
-        // We'll rely on the text content being populated by the file reader for simplicity
-        // or re-read if needed. But easier: file reader puts content into 'textContent' or we handle it immediately.
-        // Let's make the file input handler set the textContent.
         cases = parseContent(textContent);
       }
 
@@ -129,20 +126,18 @@ const BulkImportModal = ({
         <div className="p-4 flex-1 overflow-y-auto">
           <div className="flex space-x-4 mb-4">
             <button
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
-                activeTab === "text"
-                  ? "bg-[var(--accent-gradient-to)] text-white"
-                  : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${activeTab === "text"
+                ? "bg-[var(--accent-gradient-to)] text-white"
+                : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
               }`}
               onClick={() => setActiveTab("text")}
             >
               Paste Text / JSON
             </button>
             <button
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
-                activeTab === "file"
-                  ? "bg-[var(--accent-gradient-to)] text-white"
-                  : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${activeTab === "file"
+                ? "bg-[var(--accent-gradient-to)] text-white"
+                : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
               }`}
               onClick={() => setActiveTab("file")}
             >
@@ -157,7 +152,7 @@ const BulkImportModal = ({
                 <span className="block text-xs text-[var(--foreground)]/50 mt-1">
                   Supported formats:
                   <ul className="list-disc pl-4 mt-1 space-y-1">
-                    <li>JSON Array: <code>[{`{ "input": "...", "output": "..." }`}, ...]</code></li>
+                    <li>JSON Array: <code>{`[{ "input": "...", "output": "..." }, ...]`}</code></li>
                     {showOutputs ? (
                       <li>Newline Separated: Line 1 = Input, Line 2 = Output, etc.</li>
                     ) : (
@@ -172,7 +167,7 @@ const BulkImportModal = ({
                 className="w-full h-64 p-3 font-mono text-sm rounded-lg border border-[var(--card-border)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-none"
                 placeholder={
                   showOutputs
-                    ? 'Example (Text):\n[1, 2]\n3\n[4, 5]\n9\n\nExample (JSON):\n[{"input": "2", "output": "4"}]'
+                    ? 'Example (Text):\n[1, 2]\n3\n\nExample (JSON):\n[{"input": "2", "output": "4"}]'
                     : 'Example:\ninput1\ninput2\ninput3'
                 }
               />
@@ -220,7 +215,14 @@ const BulkImportModal = ({
   );
 };
 
-const TestCaseEditor = ({ name, label, showOutputs = true, control, register }: TestCaseEditorProps) => {
+const TestCaseEditor = ({
+  name,
+  label,
+  showOutputs = true,
+  hideInput = false,
+  control,
+  register,
+}: TestCaseEditorProps) => {
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const { fields, append, remove } = useFieldArray({
     control,
@@ -283,19 +285,21 @@ const TestCaseEditor = ({ name, label, showOutputs = true, control, register }: 
             >
               <Trash2 className="h-4 w-4" />
             </button>
-            <div className={`grid grid-cols-1 ${showOutputs ? "md:grid-cols-2" : ""} gap-4 mt-2`}>
-              <div>
-                <label htmlFor={`${name}.${index}.input`} className="block text-xs font-medium text-[var(--foreground)]/60 mb-1">
-                  Input {index + 1}
-                </label>
-                <textarea
-                  id={`${name}.${index}.input`}
-                  {...register(`${name}.${index}.input`, { required: true })}
-                  rows={3}
-                  className="w-full p-2 font-mono text-sm rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-y"
-                  placeholder="e.g., nums = [2,7,11,15], target = 9"
-                />
-              </div>
+            <div className={`grid grid-cols-1 ${showOutputs && !hideInput ? "md:grid-cols-2" : ""} gap-4 mt-2`}>
+              {!hideInput && (
+                <div>
+                  <label htmlFor={`${name}.${index}.input`} className="block text-xs font-medium text-[var(--foreground)]/60 mb-1">
+                    Input {index + 1}
+                  </label>
+                  <textarea
+                    id={`${name}.${index}.input`}
+                    {...register(`${name}.${index}.input`, { required: true })}
+                    rows={3}
+                    className="w-full p-2 font-mono text-sm rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-y"
+                    placeholder="e.g., nums = [2,7,11,15], target = 9"
+                  />
+                </div>
+              )}
               {showOutputs && (
                 <div>
                   <label htmlFor={`${name}.${index}.output`} className="block text-xs font-medium text-[var(--foreground)]/60 mb-1">

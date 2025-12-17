@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { executeCode, TestInputOutput } from "@/lib/codeExecution"; // Import TestInputOutput
-import { analyzeCodeComplexity } from "@/lib/gemini";
+import { analyzeCodeComplexity, evaluateSystemDesign } from "@/lib/gemini";
 import { io as ClientIO } from "socket.io-client"; // Import as ClientIO to avoid conflict
 
 // Initialize Socket.io client (connect to your socket.io server)
@@ -71,12 +71,30 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { code, language, problemId } = await req.json();
+    const { code, language, problemId, type } = await req.json();
+    console.log("[DEBUG] Start Submission for:", problemId, type);
 
     // 1. Fetch the problem to get test cases, timeLimit, and memoryLimit
     const problem = await prisma.problem.findUnique({
       where: { id: problemId },
-      include: {
+      select: { // Explicitly select all fields, including new ones
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        category: true,
+        description: true,
+        timeLimit: true,
+        memoryLimit: true,
+        testSets: true,
+        referenceSolution: true,
+        initialSchema: true, // New: SQL Schema
+        initialData: true, // New: SQL Data
+        createdAt: true,
+        updatedAt: true,
+        isPublic: true,
+        creatorId: true,
+        type: true, // New: ProblemType
         contests: {
           select: {
             startTime: true,
@@ -85,105 +103,166 @@ export async function POST(req: Request) {
         },
       },
     });
+    console.log("[DEBUG] Problem Fetched");
 
     if (!problem) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
-    // Access Control Check
-    const now = new Date();
-    const isVisible =
-      problem.isPublic ||
-      (session.user?.id && problem.creatorId === session.user.id) ||
-      problem.contests.some((contest) => {
-        const hasStarted = new Date(contest.startTime) <= now;
-        const isContestCreator = session.user?.id ? contest.creatorId === session.user.id : false;
-        return hasStarted || isContestCreator;
-      });
-
-    if (!isVisible) {
-      return NextResponse.json({ error: "Problem is not currently accessible" }, { status: 403 });
-    }
-
-    let allTestSets: { examples: { input: string, output?: string, expectedOutput?: string }[], hidden: { input: string, output?: string, expectedOutput?: string }[] } = { examples: [], hidden: [] };
-    const rawTestSets = problem.testSets;
-
-    if (rawTestSets) {
-      try {
-        const parsed = typeof rawTestSets === 'string' ? JSON.parse(rawTestSets) : rawTestSets;
-        
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          allTestSets = {
-            examples: Array.isArray(parsed.examples) ? parsed.examples : [],
-            hidden: Array.isArray(parsed.hidden) ? parsed.hidden : [],
-          };
-        } else {
-          console.error("Parsed problem.testSets is not an object or is null in /api/submission:", parsed, rawTestSets);
-        }
-      } catch (e) {
-        console.error("Error parsing problem.testSets in /api/submission:", e, rawTestSets);
-      }
+    let combinedTestCases: TestInputOutput[] = [];
+    if (Array.isArray(problem.testSets)) {
+      combinedTestCases = problem.testSets as TestInputOutput[];
     } else {
-      console.log("problem.testSets is null or undefined in /api/submission.", rawTestSets);
+      console.error("api/submission/route.ts: problem.testSets was not an array or expected format:", problem.testSets);
+      combinedTestCases = [];
     }
-    
-    // Combine all test cases (examples and hidden) for submission evaluation
-    const combinedTestCases: TestInputOutput[] = (allTestSets.examples || []).map(tc => ({
-      input: tc.input,
-      expectedOutput: tc.expectedOutput || tc.output || "",
-    })).concat((allTestSets.hidden || []).map(tc => ({
-      input: tc.input,
-      expectedOutput: tc.expectedOutput || tc.output || "",
-    })));
+
+    // Access Control Check
 
     // 2. Execute Code
+    console.log("[DEBUG] Executing Code...");
     let results;
     try {
-      results = await executeCode(language, code, combinedTestCases, problem.timeLimit, problem.memoryLimit);
+      if (problem.type === "CODING") {
+        if (!language) {
+          return NextResponse.json({ error: "Language is required for CODING problem submission" }, { status: 400 });
+        }
+        results = await executeCode({
+          problemId: problem.id,
+          type: problem.type,
+          language,
+          code,
+          testCases: combinedTestCases,
+          timeLimit: problem.timeLimit,
+          memoryLimit: problem.memoryLimit,
+        });
+      } else if (problem.type === "SQL") {
+         results = await executeCode({
+            problemId: problem.id,
+            type: problem.type,
+            code,
+            initialSchema: problem.initialSchema || undefined,
+            initialData: problem.initialData || undefined,
+            testCases: combinedTestCases,
+            // SQL typically doesn't need strict time/memory limits from user, but we can pass them if desired
+         });
+      } else if (problem.type === "SYSTEM_DESIGN") {
+         // Evaluate using AI
+         console.log("[DEBUG] Evaluating System Design...");
+         const { feedback, score } = await evaluateSystemDesign(
+            `Title: ${problem.title}\nDescription: ${problem.description}`,
+            code // The user's text answer
+         );
+         // ...
+      } else {
+        return NextResponse.json({ error: `Unsupported problem type for submission: ${problem.type}` }, { status: 400 });
+      }
     } catch (error: any) {
+       console.error("[DEBUG] Execution Failed:", error);
        return NextResponse.json({ error: error.message || "Execution failed" }, { status: 400 });
     }
+    console.log("[DEBUG] Results Generated");
 
-    // Determine overall status and find the first failing test case
-    const firstFailingResult = results.find(r => r.status !== "Accepted");
-    const overallStatus: typeof results[0]['status'] = firstFailingResult ? firstFailingResult.status : "Accepted";
-    
-    // Calculate max runtime and max memory across all test cases (Standard for competitive programming)
-    // Previously it was sum, which inflated the runtime for many test cases.
-    const maxRuntime = results.reduce((max, r) => Math.max(max, (r.runtime || 0)), 0);
-    const maxMemory = results.reduce((max, r) => Math.max(max, (r.memory || 0)), 0);
+    // Determine overall status
+    let overallStatus = "Accepted";
+    let maxRuntime = 0;
+    let firstFailingResult = null;
+    let geminiTimeComplexity = "N/A";
+    let geminiSpaceComplexity = "N/A";
 
-    let geminiTimeComplexity: string = "N/A";
-    let geminiSpaceComplexity: string = "N/A";
+    if (problem.type === "CODING" || problem.type === "SQL") {
+      if (Array.isArray(results)) {
+        for (const res of results) {
+          if (res.runtime && res.runtime > maxRuntime) maxRuntime = res.runtime;
+          if (res.status !== "Accepted" && overallStatus === "Accepted") {
+            overallStatus = res.status;
+            firstFailingResult = res;
+          }
+        }
+      }
 
-    // Analyze complexity even if TLE/MLE, so users can see why their code failed.
-    try {
-      const { timeComplexity, spaceComplexity } = await analyzeCodeComplexity(code, language);
-      geminiTimeComplexity = timeComplexity;
-      geminiSpaceComplexity = spaceComplexity;
-    } catch (geminiError) {
-      console.error("Error analyzing complexity with Gemini:", geminiError);
-      // Continue without complexity if Gemini fails
+      // Analyze Complexity (Optional, non-blocking if fails)
+      try {
+        if (problem.type === "CODING" && overallStatus === "Accepted") {
+             const complexity = await analyzeCodeComplexity(code, language);
+             geminiTimeComplexity = complexity.timeComplexity;
+             geminiSpaceComplexity = complexity.spaceComplexity;
+        }
+      } catch (e) {
+        console.error("Complexity analysis failed:", e);
+      }
     }
 
     // 3. Save Submission to DB
+    console.log("[DEBUG] Saving Submission...");
     const submission = await prisma.submission.create({
       data: {
         code,
-        language,
+        language: problem.type === "SQL" ? "sql" : (problem.type === "SYSTEM_DESIGN" ? "markdown" : language), 
         status: overallStatus,
-        runtime: maxRuntime, // Store the max runtime of a single test case
-        timeComplexity: geminiTimeComplexity, // Always store the analyzed complexity (e.g., O(N^2))
+        runtime: maxRuntime, 
+        timeComplexity: geminiTimeComplexity,
         spaceComplexity: geminiSpaceComplexity,
         problemId,
         userId: session.user.id,
-        testCaseResults: results as any, // Save the detailed results
+        testCaseResults: results as any,
       },
     });
+    console.log("[DEBUG] Submission Saved:", submission.id);
 
-    // --- CONTEST SCORING LOGIC ---
+    let updatedStreak = 0;
+
+    // --- STREAK & CONTEST SCORING LOGIC ---
     if (overallStatus === "Accepted") {
+      console.log("[DEBUG] Updating Streak...");
       const now = new Date();
+      
+      // Update Streak
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { streak: true, lastSolvedDate: true }
+      });
+
+      if (user) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+        if (lastSolved) lastSolved.setHours(0, 0, 0, 0);
+
+        let newStreak = user.streak;
+
+        if (!lastSolved) {
+           // First ever solve
+           newStreak = 1;
+        } else if (lastSolved.getTime() === today.getTime()) {
+           // Already solved today, keep streak
+        } else {
+           const yesterday = new Date(today);
+           yesterday.setDate(yesterday.getDate() - 1);
+           
+           if (lastSolved.getTime() === yesterday.getTime()) {
+              // Solved yesterday, increment streak
+              newStreak++;
+           } else {
+              // Missed a day, reset streak
+              newStreak = 1;
+           }
+        }
+
+        updatedStreak = newStreak;
+
+        if (newStreak !== user.streak || !lastSolved || lastSolved.getTime() !== today.getTime()) {
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: {
+                    streak: newStreak,
+                    lastSolvedDate: new Date()
+                }
+            });
+        }
+      }
+
       // Find active contests for this problem
       const activeContests = await prisma.contest.findMany({
         where: {
@@ -288,6 +367,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       submission,
+      newStreak: updatedStreak,
       failedTestCase: firstFailingResult ? {
         input: firstFailingResult.input,
         output: firstFailingResult.actual,

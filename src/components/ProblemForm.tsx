@@ -10,7 +10,7 @@ import Split from "react-split";
 import Editor from "@monaco-editor/react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2 } from "lucide-react";
+import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, AlertCircle, RotateCcw, Settings, Play } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
 
@@ -32,10 +32,13 @@ export interface ProblemFormData {
   examplesInput: TestCase[];
   testCasesInput: TestCase[];
   referenceSolution: string;
+  initialSchema: string; // Added initialSchema
+  initialData: string; // Added initialData
   language: string;
   timeLimit: number;
   memoryLimit: number;
   isPublic: boolean;
+  problemType: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL"; // Added SQL
 }
 
 interface ProblemFormProps {
@@ -54,8 +57,9 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingEditorial, setIsGeneratingEditorial] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
-  const [activeTab, setActiveTab] = useState<"details" | "editorial">("details"); // Tab state
+  const [activeTab, setActiveTab] = useState<"details" | "editorial" | "sql_setup">("details"); // Added sql_setup tab
   const editorConsoleSplitRef = useRef<any>(null);
+  const [syntaxError, setSyntaxError] = useState<string | null>(null); // Declare syntaxError
 
   // Language Dropdown State
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -114,10 +118,13 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       examplesInput: [],
       testCasesInput: [],
       referenceSolution: getStarterCode("javascript"),
+      initialSchema: "CREATE TABLE Users (id INTEGER PRIMARY KEY, name TEXT);",
+      initialData: "INSERT INTO Users (id, name) VALUES (1, 'Alice');",
       language: "javascript",
       timeLimit: 2,
       memoryLimit: 256,
       isPublic: false,
+      problemType: "CODING", // Default problem type
     },
   });
 
@@ -126,6 +133,9 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
   const referenceSolution = watch("referenceSolution");
   const selectedCategory = watch("category");
   const problemSlug = watch("slug"); // Watch slug for API call
+  const problemType = watch("problemType"); // Watch problemType
+  const initialSchema = watch("initialSchema");
+  const initialDataVal = watch("initialData");
 
   useEffect(() => {
     if (!isEditing && problemTitle) {
@@ -248,6 +258,15 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
             >
               <BookOpen className="w-3.5 h-3.5" /> Editorial
             </button>
+            {problemType === "SQL" && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('sql_setup')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'sql_setup' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+              >
+                <HardDrive className="w-3.5 h-3.5" /> SQL Setup
+              </button>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
@@ -290,6 +309,29 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                     />
                     {errors.slug && (
                       <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Problem Type */}
+                <div>
+                  <label htmlFor="problemType" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
+                    Problem Type
+                  </label>
+                  <div className="relative">
+                    <LayoutTemplate className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <select
+                      id="problemType"
+                      {...register("problemType", { required: "Problem type is required" })}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
+                    >
+                      <option value="CODING">Coding</option>
+                      <option value="SQL">SQL</option>
+                      <option value="SYSTEM_DESIGN">System Design</option>
+                      {/* Add other types as they are implemented */}
+                    </select>
+                    {errors.problemType && (
+                      <p className="text-red-500 text-xs mt-1">{errors.problemType.message}</p>
                     )}
                   </div>
                 </div>
@@ -438,6 +480,34 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                   )}
                 </div>
               </form>
+            ) : activeTab === 'sql_setup' ? (
+              // SQL Setup Tab
+              <div className="space-y-6 h-full flex flex-col">
+                 <div className="flex flex-col h-1/2">
+                   <h3 className="text-sm font-medium text-[var(--foreground)]/70 mb-2">Initial Schema (CREATE TABLE)</h3>
+                   <div className="flex-1 rounded-lg overflow-hidden border border-[var(--card-border)]">
+                      <Editor
+                        language="sql"
+                        theme={mounted && resolvedTheme === "dark" ? "vs-dark" : "light"}
+                        value={initialSchema}
+                        onChange={(val) => setValue("initialSchema", val || "")}
+                        options={{ minimap: { enabled: false }, fontSize: 13 }}
+                      />
+                   </div>
+                 </div>
+                 <div className="flex flex-col h-1/2">
+                   <h3 className="text-sm font-medium text-[var(--foreground)]/70 mb-2">Initial Data (INSERT INTO)</h3>
+                   <div className="flex-1 rounded-lg overflow-hidden border border-[var(--card-border)]">
+                      <Editor
+                        language="sql"
+                        theme={mounted && resolvedTheme === "dark" ? "vs-dark" : "light"}
+                        value={initialDataVal}
+                        onChange={(val) => setValue("initialData", val || "")}
+                        options={{ minimap: { enabled: false }, fontSize: 13 }}
+                      />
+                   </div>
+                 </div>
+              </div>
             ) : (
               // Editorial Tab
               <div className="space-y-6">
@@ -481,115 +551,220 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
           gutterAlign="center"
           snapOffset={30}
           dragInterval={1}
-          className="flex flex-col bg-[#1e1e1e] h-full"
+          className="flex flex-col bg-[var(--background)] h-full"
         >
-          {/* Top section of right panel: Language Selector and Reference Solution Editor */}
-          <div className="flex flex-col h-full min-h-0">
-            <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
-              <div className="relative" ref={langDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-colors px-2 py-1.5 rounded-md hover:bg-[var(--foreground)]/5 cursor-pointer"
-                >
-                  <Code2 className="w-4 h-4 text-green-500" />
-                  {languages.find(l => l.value === language)?.label}
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                <AnimatePresence>
-                  {isLangOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                      transition={{ duration: 0.1 }}
-                      className="absolute top-full left-0 mt-1 w-48 bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-xl overflow-hidden py-1 z-50"
+          {problemType === "CODING" || problemType === "SQL" ? (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
+                {problemType === "CODING" && (
+                  <div className="relative" ref={langDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsLangOpen(!isLangOpen)}
+                      className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-colors px-2 py-1.5 rounded-md hover:bg-[var(--foreground)]/5 cursor-pointer"
                     >
-                      {languages.map((lang) => (
-                        <button
-                          type="button"
-                          key={lang.value}
-                          onClick={() => {
-                            setValue("language", lang.value);
-                            setValue("referenceSolution", getStarterCode(lang.value));
-                            setIsLangOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
-                            }`}
+                      <Code2 className="w-4 h-4 text-green-500" />
+                      {languages.find(l => l.value === language)?.label}
+                      <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isLangOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                          transition={{ duration: 0.1 }}
+                          className="absolute top-full left-0 mt-1 w-48 bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-xl overflow-hidden py-1 z-50"
                         >
-                          {lang.label}
-                          {language === lang.value && <CheckCircle className="w-3 h-3" />}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                          {languages.map((lang) => (
+                            <button
+                              type="button"
+                              key={lang.value}
+                              onClick={() => {
+                                setValue("language", lang.value);
+                                setValue("referenceSolution", getStarterCode(lang.value));
+                                setIsLangOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
+                                }`}
+                            >
+                              {lang.label}
+                              {language === lang.value && <CheckCircle className="w-3 h-3" />}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+                {problemType === "SQL" && (
+                   <div className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] px-2 py-1.5">
+                      <HardDrive className="w-4 h-4 text-blue-500" /> SQL Query
+                   </div>
+                )}
+                <div className="flex items-center gap-3">
+
+                  <button
+                    className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                    title="Reset Code"
+                    onClick={() => setValue("referenceSolution", getStarterCode(problemType === "SQL" ? "sql" : language) || "")} // Use setValue
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                    title="Settings"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 relative min-h-0">
+                <Editor
+                  height="100%"
+                  language={problemType === "SQL" ? "sql" : language}
+                  theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
+                  beforeMount={handleEditorWillMount}
+                  value={referenceSolution}
+                  onChange={(value) => setValue("referenceSolution", value || "")}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    padding: { top: 16, bottom: 16 },
+                    renderValidationDecorations: "on",
+                  }}
+                />
               </div>
             </div>
-
-            <div className="flex-1 relative min-h-0">
-              <Editor
-                height="100%"
-                language={language}
-                theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
-                beforeMount={handleEditorWillMount}
-                value={referenceSolution}
-                onChange={(value) => setValue("referenceSolution", value || "")}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  padding: { top: 16, bottom: 16 },
-                  renderValidationDecorations: "on",
-                }}
-              />
+          ) : (
+            <div className="flex flex-col h-full min-h-0 justify-center items-center text-[var(--foreground)]/60 text-lg">
+              <p>Editor not available for this problem type.</p>
+              <p>Please select a different problem type.</p>
             </div>
-          </div>
+          )}
 
           {/* Bottom section of right panel: Test Case Editors */}
           <div className="flex flex-col h-full bg-[var(--background)] min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-            {/* Examples Inputs */}
-            <Controller
-              name="examplesInput"
-              control={control}
-              rules={{
-                validate: (value) => value.length > 0 || "At least one example test case is required",
-              }}
-              render={({ field }) => (
-                <TestCaseEditor
-                  name={field.name}
-                  label="Example Test Cases"
-                  showOutputs={true}
-                  control={control} // Pass control
-                  register={register} // Pass register
+            {problemType === "SQL" ? (
+               <div className="text-sm text-[var(--foreground)]/60">
+                  <div className="flex justify-between items-center mb-2">
+                     <p>For SQL problems, provide the expected output table below.</p>
+                     <button
+                        type="button"
+                        onClick={async () => {
+                           const loadingToast = toast.loading("Running SQL...");
+                           try {
+                              const res = await axios.post("/api/run", {
+                                 type: "SQL",
+                                 code: getValues("referenceSolution"),
+                                 initialSchema: getValues("initialSchema"),
+                                 initialData: getValues("initialData"),
+                                 testCases: []
+                              });
+                              
+                              if (res.data.results && res.data.results.length > 0) {
+                                 const output = res.data.results[0].actual;
+                                 if (res.data.results[0].status !== "Accepted") {
+                                    toast.error("Execution Error: " + (res.data.results[0].error || "Unknown"));
+                                 } else {
+                                    setValue("examplesInput", [{ input: "", output: output }]);
+                                    toast.success("Output generated!");
+                                 }
+                              }
+                           } catch (e: any) {
+                              toast.error("Failed to run SQL: " + e.message);
+                           } finally {
+                              toast.dismiss(loadingToast);
+                           }
+                        }}
+                        className="text-xs px-2 py-1 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500/20 transition-colors flex items-center gap-1"
+                     >
+                        <Play className="w-3 h-3" /> Run & Generate Output
+                     </button>
+                  </div>
+                  <Controller
+                    name="examplesInput"
+                    control={control}
+                    rules={{
+                       validate: (value) => {
+                          if (value.length === 0) return "At least one expected result is required for SQL problems.";
+                          if (value.some(tc => !tc.output?.trim())) return "Expected Output cannot be blank.";
+                          return true;
+                       }
+                    }}
+                    render={({ field }) => (
+                      <TestCaseEditor
+                        name={field.name}
+                        label="Expected Result (One Case Recommended)"
+                        showOutputs={true}
+                        control={control}
+                        register={register}
+                        hideInput={true} // Hide Input field for SQL
+                      />
+                    )}
+                  />
+                  {errors.examplesInput && (
+                    <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
+                  )}
+               </div>
+            ) : (
+              <>
+                <Controller
+                  name="examplesInput"
+                  control={control}
+                  rules={{
+                    validate: (value) => {
+                       if (value.length === 0) return "At least one example test case is required";
+                       if (value.some(tc => !tc.input.trim() || !tc.output.trim())) return "Input and Output cannot be blank for example test cases.";
+                       return true;
+                    },
+                  }}
+                  render={({ field }) => (
+                    <TestCaseEditor
+                      name={field.name}
+                      label="Example Test Cases"
+                      showOutputs={true}
+                      control={control} // Pass control
+                      register={register} // Pass register
+                    />
+                  )}
                 />
-              )}
-            />
-            {errors.examplesInput && (
-              <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
-            )}
+                {errors.examplesInput && (
+                  <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
+                )}
 
-            {/* Hidden Test Cases Inputs */}
-            <Controller
-              name="testCasesInput"
-              control={control}
-              rules={{
-                validate: (value) => value.length > 0 || "At least one hidden test case is required",
-              }}
-              render={({ field }) => (
-                <TestCaseEditor
-                  name={field.name}
-                  label="Hidden Test Cases (Inputs Only)"
-                  showOutputs={false}
-                  control={control} // Pass control
-                  register={register} // Pass register
-                />
-              )}
-            />
-            {errors.testCasesInput && (
-              <p className="text-red-500 text-xs mt-1">{errors.testCasesInput.message}</p>
+                            {(
+                              <Controller
+                                name="testCasesInput"
+                                control={control}
+                                rules={{
+                                  validate: (value) => value.length > 0 || "At least one hidden test case is required",
+                                }}
+                                render={({ field }) => (
+                                  <TestCaseEditor
+                                    name={field.name}
+                                    label="Hidden Test Cases (Inputs Only)"
+                                    showOutputs={false}
+                                    control={control} // Pass control
+                                    register={register} // Pass register
+                                  />
+                                )}
+                              />
+                            )}
+                            {errors.testCasesInput && (
+                              <p className="text-red-500 text-xs mt-1">{errors.testCasesInput.message}</p>
+                            )}              </>
+            )}
+            
+            {syntaxError && (
+              <div className="flex items-center gap-1.5 text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded animate-pulse">
+                <AlertCircle className="w-3 h-3" />
+                <span className="truncate max-w-[150px]">{syntaxError}</span>
+              </div>
             )}
           </div>
         </Split>
