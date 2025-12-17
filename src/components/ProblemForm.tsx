@@ -649,7 +649,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
           {/* Bottom section of right panel: Test Case Editors */}
           <div className="flex flex-col h-full bg-[var(--background)] min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-            {problemType === "SYSTEM_DESIGN" ? (
+            {(problemType as any) === "SYSTEM_DESIGN" ? (
                <div className="flex flex-col items-center justify-center h-full text-[var(--foreground)]/40 text-center p-8">
                   <LayoutTemplate className="w-12 h-12 mb-4 opacity-20" />
                   <p className="font-medium">System Design Mode</p>
@@ -724,7 +724,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                   control={control}
                                   rules={{
                                     validate: (value) => {
-                                       if (problemType === "SYSTEM_DESIGN") return true;
+                                       if ((problemType as any) === "SYSTEM_DESIGN") return true;
                                        if (value.length === 0) return "At least one example test case is required";
                                        if (value.some(tc => !tc.input.trim() || !tc.output.trim())) return "Input and Output cannot be blank for example test cases.";
                                        return true;
@@ -750,7 +750,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                                 control={control}
                                                 rules={{
                                                   validate: (value) => {
-                                                    if (problemType === "SYSTEM_DESIGN") return true;
+                                                    if ((problemType as any) === "SYSTEM_DESIGN") return true;
                                                     return value.length > 0 || "At least one hidden test case is required";
                                                   }
                                                 }}
