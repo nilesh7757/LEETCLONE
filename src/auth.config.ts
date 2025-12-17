@@ -49,9 +49,13 @@ export const authConfig = {
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        // On sign-in, fetch user from DB to get the role and update token
+        token.sub = user.id;
+      }
+
+      // Fetch latest user data from DB if we don't have it in the token or if it's a new session
+      if (!token.streak || !token.role) {
         const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
+          where: { id: token.sub as string },
           select: { role: true, name: true, image: true, streak: true },
         });
         if (dbUser) {
@@ -59,13 +63,9 @@ export const authConfig = {
           token.name = dbUser.name;
           token.picture = dbUser.image;
           token.streak = dbUser.streak;
-        } else {
-            // Fallback if dbUser not found, though user object should have it
-            token.role = (user as any).role || "USER"; // Default to USER
-            token.streak = (user as any).streak || 0;
         }
-        token.sub = user.id; // ensure sub is always user.id
       }
+
       if (trigger === "update" && session) {
         if (session.name) token.name = session.name;
         if (session.image) token.picture = session.image;

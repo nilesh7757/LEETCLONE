@@ -14,6 +14,7 @@ import axios from "axios";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [dailySlug, setDailySlug] = useState<string>("");
+  const [streak, setStreak] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
 
@@ -27,6 +28,28 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Fetch Streak from DB
+  useEffect(() => {
+    const fetchStreak = async () => {
+      if (status === "authenticated") {
+        try {
+          const { data } = await axios.get("/api/profile/streak");
+          setStreak(data.streak);
+        } catch (error) {
+          console.error("Failed to fetch streak", error);
+        }
+      }
+    };
+    fetchStreak();
+  }, [status]);
+
+  // Update streak if session changes
+  useEffect(() => {
+    if (session?.user?.streak !== undefined) {
+      setStreak(session.user.streak);
+    }
+  }, [session?.user?.streak]);
 
   // Fetch Daily Problem Slug
   useEffect(() => {
@@ -87,7 +110,7 @@ export default function Navbar() {
                 title="Daily Streak - Click to solve Daily Problem"
               >
                 <Flame className="w-5 h-5 fill-orange-500" />
-                <span>{session.user.streak || 0}</span>
+                <span>{streak}</span>
               </Link>
             )}
             <NotificationBell />
