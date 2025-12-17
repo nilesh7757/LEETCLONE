@@ -55,10 +55,10 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ submissions });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Fetch submissions error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: String(error) },
+      { error: "Internal Server Error", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
 
     let combinedTestCases: TestInputOutput[] = [];
     if (Array.isArray(problem.testSets)) {
-      combinedTestCases = problem.testSets as TestInputOutput[];
+      combinedTestCases = problem.testSets as unknown as TestInputOutput[];
     } else {
       console.error("api/submission/route.ts: problem.testSets was not an array or expected format:", problem.testSets);
       combinedTestCases = [];
@@ -149,17 +149,24 @@ export async function POST(req: Request) {
       } else if (problem.type === "SYSTEM_DESIGN") {
          // Evaluate using AI
          console.log("[DEBUG] Evaluating System Design...");
-         const { feedback, score } = await evaluateSystemDesign(
+         const evalResult = await evaluateSystemDesign(
             `Title: ${problem.title}\nDescription: ${problem.description}`,
             code // The user's text answer
          );
+         
+         results = [{
+            input: "System Design Answer",
+            expected: "N/A",
+            actual: evalResult.feedback,
+            status: "Accepted"
+         }];
          // ...
       } else {
         return NextResponse.json({ error: `Unsupported problem type for submission: ${problem.type}` }, { status: 400 });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
        console.error("[DEBUG] Execution Failed:", error);
-       return NextResponse.json({ error: error.message || "Execution failed" }, { status: 400 });
+       return NextResponse.json({ error: error instanceof Error ? error.message : "Execution failed" }, { status: 400 });
     }
     console.log("[DEBUG] Results Generated");
 
@@ -205,7 +212,8 @@ export async function POST(req: Request) {
         spaceComplexity: geminiSpaceComplexity,
         problemId,
         userId: session.user.id,
-        testCaseResults: results as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        testCaseResults: results ? (results as any) : [],
       },
     });
     console.log("[DEBUG] Submission Saved:", submission.id);
@@ -373,14 +381,15 @@ export async function POST(req: Request) {
         output: firstFailingResult.actual,
         expected: firstFailingResult.expected
       } : null
-    });
-
-  } catch (error) {
-    console.error("Submission error:", error);
-    // Ensure socket connection errors are also logged
-    if (socket.disconnected) {
-        console.error("Socket.io client is disconnected.");
+        });
+    
+      } catch (error: unknown) {
+        console.error("Submission error:", error);
+        // Ensure socket connection errors are also logged
+        if (socket.disconnected) {
+            console.error("Socket.io client is disconnected.");
+        }
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+      }
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
-}
+    

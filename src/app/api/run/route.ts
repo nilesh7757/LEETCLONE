@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { executeCode, TestInputOutput } from "@/lib/codeExecution";
-import { ProblemType, JsonValue } from "@prisma/client";
+import { ProblemType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     // Filter for example test cases
     let allTestSets: TestInputOutput[] = [];
     if (Array.isArray(problem.testSets)) {
-      allTestSets = problem.testSets as TestInputOutput[];
+      allTestSets = problem.testSets as unknown as TestInputOutput[];
     } else {
       console.error("api/run/route.ts: problem.testSets was not an array or expected format:", problem.testSets);
       allTestSets = [];
@@ -52,8 +52,8 @@ export async function POST(req: Request) {
         testCases: exampleTestCases, // Pass only example test cases
         timeLimit: problem.timeLimit,
         memoryLimit: problem.memoryLimit,
-        initialSchema: problem.initialSchema,
-        initialData: problem.initialData,
+        initialSchema: problem.initialSchema ?? undefined,
+        initialData: problem.initialData ?? undefined,
       };
 
       if (problem.type === ProblemType.CODING) {
@@ -68,8 +68,8 @@ export async function POST(req: Request) {
       }
       
       return NextResponse.json({ results });
-    } catch (error: any) {
-      return NextResponse.json({ error: error.message || "Execution failed" }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Execution failed" }, { status: 400 });
     }
 
   } catch (error) {
