@@ -25,8 +25,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: credentials.email as string },
         });
 
-        if (!user || !user.password) {
-          throw new Error("No user found with the provided email or password.");
+        if (!user) {
+          throw new Error("No user found with the provided email.");
+        }
+
+        if (!user.password) {
+          // User likely signed up with Google
+          throw new Error("This account was created using Google. Please sign in with Google.");
         }
 
         if (!user.isVerified) {

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Loader2, Eye, EyeOff, Globe } from "lucide-react";
+import { toast } from "sonner";
 import LoginWall from "@/components/Login/Wall";
 
 export default function LoginPage() {
@@ -15,6 +16,18 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "OAuthAccountNotLinked") {
+      toast.error("An account with this email already exists. Please sign in using your email and password.", {
+        duration: 5000,
+      });
+    } else if (errorParam) {
+      toast.error("Authentication failed. Please try again.");
+    }
+  }, [searchParams]);
 
   const handleCredentialSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +44,13 @@ export default function LoginPage() {
       if (result.error.includes("Please verify your email first.")) {
         router.push(`/verify?email=${encodeURIComponent(email)}`);
         return; // Stop further processing and redirect
+      }
+      if (result.error.includes("This account was created using Google")) {
+        toast.error("This account was created using Google. Please sign in with Google.", {
+            duration: 5000,
+        });
+        setLoading(false);
+        return;
       }
       setError(result.error === "CredentialsSignin" ? "Invalid credentials" : result.error);
     } else {

@@ -44,21 +44,48 @@ model Problem {
 
   submissions Submission[]
   contests    Contest[]   // Implicit many-to-many
-  studyPlans  StudyPlan[] // Implicit many-to-many
+  studyPlans  StudyPlanProblem[]
   comments    Comment[]
   blogPosts   BlogPost[]
 }
 
 model StudyPlan {
-  id          String    @id @default(uuid())
-  title       String
-  slug        String    @unique
-  description String
-  coverImage  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  title         String
+  slug          String    @unique
+  description   String
+  coverImage    String?
+  durationDays  Int?      // e.g. 7 for a 7-day plan, 30 for monthly
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   
-  problems    Problem[]
+  problems      StudyPlanProblem[]
+  enrollments   StudyPlanEnrollment[]
+}
+
+model StudyPlanProblem {
+  id          String    @id @default(uuid())
+  studyPlanId String
+  studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  problemId   String
+  problem     Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  order       Int       @default(0) // Order within the plan (e.g., Day 1, Day 2)
+
+  @@unique([studyPlanId, problemId])
+}
+
+model StudyPlanEnrollment {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studyPlanId   String
+  studyPlan     StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  enrolledAt    DateTime  @default(now())
+  
+  reminderTime  String?   // HH:mm format, e.g., "09:00"
+  isActive      Boolean   @default(true)
+
+  @@unique([userId, studyPlanId])
 }
 
 model Comment {
@@ -172,6 +199,9 @@ model User {
   // Friend/Follow System (Codeforces style: unilateral)
   following       User[]        @relation("UserFollows")
   followedBy      User[]        @relation("UserFollows")
+
+  // Study Plans
+  studyPlanEnrollments StudyPlanEnrollment[]
 
   // Chat System
   conversations   ConversationParticipant[]

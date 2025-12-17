@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { CheckCircle, Circle, ChevronLeft, Lock } from "lucide-react";
+import { CheckCircle, Circle, ChevronLeft, Calendar } from "lucide-react";
 import { auth } from "@/auth";
+import EnrollmentButton from "@/components/EnrollmentButton";
 
 interface StudyPlanDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -17,16 +18,21 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
     where: { slug },
     include: {
       problems: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          difficulty: true,
-          category: true,
-          submissions: userId ? {
-             where: { userId, status: "Accepted" },
-             select: { id: true }
-          } : false
+        orderBy: { order: "asc" },
+        include: {
+          problem: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              difficulty: true,
+              category: true,
+              submissions: userId ? {
+                 where: { userId, status: "Accepted" },
+                 select: { id: true }
+              } : false
+            }
+          }
         }
       }
     }
@@ -36,9 +42,18 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
     notFound();
   }
 
+  const enrollment = userId ? await prisma.studyPlanEnrollment.findUnique({
+    where: {
+        userId_studyPlanId: {
+            userId,
+            studyPlanId: plan.id
+        }
+    }
+  }) : null;
+
   // Calculate progress
   const totalProblems = plan.problems.length;
-  const solvedProblems = plan.problems.filter(p => p.submissions && p.submissions.length > 0).length;
+  const solvedProblems = plan.problems.filter(p => p.problem.submissions && p.problem.submissions.length > 0).length;
   const progress = totalProblems > 0 ? Math.round((solvedProblems / totalProblems) * 100) : 0;
 
   return (
@@ -75,59 +90,88 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                  </p>
               </div>
 
-              {!userId && (
-                 <div className="p-3 bg-blue-500/10 text-blue-500 text-xs rounded-lg text-center">
-                    Sign in to track your progress
+              {userId ? (
+                 <EnrollmentButton 
+                    planId={plan.id} 
+                    initialEnrolled={!!enrollment} 
+                    initialReminderTime={enrollment?.reminderTime}
+                 />
+              ) : (
+                 <div className="p-4 bg-blue-500/10 text-blue-500 text-sm rounded-xl text-center border border-blue-500/20">
+                    <p className="font-semibold mb-1">Join this Study Plan</p>
+                    <p className="text-xs opacity-80">Sign in to track progress and set reminders</p>
                  </div>
               )}
            </div>
         </div>
 
         {/* Right Content: Problem List */}
-        <div className="lg:col-span-2 space-y-4">
-           {plan.problems.map((problem, idx) => {
-              const isSolved = problem.submissions && problem.submissions.length > 0;
-              return (
-                <Link
-                  key={problem.id}
-                  href={`/problems/${problem.slug}`}
-                  className="block group"
-                >
-                   <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 flex items-center gap-4 hover:border-[var(--accent-gradient-to)] transition-all duration-200 hover:shadow-md">
-                      <div className="shrink-0 text-[var(--foreground)]/40 font-mono text-sm w-6 text-center">
-                         {idx + 1}
-                      </div>
-                      <div className="shrink-0">
-                         {isSolved ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                         ) : (
-                            <Circle className="w-5 h-5 text-[var(--foreground)]/20 group-hover:text-[var(--foreground)]/40" />
-                         )}
-                      </div>
-                      <div className="flex-1">
-                         <h3 className="font-medium text-[var(--foreground)] group-hover:text-blue-500 transition-colors">
-                            {problem.title}
-                         </h3>
-                         <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                               problem.difficulty === "Easy" ? "text-green-500 bg-green-500/10 border-green-500/20" :
-                               problem.difficulty === "Medium" ? "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" :
-                               "text-red-500 bg-red-500/10 border-red-500/20"
-                            }`}>
-                               {problem.difficulty}
-                            </span>
-                            <span className="text-xs text-[var(--foreground)]/50">
-                               {problem.category}
-                            </span>
-                         </div>
-                      </div>
-                      <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <ChevronLeft className="w-5 h-5 rotate-180 text-[var(--foreground)]/40" />
-                      </div>
-                   </div>
-                </Link>
-              );
-           })}
+        <div className="lg:col-span-2 space-y-6">
+           {/* Daily Schedule View */}
+           <div className="space-y-8">
+              {Array.from({ length: plan.durationDays || 1 }).map((_, dayIdx) => {
+                 const dayProblems = plan.problems.filter(p => p.order === dayIdx + 1);
+                 if (dayProblems.length === 0 && dayIdx > 0) return null; // Skip empty days except day 1
+                 
+                 return (
+                    <div key={dayIdx} className="space-y-4">
+                       <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--foreground)]">
+                          <Calendar className="w-5 h-5 text-blue-500" />
+                          Day {dayIdx + 1}
+                       </h2>
+                       <div className="space-y-3">
+                          {dayProblems.length === 0 ? (
+                             <div className="p-8 text-center bg-[var(--card-bg)]/50 rounded-xl border border-dashed border-[var(--card-border)] text-[var(--foreground)]/40 text-sm">
+                                No problems assigned for this day.
+                             </div>
+                          ) : (
+                             dayProblems.map((spProblem) => {
+                                const { problem } = spProblem;
+                                const isSolved = problem.submissions && (problem.submissions as any).length > 0;
+                                return (
+                                  <Link
+                                    key={problem.id}
+                                    href={`/problems/${problem.slug}`}
+                                    className="block group"
+                                  >
+                                     <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 flex items-center gap-4 hover:border-[var(--accent-gradient-to)] transition-all duration-200 hover:shadow-md">
+                                        <div className="shrink-0">
+                                           {isSolved ? (
+                                              <CheckCircle className="w-6 h-6 text-green-500" />
+                                           ) : (
+                                              <Circle className="w-6 h-6 text-[var(--foreground)]/10 group-hover:text-[var(--foreground)]/20" />
+                                           )}
+                                        </div>
+                                        <div className="flex-1">
+                                           <h3 className="font-medium text-[var(--foreground)] group-hover:text-blue-500 transition-colors">
+                                              {problem.title}
+                                           </h3>
+                                           <div className="flex items-center gap-2 mt-1">
+                                              <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                                                 problem.difficulty === "Easy" ? "text-green-500 bg-green-500/10 border-green-500/20" :
+                                                 problem.difficulty === "Medium" ? "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" :
+                                                 "text-red-500 bg-red-500/10 border-red-500/20"
+                                              }`}>
+                                                 {problem.difficulty}
+                                              </span>
+                                              <span className="text-xs text-[var(--foreground)]/50">
+                                                 {problem.category}
+                                              </span>
+                                           </div>
+                                        </div>
+                                        <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                           <ChevronLeft className="w-5 h-5 rotate-180 text-[var(--foreground)]/40" />
+                                        </div>
+                                     </div>
+                                  </Link>
+                                );
+                             })
+                          )}
+                       </div>
+                    </div>
+                 );
+              })}
+           </div>
         </div>
       </div>
     </main>

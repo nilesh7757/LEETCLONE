@@ -47,22 +47,55 @@ export const authConfig = {
       }
       return session;
     },
-    async jwt({ token, user, trigger, session }) {
+    async signIn({ user, account, profile }) {
+      console.log("[AUTH] SignIn Attempt:", user.email);
+      return true;
+    },
+    async jwt({ token, user, trigger, session, account }) {
       if (user) {
+        console.log("[AUTH] JWT New User/Sign-in:", user.email);
         token.sub = user.id;
+
+        // Ensure user exists in DB for social logins if adapter didn't do it yet
+        if (account?.provider === "google") {
+            const existingUser = await prisma.user.findUnique({
+                where: { email: user.email as string }
+            });
+
+            if (!existingUser) {
+                console.log("[AUTH] Creating new Google user in DB:", user.email);
+                await prisma.user.create({
+                    data: {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        image: user.image,
+                        role: "USER",
+                        streak: 0,
+                    }
+                });
+            }
+        }
+
+        token.role = (user as any).role || "USER";
+        token.streak = (user as any).streak || 0;
       }
 
-      // Fetch latest user data from DB if we don't have it in the token or if it's a new session
-      if (!token.streak || !token.role) {
+      // If we don't have the role/streak yet, try to fetch from DB
+      if (token.sub && (!token.role || token.streak === undefined)) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub as string },
           select: { role: true, name: true, image: true, streak: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
+          token.streak = dbUser.streak;
           token.name = dbUser.name;
           token.picture = dbUser.image;
-          token.streak = dbUser.streak;
+        } else {
+          // Fallback if not in DB yet (e.g. just after social sign in before adapter finished)
+          token.role = token.role || "USER";
+          token.streak = token.streak || 0;
         }
       }
 
