@@ -20,8 +20,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LeetCode Clone",
-  description: "A modern platform for coding contests and practice.",
+  title: "LeetClone - Master Coding and System Design",
+  description: "A modern platform for coding contests, system design practice, and career growth.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default async function RootLayout({

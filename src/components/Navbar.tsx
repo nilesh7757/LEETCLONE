@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Code2, Menu, X, UserCircle, MessageSquare, Flame } from "lucide-react";
+import { Menu, X, UserCircle, MessageSquare, Flame } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { useSession } from "next-auth/react";
 import UserSearch from "./UserSearch";
 import NotificationBell from "./NotificationBell";
+import Logo from "./Logo";
 
 import axios from "axios";
 
@@ -76,10 +77,8 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-4 md:gap-6 shrink-0">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="p-2 bg-[var(--foreground)]/5 rounded-lg border border-[var(--card-border)] group-hover:border-[var(--foreground)]/20 transition-colors">
-                <Code2 className="w-6 h-6 text-[var(--foreground)]" />
-              </div>
-              <span className="text-xl font-bold text-[var(--foreground)] hidden sm:block">
+              <Logo className="w-9 h-9 transition-transform group-hover:scale-105 duration-300" />
+              <span className="text-xl font-bold text-[var(--foreground)] hidden sm:block tracking-tight">
                 LeetClone
               </span>
             </Link>
