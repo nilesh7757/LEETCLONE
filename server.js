@@ -10,10 +10,43 @@ const io = new Server(httpServer, {
 });
 
 const onlineUsers = new Map(); // userId -> Set(socketIds)
+const collabRooms = new Map(); // roomId -> { code: string, language: string }
 
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
   let currentUserId = null;
+
+  // --- Collaborative Coding ---
+  socket.on("join_collab", ({ roomId, username }) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined collab room: ${roomId}`);
+    
+    // Send current room state to the new joiner
+    if (collabRooms.has(roomId)) {
+      const { code, language } = collabRooms.get(roomId);
+      socket.emit("code_update", { code, language, isInit: true });
+    }
+    
+    // Notify others
+    socket.to(roomId).emit("user_joined_collab", { username });
+  });
+
+  socket.on("code_update", ({ roomId, code, language }) => {
+    collabRooms.set(roomId, { code, language });
+    // Broadcast to everyone else in the room
+    socket.to(roomId).emit("code_update", { code, language });
+  });
+
+  socket.on("cursor_move", ({ roomId, position, username }) => {
+    socket.to(roomId).emit("cursor_update", { userId: socket.id, username, position });
+  });
+
+  socket.on("leave_collab", ({ roomId }) => {
+    socket.leave(roomId);
+    if (io.sockets.adapter.rooms.get(roomId)?.size === 0) {
+       collabRooms.delete(roomId);
+    }
+  });
 
   // Join a room based on the problem ID
   socket.on("join_problem", (problemId) => {

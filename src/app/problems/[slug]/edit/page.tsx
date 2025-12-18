@@ -70,7 +70,8 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
         memoryLimit: p.memoryLimit,
         isPublic: p.isPublic,
         editorial: p.editorial || "",
-        problemType: p.type || "CODING"
+        problemType: p.type || "CODING",
+        hints: p.hints || []
       });
     } catch (error) {
       console.error(error);

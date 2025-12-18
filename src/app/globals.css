@@ -52,5 +52,31 @@ body {
 .bg-grid-pattern {
   background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-  background-size: 40px 40px;
+  --radius: 0.5rem;
+}
+
+.remote-cursor {
+  position: relative;
+  border-left: 2px solid;
+  margin-left: -1px;
+}
+.remote-cursor::after {
+  content: attr(data-name);
+  position: absolute;
+  top: -18px;
+  left: -2px;
+  font-size: 10px;
+  color: white;
+  background-color: inherit;
+  padding: 1px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: sans-serif;
+  font-weight: bold;
+  opacity: 0.8;
+  z-index: 10;
+}
+.remote-cursor-tooltip {
+    /* Optional if we use a separate widget, but using pseudo-element on the cursor decoration is easier */
 }

@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import { Editor } from "@monaco-editor/react";
-import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, X, MessageSquare, Flag, Code2, PlusCircle, Bookmark, Trash2, Terminal } from "lucide-react";
+import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, X, MessageSquare, Flag, Code2, PlusCircle, Bookmark, Trash2, Terminal, Users, Copy, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import { io, Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -66,6 +67,17 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [consoleTab, setConsoleTab] = useState<'testcases' | 'results'>('testcases');
   const [revealedHints, setRevealedHints] = useState<number[]>([]);
 
+  // Collaboration State
+  const [showCollabModal, setShowCollabModal] = useState(false);
+  const [collabRoomId, setCollabRoomId] = useState<string | null>(null);
+  const [joinRoomIdInput, setJoinRoomIdInput] = useState("");
+  const collabSocketRef = useRef<Socket | null>(null);
+  const isRemoteUpdate = useRef(false);
+  const editorRef = useRef<any>(null);
+  const remoteCursors = useRef<Map<string, { decorationIds: string[], color: string, username: string }>>(new Map());
+
+  const { data: session } = useSession(); // Access session properly
+
   // Language Dropdown State
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -79,8 +91,180 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const { update } = useSession();
   const [mounted, setMounted] = useState(false);
 
+  // Helper to inject dynamic cursor styles
+  const injectCursorStyle = (userId: string, color: string) => {
+    const styleId = `cursor-style-${userId}`;
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.innerHTML = `
+        .remote-cursor-${userId} {
+          border-left: 2px solid ${color};
+          margin-left: -1px;
+        }
+        .remote-cursor-${userId}::after {
+          background-color: ${color};
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  };
+  
+  // Helper to generate consistent color from string
+  const getColorFromName = (name: string) => {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98FB98', '#DDA0DD', '#F0E68C', '#87CEFA'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  // --- Collaboration Logic ---
+  useEffect(() => {
+    return () => {
+      if (collabSocketRef.current) {
+        collabSocketRef.current.disconnect();
+      }
+      // Cleanup cursor styles
+      remoteCursors.current.forEach((_, userId) => {
+         const style = document.getElementById(`cursor-style-${userId}`);
+         if (style) style.remove();
+      });
+    };
+  }, []);
+
+  const initCollabSocket = (roomId: string) => {
+    if (collabSocketRef.current) collabSocketRef.current.disconnect();
+
+    const socket = io("http://localhost:3001"); // Adjust port/URL if needed
+    collabSocketRef.current = socket;
+
+    socket.emit("join_collab", { roomId, username: session?.user?.name || "Anonymous" });
+
+    socket.on("code_update", (data: { code: string, language: string, isInit?: boolean }) => {
+      isRemoteUpdate.current = true;
+      setCode(data.code);
+      // Optional: Sync language too if desired, but user might want local pref
+      // setLanguage(data.language); 
+      if (data.isInit) {
+        toast.success("Synced with room code");
+      }
+      // Reset flag after a short tick to allow local edits again
+      // Actually, since setCode is async-ish, we just need to ensure the next render doesn't trigger emit
+      setTimeout(() => { isRemoteUpdate.current = false; }, 50); 
+    });
+
+    socket.on("cursor_update", (data: { userId: string, username: string, position: any }) => {
+       if (!editorRef.current) return;
+       
+       let cursorData = remoteCursors.current.get(data.userId);
+       if (!cursorData) {
+          const color = getColorFromName(data.username);
+          injectCursorStyle(data.userId, color);
+          cursorData = { decorationIds: [], color, username: data.username };
+          remoteCursors.current.set(data.userId, cursorData);
+       }
+       
+       const newDecorations: any[] = [{
+          range: new (window as any).monaco.Range(data.position.lineNumber, data.position.column, data.position.lineNumber, data.position.column),
+          options: {
+             className: `remote-cursor remote-cursor-${data.userId}`,
+             hoverMessage: { value: data.username },
+             beforeContentClassName: undefined, 
+             afterContentClassName: undefined 
+          }
+       }];
+       
+       // Add a "name tag" decoration if needed, or rely on the CSS ::after on the main cursor
+       // The CSS ::after requires data-name attribute. Monaco doesn't support data-attr on decorations easily.
+       // So we rely on the specific class for color, but for name content, we can use before/after content.
+       // Actually, we can't easily set 'content' to a string in CSS from class name without dynamic CSS.
+       // Since we generate dynamic CSS, we can add the name there!
+       
+       // Update dynamic CSS to include name
+       const styleId = `cursor-style-${data.userId}`;
+       const style = document.getElementById(styleId);
+       if (style) {
+          style.innerHTML = `
+            .remote-cursor-${data.userId} {
+              border-left: 2px solid ${cursorData.color};
+              margin-left: -1px;
+            }
+            .remote-cursor-${data.userId}::after {
+              content: "${data.username}";
+              background-color: ${cursorData.color};
+            }
+          `;
+       }
+       
+       cursorData.decorationIds = editorRef.current.deltaDecorations(cursorData.decorationIds, newDecorations);
+    });
+
+    socket.on("user_joined_collab", (data: { username: string }) => {
+      toast.success(`${data.username} joined the session!`);
+    });
+
+    setCollabRoomId(roomId);
+    setShowCollabModal(false);
+    toast.success("Connected to collaboration session!");
+
+    // Persist session
+    localStorage.setItem("active_collab_session", JSON.stringify({
+      roomId,
+      problemId: problem.id
+    }));
+  };
+
+  const handleStartCollab = () => {
+    const newRoomId = Math.random().toString(36).substring(2, 9);
+    initCollabSocket(newRoomId);
+  };
+
+  const handleJoinCollab = () => {
+    if (!joinRoomIdInput.trim()) return;
+    initCollabSocket(joinRoomIdInput.trim());
+  };
+
+  const handleLeaveCollab = () => {
+    if (collabSocketRef.current) {
+      collabSocketRef.current.emit("leave_collab", { roomId: collabRoomId });
+      collabSocketRef.current.disconnect();
+      collabSocketRef.current = null;
+    }
+    
+    // Cleanup cursors
+    if (editorRef.current) {
+       remoteCursors.current.forEach((data) => {
+          editorRef.current.deltaDecorations(data.decorationIds, []);
+       });
+    }
+    remoteCursors.current.forEach((_, userId) => {
+       const style = document.getElementById(`cursor-style-${userId}`);
+       if (style) style.remove();
+    });
+    remoteCursors.current.clear();
+
+    setCollabRoomId(null);
+    toast.info("Left collaboration session");
+    localStorage.removeItem("active_collab_session");
+  };
+
   useEffect(() => {
     setMounted(true);
+    
+    // Check for active collaboration session
+    const savedSession = localStorage.getItem("active_collab_session");
+    if (savedSession) {
+      try {
+        const { roomId, problemId } = JSON.parse(savedSession);
+        if (roomId && problemId === problem.id) {
+           initCollabSocket(roomId);
+        }
+      } catch (e) {
+        console.error("Failed to restore session", e);
+      }
+    }
     
     // Click outside handler for language dropdown
     const handleClickOutside = (event: MouseEvent) => {
@@ -250,6 +434,20 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     return () => clearTimeout(timer);
   }, [code, language]);
 
+  const handleResetCode = () => {
+    const defaultCode = problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language) || "";
+    setCode(defaultCode);
+    
+    // Broadcast reset to collaboration room
+    if (collabSocketRef.current && collabRoomId) {
+      collabSocketRef.current.emit("code_update", {
+        roomId: collabRoomId,
+        code: defaultCode,
+        language
+      });
+    }
+  };
+
   const handleRun = async () => {
     setIsRunning(true);
     setResults(null);
@@ -389,6 +587,28 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           <span className="font-semibold text-[var(--foreground)]">{problem.title}</span>
         </div>
         <div className="flex items-center gap-3">
+          {/* Collaboration Button */}
+          {problem.type !== "SYSTEM_DESIGN" && (
+             <button
+                onClick={() => {
+                   if (collabRoomId) {
+                      toast.info(`Session ID: ${collabRoomId}`);
+                   } else {
+                      setShowCollabModal(true);
+                   }
+                }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg flex items-center gap-2 transition-colors cursor-pointer ${
+                   collabRoomId 
+                      ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                      : "text-[var(--foreground)]/80 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10"
+                }`}
+                title={collabRoomId ? "Active Session (Click to see ID)" : "Start Collaboration"}
+             >
+                <Users className="w-4 h-4" />
+                {collabRoomId ? "Live" : "Collab"}
+             </button>
+          )}
+
           {problem.type !== "SYSTEM_DESIGN" && (
             <button 
               onClick={handleRun}
@@ -669,7 +889,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                   <button
                     className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
                     title="Reset Code"
-                    onClick={() => setCode(problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language) || "")}
+                    onClick={handleResetCode}
                   >
                     <RotateCcw className="w-4 h-4" />
                   </button>
@@ -771,8 +991,32 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                   language={language}
                   theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
                   beforeMount={handleEditorWillMount}
+                  onMount={(editor, monaco) => {
+                     editorRef.current = editor;
+                     // Listen for cursor changes
+                     editor.onDidChangeCursorPosition((e) => {
+                        if (collabSocketRef.current && collabRoomId) {
+                           collabSocketRef.current.emit("cursor_move", {
+                              roomId: collabRoomId,
+                              position: e.position,
+                              username: session?.user?.name || "Anonymous"
+                           });
+                        }
+                     });
+                  }}
                   value={code}
-                  onChange={(value) => setCode(value || "")}
+                  onChange={(value) => {
+                     const newCode = value || "";
+                     setCode(newCode);
+                     // Emit code change if it's a local edit
+                     if (!isRemoteUpdate.current && collabSocketRef.current && collabRoomId) {
+                        collabSocketRef.current.emit("code_update", {
+                           roomId: collabRoomId,
+                           code: newCode,
+                           language
+                        });
+                     }
+                  }}
                   options={{
                     minimap: { enabled: false },
                     fontSize: 14,
@@ -1168,6 +1412,111 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             </div>
           </div>
         </div>
+      )}
+
+      {/* Collaboration Modal */}
+      <AnimatePresence>
+        {showCollabModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          >
+            <motion.div 
+               initial={{ scale: 0.95, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.95, opacity: 0 }}
+               className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl w-full max-w-md shadow-2xl overflow-hidden"
+            >
+              <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+                 <h3 className="font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-500" /> Live Collaboration
+                 </h3>
+                 <button onClick={() => setShowCollabModal(false)} className="text-[var(--foreground)]/60 hover:text-[var(--foreground)]">
+                    <X className="w-5 h-5" />
+                 </button>
+              </div>
+              <div className="p-6 space-y-6">
+                 {/* Create New Session */}
+                 <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-[var(--foreground)]">Start a New Session</h4>
+                    <p className="text-xs text-[var(--foreground)]/60">Generate a unique room ID to share with others.</p>
+                    <button 
+                       onClick={handleStartCollab}
+                       className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                       <PlusCircle className="w-4 h-4" /> Create Session
+                    </button>
+                 </div>
+
+                 <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                       <span className="w-full border-t border-[var(--card-border)]" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                       <span className="bg-[var(--card-bg)] px-2 text-[var(--foreground)]/40">Or join existing</span>
+                    </div>
+                 </div>
+
+                 {/* Join Session */}
+                 <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-[var(--foreground)]">Join Session</h4>
+                    <div className="flex gap-2">
+                       <input 
+                          type="text" 
+                          value={joinRoomIdInput}
+                          onChange={(e) => setJoinRoomIdInput(e.target.value)}
+                          placeholder="Enter Room ID..."
+                          className="flex-1 px-3 py-2 bg-[var(--background)] border border-[var(--card-border)] rounded-lg text-sm text-[var(--foreground)] focus:ring-2 focus:ring-blue-500 outline-none"
+                       />
+                       <button 
+                          onClick={handleJoinCollab}
+                          disabled={!joinRoomIdInput.trim()}
+                          className="px-4 py-2 bg-[var(--foreground)]/10 hover:bg-[var(--foreground)]/20 text-[var(--foreground)] font-medium rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                       >
+                          Join
+                       </button>
+                    </div>
+                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Active Session Floater */}
+      {collabRoomId && (
+         <div className="absolute bottom-4 right-4 z-40 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg shadow-xl p-3 flex items-center gap-3 animate-in slide-in-from-bottom-5">
+            <div className="flex items-center gap-2">
+               <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+               </span>
+               <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[var(--foreground)]">Live Session</span>
+                  <span className="text-[10px] text-[var(--foreground)]/60 font-mono">{collabRoomId}</span>
+               </div>
+            </div>
+            <div className="h-6 w-px bg-[var(--card-border)]" />
+            <button 
+               onClick={() => {
+                  navigator.clipboard.writeText(collabRoomId);
+                  toast.success("Room ID copied!");
+               }}
+               className="p-1.5 hover:bg-[var(--foreground)]/10 rounded text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+               title="Copy ID"
+            >
+               <Copy className="w-4 h-4" />
+            </button>
+            <button 
+               onClick={handleLeaveCollab}
+               className="p-1.5 hover:bg-red-500/10 rounded text-[var(--foreground)]/60 hover:text-red-500 cursor-pointer"
+               title="Leave Session"
+            >
+               <LogOut className="w-4 h-4" />
+            </button>
+         </div>
       )}
     </div>
   );
