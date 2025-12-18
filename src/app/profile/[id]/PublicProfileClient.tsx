@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import FollowsModal from "@/components/Profile/FollowsModal";
 import { io, Socket } from "socket.io-client";
+import Link from "next/link";
 
 const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false });
 
@@ -323,6 +324,48 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
                 </div>
             </div>
 
+            {/* Solved Problems Breakdown Card */}
+            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)]">
+                            <Star className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-[var(--foreground)]">Solved Problems</h3>
+                            <p className="text-sm text-[var(--foreground)]/60">Total Solved: <span className="font-mono font-bold text-[var(--foreground)]">{stats?.user?.solvedCount || 0}</span></p>
+                        </div>
+                    </div>
+                    <Link 
+                        href="/problems" 
+                        className="text-sm text-blue-500 hover:underline font-medium"
+                    >
+                        View all problems
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <DifficultyProgress 
+                        label="Easy" 
+                        count={stats?.user?.solvedEasy || 0} 
+                        color="bg-green-500" 
+                        difficulty="Easy"
+                    />
+                    <DifficultyProgress 
+                        label="Medium" 
+                        count={stats?.user?.solvedMedium || 0} 
+                        color="bg-yellow-500" 
+                        difficulty="Medium"
+                    />
+                    <DifficultyProgress 
+                        label="Hard" 
+                        count={stats?.user?.solvedHard || 0} 
+                        color="bg-red-500" 
+                        difficulty="Hard"
+                    />
+                </div>
+            </div>
+
             {/* Contribution Calendar Card */}
             <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
                 <div className="flex items-center gap-3 mb-6">
@@ -372,11 +415,31 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
         />
       )}
     </main>
-  );
-}
-
-function Loader2({ className }: { className?: string }) {
-    return (
+      );
+  }
+  
+  function DifficultyProgress({ label, count, color, difficulty }: { label: string, count: number, color: string, difficulty: string }) {
+      // We don't have the max count easily here, let's assume a reasonable max for visual or just show the count
+      // A better way would be to show progress relative to total problems in DB, but for now just showing count is good.
+      return (
+          <Link href={`/problems?difficulty=${difficulty}`} className="block group">
+              <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm font-semibold text-[var(--foreground)]/60 group-hover:text-[var(--foreground)] transition-colors">{label}</span>
+                  <span className="text-lg font-bold text-[var(--foreground)] group-hover:text-blue-500 transition-colors">{count}</span>
+              </div>
+              <div className="w-full h-2 bg-[var(--foreground)]/5 rounded-full overflow-hidden">
+                  <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (count / 50) * 100)}%` }} // Arbitrary 50 for visualization
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className={`h-full ${color} opacity-80 group-hover:opacity-100 transition-opacity`}
+                  />
+              </div>
+          </Link>
+      );
+  }
+  
+  function Loader2({ className }: { className?: string }) {    return (
       <svg
         className={`animate-spin ${className}`}
         xmlns="http://www.w3.org/2000/svg"

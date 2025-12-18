@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { BookOpen, Trophy, ArrowRight, Layers, Plus, Lock, Globe } from "lucide-react";
 import { auth } from "@/auth";
+import AIWeaknessAnalysis from "@/components/AIWeaknessAnalysis";
 
 export default async function StudyPlansPage() {
   const session = await auth();
@@ -51,6 +52,8 @@ export default async function StudyPlansPage() {
       </div>
 
       <div className="space-y-16">
+        {userId && <AIWeaknessAnalysis />}
+
         {/* My Plans Section - Priority for logged in users */}
         {userId && (
           <section>
@@ -127,6 +130,16 @@ function StudyPlanCard({ plan, userId }: { plan: any, userId?: string }) {
          {plan.isOfficial && (
             <div className="absolute top-3 right-3 px-2 py-1 bg-blue-500 rounded-md text-[10px] font-bold text-white flex items-center gap-1 uppercase tracking-wider z-10 shadow-lg">
                Official
+            </div>
+         )}
+         {plan.status !== "PUBLISHED" && plan.status !== "DRAFT" && (
+            <div className="absolute bottom-3 right-3 px-2 py-1 bg-yellow-500 rounded-md text-[10px] font-bold text-white flex items-center gap-1 uppercase tracking-wider z-10 shadow-lg">
+               Review Pending
+            </div>
+         )}
+         {plan.status === "DRAFT" && plan.creatorId === userId && (
+            <div className="absolute bottom-3 right-3 px-2 py-1 bg-[var(--foreground)]/20 backdrop-blur-sm rounded-md text-[10px] font-bold text-white flex items-center gap-1 uppercase tracking-wider z-10">
+               Draft
             </div>
          )}
          {plan.coverImage ? (

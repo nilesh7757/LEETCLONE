@@ -18,6 +18,8 @@ export async function GET(req: Request) {
         difficulty: true,
         category: true,
         isPublic: true,
+        isVerified: true,
+        source: true,
         createdAt: true,
         creator: {
             select: { name: true, email: true }

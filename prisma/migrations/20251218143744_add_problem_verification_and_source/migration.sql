@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Problem" ADD COLUMN     "isVerified" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "source" TEXT NOT NULL DEFAULT 'SYSTEM';

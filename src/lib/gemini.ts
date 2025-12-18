@@ -1,176 +1,254 @@
 import axios from "axios";
+import Groq from "groq-sdk";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-// List of models to try in order of preference.
-// We prioritize 2.5-flash and 2.0-flash as they are the currently available models.
-const MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-exp",
+const groq = GROQ_API_KEY ? new Groq({ apiKey: GROQ_API_KEY }) : null;
+
+export class AIError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+// Fallback Gemini models
+export const MODELS = [
+  "gemini-2.0-flash-exp", // Try experimental 2.0 first
+  "gemini-1.5-flash",     // Standard stable
+  "gemini-1.5-flash-8b",  // Faster fallback
+  "gemini-1.5-pro",       // High quality fallback
 ];
 
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
-export async function analyzeCodeComplexity(code: string, language: string): Promise<{ timeComplexity: string; spaceComplexity: string }> {
-  if (!GEMINI_API_KEY) {
-    console.error("Gemini API Key is not set in environment variables.");
-    return { timeComplexity: "N/A", spaceComplexity: "N/A" };
+/**
+ * Universal AI Executor: Tries Groq first, then fallbacks to Gemini
+ */
+export async function runAI(prompt: string, systemInstruction?: string, jsonMode = false) {
+  // 1. Try Groq Primary (Extremely Fast & Generous Quota)
+  if (groq) {
+    try {
+      console.log("[AI] Attempting Groq (llama-3.3-70b-versatile)...");
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [
+          ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
+          { role: "user" as const, content: prompt },
+        ],
+        model: "llama-3.3-70b-versatile",
+        response_format: jsonMode ? { type: "json_object" } : undefined,
+        temperature: 0.5,
+        max_tokens: 1000,
+      });
+
+      const response = chatCompletion.choices[0]?.message?.content;
+      if (response) return response;
+    } catch (error: any) {
+      console.warn("[AI] Groq failed or rate limited, falling back to Gemini...");
+      if (error.status === 429) {
+         // Optionally wait or just fallback
+      }
+    }
   }
 
-  const prompt = `Analyze the following ${language} code and determine its time complexity and space complexity.
-
-Code:
-` + "```" + language + `
-${code}
-` + "```" + `
-
-Provide the answer as a JSON object with two fields: 'timeComplexity' and 'spaceComplexity'.
-Example:
-{
-  "timeComplexity": "O(N)",
-  "spaceComplexity": "O(1)"
-}
-
-If complexity cannot be determined, state 'N/A' for the respective field.`;
-
+  // 2. Fallback to Gemini (Multiple Models)
+  let hitQuota = false;
   for (const model of MODELS) {
     try {
+      console.log(`[AI] Attempting Gemini (${model})...`);
       const response = await axios.post(
         `${BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
           contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
+            { role: "user", parts: [{ text: (systemInstruction ? systemInstruction + "\n\n" : "") + prompt }] }
           ],
           generationConfig: {
-              responseMimeType: "application/json",
-              temperature: 0.1,
-          },
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      let geminiOutput: string = "";
-      const candidate = response.data.candidates?.[0];
-      
-      if (candidate?.content?.parts?.[0]?.text) {
-          geminiOutput = candidate.content.parts[0].text;
-      } else {
-          // Fallback if structure is unexpected
-          geminiOutput = JSON.stringify(candidate);
-      }
-      
-      let parsedComplexity: { timeComplexity?: string; spaceComplexity?: string } = {};
-      try {
-          // Clean markdown code blocks if present (even with JSON mode, some models might wrap it)
-          const cleanJson = geminiOutput.replace(/```json\n?|```/g, "").trim();
-          parsedComplexity = JSON.parse(cleanJson);
-      } catch (parseError) {
-          console.warn(`Failed to parse Gemini output for model ${model}. Raw output: ${geminiOutput.substring(0, 50)}...`);
-          continue; 
-      }
-
-      const timeComplexity = parsedComplexity.timeComplexity || "N/A";
-      const spaceComplexity = parsedComplexity.spaceComplexity || "N/A";
-
-      return { timeComplexity, spaceComplexity };
-
-    } catch (error: any) {
-      const msg = error.response?.data?.error?.message || error.message;
-      console.warn(`Model ${model} failed: ${msg}`);
-      
-      // If we are at the last model and it failed, we return N/A.
-      // Otherwise loop continues to next model.
-    }
-  }
-
-  console.error("All Gemini models failed to analyze code complexity.");
-  return { timeComplexity: "N/A", spaceComplexity: "N/A" };
-}
-
-export async function evaluateSystemDesign(question: string, answer: string): Promise<{ feedback: string; score: number }> {
-  if (!GEMINI_API_KEY) {
-    return { feedback: "AI evaluation unavailable (API Key missing).", score: 0 };
-  }
-
-  // Extract base64 images from HTML (from our custom drawing-block or standard img tags)
-  const imageMatches = answer.matchAll(/data:image\/[a-zA-Z]*;base64,([^"'>\s]+)/g);
-  const inlineImages = Array.from(imageMatches).map(match => match[1]);
-
-  // Clean the answer text for the prompt (remove the huge base64 strings to save tokens)
-  const cleanAnswer = answer.replace(/data:image\/[a-zA-Z]*;base64,[^"'>\s]+/g, "[Image Attachment]");
-
-  const prompt = `You are a Senior Staff Engineer conducting a System Design interview.
-  
-Evaluate the following candidate's answer based on the problem description. 
-IMPORTANT: The candidate may have provided architectural diagrams (attached as images). Please analyze both the text and the diagrams.
-
-Problem:
-${question}
-
-Candidate's Answer:
-${cleanAnswer}
-
-Tasks:
-1. Score the answer from 0 to 100 based on completeness, correctness, and understanding of system design concepts (scalability, availability, consistency, etc.).
-2. Provide concise, constructive feedback. Highlight missing components or good points from both the text and the diagrams.
-
-Output Format (JSON):
-{
-  "score": 85,
-  "feedback": "..."
-}`;
-
-  const parts: any[] = [{ text: prompt }];
-  
-  // Add images to the request
-  inlineImages.forEach(base64Data => {
-    parts.push({
-      inlineData: {
-        mimeType: "image/png",
-        data: base64Data
-      }
-    });
-  });
-
-  for (const model of MODELS) {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          contents: [{ parts }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0.3,
+            responseMimeType: jsonMode ? "application/json" : "text/plain",
+            temperature: 0.5,
+            maxOutputTokens: 1000,
           },
         },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      const candidate = response.data.candidates?.[0];
-      let text = candidate?.content?.parts?.[0]?.text || "";
-      const cleanJson = text.replace(/```json\n?|```/g, "").trim();
-      const result = JSON.parse(cleanJson);
-
-      return {
-        score: result.score || 0,
-        feedback: result.feedback || "No feedback provided.",
-      };
-
+      const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text;
     } catch (error: any) {
-      console.warn(`Model ${model} failed for system design eval:`, error.message);
+      if (error.response?.status === 429) {
+        console.warn(`[AI] Quota hit for Gemini (${model}). Skipping...`);
+        hitQuota = true;
+        await new Promise(r => setTimeout(r, 1000));
+        continue;
+      }
+      console.error(`[AI] Gemini (${model}) Error:`, error.response?.data?.error?.message || error.message);
     }
   }
 
-  return { feedback: "Failed to evaluate answer.", score: 0 };
+  if (hitQuota) throw new AIError("All AI models are currently busy. Please wait 60 seconds.", 429);
+  throw new AIError("AI service unavailable.", 500);
+}
+
+export async function auditAndAnalyze(
+  code: string, 
+  language: string, 
+  problemTitle: string, 
+  problemDesc: string
+): Promise<{ passed: boolean; feedback: string; timeComplexity: string; spaceComplexity: string }> {
+  const prompt = `
+    You are a Senior Software Engineer. Audit and analyze this solution for: "${problemTitle}".
+    Description: ${problemDesc.substring(0, 500)}
+    
+    CODE:
+    \`\`\`\${language}
+    ${code}
+    \`\`\`
+    
+    TASKS:
+    1. Audit: Check for logic shortcuts or hardcoded answers.
+    2. Complexity: Determine Time and Space complexity (O(...) format).
+    
+    Return ONLY JSON: 
+    { 
+      "passed": true/false, 
+      "feedback": "Audit feedback", 
+      "timeComplexity": "O(...)", 
+      "spaceComplexity": "O(...)" 
+    }
+  `;
+
+  try {
+    const response = await runAI(prompt, "You are a precise technical reviewer.", true);
+    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(cleanJson);
+  } catch (e) {
+    console.error("Audit/Analyze Error:", e);
+    return { 
+      passed: true, 
+      feedback: "Analysis partially skipped due to service error.",
+      timeComplexity: "N/A",
+      spaceComplexity: "N/A"
+    };
+  }
+}
+
+export async function auditSolution(
+  code: string, 
+  language: string, 
+  problemTitle: string, 
+  problemDesc: string
+): Promise<{ passed: boolean; feedback: string }> {
+  const prompt = `
+    You are a code reviewer. Audit the following solution for the problem: "${problemTitle}".
+    Description: ${problemDesc.substring(0, 500)}
+    
+    CODE:
+    \`\`\`\${language}
+    ${code}
+    \`\`\`
+    
+    TASKS:
+    1. Check if the user used "shortcuts" that violate the intended pattern (e.g., using an array to reverse a linked list when O(1) space was required).
+    2. Check if the code is actually solving the logic or just returning hardcoded answers.
+    
+    Return JSON: { "passed": true/false, "feedback": "Brief explanation" }
+  `;
+
+  try {
+    const response = await runAI(prompt, "You are a strict algorithm auditor.", true);
+    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(cleanJson);
+  } catch (e) {
+    console.error("Audit Error:", e);
+    return { passed: true, feedback: "Audit skipped due to service error." };
+  }
+}
+
+export async function analyzeCodeComplexity(code: string, language: string): Promise<{ timeComplexity: string; spaceComplexity: string }> {
+  const prompt = `Analyze this ${language} code for Time and Space complexity. Return ONLY JSON: { "timeComplexity": "O(...)", "spaceComplexity": "O(...)" }\n\nCode:\n${code}`;
+  
+  try {
+    const response = await runAI(prompt, "You are a complexity analyzer. Be precise.", true);
+    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(cleanJson);
+  } catch (e) {
+    console.error("Complexity Error:", e);
+    return { timeComplexity: "N/A", spaceComplexity: "N/A" };
+  }
+}
+
+export async function evaluateSystemDesign(question: string, answer: string): Promise<{ feedback: string; score: number }> {
+  const prompt = `Evaluate this System Design answer.\nQuestion: ${question}\nAnswer: ${answer}\n\nReturn JSON: { "score": 0-100, "feedback": "..." }`;
+  
+  try {
+    const response = await runAI(prompt, "You are a Senior Staff Engineer conducting an interview.", true);
+    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(cleanJson);
+  } catch (e) {
+    return { feedback: "Evaluation currently unavailable.", score: 0 };
+  }
+}
+
+export async function chatWithAI(
+  messages: { role: "user" | "model"; parts: { text: string }[] }[],
+  context: { 
+    problemTitle: string; 
+    problemDescription: string; 
+    code: string; 
+    language: string;
+    isInterviewMode?: boolean;
+    isPeriodicQuestion?: boolean;
+  }
+): Promise<string> {
+  if (!GEMINI_API_KEY && !GROQ_API_KEY) {
+    return "AI service is currently unavailable (API Key missing).";
+  }
+
+  const desc = context.problemDescription.substring(0, 1500);
+  const code = context.code.substring(0, 3000);
+
+  let systemPrompt = "";
+
+  if (context.isInterviewMode) {
+    systemPrompt = `
+      You are a Senior Technical Interviewer at a top tech company (like Google or Meta).
+      You are conducting a live technical interview for the problem: "${context.problemTitle}".
+      
+      User's Current Code:
+      \`\`\`\${context.language}
+      ${code}
+      \`\`\`
+
+      INTERVIEWER RULES:
+      1. Be professional, slightly formal, but fair.
+      2. If "isPeriodicQuestion" is true, ask a pointed question about their current code or approach (e.g., "Why did you choose this data structure?", "What is the time complexity of this specific part?", "How would you handle [edge case]?").
+      3. If they are stuck, give a MINIMAL hint. Do NOT solve it for them.
+      4. Observe their code. If you see a major bug or inefficiency, ask them a question that might lead them to find it themselves.
+      5. Keep responses concise (max 3 sentences).
+    `;
+  } else {
+    systemPrompt = `
+      You are a strict but encouraging Socratic AI Coding Tutor. 
+      Problem: "${context.problemTitle}"
+      Description: ${desc}
+      User's Code: ${code}
+
+      RULES:
+      1. NEVER provide the full code solution at once.
+      2. Guide the user using hints and conceptual questions.
+      3. If they ask for help, point out logical errors in their code.
+      4. Only provide small code snippets (max 5 lines) for specific syntax issues.
+      5. Be concise and professional.
+    `;
+  }
+
+  // Restore history window to 10 messages
+  const history = messages.slice(-10).map(m => `${m.role === 'model' ? 'Tutor' : 'Student'}: ${m.parts[0].text}`).join("\n");
+  
+  const userPrompt = context.isPeriodicQuestion 
+    ? "Ask me a challenging interview question about my current code." 
+    : `History:\n${history}\n\nStudent's New Message: ${messages[messages.length-1]?.parts[0]?.text}`;
+
+  return await runAI(userPrompt, systemPrompt);
 }

@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import axios from "axios";
 import TiptapEditor from "@/components/TiptapEditor";
+import Link from "next/link";
 
 interface CommentItemProps {
   comment: any;
@@ -47,7 +48,13 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
     <div className={`flex flex-col gap-2 ${depth > 0 ? "ml-4 pl-4 border-l border-[var(--card-border)]" : ""}`}>
       {/* Comment Header */}
       <div className="flex items-center gap-2 text-sm text-[var(--foreground)]/60">
-        <span className="font-semibold text-[var(--foreground)]">{comment.user?.name || "Anonymous"}</span>
+        {comment.user?.id ? (
+          <Link href={`/profile/${comment.user.id}`} className="font-semibold text-[var(--foreground)] hover:underline hover:text-[var(--accent-gradient-to)] transition-colors">
+            {comment.user.name}
+          </Link>
+        ) : (
+          <span className="font-semibold text-[var(--foreground)]">{comment.user?.name || "Anonymous"}</span>
+        )}
         <span>•</span>
         <span>{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
       </div>

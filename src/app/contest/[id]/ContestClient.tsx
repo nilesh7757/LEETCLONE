@@ -277,36 +277,46 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
         </div>
 
         <div className="divide-y divide-[var(--card-border)]">
-          {contest.problems.map((problem: any, index: number) => (
-            <div key={problem.id} className="p-6 flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors group">
-              <div className="flex items-center gap-4">
-                <span className="text-[var(--foreground)]/40 font-mono w-6">{index + 1}.</span>
-                <div>
-                  <h4 className="font-medium text-[var(--foreground)] group-hover:text-[var(--accent-gradient-to)] transition-colors">
-                    {problem.title}
-                  </h4>
-                  <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
-                    problem.difficulty === "Easy" ? "bg-green-500/10 text-green-500" :
-                    problem.difficulty === "Medium" ? "bg-yellow-500/10 text-yellow-500" :
-                    "bg-red-500/10 text-red-500"
-                  }`}>
-                    {problem.difficulty}
-                  </span>
+          {contest.problems.map((problem: any, index: number) => {
+            const isClickable = isRegistered || status === "Ended";
+            const rowContent = (
+              <div className="p-6 flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <span className="text-[var(--foreground)]/40 font-mono w-6">{index + 1}.</span>
+                  <div>
+                    <h4 className="font-medium text-[var(--foreground)] group-hover:text-[var(--accent-gradient-to)] transition-colors">
+                      {problem.title}
+                    </h4>
+                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
+                      problem.difficulty === "Easy" ? "bg-green-500/10 text-green-500" :
+                      problem.difficulty === "Medium" ? "bg-yellow-500/10 text-yellow-500" :
+                      "bg-red-500/10 text-red-500"
+                    }`}>
+                      {problem.difficulty}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {isRegistered || status === "Ended" ? (
-                <Link
-                  href={`/problems/${problem.slug}?contestId=${contest.id}`}
-                  className="px-4 py-2 text-sm border border-[var(--card-border)] rounded-lg hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
-                >
-                  Solve Problem
-                </Link>
-              ) : (
-                <span className="text-sm text-[var(--foreground)]/40 italic">Register to view</span>
-              )}
-            </div>
-          ))}
+                {isClickable ? (
+                  <div
+                    className="px-4 py-2 text-sm border border-[var(--card-border)] rounded-lg group-hover:bg-[var(--foreground)] group-hover:text-[var(--background)] transition-colors"
+                  >
+                    Solve Problem
+                  </div>
+                ) : (
+                  <span className="text-sm text-[var(--foreground)]/40 italic">Register to view</span>
+                )}
+              </div>
+            );
+
+            return isClickable ? (
+              <Link key={problem.id} href={`/problems/${problem.slug}?contestId=${contest.id}`}>
+                {rowContent}
+              </Link>
+            ) : (
+              <div key={problem.id}>{rowContent}</div>
+            );
+          })}
         </div>
       </motion.div>
       ) : (
@@ -337,7 +347,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                   </tr>
                 ) : (
                   leaderboard.map((entry) => (
-                    <tr key={entry.user.id} className="hover:bg-[var(--foreground)]/5 transition-colors">
+                    <tr key={entry.user.id} className="hover:bg-[var(--foreground)]/5 transition-colors group">
                       <td className="px-6 py-4">
                         <span className={`font-mono font-bold ${
                           entry.rank === 1 ? "text-yellow-500" :
@@ -348,15 +358,17 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                           #{entry.rank}
                         </span>
                       </td>
-                      <td className="px-6 py-4 flex items-center gap-3">
-                         <div className="w-8 h-8 rounded-full bg-[var(--foreground)]/10 overflow-hidden flex items-center justify-center">
-                            {entry.user.image ? (
-                                <img src={entry.user.image} alt={entry.user.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <User className="w-4 h-4 text-[var(--foreground)]/40" />
-                            )}
-                         </div>
-                         <span className="font-medium text-[var(--foreground)]">{entry.user.name || "Anonymous"}</span>
+                      <td className="px-6 py-4">
+                         <Link href={`/profile/${entry.user.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                            <div className="w-8 h-8 rounded-full bg-[var(--foreground)]/10 overflow-hidden flex items-center justify-center">
+                               {entry.user.image ? (
+                                   <img src={entry.user.image} alt={entry.user.name} className="w-full h-full object-cover" />
+                               ) : (
+                                   <User className="w-4 h-4 text-[var(--foreground)]/40" />
+                               )}
+                            </div>
+                            <span className="font-medium text-[var(--foreground)] group-hover:underline">{entry.user.name || "Anonymous"}</span>
+                         </Link>
                       </td>
                       <td className="px-6 py-4 text-right font-mono text-[var(--accent-gradient-to)] font-bold">
                         {entry.score}

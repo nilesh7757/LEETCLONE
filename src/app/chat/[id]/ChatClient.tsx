@@ -5,6 +5,7 @@ import { io as ClientIO, Socket } from "socket.io-client";
 import axios from "axios";
 import { Send, UserCircle, Paperclip, Loader2 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 
 interface ChatClientProps {
   conversationId: string;
@@ -120,34 +121,36 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     <div className="flex flex-col h-full bg-[var(--background)]">
       {/* Header */}
       <div className="h-16 px-6 border-b border-[var(--card-border)] flex items-center gap-4 bg-[var(--card-bg)] shrink-0">
-        <div className="relative shrink-0">
-          <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden">
-              {otherUser?.image ? (
-                  <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
-              ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                      <UserCircle className="w-6 h-6 text-[var(--foreground)]/40" />
-                  </div>
-              )}
+        <Link href={`/profile/${otherUser?.id}`} className="flex items-center gap-4 group cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden border border-[var(--card-border)] group-hover:border-[var(--foreground)]/30 transition-colors">
+                {otherUser?.image ? (
+                    <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <UserCircle className="w-6 h-6 text-[var(--foreground)]/40" />
+                    </div>
+                )}
+            </div>
+            {isOnline && (
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--background)] rounded-full" />
+            )}
           </div>
-          {isOnline && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--background)] rounded-full" />
-          )}
-        </div>
-        <div>
-            <h2 className="font-bold text-[var(--foreground)]">{otherUser?.name || "Unknown User"}</h2>
-            <p className="text-[10px] font-medium transition-colors">
-              {isOnline ? (
-                <span className="text-green-500">Active now</span>
-              ) : lastActive ? (
-                <span className="text-[var(--foreground)]/40">
-                  Last seen {formatDistanceToNow(lastActive, { addSuffix: true })}
-                </span>
-              ) : (
-                <span className="text-[var(--foreground)]/40">Offline</span>
-              )}
-            </p>
-        </div>
+          <div>
+              <h2 className="font-bold text-[var(--foreground)] group-hover:underline">{otherUser?.name || "Unknown User"}</h2>
+              <p className="text-[10px] font-medium transition-colors">
+                {isOnline ? (
+                  <span className="text-green-500">Active now</span>
+                ) : lastActive ? (
+                  <span className="text-[var(--foreground)]/40">
+                    Last seen {formatDistanceToNow(lastActive, { addSuffix: true })}
+                  </span>
+                ) : (
+                  <span className="text-[var(--foreground)]/40">Offline</span>
+                )}
+              </p>
+          </div>
+        </Link>
       </div>
 
       {/* Messages */}

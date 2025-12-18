@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     const isAdmin = session.user.role === "ADMIN";
     const finalIsPublic = isAdmin ? (isPublic ?? false) : false;
     const finalIsOfficial = isAdmin ? (isOfficial ?? false) : false;
+    const finalStatus = isAdmin && finalIsPublic ? "PUBLISHED" : "DRAFT";
 
     const studyPlan = await prisma.studyPlan.create({
       data: {
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
         slug,
         isPublic: finalIsPublic,
         isOfficial: finalIsOfficial,
+        status: finalStatus,
         durationDays: durationDays || 7,
         creatorId: session.user.id,
         problems: {

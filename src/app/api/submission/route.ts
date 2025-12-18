@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { executeCode, TestInputOutput, ExecutionResult } from "@/lib/codeExecution"; // Import TestInputOutput
-import { analyzeCodeComplexity, evaluateSystemDesign } from "@/lib/gemini";
+import { auditAndAnalyze, evaluateSystemDesign, analyzeCodeComplexity } from "@/lib/gemini";
 import { io as ClientIO } from "socket.io-client"; // Import as ClientIO to avoid conflict
 
 // Initialize Socket.io client (connect to your socket.io server)
@@ -45,6 +45,8 @@ export async function GET(req: Request) {
         runtime: true,
         timeComplexity: true,
         spaceComplexity: true,
+        auditPassed: true,
+        auditFeedback: true,
         createdAt: true,
         problemId: true,
         userId: true,
@@ -111,10 +113,25 @@ export async function POST(req: Request) {
     }
 
     let combinedTestCases: TestInputOutput[] = [];
-    if (Array.isArray(problem.testSets)) {
-      combinedTestCases = problem.testSets as unknown as TestInputOutput[];
+    let rawTestSets = problem.testSets;
+
+    if (typeof rawTestSets === 'string') {
+      try {
+        rawTestSets = JSON.parse(rawTestSets);
+      } catch (e) {
+        console.error("Failed to parse testSets string", e);
+      }
+    }
+
+    if (Array.isArray(rawTestSets)) {
+      combinedTestCases = rawTestSets;
+    } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in rawTestSets && 'hidden' in rawTestSets) {
+      combinedTestCases = [
+        ...(rawTestSets.examples as TestInputOutput[]),
+        ...(rawTestSets.hidden as TestInputOutput[])
+      ];
     } else {
-      console.error("api/submission/route.ts: problem.testSets was not an array or expected format:", problem.testSets);
+      console.error("api/submission/route.ts: Unexpected format for problem.testSets:", rawTestSets);
       combinedTestCases = [];
     }
 
@@ -126,9 +143,29 @@ export async function POST(req: Request) {
     let designScore: number | null = null;
     try {
       if (problem.type === "CODING") {
-        // ... (rest of CODING logic)
+        results = await executeCode({
+          code,
+          language,
+          type: "CODING", // Pass type
+          testCases: combinedTestCases.map(tc => ({
+            input: tc.input,
+            expectedOutput: tc.expectedOutput
+          })),
+          timeLimit: problem.timeLimit,
+          memoryLimit: problem.memoryLimit
+        });
       } else if (problem.type === "SQL") {
-        // ... (rest of SQL logic)
+        results = await executeCode({
+          code,
+          language: "sql",
+          type: "SQL", // Pass type
+          testCases: combinedTestCases.map(tc => ({
+            input: tc.input,
+            expectedOutput: tc.expectedOutput
+          })),
+          initialSchema: problem.initialSchema || "",
+          initialData: problem.initialData || ""
+        });
       } else if (problem.type === "SYSTEM_DESIGN") {
          // Evaluate using AI
          console.log("[DEBUG] Evaluating System Design...");
@@ -145,6 +182,13 @@ export async function POST(req: Request) {
             status: "Accepted"
          }] as ExecutionResult[];
          // ...
+      } else if (problem.type === "READING") {
+         results = [{
+            input: "Reading Completed",
+            expected: "N/A",
+            actual: "The user has completed the study guide.",
+            status: "Accepted"
+         }] as ExecutionResult[];
       } else {
         return NextResponse.json({ error: `Unsupported problem type for submission: ${problem.type}` }, { status: 400 });
       }
@@ -155,33 +199,41 @@ export async function POST(req: Request) {
     console.log("[DEBUG] Results Generated");
 
     // Determine overall status
-    let overallStatus = "Accepted";
     let maxRuntime = 0;
     let firstFailingResult = null;
-    let geminiTimeComplexity = "N/A";
-    let geminiSpaceComplexity = "N/A";
+    let overallStatus = "Accepted";
 
     if (problem.type === "CODING" || problem.type === "SQL") {
       if (Array.isArray(results)) {
         for (const res of results) {
-          if (res.runtime && res.runtime > maxRuntime) maxRuntime = res.runtime;
+          if (res.runtime && typeof res.runtime === 'number' && !isNaN(res.runtime)) {
+            if (res.runtime > maxRuntime) maxRuntime = res.runtime;
+          }
           if (res.status !== "Accepted" && overallStatus === "Accepted") {
             overallStatus = res.status;
             firstFailingResult = res;
           }
         }
       }
+    }
 
-      // Analyze Complexity (Optional, non-blocking if fails)
-      try {
-        if (problem.type === "CODING" && overallStatus === "Accepted") {
-             const complexity = await analyzeCodeComplexity(code, language);
-             geminiTimeComplexity = complexity.timeComplexity;
-             geminiSpaceComplexity = complexity.spaceComplexity;
-        }
-      } catch (e) {
-        console.error("Complexity analysis failed:", e);
-      }
+    // --- AI METHOD AUDIT ---
+    let auditPassed = true;
+    let auditFeedback = "No issues found.";
+    let geminiTimeComplexity = "N/A";
+    let geminiSpaceComplexity = "N/A";
+    
+    if (problem.type === "CODING" && overallStatus === "Accepted") {
+       console.log("[DEBUG] Starting AI Method Audit & Complexity Analysis...");
+       try {
+          const analysis = await auditAndAnalyze(code, language, problem.title, problem.description);
+          auditPassed = analysis.passed;
+          auditFeedback = analysis.feedback;
+          geminiTimeComplexity = analysis.timeComplexity;
+          geminiSpaceComplexity = analysis.spaceComplexity;
+       } catch (e) {
+          console.error("AI Analysis failed", e);
+       }
     }
 
     // 3. Save Submission to DB
@@ -195,9 +247,10 @@ export async function POST(req: Request) {
         runtime: maxRuntime, 
         timeComplexity: geminiTimeComplexity,
         spaceComplexity: geminiSpaceComplexity,
+        auditPassed, 
+        auditFeedback, 
         problemId,
         userId: session.user.id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         testCaseResults: results ? (results as any) : [],
       },
     });

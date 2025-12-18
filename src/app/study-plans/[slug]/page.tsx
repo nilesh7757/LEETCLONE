@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CheckCircle, Circle, ChevronLeft, Calendar } from "lucide-react";
 import { auth } from "@/auth";
-import EnrollmentButton from "@/components/EnrollmentButton";
+import AIWeaknessAnalysis from "@/components/AIWeaknessAnalysis";
+import StudyPlanControls from "@/components/StudyPlanControls";
 
 interface StudyPlanDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -13,6 +14,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
   const { slug } = await params;
   const session = await auth();
   const userId = session?.user?.id;
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const plan = await prisma.studyPlan.findUnique({
     where: { slug },
@@ -43,23 +45,9 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
   }
 
   // Access control for private study plans
-  if (!plan.isPublic && plan.creatorId !== userId) {
+  if (!plan.isPublic && plan.creatorId !== userId && !isAdmin) {
     notFound();
   }
-
-  // Access control for private study plans
-  if (!plan.isPublic && plan.creatorId !== userId) {
-    notFound();
-  }
-
-  const enrollment = userId ? await prisma.studyPlanEnrollment.findUnique({
-    where: {
-        userId_studyPlanId: {
-            userId,
-            studyPlanId: plan.id
-        }
-    }
-  }) : null;
 
   // Calculate progress
   const totalProblems = plan.problems.length;
@@ -68,12 +56,24 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
 
   return (
     <main className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <Link 
-        href="/study-plans"
-        className="inline-flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--foreground)] mb-8 transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" /> Back to Plans
-      </Link>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <Link 
+          href="/study-plans"
+          className="inline-flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--foreground)] transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" /> Back to Plans
+        </Link>
+
+        <StudyPlanControls 
+          planId={plan.id}
+          slug={plan.slug}
+          status={plan.status}
+          isCreator={plan.creatorId === userId}
+          isAdmin={isAdmin}
+        />
+      </div>
+
+      {userId && <AIWeaknessAnalysis studyPlanId={plan.id} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Sidebar: Plan Info */}
@@ -99,19 +99,6 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                     {solvedProblems} of {totalProblems} problems solved
                  </p>
               </div>
-
-              {userId ? (
-                 <EnrollmentButton 
-                    planId={plan.id} 
-                    initialEnrolled={!!enrollment} 
-                    initialReminderTime={enrollment?.reminderTime}
-                 />
-              ) : (
-                 <div className="p-4 bg-blue-500/10 text-blue-500 text-sm rounded-xl text-center border border-blue-500/20">
-                    <p className="font-semibold mb-1">Join this Study Plan</p>
-                    <p className="text-xs opacity-80">Sign in to track progress and set reminders</p>
-                 </div>
-              )}
            </div>
         </div>
 
@@ -141,7 +128,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                                 return (
                                   <Link
                                     key={problem.id}
-                                    href={`/problems/${problem.slug}`}
+                                    href={`/problems/${problem.slug}?studyPlanId=${plan.id}`}
                                     className="block group"
                                   >
                                      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 flex items-center gap-4 hover:border-[var(--accent-gradient-to)] transition-all duration-200 hover:shadow-md">

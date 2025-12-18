@@ -15,6 +15,7 @@ interface BlogPost {
   createdAt: string;
   tags: string[];
   author: {
+    id: string;
     name: string;
     image: string;
   };
@@ -102,10 +103,11 @@ export default function BlogPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="group flex flex-col h-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden hover:shadow-lg hover:border-[var(--foreground)]/20 transition-all"
+                className="group relative flex flex-col h-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden hover:shadow-lg hover:border-[var(--foreground)]/20 transition-all"
               >
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 mb-4">
+                <Link href={`/blog/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} />
+                <div className="p-6 flex-1 flex flex-col relative z-10 pointer-events-none">
+                  <div className="flex items-center gap-2 mb-4 pointer-events-auto">
                      {post.contest && (
                         <span className="px-2 py-1 text-xs font-medium bg-purple-500/10 text-purple-400 rounded-full border border-purple-500/20">
                             Contest Solution
@@ -113,23 +115,25 @@ export default function BlogPage() {
                      )}
                      <div className="flex gap-2">
                         {post.tags.slice(0, 2).map(tag => (
-                            <span key={tag} className="px-2 py-1 text-xs font-medium bg-[var(--foreground)]/5 text-[var(--foreground)]/60 rounded-full">
+                            <button 
+                                key={tag} 
+                                onClick={() => setSearchQuery(tag)}
+                                className="px-2 py-1 text-xs font-medium bg-[var(--foreground)]/5 text-[var(--foreground)]/60 rounded-full hover:bg-[var(--foreground)]/10 transition-colors cursor-pointer"
+                            >
                                 {tag}
-                            </span>
+                            </button>
                         ))}
                      </div>
                   </div>
 
-                  <Link href={`/blog/${post.slug}`} className="block group-hover:text-[var(--accent-gradient-to)] transition-colors">
-                     <h2 className="text-xl font-bold text-[var(--foreground)] mb-3 line-clamp-2">{post.title}</h2>
-                  </Link>
+                  <h2 className="text-xl font-bold text-[var(--foreground)] mb-3 line-clamp-2 group-hover:text-[var(--accent-gradient-to)] transition-colors">{post.title}</h2>
                   
                   <p className="text-[var(--foreground)]/60 text-sm mb-6 line-clamp-3 flex-1">
                     {post.excerpt || "No excerpt available."}
                   </p>
 
                   <div className="flex items-center justify-between pt-4 border-t border-[var(--card-border)] mt-auto">
-                    <div className="flex items-center gap-2">
+                    <Link href={`/profile/${post.author.id}`} className="flex items-center gap-2 pointer-events-auto group/author hover:opacity-80 transition-opacity">
                         <div className="w-8 h-8 rounded-full bg-[var(--foreground)]/10 overflow-hidden">
                              {post.author.image ? (
                                  <img src={post.author.image} alt={post.author.name} className="w-full h-full object-cover" />
@@ -137,14 +141,14 @@ export default function BlogPage() {
                                  <User className="w-full h-full p-1.5 text-[var(--foreground)]/40" />
                              )}
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-[var(--foreground)]">{post.author.name}</span>
+                        <div className="flex flex-col text-left">
+                            <span className="text-xs font-medium text-[var(--foreground)] group-hover/author:underline">{post.author.name}</span>
                             <span className="text-[10px] text-[var(--foreground)]/40">{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>
-                    </div>
-                    <Link href={`/blog/${post.slug}`} className="text-[var(--foreground)]/40 hover:text-[var(--accent-gradient-to)] transition-colors">
-                        <ArrowRight className="w-5 h-5" />
                     </Link>
+                    <div className="text-[var(--foreground)]/40 group-hover:text-[var(--accent-gradient-to)] transition-colors">
+                        <ArrowRight className="w-5 h-5" />
+                    </div>
                   </div>
                 </div>
               </motion.article>

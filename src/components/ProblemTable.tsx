@@ -71,20 +71,24 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                     </Link>
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                        problem.difficulty === "Easy"
-                          ? "bg-green-500/10 text-green-500 border-green-500/20"
-                          : problem.difficulty === "Medium"
-                          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                          : "bg-red-500/10 text-red-500 border-red-500/20"
-                      }`}
-                    >
-                      {problem.difficulty}
-                    </span>
+                    <Link href={`/?difficulty=${problem.difficulty}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity ${
+                          problem.difficulty === "Easy"
+                            ? "bg-green-500/10 text-green-500 border-green-500/20"
+                            : problem.difficulty === "Medium"
+                            ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                            : "bg-red-500/10 text-red-500 border-red-500/20"
+                        }`}
+                      >
+                        {problem.difficulty}
+                      </span>
+                    </Link>
                   </td>
                   <td className="px-6 py-4 text-[var(--foreground)]/60">
-                    {problem.category}
+                    <Link href={`/?category=${problem.category}`} className="hover:text-[var(--foreground)] hover:underline transition-colors">
+                      {problem.category}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link

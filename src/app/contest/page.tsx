@@ -93,62 +93,70 @@ export default function ContestListPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="p-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-md backdrop-blur-sm flex flex-col justify-between"
+                className="group relative"
               >
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <h2 className="text-xl font-bold text-[var(--foreground)]">
-                      {contest.title}
-                    </h2>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        contest.status === "Active"
-                          ? "bg-green-500/20 text-green-400"
-                          : contest.status === "Upcoming"
-                          ? "bg-blue-500/20 text-blue-400"
-                          : "bg-red-500/20 text-red-400"
-                      }`}
+                <Link href={`/contest/${contest.id}`} className="absolute inset-0 z-0" aria-label={`View ${contest.title}`} />
+                <div className="p-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-md backdrop-blur-sm flex flex-col justify-between h-full group-hover:border-[var(--foreground)]/20 transition-colors">
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <h2 className="text-xl font-bold text-[var(--foreground)]">
+                        {contest.title}
+                      </h2>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          contest.status === "Active"
+                            ? "bg-green-500/20 text-green-400"
+                            : contest.status === "Upcoming"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {contest.status}
+                      </span>
+                    </div>
+                    <p className="text-[var(--foreground)]/70 text-sm mb-4 line-clamp-2">
+                      {contest.description || "No description provided."}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-[var(--foreground)]/60 mb-2 relative z-10">
+                      <User className="w-3 h-3" />
+                      <span>Created by: </span>
+                      <Link 
+                        href={`/profile/${contest.creator?.id}`} 
+                        className="hover:underline text-[var(--foreground)] hover:text-[var(--accent-gradient-to)] transition-colors"
+                      >
+                        {contest.creator?.name || "Anonymous"}
+                      </Link>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[var(--foreground)]/60 mb-4">
+                      <Clock className="w-3 h-3" />
+                      <span>
+                        {new Date(contest.startTime).toLocaleString()} -{" "}
+                        {new Date(contest.endTime).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-sm text-[var(--foreground)]/80 mb-4">
+                      Problems: {contest.problems.length}
+                      {contest.problems.length > 0 && (
+                        <ul className="list-disc list-inside text-xs text-[var(--foreground)]/70 mt-1">
+                          {contest.problems.map((p) => (
+                            <li key={p.id}>{p.title} ({p.difficulty})</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 flex justify-between items-center border-t border-[var(--card-border)] pt-4 relative z-10">
+                    <span className="text-sm text-[var(--foreground)]/80 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5" /> {contest.participantsCount} Participants
+                    </span>
+                    <div
+                      className="px-4 py-2 text-sm font-medium text-[var(--background)] bg-[var(--foreground)] rounded-lg hover:opacity-90 transition-opacity"
                     >
-                      {contest.status}
-                    </span>
+                      {contest.status === "Upcoming" && "Register"}
+                      {contest.status === "Active" && "Join Contest"}
+                      {contest.status === "Ended" && "View Results"}
+                    </div>
                   </div>
-                  <p className="text-[var(--foreground)]/70 text-sm mb-4 line-clamp-2">
-                    {contest.description || "No description provided."}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-[var(--foreground)]/60 mb-2">
-                    <User className="w-3 h-3" />
-                    <span>Created by: {contest.creator?.name || "Anonymous"}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-[var(--foreground)]/60 mb-4">
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {new Date(contest.startTime).toLocaleString()} -{" "}
-                      {new Date(contest.endTime).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="text-sm text-[var(--foreground)]/80 mb-4">
-                    Problems: {contest.problems.length}
-                    {contest.problems.length > 0 && (
-                      <ul className="list-disc list-inside text-xs text-[var(--foreground)]/70 mt-1">
-                        {contest.problems.map((p) => (
-                          <li key={p.id}>{p.title} ({p.difficulty})</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-4 flex justify-between items-center border-t border-[var(--card-border)] pt-4">
-                  <span className="text-sm text-[var(--foreground)]/80 flex items-center gap-1">
-                    <User className="w-3.5 h-3.5" /> {contest.participantsCount} Participants
-                  </span>
-                  <Link
-                    href={`/contest/${contest.id}`}
-                    className="px-4 py-2 text-sm font-medium text-[var(--background)] bg-[var(--foreground)] rounded-lg hover:opacity-90 transition-opacity"
-                  >
-                    {contest.status === "Upcoming" && "Register"}
-                    {contest.status === "Active" && "Join Contest"}
-                    {contest.status === "Ended" && "View Results"}
-                  </Link>
                 </div>
               </motion.div>
             ))}

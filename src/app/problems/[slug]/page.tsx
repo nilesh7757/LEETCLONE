@@ -10,36 +10,19 @@ import { TestInputOutput } from "@/lib/codeExecution";
 
 interface WorkspaceProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 interface Problem {
-  id: string;
-  title: string;
-  slug: string;
-  difficulty: string;
-  category: string;
-  description: string;
-  timeLimit: number;
-  memoryLimit: number;
-  testSets: any;
-  hints: string[];
-  referenceSolution: string | null;
-  initialSchema: string | null;
-  initialData: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  isPublic: boolean;
-  creatorId: string | null;
-  contests: {
-    startTime: Date;
-    creatorId: string;
-  }[];
-  // New fields for diverse problem types
-  type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL"; // Corrected from problemType to type
+  // ... existing fields
+  type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL";
+  pattern: string | null;
+  blueprint: any;
 }
 
-export default async function Workspace({ params }: WorkspaceProps) {
+export default async function Workspace({ params, searchParams }: WorkspaceProps) {
   const { slug } = await params;
+  const { studyPlanId } = await searchParams;
   const session = await auth();
   const userId = session?.user?.id;
   
@@ -71,6 +54,8 @@ export default async function Workspace({ params }: WorkspaceProps) {
       type: true,
       initialSchema: true,
       initialData: true,
+      pattern: true,
+      blueprint: true,
     }
   }) as Problem;
 
@@ -117,6 +102,12 @@ export default async function Workspace({ params }: WorkspaceProps) {
   // Filter for only example test cases to pass to WorkspaceClient
   const examplesForClient = allTestCases.filter(tc => tc.isExample === true);
 
+  // Check if user has already solved this problem to skip blueprint
+  const userSubmission = userId ? await prisma.submission.findFirst({
+    where: { userId, problemId: problem.id, status: "Accepted" },
+    select: { id: true }
+  }) : null;
+
   return (
     <main className="h-screen flex flex-col pt-16 overflow-hidden bg-[var(--background)]">
       {/* Main Workspace - Client Component for Interactive Elements */}
@@ -125,8 +116,11 @@ export default async function Workspace({ params }: WorkspaceProps) {
           ...problem,
           initialSchema: problem.initialSchema || undefined,
           initialData: problem.initialData || undefined,
+          blueprint: problem.blueprint || undefined, // Ensure blueprint is passed
         }}
         examples={examplesForClient} // Pass only the example test cases
+        showBlueprint={!!studyPlanId}
+        alreadySolved={!!userSubmission}
       />
     </main>
   );

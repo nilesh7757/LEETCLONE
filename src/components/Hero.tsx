@@ -59,16 +59,19 @@ export default function Hero() {
             icon={<Terminal className="w-6 h-6" />}
             title="In-Browser IDE"
             description="Write, run, and debug code instantly in 10+ languages."
+            href="/problems"
           />
           <FeatureCard 
             icon={<Trophy className="w-6 h-6" />}
             title="Weekly Contests"
             description="Compete globally and climb the leaderboard rankings."
+            href="/contest"
           />
           <FeatureCard 
             icon={<ArrowRight className="w-6 h-6" />}
             title="AI Hints"
             description="Stuck? Get intelligent hints without revealing the solution."
+            href="/problems"
           />
         </motion.div>
       </div>
@@ -76,14 +79,16 @@ export default function Hero() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureCard({ icon, title, description, href }: { icon: React.ReactNode; title: string; description: string; href: string }) {
   return (
-    <div className="p-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-sm text-left hover:border-[var(--foreground)]/20 transition-colors">
-      <div className="w-12 h-12 rounded-lg bg-[var(--foreground)]/10 border border-[var(--card-border)] flex items-center justify-center text-[var(--foreground)] mb-4">
-        {icon}
+    <Link href={href} className="group">
+      <div className="p-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-sm text-left hover:border-[var(--foreground)]/20 transition-all hover:shadow-lg hover:-translate-y-1 h-full">
+        <div className="w-12 h-12 rounded-lg bg-[var(--foreground)]/10 border border-[var(--card-border)] flex items-center justify-center text-[var(--foreground)] mb-4 group-hover:bg-[var(--foreground)]/20 transition-colors">
+          {icon}
+        </div>
+        <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2 group-hover:text-[var(--accent-gradient-to)] transition-colors">{title}</h3>
+        <p className="text-[var(--foreground)]/60">{description}</p>
       </div>
-      <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">{title}</h3>
-      <p className="text-[var(--foreground)]/60">{description}</p>
-    </div>
+    </Link>
   );
 }

@@ -10,29 +10,42 @@ const io = new Server(httpServer, {
 });
 
 const onlineUsers = new Map(); // userId -> Set(socketIds)
-const collabRooms = new Map(); // roomId -> { code: string, language: string }
+const collabRooms = new Map(); // roomId -> { code: string, language: string, users: Map<socketId, { username, image }> }
 
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
   let currentUserId = null;
 
   // --- Collaborative Coding ---
-  socket.on("join_collab", ({ roomId, username }) => {
+  socket.on("join_collab", ({ roomId, username, image, dbUserId }) => {
     socket.join(roomId);
     console.log(`Socket ${socket.id} joined collab room: ${roomId}`);
     
-    // Send current room state to the new joiner
-    if (collabRooms.has(roomId)) {
-      const { code, language } = collabRooms.get(roomId);
-      socket.emit("code_update", { code, language, isInit: true });
+    // Initialize room if needed
+    if (!collabRooms.has(roomId)) {
+      collabRooms.set(roomId, { code: "", language: "javascript", users: new Map() });
     }
+    
+    const room = collabRooms.get(roomId);
+    room.users.set(socket.id, { username, image, dbUserId });
+
+    // Send current room state to the new joiner
+    socket.emit("code_update", { code: room.code, language: room.language, isInit: true });
+    
+    // Broadcast updated user list to ALL in room (including self)
+    const userList = Array.from(room.users.entries()).map(([id, user]) => ({ id, ...user }));
+    io.in(roomId).emit("room_users_update", userList);
     
     // Notify others
     socket.to(roomId).emit("user_joined_collab", { username });
   });
 
   socket.on("code_update", ({ roomId, code, language }) => {
-    collabRooms.set(roomId, { code, language });
+    if (collabRooms.has(roomId)) {
+       const room = collabRooms.get(roomId);
+       room.code = code;
+       room.language = language;
+    }
     // Broadcast to everyone else in the room
     socket.to(roomId).emit("code_update", { code, language });
   });
@@ -41,10 +54,37 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("cursor_update", { userId: socket.id, username, position });
   });
 
+  const handleLeaveRoom = (socketId) => {
+     // Find which rooms this socket is in (inefficient but works for small scale)
+     // Better: track socket -> roomId mapping. For now, iterate.
+     for (const [roomId, room] of collabRooms.entries()) {
+        if (room.users.has(socketId)) {
+           room.users.delete(socketId);
+           
+           // Broadcast updated list
+           const userList = Array.from(room.users.entries()).map(([id, user]) => ({ id, ...user }));
+           io.in(roomId).emit("room_users_update", userList);
+           
+           if (room.users.size === 0) {
+              collabRooms.delete(roomId);
+           }
+           break; // Assuming 1 active collab room per socket for now
+        }
+     }
+  };
+
   socket.on("leave_collab", ({ roomId }) => {
     socket.leave(roomId);
-    if (io.sockets.adapter.rooms.get(roomId)?.size === 0) {
-       collabRooms.delete(roomId);
+    if (collabRooms.has(roomId)) {
+       const room = collabRooms.get(roomId);
+       room.users.delete(socket.id);
+       
+       const userList = Array.from(room.users.entries()).map(([id, user]) => ({ id, ...user }));
+       io.in(roomId).emit("room_users_update", userList);
+
+       if (room.users.size === 0) {
+          collabRooms.delete(roomId);
+       }
     }
   });
 
@@ -124,6 +164,8 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
+    handleLeaveRoom(socket.id); // Clean up collab rooms
+
     if (currentUserId && onlineUsers.has(currentUserId)) {
       const sockets = onlineUsers.get(currentUserId);
       sockets.delete(socket.id);

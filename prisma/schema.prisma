@@ -16,6 +16,7 @@ enum ProblemType {
   INTERACTIVE
   SYSTEM_DESIGN
   SQL
+  READING
 }
 
 model Problem {
@@ -29,11 +30,16 @@ model Problem {
   memoryLimit Int         @default(256) // Memory limit in MB
   testSets    Json        @default("[]") // New field to store structured test cases
   hints       String[]    @default([]) // Progressive hints for the user
+  pattern     String?     // e.g. "Sliding Window", "DP - Knapsack", "Graph - BFS"
+  blueprint   Json?       // Structured Q&A for the "Pre-Code" phase
   referenceSolution String? // Added field for reference solution code
   initialSchema     String? // SQL Schema creation script
   initialData       String? // SQL Data insertion script
   editorial   String?     @db.Text // Explanation and multi-language solutions
   isPublic    Boolean     @default(true) // Determines if the problem is visible in the public library
+  isVerified  Boolean     @default(true) // Admin approval flag
+  source      String      @default("SYSTEM") // "SYSTEM", "USER", or "AI_GENERATED"
+  lastAiFeedback String?   @db.Text // Store user feedback for AI improvement
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -57,8 +63,10 @@ model StudyPlan {
   description   String
   coverImage    String?
   durationDays  Int?      // e.g. 7 for a 7-day plan, 30 for monthly
-  isPublic      Boolean   @default(true)
+  isPublic      Boolean   @default(false) // Default to false until published
   isOfficial    Boolean   @default(false)
+  status        String    @default("DRAFT") // "DRAFT", "PENDING_PUBLISH", "PUBLISHED", "PENDING_UPDATE"
+  pendingData   Json?     // Stores proposed changes for admin review
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -151,6 +159,8 @@ model Submission {
   timeComplexity String?
   spaceComplexity String?
   testCaseResults Json? // Store detailed test case results
+  auditPassed  Boolean?  @default(true) // Whether the AI audit approved the method
+  auditFeedback String?  @db.Text // AI explanation for audit failure/success
   createdAt DateTime @default(now())
   
   problemId String
