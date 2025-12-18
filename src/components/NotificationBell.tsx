@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
@@ -12,11 +12,26 @@ import Image from "next/image";
 
 let socket: Socket;
 
+const BrushIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M10,4 C10,2.8954305 10.8954305,2 12,2 C13.1045695,2 14,2.8954305 14,4 L14,10 L20,10 L20,14 L4,14 L4,10 L10,10 L10,4 Z M4,14 L20,14 L20,22 L12,22 L4,22 L4,14 Z M16,22 L16,16.3646005 M8,22 L8,16.3646005 M12,22 L12,16.3646005" />
+  </svg>
+);
+
 export default function NotificationBell() {
   const { data: session } = useSession();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize Socket and Fetch Notifications
@@ -88,6 +103,23 @@ export default function NotificationBell() {
     }
   };
 
+  const handleClearAll = () => {
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearAll = async () => {
+    try {
+      await axios.delete("/api/notifications");
+      setNotifications([]);
+      setUnreadCount(0);
+      toast.success("Notifications cleared");
+      setShowClearConfirm(false);
+    } catch (error) {
+      console.error("Failed to clear notifications", error);
+      toast.error("Failed to clear notifications");
+    }
+  };
+
   if (!session) return null;
 
   return (
@@ -113,17 +145,57 @@ export default function NotificationBell() {
           >
             <div className="p-3 border-b border-[var(--card-border)] flex items-center justify-between bg-[var(--background)]/50 backdrop-blur-sm">
               <h3 className="font-semibold text-sm text-[var(--foreground)]">Notifications</h3>
-              {unreadCount > 0 && (
-                <button
-                  onClick={() => handleMarkRead()}
-                  className="text-xs text-[var(--accent-color)] hover:underline cursor-pointer"
-                >
-                  Mark all read
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                {notifications.length > 0 && (
+                  <button
+                    onClick={handleClearAll}
+                    className="p-1.5 text-[var(--foreground)]/40 hover:text-red-500 transition-colors cursor-pointer"
+                    title="Clear all notifications"
+                  >
+                    <BrushIcon className="w-4 h-4" />
+                  </button>
+                )}
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => handleMarkRead()}
+                    className="text-xs text-blue-500 hover:underline cursor-pointer font-medium"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="overflow-y-auto custom-scrollbar flex-1">
+            <div className="overflow-y-auto custom-scrollbar flex-1 relative">
+              <AnimatePresence>
+                {showClearConfirm && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-50 bg-[var(--background)]/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center"
+                  >
+                    <BrushIcon className="w-10 h-10 text-red-500 mb-4" />
+                    <h4 className="font-bold text-[var(--foreground)] mb-1">Clear all?</h4>
+                    <p className="text-xs text-[var(--foreground)]/60 mb-6">This action cannot be undone. All your notifications will be removed.</p>
+                    <div className="flex flex-col w-full gap-2">
+                      <button 
+                        onClick={confirmClearAll}
+                        className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors"
+                      >
+                        Yes, Clear Everything
+                      </button>
+                      <button 
+                        onClick={() => setShowClearConfirm(false)}
+                        className="w-full py-2 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 text-[var(--foreground)] rounded-lg text-xs font-bold transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-[var(--foreground)]/40 text-sm">
                   No notifications yet.

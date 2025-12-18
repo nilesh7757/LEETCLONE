@@ -103,32 +103,52 @@ export async function evaluateSystemDesign(question: string, answer: string): Pr
     return { feedback: "AI evaluation unavailable (API Key missing).", score: 0 };
   }
 
+  // Extract base64 images from HTML (from our custom drawing-block or standard img tags)
+  const imageMatches = answer.matchAll(/data:image\/[a-zA-Z]*;base64,([^"'>\s]+)/g);
+  const inlineImages = Array.from(imageMatches).map(match => match[1]);
+
+  // Clean the answer text for the prompt (remove the huge base64 strings to save tokens)
+  const cleanAnswer = answer.replace(/data:image\/[a-zA-Z]*;base64,[^"'>\s]+/g, "[Image Attachment]");
+
   const prompt = `You are a Senior Staff Engineer conducting a System Design interview.
   
-Evaluate the following candidate's answer based on the problem description.
+Evaluate the following candidate's answer based on the problem description. 
+IMPORTANT: The candidate may have provided architectural diagrams (attached as images). Please analyze both the text and the diagrams.
 
 Problem:
 ${question}
 
 Candidate's Answer:
-${answer}
+${cleanAnswer}
 
 Tasks:
 1. Score the answer from 0 to 100 based on completeness, correctness, and understanding of system design concepts (scalability, availability, consistency, etc.).
-2. Provide concise, constructive feedback. Highlight missing components or good points.
+2. Provide concise, constructive feedback. Highlight missing components or good points from both the text and the diagrams.
 
 Output Format (JSON):
 {
   "score": 85,
-  "feedback": "Good high-level overview. You mentioned load balancing and caching, which is great. However, you missed discussing the database schema and potential bottlenecks in the notification service."
+  "feedback": "..."
 }`;
+
+  const parts: any[] = [{ text: prompt }];
+  
+  // Add images to the request
+  inlineImages.forEach(base64Data => {
+    parts.push({
+      inlineData: {
+        mimeType: "image/png",
+        data: base64Data
+      }
+    });
+  });
 
   for (const model of MODELS) {
     try {
       const response = await axios.post(
         `${BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ parts }],
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0.3,

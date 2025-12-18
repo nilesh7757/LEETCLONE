@@ -555,6 +555,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
         >
           {problemType === "CODING" || problemType === "SQL" ? (
             <div className="flex flex-col h-full min-h-0">
+              {/* ... (existing code for CODING/SQL editor) ... */}
               <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
                 {problemType === "CODING" && (
                   <div className="relative" ref={langDropdownRef}>
@@ -640,6 +641,30 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                 />
               </div>
             </div>
+          ) : problemType === "SYSTEM_DESIGN" ? (
+             <div className="flex flex-col h-full min-h-0 bg-[var(--background)] p-6 overflow-y-auto custom-scrollbar">
+                <div className="flex items-center justify-between mb-4">
+                   <h3 className="text-sm font-medium text-[var(--foreground)]/70">Reference Solution (Ideal Answer)</h3>
+                   <button
+                      type="button"
+                      className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                      title="Reset"
+                      onClick={() => setValue("referenceSolution", "")}
+                   >
+                      <RotateCcw className="w-4 h-4" />
+                   </button>
+                </div>
+                <Controller
+                   name="referenceSolution"
+                   control={control}
+                   render={({ field }) => (
+                      <TiptapEditor
+                         description={field.value || ''}
+                         onChange={field.onChange}
+                      />
+                   )}
+                />
+             </div>
           ) : (
             <div className="flex flex-col h-full min-h-0 justify-center items-center text-[var(--foreground)]/60 text-lg">
               <p>Editor not available for this problem type.</p>

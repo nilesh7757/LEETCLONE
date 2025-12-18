@@ -15,6 +15,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [dailySlug, setDailySlug] = useState<string>("");
   const [streak, setStreak] = useState<number>(0);
+  const [solvedToday, setSolvedToday] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
 
@@ -36,6 +37,7 @@ export default function Navbar() {
         try {
           const { data } = await axios.get("/api/profile/streak");
           setStreak(data.streak);
+          setSolvedToday(data.solvedToday);
         } catch (error) {
           console.error("Failed to fetch streak", error);
         }
@@ -106,10 +108,10 @@ export default function Navbar() {
             {status === "authenticated" && (
               <Link 
                 href={dailySlug ? `/problems/${dailySlug}` : "/problems"}
-                className="flex items-center gap-1 text-orange-500 font-medium mr-1 sm:mr-2 hover:bg-orange-500/10 px-2 py-1 rounded-md transition-colors" 
-                title="Daily Streak - Click to solve Daily Problem"
+                className={`flex items-center gap-1 font-medium mr-1 sm:mr-2 px-2 py-1 rounded-md transition-colors ${solvedToday ? 'text-orange-500 hover:bg-orange-500/10' : 'text-[var(--foreground)]/40 hover:bg-[var(--foreground)]/5'}`}
+                title={solvedToday ? "Daily Streak - Solved today!" : "Daily Streak - Solve Today's Problem!"}
               >
-                <Flame className="w-5 h-5 fill-orange-500" />
+                <Flame className={`w-5 h-5 ${solvedToday ? "fill-orange-500 text-orange-500" : "text-[var(--foreground)]/40"}`} />
                 <span>{streak}</span>
               </Link>
             )}

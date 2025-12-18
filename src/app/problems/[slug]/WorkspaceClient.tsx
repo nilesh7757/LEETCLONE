@@ -13,6 +13,8 @@ import DiscussionSection from "@/components/Discussion/DiscussionSection";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { languages, getStarterCode } from "@/lib/starterCode";
+import TiptapEditor from "@/components/TiptapEditor";
+import Whiteboard from "@/components/Whiteboard";
 
 interface Problem {
   id: string;
@@ -475,9 +477,9 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
 
         {/* Right Panel: Code Editor & Console */}
         {problem.type === "SYSTEM_DESIGN" ? (
-          <div className="flex flex-col h-full bg-[var(--background)] border-l border-[var(--card-border)]">
-             <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0">
-                <div className="text-sm font-medium text-[var(--foreground)]">Design Answer (Markdown)</div>
+          <div className="flex flex-col h-full bg-[var(--background)] border-l border-[var(--card-border)] overflow-hidden">
+             <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0">
+                <div className="text-sm font-medium text-[var(--foreground)]">Design Document</div>
                 <div className="flex items-center gap-3">
                    <button
                       className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
@@ -488,12 +490,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                    </button>
                 </div>
              </div>
-             <textarea
-                className="flex-1 w-full h-full p-4 bg-transparent text-[var(--foreground)] outline-none resize-none font-mono text-sm"
-                placeholder="Describe your system design here... (Markdown supported)"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-             />
+             
+             <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                <TiptapEditor 
+                   description={code}
+                   onChange={(html) => setCode(html)}
+                />
+             </div>
           </div>
         ) : (
         <Split
@@ -949,19 +952,29 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                   </div>
                 </div>
                 <div className="rounded-lg overflow-hidden border border-[var(--card-border)] h-[400px]">
-                   <Editor
-                      height="100%"
-                      language={selectedSubmission.language}
-                      theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
-                      value={selectedSubmission.code}
-                      options={{ 
-                        readOnly: true, 
-                        minimap: { enabled: false }, 
-                        fontSize: 13,
-                        scrollBeyondLastLine: false,
-                        padding: { top: 16, bottom: 16 }
-                      }}
-                   />
+                   {problem.type === "SYSTEM_DESIGN" ? (
+                      <div className="h-full overflow-y-auto bg-[var(--card-bg)] p-4 custom-scrollbar">
+                         <TiptapEditor 
+                            description={selectedSubmission.code}
+                            onChange={() => {}}
+                            editable={false}
+                         />
+                      </div>
+                   ) : (
+                      <Editor
+                         height="100%"
+                         language={selectedSubmission.language}
+                         theme={mounted && resolvedTheme === "dark" ? "vs-dark" : mounted && resolvedTheme === "cream" ? "cream" : "light"}
+                         value={selectedSubmission.code}
+                         options={{ 
+                           readOnly: true, 
+                           minimap: { enabled: false }, 
+                           fontSize: 13,
+                           scrollBeyondLastLine: false,
+                           padding: { top: 16, bottom: 16 }
+                         }}
+                      />
+                   )}
                 </div>
               </div>
             </div>

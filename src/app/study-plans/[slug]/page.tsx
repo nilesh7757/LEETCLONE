@@ -42,6 +42,16 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
     notFound();
   }
 
+  // Access control for private study plans
+  if (!plan.isPublic && plan.creatorId !== userId) {
+    notFound();
+  }
+
+  // Access control for private study plans
+  if (!plan.isPublic && plan.creatorId !== userId) {
+    notFound();
+  }
+
   const enrollment = userId ? await prisma.studyPlanEnrollment.findUnique({
     where: {
         userId_studyPlanId: {

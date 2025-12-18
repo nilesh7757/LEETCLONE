@@ -11,10 +11,21 @@ export async function GET() {
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { streak: true }
+      select: { streak: true, lastSolvedDate: true }
     });
 
-    return NextResponse.json({ streak: user?.streak || 0 });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const lastSolved = user?.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+    if (lastSolved) lastSolved.setHours(0, 0, 0, 0);
+
+    const solvedToday = lastSolved ? lastSolved.getTime() === today.getTime() : false;
+
+    return NextResponse.json({ 
+      streak: user?.streak || 0,
+      solvedToday
+    });
   } catch (error) {
     console.error("Failed to fetch streak:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

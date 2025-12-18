@@ -5,19 +5,33 @@ import { auth } from "@/auth";
 export async function GET(req: Request) {
   const session = await auth();
   const userId = session?.user?.id;
-  // Optionally restrict problem creation to authenticated users, or admins
-  // For now, let anyone see problems for selection.
+  
+  const { searchParams } = new URL(req.url);
+  const query = searchParams.get("q");
 
   try {
     const whereClause: any = {
-      OR: [
-        { isPublic: true },
-        { contests: { some: { endTime: { lte: new Date() }, publishProblems: true } } }
+      AND: [
+        {
+          OR: [
+            { isPublic: true },
+            { contests: { some: { endTime: { lte: new Date() }, publishProblems: true } } }
+          ]
+        }
       ]
     };
 
     if (userId) {
-      whereClause.OR.push({ creatorId: userId });
+      whereClause.AND[0].OR.push({ creatorId: userId });
+    }
+
+    if (query) {
+      whereClause.AND.push({
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { category: { contains: query, mode: 'insensitive' } },
+        ]
+      });
     }
 
     const problems = await prisma.problem.findMany({
@@ -25,7 +39,9 @@ export async function GET(req: Request) {
       select: {
         id: true,
         title: true,
+        slug: true,
         difficulty: true,
+        category: true,
         isPublic: true,
         creatorId: true,
         contests: {
@@ -39,6 +55,7 @@ export async function GET(req: Request) {
       orderBy: {
         title: "asc",
       },
+      take: query ? 20 : undefined, // Limit results if searching
     });
     
     // We don't need aggressive JS filtering anymore because the DB query handles visibility permissions.

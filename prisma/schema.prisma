@@ -56,8 +56,13 @@ model StudyPlan {
   description   String
   coverImage    String?
   durationDays  Int?      // e.g. 7 for a 7-day plan, 30 for monthly
+  isPublic      Boolean   @default(true)
+  isOfficial    Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  creatorId     String?
+  creator       User?     @relation("CreatedStudyPlans", fields: [creatorId], references: [id])
   
   problems      StudyPlanProblem[]
   enrollments   StudyPlanEnrollment[]
@@ -201,6 +206,7 @@ model User {
   followedBy      User[]        @relation("UserFollows")
 
   // Study Plans
+  createdStudyPlans    StudyPlan[] @relation("CreatedStudyPlans")
   studyPlanEnrollments StudyPlanEnrollment[]
 
   // Chat System

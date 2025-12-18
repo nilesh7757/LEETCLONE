@@ -92,7 +92,15 @@ export default async function Workspace({ params }: WorkspaceProps) {
   }
 
   let allTestCases: TestInputOutput[] = [];
-  const rawTestSets = problem.testSets;
+  let rawTestSets = problem.testSets;
+
+  if (typeof rawTestSets === 'string') {
+    try {
+      rawTestSets = JSON.parse(rawTestSets);
+    } catch (e) {
+      console.error("Failed to parse testSets string", e);
+    }
+  }
 
   if (Array.isArray(rawTestSets)) {
     allTestCases = rawTestSets;
