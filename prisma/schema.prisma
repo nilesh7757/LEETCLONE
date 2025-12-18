@@ -28,6 +28,7 @@ model Problem {
   timeLimit   Int         @default(2) // Time limit in seconds
   memoryLimit Int         @default(256) // Memory limit in MB
   testSets    Json        @default("[]") // New field to store structured test cases
+  hints       String[]    @default([]) // Progressive hints for the user
   referenceSolution String? // Added field for reference solution code
   initialSchema     String? // SQL Schema creation script
   initialData       String? // SQL Data insertion script

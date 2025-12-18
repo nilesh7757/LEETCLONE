@@ -27,6 +27,7 @@ interface Problem {
   memoryLimit: number;
   initialSchema?: string;
   initialData?: string;
+  hints?: string[];
   // Added fields from Prisma schema
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL";
 }
@@ -63,6 +64,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   // Test Cases State
   const [localTestCases, setLocalTestCases] = useState<any[]>(examples);
   const [consoleTab, setConsoleTab] = useState<'testcases' | 'results'>('testcases');
+  const [revealedHints, setRevealedHints] = useState<number[]>([]);
 
   // Language Dropdown State
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -488,6 +490,42 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     </div>
                   </div>
                 ))}
+
+                {/* Hints Section - Hidden during contests */}
+                {!contestId && problem.hints && problem.hints.length > 0 && (
+                  <div className="mt-12 pt-8 border-t border-[var(--card-border)] space-y-4">
+                    <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-blue-500" /> Hints
+                    </h3>
+                    <div className="space-y-3">
+                      {problem.hints.map((hint, idx) => {
+                        const isRevealed = revealedHints.includes(idx);
+                        return (
+                          <div key={idx} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl overflow-hidden">
+                            {!isRevealed ? (
+                              <button 
+                                onClick={() => setRevealedHints([...revealedHints, idx])}
+                                className="w-full px-4 py-3 text-left text-sm font-medium text-blue-500 hover:bg-blue-500/5 transition-colors flex items-center justify-between group"
+                              >
+                                <span>Show Hint {idx + 1}</span>
+                                <PlusCircle className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </button>
+                            ) : (
+                              <motion.div 
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-4 text-sm text-[var(--foreground)]/80 leading-relaxed bg-[var(--background)]/50"
+                              >
+                                <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Hint {idx + 1}</div>
+                                {hint}
+                              </motion.div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : activeLeftTab === 'submissions' ? (
               <div className="space-y-4">

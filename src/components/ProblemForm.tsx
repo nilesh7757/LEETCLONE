@@ -29,6 +29,7 @@ export interface ProblemFormData {
   category: string;
   description: string;
   editorial: string; // Added editorial
+  hints: string[]; // Added hints
   examplesInput: TestCase[];
   testCasesInput: TestCase[];
   referenceSolution: string;
@@ -115,6 +116,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       category: categories[0],
       description: "",
       editorial: "", // Default empty
+      hints: [], // Default empty hints
       examplesInput: [],
       testCasesInput: [],
       referenceSolution: getStarterCode("javascript"),
@@ -478,6 +480,58 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                   {errors.description && (
                     <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
                   )}
+                </div>
+
+                {/* Hints Section */}
+                <div className="space-y-4 pt-4 border-t border-[var(--card-border)]">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-[var(--foreground)]/70">
+                      Progressive Hints
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentHints = getValues("hints") || [];
+                        setValue("hints", [...currentHints, ""]);
+                      }}
+                      className="text-xs px-2 py-1 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500/20 transition-colors flex items-center gap-1"
+                    >
+                      <PlusCircle className="w-3 h-3" /> Add Hint
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {(watch("hints") || []).map((hint, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <span className="absolute left-3 top-3 text-[10px] font-bold text-[var(--foreground)]/30">{idx + 1}</span>
+                          <textarea
+                            value={hint}
+                            onChange={(e) => {
+                              const newHints = [...getValues("hints")];
+                              newHints[idx] = e.target.value;
+                              setValue("hints", newHints);
+                            }}
+                            placeholder={`Hint ${idx + 1}...`}
+                            className="w-full pl-8 pr-4 py-2 bg-[var(--background)]/50 border border-[var(--card-border)] rounded-lg text-sm text-[var(--foreground)] focus:border-blue-500 outline-none min-h-[60px] resize-y"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newHints = getValues("hints").filter((_, i) => i !== idx);
+                            setValue("hints", newHints);
+                          }}
+                          className="p-2 text-red-500/50 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    {(!watch("hints") || watch("hints").length === 0) && (
+                      <p className="text-xs text-[var(--foreground)]/40 italic">No hints added yet.</p>
+                    )}
+                  </div>
                 </div>
               </form>
             ) : activeTab === 'sql_setup' ? (

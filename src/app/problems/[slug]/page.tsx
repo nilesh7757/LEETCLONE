@@ -22,6 +22,7 @@ interface Problem {
   timeLimit: number;
   memoryLimit: number;
   testSets: any;
+  hints: string[];
   referenceSolution: string | null;
   initialSchema: string | null;
   initialData: string | null;
@@ -54,6 +55,7 @@ export default async function Workspace({ params }: WorkspaceProps) {
       timeLimit: true,
       memoryLimit: true,
       testSets: true,
+      hints: true,
       referenceSolution: true,
       createdAt: true,
       updatedAt: true,
