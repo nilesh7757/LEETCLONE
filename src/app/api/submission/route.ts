@@ -145,6 +145,7 @@ export async function POST(req: Request) {
     try {
       if (problem.type === "CODING") {
         results = await executeCode({
+          problemId: problem.id,
           code,
           language,
           type: "CODING", // Pass type
@@ -157,6 +158,7 @@ export async function POST(req: Request) {
         });
       } else if (problem.type === "SQL") {
         results = await executeCode({
+          problemId: problem.id,
           code,
           language: "sql",
           type: "SQL", // Pass type
