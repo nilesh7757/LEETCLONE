@@ -124,11 +124,12 @@ export async function POST(req: Request) {
     }
 
     if (Array.isArray(rawTestSets)) {
-      combinedTestCases = rawTestSets;
-    } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in rawTestSets && 'hidden' in rawTestSets) {
+      combinedTestCases = rawTestSets as any[];
+    } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in (rawTestSets as any) && 'hidden' in (rawTestSets as any)) {
+      const sets = rawTestSets as any;
       combinedTestCases = [
-        ...(rawTestSets.examples as TestInputOutput[]),
-        ...(rawTestSets.hidden as TestInputOutput[])
+        ...(sets.examples as TestInputOutput[]),
+        ...(sets.hidden as TestInputOutput[])
       ];
     } else {
       console.error("api/submission/route.ts: Unexpected format for problem.testSets:", rawTestSets);
