@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function POST(
   req: Request,
@@ -46,7 +47,7 @@ export async function POST(
           data: {
             ...otherFields,
             status: "PUBLISHED",
-            pendingData: null,
+            pendingData: Prisma.DbNull,
             problems: problems ? {
               deleteMany: {},
               create: problems.map((p: any, index: number) => ({
@@ -63,7 +64,7 @@ export async function POST(
         where: { id },
         data: {
           status: studyPlan.status === "PENDING_PUBLISH" ? "DRAFT" : "PUBLISHED",
-          pendingData: null,
+          pendingData: Prisma.DbNull,
         },
       });
       return NextResponse.json({ message: "Rejected successfully" });
