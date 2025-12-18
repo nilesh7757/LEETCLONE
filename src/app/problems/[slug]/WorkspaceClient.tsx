@@ -28,15 +28,15 @@ interface Problem {
   description: string;
   timeLimit: number;
   memoryLimit: number;
-  initialSchema?: string;
-  initialData?: string;
-  hints?: string[];
+  initialSchema?: string | null;
+  initialData?: string | null;
+  hints?: string[] | null;
   isVerified?: boolean;
-  creatorId?: string;
+  creatorId?: string | null;
   // Added fields from Prisma schema
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
-  pattern?: string;
-  blueprint?: any[];
+  pattern?: string | null;
+  blueprint?: any[] | null;
 }
 
 interface WorkspaceClientProps {
