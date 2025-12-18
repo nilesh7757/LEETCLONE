@@ -1147,11 +1147,12 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
                   </div>
                 ) : (
                   <div className="absolute inset-0 z-50">
-                    <BlueprintModal 
-                      problemTitle={problem.title}
-                      problemDescription={problem.description}
-                      patternName={problem.pattern}
-                      onComplete={() => {
+                                            <BlueprintModal 
+                                              problemTitle={problem.title}
+                                              problemDescription={problem.description}
+                                              patternName={problem.pattern || undefined}
+                                              onComplete={() => {
+                    
                         localStorage.setItem(`blueprint_complete_${problem.id}`, 'true');
                         setIsBlueprintComplete(true);
                         toast.success("Blueprint Complete! Code Editor Unlocked.");

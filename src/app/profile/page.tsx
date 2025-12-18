@@ -3,7 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { UserCircle, Mail, LogOut, Globe, FileText, Camera, Save, Loader2, TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban, CheckCircle, Award } from "lucide-react";
+import { UserCircle, Mail, LogOut, Globe, FileText, Camera, Save, Loader2, TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban, CheckCircle, Award, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import axios from "axios";
