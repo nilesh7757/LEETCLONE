@@ -13,9 +13,29 @@ interface WorkspaceProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-interface Problem {
-  // ... existing fields
-  type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL";
+interface ProblemData {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+  category: string;
+  description: string;
+  timeLimit: number;
+  memoryLimit: number;
+  testSets: any;
+  hints: string[];
+  referenceSolution: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  isPublic: boolean;
+  creatorId: string | null;
+  contests: {
+    startTime: Date;
+    creatorId: string;
+  }[];
+  type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
+  initialSchema: string | null;
+  initialData: string | null;
   pattern: string | null;
   blueprint: any;
 }
@@ -57,7 +77,7 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
       pattern: true,
       blueprint: true,
     }
-  }) as Problem;
+  }) as ProblemData;
 
   if (!problem) {
     notFound();
