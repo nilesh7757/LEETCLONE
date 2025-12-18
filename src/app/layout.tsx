@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth"; // Import auth directly
 import { Toaster } from "sonner";
 import PageTransition from "@/components/PageTransition"; // Import the PageTransition component
+import ActiveTracker from "@/components/ActiveTracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <ActiveTracker />
             <NavigationWrapper />
             <PageTransition>
               {children}

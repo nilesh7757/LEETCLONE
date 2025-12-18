@@ -4,18 +4,21 @@ import { useState, useEffect, useRef } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 import axios from "axios";
 import { Send, UserCircle, Paperclip, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 interface ChatClientProps {
   conversationId: string;
   currentUser: any;
   otherUser: any;
+  recipientIds: string[];
 }
 
-export default function ChatClient({ conversationId, currentUser, otherUser }: ChatClientProps) {
+export default function ChatClient({ conversationId, currentUser, otherUser, recipientIds }: ChatClientProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isOnline, setIsOnline] = useState(false);
+  const [lastActive, setLastActive] = useState<Date | null>(otherUser?.lastActive ? new Date(otherUser.lastActive) : null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -27,6 +30,14 @@ export default function ChatClient({ conversationId, currentUser, otherUser }: C
 
     newSocket.on("connect", () => {
       newSocket.emit("join_conversation", conversationId);
+      newSocket.emit("join_user", currentUser.id); // Join personal room for status updates
+      
+      // Get initial online status
+      newSocket.emit("get_online_users", (onlineUserIds: string[]) => {
+        if (otherUser && onlineUserIds.includes(otherUser.id)) {
+          setIsOnline(true);
+        }
+      });
     });
 
     newSocket.on("new_message", (message) => {
@@ -34,10 +45,23 @@ export default function ChatClient({ conversationId, currentUser, otherUser }: C
       scrollToBottom();
     });
 
+    newSocket.on("user_online", ({ userId }) => {
+      if (userId === otherUser?.id) {
+        setIsOnline(true);
+      }
+    });
+
+    newSocket.on("user_offline", ({ userId, lastActive }) => {
+      if (userId === otherUser?.id) {
+        setIsOnline(false);
+        setLastActive(new Date(lastActive));
+      }
+    });
+
     return () => {
       newSocket.disconnect();
     };
-  }, [conversationId]);
+  }, [conversationId, otherUser?.id, currentUser.id]);
 
   // Fetch initial messages
   useEffect(() => {
@@ -77,7 +101,11 @@ export default function ChatClient({ conversationId, currentUser, otherUser }: C
         setMessages((prev) => [...prev, data.message]);
         
         // Emit to server so it broadcasts to others
-        socket?.emit("send_message", { conversationId, message: data.message });
+        socket?.emit("send_message", { 
+          conversationId, 
+          message: data.message,
+          recipientIds 
+        });
         
         setNewMessage("");
         scrollToBottom();
@@ -92,18 +120,33 @@ export default function ChatClient({ conversationId, currentUser, otherUser }: C
     <div className="flex flex-col h-full bg-[var(--background)]">
       {/* Header */}
       <div className="h-16 px-6 border-b border-[var(--card-border)] flex items-center gap-4 bg-[var(--card-bg)] shrink-0">
-        <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden">
-            {otherUser?.image ? (
-                <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
-            ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                    <UserCircle className="w-6 h-6 text-[var(--foreground)]/40" />
-                </div>
-            )}
+        <div className="relative shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden">
+              {otherUser?.image ? (
+                  <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
+              ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                      <UserCircle className="w-6 h-6 text-[var(--foreground)]/40" />
+                  </div>
+              )}
+          </div>
+          {isOnline && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--background)] rounded-full" />
+          )}
         </div>
         <div>
             <h2 className="font-bold text-[var(--foreground)]">{otherUser?.name || "Unknown User"}</h2>
-            <p className="text-xs text-[var(--foreground)]/60">Active now</p>
+            <p className="text-[10px] font-medium transition-colors">
+              {isOnline ? (
+                <span className="text-green-500">Active now</span>
+              ) : lastActive ? (
+                <span className="text-[var(--foreground)]/40">
+                  Last seen {formatDistanceToNow(lastActive, { addSuffix: true })}
+                </span>
+              ) : (
+                <span className="text-[var(--foreground)]/40">Offline</span>
+              )}
+            </p>
         </div>
       </div>
 

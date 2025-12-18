@@ -145,6 +145,7 @@ model Submission {
   code      String
   language  String
   status    String   // "Accepted", "Wrong Answer", "Time Limit Exceeded"
+  score     Int?     // For SYSTEM_DESIGN problems
   runtime   Float?   // in ms
   timeComplexity String?
   spaceComplexity String?
@@ -191,6 +192,7 @@ model User {
   // Streak System
   streak          Int           @default(0)
   lastSolvedDate  DateTime?
+  lastActive      DateTime?     @default(now())
 
   // Verification
   otp             String?
@@ -212,6 +214,9 @@ model User {
   // Chat System
   conversations   ConversationParticipant[]
   messages        Message[]
+
+  // Snippets
+  snippets        Snippet[]
 
   // Notifications
   notifications     Notification[] @relation("UserNotifications")
@@ -369,4 +374,16 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Snippet {
+  id        String   @id @default(uuid())
+  title     String
+  code      String
+  language  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

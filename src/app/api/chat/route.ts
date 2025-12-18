@@ -20,7 +20,7 @@ export async function GET(req: Request) {
         participants: {
           include: {
             user: {
-              select: { id: true, name: true, image: true }
+              select: { id: true, name: true, image: true, lastActive: true }
             }
           }
         },

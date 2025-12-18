@@ -9,8 +9,11 @@ const io = new Server(httpServer, {
   }
 });
 
+const onlineUsers = new Map(); // userId -> Set(socketIds)
+
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
+  let currentUserId = null;
 
   // Join a room based on the problem ID
   socket.on("join_problem", (problemId) => {
@@ -45,15 +48,34 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send_message", (data) => {
-    // data: { conversationId, message }
-    // Broadcast to the room
+    // data: { conversationId, message, recipientIds }
+    // 1. Broadcast to the conversation room (for those currently viewing the chat)
     socket.to(data.conversationId).emit("new_message", data.message);
+
+    // 2. Broadcast to each recipient's personal room (for sidebar updates)
+    if (data.recipientIds && Array.isArray(data.recipientIds)) {
+      data.recipientIds.forEach(id => {
+        socket.to(id).emit("new_message", data.message);
+      });
+    }
   });
   
   // Join user's personal room for notifications (like friend requests)
   socket.on("join_user", (userId) => {
     socket.join(userId);
+    currentUserId = userId;
+    
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+      io.emit("user_online", { userId });
+    }
+    onlineUsers.get(userId).add(socket.id);
+    
     console.log(`Socket ${socket.id} joined user room: ${userId}`);
+  });
+
+  socket.on("get_online_users", (callback) => {
+    callback(Array.from(onlineUsers.keys()));
   });
 
   socket.on("send_friend_request", (data) => {
@@ -69,6 +91,14 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
+    if (currentUserId && onlineUsers.has(currentUserId)) {
+      const sockets = onlineUsers.get(currentUserId);
+      sockets.delete(socket.id);
+      if (sockets.size === 0) {
+        onlineUsers.delete(currentUserId);
+        io.emit("user_offline", { userId: currentUserId, lastActive: new Date() });
+      }
+    }
   });
 });
 

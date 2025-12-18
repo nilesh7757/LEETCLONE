@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import { Editor } from "@monaco-editor/react";
-import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, X, MessageSquare, Flag, Code2, PlusCircle } from "lucide-react";
+import { Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, X, MessageSquare, Flag, Code2, PlusCircle, Bookmark, Trash2, Terminal } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,6 +53,12 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [activeLeftTab, setActiveLeftTab] = useState<'description' | 'submissions' | 'discussion'>('description');
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  
+  // Snippets State
+  const [showSnippets, setShowSnippets] = useState(false);
+  const [snippets, setSnippets] = useState<any[]>([]);
+  const [snippetTitle, setSnippetTitle] = useState("");
+  const [isSavingSnippet, setIsSavingSnippet] = useState(false);
   
   // Test Cases State
   const [localTestCases, setLocalTestCases] = useState<any[]>(examples);
@@ -165,6 +171,53 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
       fetchSubmissions();
     }
   }, [activeLeftTab]);
+
+  const fetchSnippets = async () => {
+    try {
+      const { data } = await axios.get(`/api/snippets?language=${language}`);
+      setSnippets(data.snippets);
+    } catch (error) {
+      console.error("Failed to fetch snippets", error);
+    }
+  };
+
+  useEffect(() => {
+    if (showSnippets) {
+      fetchSnippets();
+    }
+  }, [showSnippets, language]);
+
+  const handleSaveSnippet = async () => {
+    if (!snippetTitle.trim()) {
+      toast.error("Please enter a title for your snippet.");
+      return;
+    }
+    setIsSavingSnippet(true);
+    try {
+      await axios.post("/api/snippets", {
+        title: snippetTitle,
+        code,
+        language
+      });
+      toast.success("Snippet saved!");
+      setSnippetTitle("");
+      fetchSnippets();
+    } catch (error) {
+      toast.error("Failed to save snippet.");
+    } finally {
+      setIsSavingSnippet(false);
+    }
+  };
+
+  const handleDeleteSnippet = async (id: string) => {
+    try {
+      await axios.delete(`/api/snippets/${id}`);
+      toast.success("Snippet deleted.");
+      fetchSnippets();
+    } catch (error) {
+      toast.error("Failed to delete snippet.");
+    }
+  };
 
   const fetchSubmissions = async () => {
     try {
@@ -406,7 +459,14 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                 </div>
 
                 <div 
-                  className="text-[var(--foreground)]/80 mb-8 whitespace-pre-wrap font-sans"
+                  className="prose max-w-none text-[var(--foreground)] mb-8 font-sans 
+                    [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-[var(--foreground)] [&_h1]:mb-6 [&_h1]:block
+                    [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-[var(--foreground)] [&_h2]:mt-8 [&_h2]:mb-4 [&_h2]:block
+                    [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[var(--foreground)] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:block
+                    [&_p]:text-[var(--foreground)]/80 [&_p]:leading-relaxed [&_p]:mb-4
+                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 [&_ul]:text-[var(--foreground)]/80
+                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 [&_ol]:text-[var(--foreground)]/80
+                    [&_li]:mb-1 [&_strong]:text-[var(--foreground)] [&_strong]:font-bold"
                   dangerouslySetInnerHTML={{ __html: problem.description }}
                 />
 
@@ -460,7 +520,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-mono bg-[var(--foreground)]/10 px-2 py-1 rounded text-[var(--foreground)]/80">
-                          {sub.language}
+                          {problem.type === "SYSTEM_DESIGN" && sub.score !== null ? `Score: ${sub.score}%` : sub.language}
                         </span>
                       </div>
                     </div>
@@ -576,6 +636,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     <RotateCcw className="w-4 h-4" />
                   </button>
                   <button
+                    className={`p-1.5 rounded-md transition-colors cursor-pointer ${showSnippets ? "bg-blue-500/20 text-blue-500" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/10"}`}
+                    title="My Snippets"
+                    onClick={() => setShowSnippets(!showSnippets)}
+                  >
+                    <Bookmark className="w-4 h-4" />
+                  </button>
+                  <button
                     className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
                     title="Settings"
                   >
@@ -585,6 +652,82 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
               </div>
               
               <div className="flex-1 relative min-h-0">
+                <AnimatePresence>
+                  {showSnippets && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="absolute top-0 right-0 w-72 h-full bg-[var(--card-bg)] border-l border-[var(--card-border)] z-30 flex flex-col shadow-xl backdrop-blur-md"
+                    >
+                      <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+                        <h3 className="font-bold text-sm text-[var(--foreground)] flex items-center gap-2">
+                          <Terminal className="w-4 h-4 text-blue-500" /> My Snippets
+                        </h3>
+                        <button onClick={() => setShowSnippets(false)} className="text-[var(--foreground)]/40 hover:text-[var(--foreground)]">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="p-4 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+                        {/* Save Current Code */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/50">Save current code</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="text"
+                              value={snippetTitle}
+                              onChange={(e) => setSnippetTitle(e.target.value)}
+                              placeholder="Snippet title..."
+                              className="flex-1 min-w-0 px-2 py-1.5 bg-[var(--background)] border border-[var(--card-border)] rounded text-xs text-[var(--foreground)] outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                            <button 
+                              onClick={handleSaveSnippet}
+                              disabled={isSavingSnippet || !code.trim()}
+                              className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                              <PlusCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="h-px bg-[var(--card-border)]" />
+
+                        {/* List Snippets */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/50">{language} snippets</label>
+                          {snippets.length === 0 ? (
+                            <p className="text-[10px] text-[var(--foreground)]/40 text-center py-4 italic">No {language} snippets saved.</p>
+                          ) : (
+                            snippets.map(snippet => (
+                              <div key={snippet.id} className="group p-3 bg-[var(--background)] border border-[var(--card-border)] rounded-lg hover:border-blue-500/30 transition-all">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-bold text-[var(--foreground)] truncate pr-2">{snippet.title}</span>
+                                  <button 
+                                    onClick={() => handleDeleteSnippet(snippet.id)}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-500/10 rounded transition-all"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <button 
+                                  onClick={() => {
+                                    setCode(prev => prev + "\n" + snippet.code);
+                                    setShowSnippets(false);
+                                    toast.success("Snippet inserted!");
+                                  }}
+                                  className="w-full py-1.5 bg-[var(--foreground)]/5 hover:bg-blue-500/10 text-[var(--foreground)] hover:text-blue-500 text-[10px] font-bold rounded border border-[var(--card-border)] transition-all"
+                                >
+                                  Insert to Editor
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <Editor
                   height="100%"
                   language={language}
@@ -857,8 +1000,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                    <div className={`font-bold text-lg ${selectedSubmission.status === 'Accepted' ? 'text-green-500' : 'text-red-500'}`}>{selectedSubmission.status}</div>
                 </div>
                 <div className="p-4 bg-[var(--background)] rounded-lg border border-[var(--card-border)] flex flex-col items-center justify-center text-center">
-                   <div className="text-xs text-[var(--foreground)]/60 mb-1 uppercase tracking-wider">Runtime</div>
-                   <div className="font-bold text-lg text-[var(--foreground)]">{selectedSubmission.runtime !== null ? `${selectedSubmission.runtime} ms` : 'N/A'}</div>
+                   <div className="text-xs text-[var(--foreground)]/60 mb-1 uppercase tracking-wider">
+                      {problem.type === "SYSTEM_DESIGN" ? "Score" : "Runtime"}
+                   </div>
+                   <div className={`font-bold text-lg ${problem.type === "SYSTEM_DESIGN" ? 'text-blue-500' : 'text-[var(--foreground)]'}`}>
+                      {problem.type === "SYSTEM_DESIGN" 
+                        ? (selectedSubmission.score !== null ? `${selectedSubmission.score}%` : 'N/A')
+                        : (selectedSubmission.runtime !== null ? `${selectedSubmission.runtime} ms` : 'N/A')
+                      }
+                   </div>
                 </div>
                 <div className="p-4 bg-[var(--background)] rounded-lg border border-[var(--card-border)] flex flex-col items-center justify-center text-center">
                    <div className="text-xs text-[var(--foreground)]/60 mb-1 uppercase tracking-wider">Time Complexity</div>

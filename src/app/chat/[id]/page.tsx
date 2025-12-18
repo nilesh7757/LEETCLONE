@@ -21,13 +21,15 @@ export default async function ChatPage({ params }: ChatPageProps) {
     include: {
       participants: {
         include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            }
-          }
+                      user: {
+                        select: {
+                          id: true,
+                          name: true,
+                          image: true,
+                          lastActive: true,
+                        }
+                      }
+          
         }
       }
     }
@@ -45,12 +47,18 @@ export default async function ChatPage({ params }: ChatPageProps) {
 
   // Identify other user
   const otherUser = conversation.participants.find(p => p.userId !== session.user.id)?.user;
+  
+  // Get all recipient IDs (everyone except current user)
+  const recipientIds = conversation.participants
+    .filter(p => p.userId !== session.user.id)
+    .map(p => p.userId);
 
   return (
     <ChatClient 
       conversationId={id} 
       currentUser={session.user} 
       otherUser={otherUser} 
+      recipientIds={recipientIds}
     />
   );
 }
