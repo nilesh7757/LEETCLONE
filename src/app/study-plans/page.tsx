@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { BookOpen, Trophy, ArrowRight, Layers, Plus, Lock, Globe } from "lucide-react";
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/components/AIWeaknessAnalysis";
+import { Mic } from "lucide-react";
 
 export default async function StudyPlansPage() {
   const session = await auth();
@@ -41,13 +42,22 @@ export default async function StudyPlansPage() {
         </div>
         
         {userId && (
-          <Link
-            href="/study-plans/new"
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap"
-          >
-            <Plus className="w-5 h-5" />
-            Create Personal Plan
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/interview"
+              className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-purple-500/20 whitespace-nowrap"
+            >
+              <Mic className="w-5 h-5" />
+              Start Mock Interview
+            </Link>
+            <Link
+              href="/study-plans/new"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap"
+            >
+              <Plus className="w-5 h-5" />
+              Create Personal Plan
+            </Link>
+          </div>
         )}
       </div>
 

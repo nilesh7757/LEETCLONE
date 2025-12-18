@@ -16,10 +16,10 @@ export class AIError extends Error {
 
 // Fallback Gemini models
 export const MODELS = [
-  "gemini-2.0-flash-exp", // Try experimental 2.0 first
-  "gemini-1.5-flash",     // Standard stable
-  "gemini-1.5-flash-8b",  // Faster fallback
-  "gemini-1.5-pro",       // High quality fallback
+  "gemini-2.0-flash-exp",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-pro",
 ];
 
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -32,24 +32,31 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
   if (groq) {
     try {
       console.log("[AI] Attempting Groq (llama-3.3-70b-versatile)...");
+      
+      // Groq JSON mode often requires "JSON" to be in the prompt
+      const finalPrompt = jsonMode && !prompt.toLowerCase().includes("json") 
+        ? prompt + "\n\nReturn the response in valid JSON format." 
+        : prompt;
+
       const chatCompletion = await groq.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: prompt },
+          { role: "user" as const, content: finalPrompt },
         ],
         model: "llama-3.3-70b-versatile",
         response_format: jsonMode ? { type: "json_object" } : undefined,
         temperature: 0.5,
-        max_tokens: 1000,
+        max_tokens: 1500, // Increased for batch evaluations
       });
 
       const response = chatCompletion.choices[0]?.message?.content;
       if (response) return response;
     } catch (error: any) {
-      console.warn("[AI] Groq failed or rate limited, falling back to Gemini...");
-      if (error.status === 429) {
-         // Optionally wait or just fallback
+      console.error("[AI] Groq Error:", error.message || error);
+      if (error.status === 413) {
+        console.warn("[AI] Groq context too large, falling back...");
       }
+      console.warn("[AI] Groq failed, falling back to Gemini...");
     }
   }
 

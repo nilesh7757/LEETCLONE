@@ -182,6 +182,7 @@ model User {
   bio           String?
   website       String?
   description   String?
+  skills        String[]   @default([]) // User's technical skills (React, Java, etc.)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt
   accounts      Account[]
@@ -199,6 +200,9 @@ model User {
   warnings        Int           @default(0)
   isBanned        Boolean       @default(false)
   reportsMade     Report[]      @relation("Reporter")
+
+  // Mock Interviews
+  mockInterviews  MockInterview[]
 
   // Streak System
   streak          Int           @default(0)
@@ -232,6 +236,26 @@ model User {
   // Notifications
   notifications     Notification[] @relation("UserNotifications")
   sentNotifications Notification[] @relation("UserSentNotifications")
+}
+
+model MockInterview {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  topic         String    // e.g. "Fullstack Developer", "Backend with Python"
+  difficulty    String    // "Entry", "Senior", "Staff"
+  status        String    @default("ONGOING") // "ONGOING", "COMPLETED"
+  
+  questions     Json      // Array of objects { id: string, question: string, type: "CONCEPTUAL" | "CODING" }
+  answers       Json      @default("[]") // Array of { questionId: string, answer: string, score: number, feedback: string }
+  
+  score         Int?      // 0-100 (Overall)
+  feedback      String?   @db.Text // Overall feedback
+  roadmap       Json?     // Array of { topic: string, reason: string, priority: string }
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Notification {

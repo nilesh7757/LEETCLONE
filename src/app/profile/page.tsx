@@ -32,7 +32,10 @@ export default function ProfilePage() {
     website: "",
     description: "",
     image: "",
+    skills: [] as string[],
   });
+
+  const [skillInput, setSkillInput] = useState("");
 
   useEffect(() => {
     if (session?.user) {
@@ -42,10 +45,25 @@ export default function ProfilePage() {
         website: (session.user as any).website || "",
         description: (session.user as any).description || "",
         image: session.user.image || "",
+        skills: (session.user as any).skills || [],
       });
       fetchStats(session.user.id);
     }
   }, [session]);
+
+  const addSkill = () => {
+    if (!skillInput.trim()) return;
+    if (formData.skills.includes(skillInput.trim())) {
+      setSkillInput("");
+      return;
+    }
+    setFormData({ ...formData, skills: [...formData.skills, skillInput.trim()] });
+    setSkillInput("");
+  };
+
+  const removeSkill = (skill: string) => {
+    setFormData({ ...formData, skills: formData.skills.filter(s => s !== skill) });
+  };
 
   const fetchStats = async (userId: string) => {
     try {
@@ -282,6 +300,39 @@ export default function ProfilePage() {
                         rows={4}
                         className="w-full px-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none resize-none"
                     />
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-[var(--foreground)]/70 mb-2 uppercase tracking-wider">Technical Skills</label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                        {formData.skills.map((skill) => (
+                            <span 
+                                key={skill}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-xs font-bold border border-blue-500/20"
+                            >
+                                {skill}
+                                <button type="button" onClick={() => removeSkill(skill)} className="hover:text-blue-700 transition-colors">
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={skillInput}
+                            onChange={(e) => setSkillInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                            placeholder="Add a skill (e.g. React)"
+                            className="flex-1 px-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none"
+                        />
+                        <button
+                            type="button"
+                            onClick={addSkill}
+                            className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-bold hover:opacity-90"
+                        >
+                            Add
+                        </button>
+                    </div>
                 </div>
             </div>
 

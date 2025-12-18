@@ -13,7 +13,7 @@ export async function PUT(req: Request) {
     const data = await req.json();
     console.log("Updating profile for:", session.user.email, "Data:", data);
 
-    const { name, bio, website, description, image } = data;
+    const { name, bio, website, description, image, skills } = data;
 
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email as string },
@@ -23,6 +23,7 @@ export async function PUT(req: Request) {
         website,
         description,
         image,
+        skills: Array.isArray(skills) ? skills : undefined,
       },
     });
 
