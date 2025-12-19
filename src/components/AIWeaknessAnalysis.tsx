@@ -142,7 +142,8 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
     </div>
   );
 
-  if (analysis.weakness === "No data yet") return null;
+  // No longer returning null here as we now provide a default 'Starting Out' analysis from the API
+  // if (analysis.weakness === "No data yet") return null;
 
   return (
     <motion.div 
@@ -172,15 +173,17 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
               {analysis.analysis}
             </p>
             
-            <div className="pt-2">
-               <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/40 mb-2 block">Custom Request (Optional)</label>
-               <textarea
-                  value={customRequest}
-                  onChange={(e) => setCustomRequest(e.target.value)}
-                  placeholder="e.g. 'I want to practice SQL Joins' or 'System Design of WhatsApp'"
-                  className="w-full p-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl text-sm text-[var(--foreground)] focus:ring-2 focus:ring-purple-500/50 outline-none resize-none h-20 transition-all"
-               />
-            </div>
+            {!studyPlanId && (
+              <div className="pt-2">
+                 <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/40 mb-2 block">Custom Request (Optional)</label>
+                 <textarea
+                    value={customRequest}
+                    onChange={(e) => setCustomRequest(e.target.value)}
+                    placeholder="e.g. 'I want to practice SQL Joins' or 'System Design of WhatsApp'"
+                    className="w-full p-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl text-sm text-[var(--foreground)] focus:ring-2 focus:ring-purple-500/50 outline-none resize-none h-20 transition-all"
+                 />
+              </div>
+            )}
 
             <div className="flex items-center gap-2 text-sm font-medium text-purple-500 bg-purple-500/5 px-3 py-1.5 rounded-full w-fit border border-purple-500/10">
               <CheckCircle className="w-4 h-4" />
@@ -197,21 +200,23 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
               {isGenerating ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Generating...</>
               ) : (
-                <><Sparkles className="w-5 h-5" /> Quick Practice</>
+                <><Sparkles className="w-5 h-5" /> {studyPlanId ? "Generate Next Problem" : "Quick Practice"}</>
               )}
             </button>
 
-            <button
-              onClick={handleGenerateStudyPlan}
-              disabled={isGenerating || isGeneratingPlan}
-              className="group/btn relative w-full md:w-fit px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
-            >
-              {isGeneratingPlan ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Building Plan...</>
-              ) : (
-                <><BookOpen className="w-5 h-5" /> Create AI Study Plan</>
-              )}
-            </button>
+            {!studyPlanId && (
+              <button
+                onClick={handleGenerateStudyPlan}
+                disabled={isGenerating || isGeneratingPlan}
+                className="group/btn relative w-full md:w-fit px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
+              >
+                {isGeneratingPlan ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Building Plan...</>
+                ) : (
+                  <><BookOpen className="w-5 h-5" /> Create AI Study Plan</>
+                )}
+              </button>
+            )}
             <p className="mt-1 text-[10px] text-[var(--foreground)]/40 font-medium uppercase tracking-wider text-right">
               Powered by Groq • Llama 3.3
             </p>

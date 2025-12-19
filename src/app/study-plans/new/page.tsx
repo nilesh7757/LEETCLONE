@@ -12,7 +12,12 @@ import {
   Lock, 
   Globe,
   Loader2,
-  Clock
+  Clock,
+  Sparkles,
+  X,
+  Eye,
+  Code2,
+  Wand2
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -24,6 +29,9 @@ interface SelectedProblem {
   title: string;
   difficulty: string;
   category: string;
+  slug: string; // Added slug
+  description?: string;
+  type?: string;
   day: number;
 }
 
@@ -35,6 +43,9 @@ export default function CreateStudyPlanPage() {
   const [durationDays, setDurationDays] = useState(7);
   const [selectedProblems, setSelectedProblems] = useState<SelectedProblem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
 
   const handleAddProblem = (problem: any) => {
     setSelectedProblems([
@@ -42,11 +53,33 @@ export default function CreateStudyPlanPage() {
       {
         id: problem.id,
         title: problem.title,
+        slug: problem.slug, // Pass slug
         difficulty: problem.difficulty,
         category: problem.category,
+        description: problem.description,
+        type: problem.type,
         day: 1, // Default to Day 1
       },
     ]);
+  };
+
+  const handleGenerateAI = async (topic: string) => {
+    if (!topic.trim()) return;
+    setIsGeneratingAI(true);
+    setIsModalOpen(false);
+    setAiTopic("");
+    toast.info(`AI is crafting a problem for "${topic}"...`);
+    try {
+      const { data } = await axios.post("/api/problems/generate-ai", { topic });
+      if (data.success) {
+        handleAddProblem(data.problem);
+        toast.success("AI Problem generated and added!");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to generate AI problem.");
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   const handleRemoveProblem = (id: string) => {
@@ -148,13 +181,38 @@ export default function CreateStudyPlanPage() {
                 
                 <ProblemSearch 
                    onSelect={handleAddProblem} 
+                   onGenerateAI={(topic) => {
+                     setAiTopic(topic);
+                     setIsModalOpen(true);
+                   }}
                    excludeIds={selectedProblems.map(p => p.id)} 
                 />
 
+                {isGeneratingAI && (
+                  <div className="flex items-center gap-3 p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl animate-pulse">
+                    <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+                    <span className="text-sm font-medium text-purple-500">AI is generating a unique problem for you...</span>
+                  </div>
+                )}
+
                 <div className="space-y-3 mt-6">
                   {selectedProblems.length === 0 ? (
-                    <div className="text-center py-12 bg-[var(--background)]/50 rounded-xl border border-dashed border-[var(--card-border)] text-[var(--foreground)]/40 text-sm">
-                      No problems added yet. Search and select problems above.
+                    <div className="flex flex-col items-center justify-center py-12 px-4 bg-[var(--background)]/50 rounded-2xl border border-dashed border-[var(--card-border)] text-center space-y-4">
+                      <div className="p-3 bg-blue-500/5 rounded-full">
+                         <Info className="w-6 h-6 text-blue-500/50" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--foreground)]/60">No problems added yet.</p>
+                        <p className="text-xs text-[var(--foreground)]/40 mt-1">Search above or let AI create a unique problem for your plan.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsModalOpen(true)}
+                        className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        Generate Problem with AI
+                      </button>
                     </div>
                   ) : (
                     selectedProblems.map((problem) => (
@@ -178,6 +236,14 @@ export default function CreateStudyPlanPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
+                           <button 
+                             type="button"
+                             onClick={() => router.push(`/problems/${problem.slug}?returnTo=/study-plans/new`)}
+                             className="p-2 text-blue-500/60 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-all"
+                             title="Preview & Fix in Workspace"
+                           >
+                             <Eye className="w-4 h-4" />
+                           </button>
                            <div className="flex items-center gap-2 px-3 py-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg">
                               <span className="text-xs text-[var(--foreground)]/60 whitespace-nowrap">Day</span>
                               <input 
@@ -253,6 +319,63 @@ export default function CreateStudyPlanPage() {
           </div>
         </div>
       </form>
+
+      {/* AI Problem Generation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <Sparkles className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--foreground)]">Generate AI Problem</h3>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 hover:bg-[var(--foreground)]/10 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-[var(--foreground)]/40" />
+                </button>
+              </div>
+
+              <p className="text-sm text-[var(--foreground)]/60">
+                Enter a topic and our AI will craft a unique problem, complete with test cases and solutions.
+              </p>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/40">Topic or Concept</label>
+                <input
+                  autoFocus
+                  type="text"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleGenerateAI(aiTopic)}
+                  placeholder="e.g. Dijkstra's Algorithm, React Context API..."
+                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-[var(--foreground)] transition-all"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 text-[var(--foreground)] font-bold rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleGenerateAI(aiTopic)}
+                  disabled={!aiTopic.trim() || isGeneratingAI}
+                  className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50"
+                >
+                  {isGeneratingAI ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Generate"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

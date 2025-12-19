@@ -87,13 +87,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-6">
               <NavLink href="/problems">Problems</NavLink>
               <NavLink href="/study-plans">Study Plans</NavLink>
-              <Link 
-                href="/interview" 
-                className="text-sm font-medium text-[var(--foreground)]/60 hover:text-[var(--foreground)] transition-colors relative"
-              >
-                Interview
-                <span className="absolute -top-3 -right-4 px-1.5 py-0.5 bg-purple-600 text-[8px] font-black text-white rounded-full animate-pulse shadow-lg">NEW</span>
-              </Link>
+              <NavLink href="/interview">Interview</NavLink>
               <NavLink href="/contest">Contest</NavLink>
               <NavLink href="/blog">Blog</NavLink>
               <NavLink href="/leaderboard">Leaderboard</NavLink>
@@ -184,13 +178,7 @@ export default function Navbar() {
                 <div className="px-2 space-y-1">
                   <MobileNavLink href="/problems">Problems</MobileNavLink>
                   <MobileNavLink href="/study-plans">Study Plans</MobileNavLink>
-                  <Link 
-                    href="/interview" 
-                    className="flex items-center justify-between px-4 py-2 text-sm font-medium text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 rounded-lg transition-colors"
-                  >
-                    Interview
-                    <span className="px-1.5 py-0.5 bg-purple-600 text-[8px] font-black text-white rounded-full">NEW</span>
-                  </Link>
+                  <MobileNavLink href="/interview">Interview</MobileNavLink>
                   <MobileNavLink href="/contest">Contest</MobileNavLink>
                   <MobileNavLink href="/blog">Blog</MobileNavLink>
                   <MobileNavLink href="/leaderboard">Leaderboard</MobileNavLink>

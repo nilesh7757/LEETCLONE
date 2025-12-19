@@ -14,17 +14,32 @@ export async function GET(req: Request) {
     }
 
     const userId = session.user.id;
+    let planDetails = null;
 
     // Fetch user's submissions
     let submissions;
     
     if (studyPlanId) {
        // Focus on problems within THIS study plan
-       const planProblems = await prisma.studyPlanProblem.findMany({
-          where: { studyPlanId },
-          select: { problemId: true }
+       const plan = await prisma.studyPlan.findUnique({
+          where: { id: studyPlanId },
+          include: {
+            problems: {
+              include: {
+                problem: { select: { category: true, pattern: true, title: true } }
+              }
+            }
+          }
        });
-       const problemIds = planProblems.map(p => p.problemId);
+
+       if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+       planDetails = {
+          title: plan.title,
+          description: plan.description,
+          topics: Array.from(new Set(plan.problems.map(p => p.problem.pattern || p.problem.category)))
+       };
+
+       const problemIds = plan.problems.map(p => p.problemId);
        
        submissions = await prisma.submission.findMany({
           where: { 
@@ -49,9 +64,17 @@ export async function GET(req: Request) {
     }
 
     if (submissions.length === 0) {
+      if (studyPlanId && planDetails) {
+        return NextResponse.json({ 
+          weakness: "Getting Started", 
+          analysis: `Welcome to the "${planDetails.title}" study plan! You haven't started yet. This plan covers ${planDetails.topics.join(", ")}. We recommend tackling the first problem to get your journey started!`,
+          recommendedTopic: planDetails.topics[0] || "Arrays" 
+        });
+      }
       return NextResponse.json({ 
-        weakness: "No data yet", 
-        message: "Solve some problems to get AI analysis!" 
+        weakness: "Starting Out", 
+        analysis: "You haven't solved any problems yet! Let's build your foundation. We recommend starting with a personalized roadmap to guide your learning.",
+        recommendedTopic: "Arrays" 
       });
     }
 
@@ -78,9 +101,10 @@ export async function GET(req: Request) {
     });
 
     const systemPrompt = `You are a technical mentor. Based on user stats, identify their biggest weakness. 
+    ${planDetails ? `The user is currently in a study plan called "${planDetails.title}" which focuses on: ${planDetails.topics.join(", ")}.` : ""}
     Return ONLY JSON: { "weakness": "Topic Name", "analysis": "Detailed explanation", "recommendedTopic": "Topic Name" }`;
 
-    const userPrompt = `Identify my biggest weakness based on these stats: ${JSON.stringify(stats)}`;
+    const userPrompt = `Identify my biggest weakness based on these stats: ${JSON.stringify(stats)}. ${planDetails ? "Focus your advice on my progress within this study plan." : ""}`;
 
     console.log("Analyzing weakness for stats:", JSON.stringify(stats));
 

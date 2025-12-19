@@ -29,7 +29,9 @@ export async function POST(req: Request) {
         if (sub.status === "Accepted") stats[cat].solved++;
         else stats[cat].failed++;
       });
-      statsData = `User Stats: ${JSON.stringify(stats)}`;
+      statsData = Object.keys(stats).length > 0 
+        ? `User Stats: ${JSON.stringify(stats)}`
+        : "User has not solved any problems yet. Suggest a foundational topic like Arrays, Strings, or Basic Algorithms.";
     }
 
     // 2. AI decides on a topic and plan structure
@@ -48,7 +50,10 @@ export async function POST(req: Request) {
         "difficulty": "Easy", 
         "description": "...", 
         "pattern": "...", 
-        "testSets": [...], 
+        "testSets": { 
+          "examples": [{"input": "...", "expectedOutput": "..."}], 
+          "hidden": [{"input": "...", "expectedOutput": "..."}] 
+        }, 
         "blueprint": [...],
         "referenceSolution": "...",
         "initialSchema": "...", 
@@ -60,7 +65,10 @@ export async function POST(req: Request) {
         "difficulty": "Medium", 
         "description": "...", 
         "pattern": "...", 
-        "testSets": [...], 
+        "testSets": { 
+          "examples": [{"input": "...", "expectedOutput": "..."}], 
+          "hidden": [{"input": "...", "expectedOutput": "..."}] 
+        }, 
         "blueprint": [...],
         "referenceSolution": "...",
         "initialSchema": "...", 
@@ -74,6 +82,50 @@ export async function POST(req: Request) {
     const responseText = await runAI(userPrompt, systemPrompt, true);
     const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     const planData = JSON.parse(cleanJson);
+
+    const formatTestSets = (testSets: any) => {
+      let formatted: { examples: any[], hidden: any[] } = { examples: [], hidden: [] };
+      if (!testSets) return formatted;
+      
+      if (Array.isArray(testSets)) {
+        testSets.forEach((ts: any) => {
+          const item = {
+            input: ts.input || "",
+            expectedOutput: ts.expectedOutput || ts.output || ""
+          };
+          if (ts.isExample === true) {
+            formatted.examples.push(item);
+          } else {
+            formatted.hidden.push(item);
+          }
+        });
+
+        // Fallback: If no isExample flags were found, put all in examples
+        if (formatted.examples.length === 0 && formatted.hidden.length > 0) {
+           formatted.examples = formatted.hidden;
+           formatted.hidden = [];
+        }
+      } else {
+        formatted.examples = (testSets.examples || []).map((ts: any) => ({
+          input: ts.input || "",
+          expectedOutput: ts.expectedOutput || ts.output || ""
+        }));
+        formatted.hidden = (testSets.hidden || []).map((ts: any) => ({
+          input: ts.input || "",
+          expectedOutput: ts.expectedOutput || ts.output || ""
+        }));
+      }
+      return formatted;
+    };
+
+    const generateSlug = (title: string) => {
+      return title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "") // Remove non-word chars
+        .replace(/[\s_-]+/g, "-") // Replace spaces/underscores with single dash
+        .replace(/^-+|-+$/g, ""); // Remove dashes from start/end
+    };
 
     // --- AUDITOR PHASE: Fix hallucinations before saving ---
     const auditProblem = async (prob: any) => {
@@ -109,7 +161,7 @@ export async function POST(req: Request) {
     const createdPlan = await prisma.studyPlan.create({
       data: {
         title: planData.title,
-        slug: planData.title.toLowerCase().replace(/ /g, "-") + "-" + Date.now(),
+        slug: generateSlug(planData.title) + "-" + Date.now(),
         description: planData.description,
         isOfficial: false,
         isPublic: false,
@@ -122,13 +174,13 @@ export async function POST(req: Request) {
     const p1 = await prisma.problem.create({
       data: {
         title: auditedP1.title,
-        slug: auditedP1.title.toLowerCase().replace(/ /g, "-") + "-" + Date.now(),
+        slug: generateSlug(auditedP1.title) + "-" + Date.now(),
         difficulty: auditedP1.difficulty || "Easy",
         category: planData.topic,
         description: auditedP1.description,
         type: auditedP1.type || "CODING",
         pattern: auditedP1.pattern,
-        testSets: auditedP1.testSets,
+        testSets: JSON.stringify(formatTestSets(auditedP1.testSets)),
         blueprint: auditedP1.blueprint,
         referenceSolution: auditedP1.referenceSolution,
         initialSchema: auditedP1.initialSchema,
@@ -144,13 +196,13 @@ export async function POST(req: Request) {
     const p2 = await prisma.problem.create({
       data: {
         title: auditedP2.title,
-        slug: auditedP2.title.toLowerCase().replace(/ /g, "-") + "-" + Date.now(),
+        slug: generateSlug(auditedP2.title) + "-" + Date.now(),
         difficulty: auditedP2.difficulty || "Medium",
         category: planData.topic,
         description: auditedP2.description,
         type: auditedP2.type || "CODING",
         pattern: auditedP2.pattern,
-        testSets: auditedP2.testSets,
+        testSets: JSON.stringify(formatTestSets(auditedP2.testSets)),
         blueprint: auditedP2.blueprint,
         referenceSolution: auditedP2.referenceSolution,
         initialSchema: auditedP2.initialSchema,

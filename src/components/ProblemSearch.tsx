@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Code2, X, Loader2, Plus } from "lucide-react";
+import { Search, Code2, X, Loader2, Plus, Sparkles } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import axios from "axios";
 
@@ -15,10 +15,11 @@ interface ProblemSearchResult {
 
 interface ProblemSearchProps {
   onSelect: (problem: ProblemSearchResult) => void;
+  onGenerateAI?: (topic: string) => void;
   excludeIds?: string[];
 }
 
-export default function ProblemSearch({ onSelect, excludeIds = [] }: ProblemSearchProps) {
+export default function ProblemSearch({ onSelect, onGenerateAI, excludeIds = [] }: ProblemSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ProblemSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -137,9 +138,60 @@ export default function ProblemSearch({ onSelect, excludeIds = [] }: ProblemSear
                     <Plus className="w-5 h-5 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
+
+                {onGenerateAI && (
+                  <button 
+                    type="button"
+                    onClick={() => { 
+                      onGenerateAI(query); 
+                      setQuery(""); 
+                      setIsOpen(false); 
+                    }}
+                    className="w-full flex items-center gap-4 px-4 py-3 hover:bg-purple-500/5 transition-colors text-left group border-t border-[var(--card-border)] mt-1"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5 text-purple-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-purple-500 transition-colors">
+                        Generate "{query}" with AI
+                      </div>
+                      <div className="text-[10px] text-purple-500/60 uppercase tracking-wider mt-0.5">
+                        Create a unique problem for this topic
+                      </div>
+                    </div>
+                    <Plus className="w-5 h-5 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )}
               </div>
            ) : query.length >= 2 ? (
-              <div className="p-8 text-center text-sm text-[var(--foreground)]/50">No matching problems found.</div>
+              <div className="p-4 space-y-2">
+                <div className="text-center py-4 text-sm text-[var(--foreground)]/50">No matching problems found.</div>
+                {onGenerateAI && (
+                   <button 
+                    type="button"
+                    onClick={() => { 
+                      onGenerateAI(query); 
+                      setQuery(""); 
+                      setIsOpen(false); 
+                    }}
+                    className="w-full flex items-center gap-4 px-4 py-3 bg-purple-500/5 hover:bg-purple-500/10 rounded-xl transition-colors text-left group border border-purple-500/20"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5 text-purple-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-purple-500 transition-colors">
+                        Generate "{query}" with AI
+                      </div>
+                      <div className="text-[10px] text-purple-500/60 uppercase tracking-wider mt-0.5">
+                        Create a unique problem for this topic
+                      </div>
+                    </div>
+                    <Plus className="w-5 h-5 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )}
+              </div>
            ) : null}
         </div>
       )}

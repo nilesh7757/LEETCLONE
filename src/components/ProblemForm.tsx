@@ -107,6 +107,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
     watch,
     setValue,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<ProblemFormData>({
     defaultValues: initialData || {
@@ -129,6 +130,12 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       problemType: "CODING", // Default problem type
     },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    }
+  }, [initialData, reset]);
 
   const problemTitle = watch("title");
   const language = watch("language");

@@ -19,6 +19,7 @@ interface GeminiChatProps {
   code: string;
   language: string;
   isInterviewMode?: boolean;
+  testCases?: any[];
 }
 
 export default function GeminiChat({ 
@@ -27,7 +28,8 @@ export default function GeminiChat({
   problemDescription, 
   code, 
   language,
-  isInterviewMode = false
+  isInterviewMode = false,
+  testCases = []
 }: GeminiChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -69,7 +71,8 @@ export default function GeminiChat({
             code,
             language,
             isInterviewMode: true,
-            isPeriodicQuestion: true
+            isPeriodicQuestion: true,
+            testCases
           }
         });
 
@@ -183,6 +186,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
           problemDescription, 
           code,
           language,
+          testCases
         },
       });
 

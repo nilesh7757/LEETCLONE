@@ -206,6 +206,7 @@ export async function chatWithAI(
     language: string;
     isInterviewMode?: boolean;
     isPeriodicQuestion?: boolean;
+    testCases?: any[];
   }
 ): Promise<string> {
   if (!GEMINI_API_KEY && !GROQ_API_KEY) {
@@ -214,6 +215,9 @@ export async function chatWithAI(
 
   const desc = context.problemDescription.substring(0, 1500);
   const code = context.code.substring(0, 3000);
+  const testCasesStr = context.testCases && context.testCases.length > 0 
+    ? JSON.stringify(context.testCases.map(tc => ({ input: tc.input, expected: tc.expectedOutput })), null, 2)
+    : "No test cases provided.";
 
   let systemPrompt = "";
 
@@ -222,6 +226,9 @@ export async function chatWithAI(
       You are a Senior Technical Interviewer at a top tech company (like Google or Meta).
       You are conducting a live technical interview for the problem: "${context.problemTitle}".
       
+      Problem Description: ${desc}
+      Example Test Cases: ${testCasesStr}
+
       User's Current Code:
       \`\`\`\${context.language}
       ${code}
@@ -239,6 +246,7 @@ export async function chatWithAI(
       You are a strict but encouraging Socratic AI Coding Tutor. 
       Problem: "${context.problemTitle}"
       Description: ${desc}
+      Example Test Cases: ${testCasesStr}
       User's Code: ${code}
 
       RULES:

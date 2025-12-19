@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -11,6 +11,8 @@ import { use } from "react";
 
 export default function EditProblemPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const { data: session, status } = useSession();
   const router = useRouter();
   const [initialData, setInitialData] = useState<ProblemFormData | null>(null);
@@ -49,10 +51,46 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
       const { data } = await axios.get(`/api/problems/${slug}/details`); // I will create this.
       
       const p = data.problem;
-      let parsedTestSets = { examples: [], hidden: [] };
+      let parsedTestSets: { examples: any[], hidden: any[] } = { examples: [], hidden: [] };
+      
       try {
-          parsedTestSets = JSON.parse(p.testSets);
-      } catch (e) {}
+          let rawData = p.testSets;
+          if (typeof rawData === "string") {
+            rawData = JSON.parse(rawData);
+          }
+
+          if (Array.isArray(rawData)) {
+            // Handle legacy flat array format
+            rawData.forEach((ts: any) => {
+              const item = {
+                input: ts.input || "",
+                output: ts.expectedOutput || ts.output || ""
+              };
+              if (ts.isExample === true) {
+                parsedTestSets.examples.push(item);
+              } else {
+                parsedTestSets.hidden.push(item);
+              }
+            });
+            // Fallback: If no isExample flags were found, put all in examples
+            if (parsedTestSets.examples.length === 0 && parsedTestSets.hidden.length > 0) {
+               parsedTestSets.examples = parsedTestSets.hidden;
+               parsedTestSets.hidden = [];
+            }
+          } else if (rawData && typeof rawData === "object") {
+            // Handle standard { examples: [], hidden: [] } format
+            parsedTestSets.examples = (rawData.examples || []).map((t: any) => ({
+              input: t.input || "",
+              output: t.expectedOutput || t.output || ""
+            }));
+            parsedTestSets.hidden = (rawData.hidden || []).map((t: any) => ({
+              input: t.input || "",
+              output: t.expectedOutput || t.output || ""
+            }));
+          }
+      } catch (e) {
+        console.error("Failed to parse testSets", e);
+      }
 
       setInitialData({
         title: p.title,
@@ -60,8 +98,8 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
         difficulty: p.difficulty,
         category: p.category,
         description: p.description,
-        examplesInput: (parsedTestSets.examples || []).map((t: any) => ({ input: t.input, output: t.expectedOutput })),
-        testCasesInput: (parsedTestSets.hidden || []).map((t: any) => ({ input: t.input, output: t.expectedOutput })),
+        examplesInput: parsedTestSets.examples,
+        testCasesInput: parsedTestSets.hidden,
         referenceSolution: p.referenceSolution || "",
         initialSchema: p.initialSchema || "",
         initialData: p.initialData || "",
@@ -91,7 +129,11 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
       await axios.put(`/api/problems/${slug}/update`, data);
       
       toast.success("Problem updated successfully!");
-      router.push(`/problems/${newSlug}`); // Redirect to new slug
+      if (returnTo) {
+        router.push(returnTo);
+      } else {
+        router.push(`/problems/${newSlug}`); // Redirect to new slug
+      }
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.error || "Failed to update problem.");

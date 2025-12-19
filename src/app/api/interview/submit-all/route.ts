@@ -32,7 +32,11 @@ export async function POST(req: Request) {
       `).join("\n\n")}
 
       TASKS:
-      1. For each answer, provide a score (0-100) and a brief feedback.
+      1. For each answer, provide:
+         - score (0-100)
+         - feedback: Brief critique of the user's answer.
+         - idealAnswer: A detailed, high-quality sample answer that would score 100%.
+         - improvement: Specific tips on how to make their answer better.
       2. Provide an overall score (0-100).
       3. Provide a detailed summary of strengths and weaknesses in HTML format.
       4. Provide a "roadmap": A list of 3 specific areas to improve and why.
@@ -40,7 +44,13 @@ export async function POST(req: Request) {
       Return ONLY JSON:
       {
         "individualResults": [
-          { "questionId": "1", "score": 85, "feedback": "..." },
+          { 
+            "questionId": "1", 
+            "score": 85, 
+            "feedback": "...", 
+            "idealAnswer": "...", 
+            "improvement": "..." 
+          },
           ...
         ],
         "overallScore": 80,
@@ -61,7 +71,9 @@ export async function POST(req: Request) {
         questionId: res.questionId,
         answer: answers[i],
         score: res.score,
-        feedback: res.feedback
+        feedback: res.feedback,
+        idealAnswer: res.idealAnswer,
+        improvement: res.improvement
       }));
 
       // 3. Update DB

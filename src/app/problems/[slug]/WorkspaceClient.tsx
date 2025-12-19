@@ -731,9 +731,9 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
       <div className="h-14 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0">
         <div className="flex items-center gap-2">
           <Link 
-            href={contestId ? `/contest/${contestId}` : "/problems"} 
+            href={searchParams.get("returnTo") || (contestId ? `/contest/${contestId}` : "/problems")} 
             className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
-            title={contestId ? "Back to Contest" : "Back to Problems"}
+            title={searchParams.get("returnTo") ? "Back to Previous" : (contestId ? "Back to Contest" : "Back to Problems")}
           >
             <ChevronLeft className="w-5 h-5" />
           </Link>
@@ -1103,14 +1103,15 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
                </div>
             ) : (
               /* AI Tutor Tab */
-              <GeminiChat 
-                problemId={problem.id}
-                problemTitle={problem.title} 
-                problemDescription={problem.description} 
-                code={code}
-                language={language}
-                isInterviewMode={isInterviewMode}
-              />
+            <GeminiChat
+              problemId={problem.id}
+              problemTitle={problem.title}
+              problemDescription={problem.description}
+              code={code}
+              language={language}
+              isInterviewMode={showBlueprint}
+              testCases={examples}
+            />
             )}
           </div>
         </div>

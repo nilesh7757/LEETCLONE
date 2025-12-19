@@ -7,6 +7,8 @@ import {
   Send, 
   Loader2, 
   CheckCircle, 
+  CheckCircle2,
+  Lightbulb,
   Bot, 
   ChevronRight,
   TrendingUp,
@@ -303,26 +305,54 @@ function InterviewResults({ results, interview }: { results: any, interview: any
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <h3 className="font-bold text-[var(--foreground)] mb-4 uppercase tracking-widest text-sm px-2">Detailed Breakdown</h3>
         {interview.answers.map((ans: any, i: number) => {
           const q = interview.questions.find((q: any) => q.id === ans.questionId);
           return (
-            <div key={i} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6">
-              <div className="flex justify-between items-start gap-4 mb-4">
-                <h4 className="font-bold text-[var(--foreground)]">{q.question}</h4>
-                <span className={`px-2 py-1 rounded text-[10px] font-bold ${ans.score >= 70 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+            <div key={i} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6">
+              <div className="flex justify-between items-start gap-4 pb-4 border-b border-[var(--card-border)]">
+                <h4 className="font-bold text-lg text-[var(--foreground)] leading-tight">{q.question}</h4>
+                <span className={`shrink-0 px-3 py-1 rounded-full text-xs font-black ${ans.score >= 70 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                   {ans.score}%
                 </span>
               </div>
-              <div className="space-y-3">
-                <div className="p-3 bg-[var(--background)] rounded-xl border border-[var(--card-border)]">
-                  <p className="text-xs font-bold text-[var(--foreground)]/40 uppercase tracking-wider mb-1">Your Answer</p>
-                  <p className="text-sm text-[var(--foreground)]/80 italic line-clamp-3">"{ans.answer}"</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-[var(--background)] rounded-2xl border border-[var(--card-border)]">
+                    <p className="text-[10px] font-black text-[var(--foreground)]/40 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                      <Send className="w-3 h-3" /> Your Answer
+                    </p>
+                    <p className="text-sm text-[var(--foreground)]/80 italic leading-relaxed">"{ans.answer}"</p>
+                  </div>
+
+                  <div className="p-4 bg-purple-500/5 rounded-2xl border border-purple-500/10">
+                    <p className="text-[10px] font-black text-purple-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                      <Bot className="w-3 h-3" /> AI Feedback
+                    </p>
+                    <p className="text-sm text-[var(--foreground)]/80 leading-relaxed">{ans.feedback}</p>
+                  </div>
                 </div>
-                <div className="p-3 bg-purple-500/5 rounded-xl border border-purple-500/10">
-                  <p className="text-xs font-bold text-purple-500 uppercase tracking-wider mb-1">Feedback</p>
-                  <p className="text-sm text-[var(--foreground)]/80">{ans.feedback}</p>
+
+                <div className="space-y-4">
+                  {ans.idealAnswer && (
+                    <div className="p-4 bg-green-500/5 rounded-2xl border border-green-500/10">
+                      <p className="text-[10px] font-black text-green-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                        <CheckCircle2 className="w-3 h-3" /> Ideal Answer
+                      </p>
+                      <p className="text-sm text-[var(--foreground)]/80 leading-relaxed">{ans.idealAnswer}</p>
+                    </div>
+                  )}
+
+                  {ans.improvement && (
+                    <div className="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
+                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                        <Lightbulb className="w-3 h-3" /> How to Improve
+                      </p>
+                      <p className="text-sm text-[var(--foreground)]/80 leading-relaxed">{ans.improvement}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
