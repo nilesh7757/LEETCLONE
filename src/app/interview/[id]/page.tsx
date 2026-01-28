@@ -183,13 +183,25 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
               {currentQuestion.question}
             </h3>
 
-            <textarea
-              value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
-              placeholder="Provide your detailed answer here..."
-              disabled={isSubmitting}
-              className="w-full h-64 p-6 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl text-[var(--foreground)] focus:ring-2 focus:ring-purple-500/50 outline-none transition-all resize-none text-lg"
-            />
+            <div className="relative group">
+              {currentQuestion.type === "CODING" && (
+                <div className="absolute top-4 right-4 px-3 py-1 bg-[var(--background)] border border-[var(--card-border)] rounded-lg text-[10px] font-mono text-[var(--foreground)]/40 uppercase tracking-widest pointer-events-none group-focus-within:text-purple-500 group-focus-within:border-purple-500/30 transition-colors">
+                  Code Editor
+                </div>
+              )}
+              <textarea
+                value={currentAnswer}
+                onChange={(e) => setCurrentAnswer(e.target.value)}
+                placeholder={currentQuestion.type === "CODING" ? "// Write your solution code here..." : "Provide your detailed answer here..."}
+                disabled={isSubmitting}
+                spellCheck={currentQuestion.type !== "CODING"}
+                className={`w-full h-96 p-6 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl text-[var(--foreground)] focus:ring-2 focus:ring-purple-500/50 outline-none transition-all resize-none text-lg ${
+                  currentQuestion.type === "CODING" 
+                    ? "font-mono text-sm leading-relaxed whitespace-pre" 
+                    : ""
+                }`}
+              />
+            </div>
 
             <div className="mt-8 flex justify-between items-center">
               <button

@@ -261,57 +261,78 @@ export async function POST(req: Request) {
 
     let updatedStreak = 0;
 
-    // --- STREAK & CONTEST SCORING LOGIC ---
+    // --- STREAK LOGIC (Only for Daily Problem) ---
     if (overallStatus === "Accepted") {
-      console.log("[DEBUG] Updating Streak...");
-      const now = new Date();
-      
-      // Update Streak
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { streak: true, lastSolvedDate: true }
+      // Check if this is the Daily Problem
+      const allProblems = await prisma.problem.findMany({
+        where: { isPublic: true },
+        select: { id: true },
+        orderBy: { createdAt: 'asc' },
       });
 
-      if (user) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
-        if (lastSolved) lastSolved.setHours(0, 0, 0, 0);
+      if (allProblems.length > 0) {
+        const now = new Date();
+        const startOfEpoch = new Date(0);
+        const diffTime = now.getTime() - startOfEpoch.getTime();
+        const daysSinceEpoch = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const dailyIndex = daysSinceEpoch % allProblems.length;
+        const dailyProblemId = allProblems[dailyIndex].id;
 
-        let newStreak = user.streak;
-
-        if (!lastSolved) {
-           // First ever solve
-           newStreak = 1;
-        } else if (lastSolved.getTime() === today.getTime()) {
-           // Already solved today, keep streak
-        } else {
-           const yesterday = new Date(today);
-           yesterday.setDate(yesterday.getDate() - 1);
-           
-           if (lastSolved.getTime() === yesterday.getTime()) {
-              // Solved yesterday, increment streak
-              newStreak++;
-           } else {
-              // Missed a day, reset streak
-              newStreak = 1;
-           }
-        }
-
-        updatedStreak = newStreak;
-
-        if (newStreak !== user.streak || !lastSolved || lastSolved.getTime() !== today.getTime()) {
-            await prisma.user.update({
+        if (problemId === dailyProblemId) {
+            console.log("[DEBUG] Updating Streak (Daily Problem Solved)...");
+            
+            // Update Streak
+            const user = await prisma.user.findUnique({
                 where: { id: session.user.id },
-                data: {
-                    streak: newStreak,
-                    lastSolvedDate: new Date()
-                }
+                select: { streak: true, lastSolvedDate: true }
             });
+
+            if (user) {
+                const today = new Date();
+                today.setUTCHours(0, 0, 0, 0);
+                
+                const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+                if (lastSolved) lastSolved.setUTCHours(0, 0, 0, 0);
+
+                let newStreak = user.streak;
+
+                if (!lastSolved) {
+                // First ever solve
+                newStreak = 1;
+                } else if (lastSolved.getTime() === today.getTime()) {
+                // Already solved today, keep streak
+                } else {
+                const yesterday = new Date(today);
+                yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+                
+                if (lastSolved.getTime() === yesterday.getTime()) {
+                    // Solved yesterday, increment streak
+                    newStreak++;
+                } else {
+                    // Missed a day, reset streak
+                    newStreak = 1;
+                }
+                }
+
+                updatedStreak = newStreak;
+
+                if (newStreak !== user.streak || !lastSolved || lastSolved.getTime() !== today.getTime()) {
+                    await prisma.user.update({
+                        where: { id: session.user.id },
+                        data: {
+                            streak: newStreak,
+                            lastSolvedDate: new Date()
+                        }
+                    });
+                }
+            }
         }
       }
+    }
 
+    // --- CONTEST SCORING LOGIC ---
+    if (overallStatus === "Accepted") {
+      const now = new Date();
       // Find active contests for this problem
       const activeContests = await prisma.contest.findMany({
         where: {

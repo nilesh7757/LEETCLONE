@@ -15,10 +15,10 @@ export async function GET() {
     });
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
     
     const lastSolved = user?.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
-    if (lastSolved) lastSolved.setHours(0, 0, 0, 0);
+    if (lastSolved) lastSolved.setUTCHours(0, 0, 0, 0);
 
     const solvedToday = lastSolved ? lastSolved.getTime() === today.getTime() : false;
 

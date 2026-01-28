@@ -11,7 +11,11 @@ async function main() {
       difficulty: "Easy",
       category: "Array",
       description: "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
-      testSets: [],
+      testSets: [
+        { input: "4\n2 7 11 15\n9", expectedOutput: "0 1", isExample: true },
+        { input: "3\n3 2 4\n6", expectedOutput: "1 2", isExample: true },
+        { input: "2\n3 3\n6", expectedOutput: "0 1", isExample: false }
+      ],
     },
     {
       title: "Reverse Linked List",
@@ -51,7 +55,10 @@ async function main() {
         difficulty: "Medium",
         category: "Array",
         description: "Find two lines that together with the x-axis form a container, such that the container contains the most water.",
-        testSets: [],
+        testSets: [
+          { input: "9\n1 8 6 2 5 4 8 3 7", expectedOutput: "49", isExample: true },
+          { input: "2\n1 1", expectedOutput: "1", isExample: true }
+        ],
     }
   ];
 
