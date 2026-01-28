@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Play, MousePointer2, Info, Hash, Sparkles, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Play, Pause, MousePointer2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Node {
   id: string;
@@ -26,35 +26,30 @@ const MANIM_COLORS = {
   text: "#FFFFFF"
 };
 
-export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }) {
-  const [nodes, setNodes] = useState<Node[]>([
+const INITIAL_NODES: Node[] = [
     { id: 'node-1', value: 10, status: 'idle' },
     { id: 'node-2', value: 20, status: 'idle' },
     { id: 'node-3', value: 30, status: 'idle' },
-  ]);
+];
+
+export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }) {
+  const [nodes, setNodes] = useState<Node[]>(INITIAL_NODES);
   const [inputValue, setInputValue] = useState("");
   
   // History Tracking
-  const [history, setHistory] = useState<HistoryStep[]>([]);
+  const [history, setHistory] = useState<HistoryStep[]>([{
+        nodes: INITIAL_NODES,
+        explanation: "LinkedList initialized in memory.",
+        activeStep: "INIT",
+        highlightedId: null
+  }]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Record initial state on mount
-  useEffect(() => {
-    const initial: HistoryStep = {
-        nodes: [...nodes],
-        explanation: "LinkedList initialized in memory.",
-        activeStep: "INIT",
-        highlightedId: null
-    };
-    setHistory([initial]);
-    setCurrentIndex(0);
-  }, []);
-
-  const addStep = (nodes: Node[], msg: string, step: string | null, highlighted: string | null) => {
+  const addStep = (newNodes: Node[], msg: string, step: string | null, highlighted: string | null) => {
     const next: HistoryStep = {
-        nodes: JSON.parse(JSON.stringify(nodes)),
+        nodes: JSON.parse(JSON.stringify(newNodes)),
         explanation: msg,
         activeStep: step,
         highlightedId: highlighted
@@ -66,7 +61,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
   const addNode = () => {
     const val = parseInt(inputValue);
     if (isNaN(val)) return;
-    const newNode = { id: `node-${Date.now()}`, value: val, status: 'idle' as const };
+    const newNode: Node = { id: `node-${Date.now()}`, value: val, status: 'idle' };
     const nextNodes = [...nodes, newNode];
     setNodes(nextNodes);
     setInputValue("");
@@ -74,7 +69,9 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
   };
 
   const deleteNode = (id: string) => {
-    const val = nodes.find(n => n.id === id)?.value;
+    const nodeToDelete = nodes.find(n => n.id === id);
+    if (!nodeToDelete) return;
+    const val = nodeToDelete.value;
     const nextNodes = nodes.filter((node) => node.id !== id);
     setNodes(nextNodes);
     addStep(nextNodes, `Deallocated node ${val}. Memory reference removed.`, "DELETE", null);
@@ -85,8 +82,8 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     if (isNaN(val)) return;
     
     setIsPlaying(false);
-    let currentHistory = [...history];
-    let tempNodes = JSON.parse(JSON.stringify(nodes));
+    const currentHistory = [...history];
+    const tempNodes = JSON.parse(JSON.stringify(nodes));
 
     // Pre-compute search steps
     for (let i = 0; i < tempNodes.length; i++) {
@@ -184,7 +181,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
           </AnimatePresence>
 
           <AnimatePresence mode="popLayout">
-            {currentStep.nodes.map((node, index) => (
+            {currentStep.nodes.map((node) => (
               <React.Fragment key={node.id}>
                 <div className="relative flex items-center">
                   <motion.div

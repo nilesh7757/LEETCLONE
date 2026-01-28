@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, Pause, Sparkles, Hash, Target, Info, ChevronRight, ChevronLeft, GitMerge, MousePointer2, Plus, Search, Cpu, Trash2 } from "lucide-react";
+import { Play, RotateCcw, Pause, Sparkles, ChevronRight, ChevronLeft, MousePointer2, Plus, Cpu, Trash2 } from "lucide-react";
 
 // --- Types & Palette ---
 const MANIM_COLORS = {
@@ -71,13 +71,13 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
   const recordOperation = (type: 'INSERT' | 'EXTRACT', val?: number) => {
     setIsPlaying(false);
     const steps: HistoryStep[] = [];
-    let currentHeap = [...heapData];
+    const currentHeap = [...heapData];
 
     const record = (msg: string, step: string | null, highlights: number[] = [], swap: [number, number] | null = null) => {
       const layout = getLayout(currentHeap);
       const frameNodes = layout.nodes.map(n => ({
         ...n,
-        status: swap?.includes(n.index) ? 'swapping' : highlights.includes(n.index) ? 'highlighted' : 'idle'
+        status: (swap?.includes(n.index) ? 'swapping' : highlights.includes(n.index) ? 'highlighted' : 'idle') as VisualNode['status']
       }));
       steps.push({
         nodes: frameNodes,
