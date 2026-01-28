@@ -1,234 +1,247 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, Pause, Split, Merge } from "lucide-react";
+import { Play, RotateCcw, Pause, Sparkles, Hash, GitPullRequest, Info, ChevronLeft, ChevronRight } from "lucide-react";
 
-const ARRAY_SIZE = 16;
+const ARRAY_SIZE = 8; 
 
-export default function MergeSortVisualizer({ speed = 300 }: { speed?: number }) {
-  const [array, setArray] = useState<number[]>([]);
-  const [isSorting, setIsSorting] = useState(false);
-  const [leftRange, setLeftRange] = useState<[number, number] | null>(null);
-  const [rightRange, setRightRange] = useState<[number, number] | null>(null);
-  const [mergeIndex, setMergeIndex] = useState<number | null>(null);
-  const [sortedIndices, setSortedIndices] = useState<Set<number>>(new Set());
-  const [status, setStatus] = useState("Ready");
-  const stopRef = useRef(false);
+const MANIM_COLORS = {
+  blue: "#58C4DD",
+  green: "#83C167",
+  gold: "#FFFF00",
+  red: "#FC6255",
+  background: "#1C1C1C",
+  text: "#FFFFFF"
+};
 
+interface VisualNode {
+  id: string;
+  value: number;
+  logicalIndex: number;
+  level: number;
+  status: 'idle' | 'comparing' | 'sorted' | 'active-split';
+}
+
+interface HistoryStep {
+  nodes: VisualNode[];
+  explanation: string;
+  activeStep: string | null;
+}
+
+export default function MergeSortVisualizer({ speed = 800 }: { speed?: number }) {
+  const [initialData, setInitialData] = useState<VisualNode[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 1. Pre-compute Recursive History
+  const history = useMemo(() => {
+    if (initialData.length === 0) return [];
+    
+    const steps: HistoryStep[] = [];
+    let currentNodes = JSON.parse(JSON.stringify(initialData));
+
+    const record = (msg: string, step: string | null) => {
+      steps.push({
+        nodes: JSON.parse(JSON.stringify(currentNodes)),
+        explanation: msg,
+        activeStep: step
+      });
+    };
+
+    record("Vector initialized. Ready for recursive decomposition.", "INIT");
+
+    const sort = (l: number, r: number, level: number) => {
+      if (l >= r) return;
+
+      const m = Math.floor((l + r) / 2);
+      
+      // Visual: Split Phase
+      currentNodes = currentNodes.map((n: VisualNode) => {
+        if (n.logicalIndex >= l && n.logicalIndex <= r) {
+            return { ...n, level: level + 1, status: 'active-split' };
+        }
+        return n;
+      });
+      record(`Dividing range [${l}, ${r}] into sub-manifolds at depth ${level + 1}.`, `DIVIDE_${level}`);
+
+      sort(l, m, level + 1);
+      sort(m + 1, r, level + 1);
+      
+      merge(l, m, r, level);
+    };
+
+    const merge = (l: number, m: number, r: number, level: number) => {
+      // Logic for sorting the sub-range
+      const rangeNodes = currentNodes
+        .filter((n: VisualNode) => n.logicalIndex >= l && n.logicalIndex <= r)
+        .sort((a: VisualNode, b: VisualNode) => a.value - b.value);
+
+      // We simulate the comparison steps for the history
+      record(`Merging sub-vectors from depth ${level + 1} back to level ${level}.`, `CONQUER_${level}`);
+
+      // Update positions and reset level/status
+      const nodeIdsInRange = currentNodes
+        .filter((n: VisualNode) => n.logicalIndex >= l && n.logicalIndex <= r)
+        .map((n: VisualNode) => n.id);
+
+      // Re-map the sorted values to the logical indices l...r
+      const updatedNodes = [...currentNodes];
+      rangeNodes.forEach((sortedNode: VisualNode, idx: number) => {
+        const originalNodeIdx = updatedNodes.findIndex(n => n.id === sortedNode.id);
+        updatedNodes[originalNodeIdx] = { 
+            ...sortedNode, 
+            logicalIndex: l + idx, 
+            level: level,
+            status: level === 0 ? 'sorted' : 'idle'
+        };
+      });
+      
+      currentNodes = updatedNodes;
+      record(`Reconstruction complete for range [${l}, ${r}].`, `MERGED_${level}`);
+    };
+
+    sort(0, ARRAY_SIZE - 1, 0);
+    record("Recursive flow complete. Vector is ordered.", "COMPLETE");
+    
+    return steps;
+  }, [initialData]);
+
+  // 2. Playback Control
   useEffect(() => {
-    generateArray();
-  }, []);
+    if (isPlaying) {
+      timerRef.current = setInterval(() => {
+        setCurrentIndex((prev) => {
+          if (prev >= history.length - 1) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, speed);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isPlaying, history.length, speed]);
 
   const generateArray = () => {
-    const newArray = Array.from({ length: ARRAY_SIZE }, () =>
-      Math.floor(Math.random() * 70) + 15
-    );
-    setArray(newArray);
-    setLeftRange(null);
-    setRightRange(null);
-    setMergeIndex(null);
-    setSortedIndices(new Set());
-    setIsSorting(false);
-    setStatus("Ready");
-    stopRef.current = false;
+    setIsPlaying(false);
+    setCurrentIndex(0);
+    const nodes = Array.from({ length: ARRAY_SIZE }, (_, i) => ({
+      id: `node-${Math.random().toString(36).substr(2, 9)}`,
+      value: Math.floor(Math.random() * 50) + 20,
+      logicalIndex: i,
+      level: 0,
+      status: 'idle' as const
+    }));
+    setInitialData(nodes);
   };
 
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  useEffect(() => { generateArray(); }, []);
 
-  const mergeSort = async () => {
-    if (isSorting) return;
-    setIsSorting(true);
-    stopRef.current = false;
-    
-    const arr = [...array];
-    await sort(arr, 0, arr.length - 1);
-    
-    if (!stopRef.current) {
-      setStatus("Sorted!");
-      setSortedIndices(new Set(Array.from({ length: ARRAY_SIZE }, (_, i) => i)));
-      setLeftRange(null);
-      setRightRange(null);
-      setMergeIndex(null);
-      setIsSorting(false);
-    }
-  };
-
-  const sort = async (arr: number[], l: number, r: number) => {
-    if (l >= r) return;
-    if (stopRef.current) return;
-
-    const m = Math.floor((l + r) / 2);
-    
-    // Visualize Splitting
-    setStatus(`Splitting [${l}..${r}]`);
-    await sleep(speed / 2);
-
-    await sort(arr, l, m);
-    await sort(arr, m + 1, r);
-    
-    if (stopRef.current) return;
-    await merge(arr, l, m, r);
-  };
-
-  const merge = async (arr: number[], l: number, m: number, r: number) => {
-    if (stopRef.current) return;
-    
-    setStatus(`Merging [${l}..${m}] and [${m+1}..${r}]`);
-    setLeftRange([l, m]);
-    setRightRange([m + 1, r]);
-    await sleep(speed);
-
-    let left = arr.slice(l, m + 1);
-    let right = arr.slice(m + 1, r + 1);
-    let i = 0, j = 0, k = l;
-
-    while (i < left.length && j < right.length) {
-      if (stopRef.current) return;
-      
-      setMergeIndex(k);
-      // Highlight comparison
-      await sleep(speed);
-
-      if (left[i] <= right[j]) {
-        arr[k] = left[i];
-        i++;
-      } else {
-        arr[k] = right[j];
-        j++;
-      }
-      setArray([...arr]);
-      await sleep(speed / 2);
-      k++;
-    }
-
-    while (i < left.length) {
-      if (stopRef.current) return;
-      setMergeIndex(k);
-      arr[k] = left[i];
-      setArray([...arr]);
-      await sleep(speed / 2);
-      i++;
-      k++;
-    }
-
-    while (j < right.length) {
-      if (stopRef.current) return;
-      setMergeIndex(k);
-      arr[k] = right[j];
-      setArray([...arr]);
-      await sleep(speed / 2);
-      j++;
-      k++;
-    }
-    
-    // Mark these as temporarily sorted/processed
-    const newSorted = new Set(sortedIndices);
-    for (let x = l; x <= r; x++) newSorted.add(x);
-    // setSortedIndices(newSorted); // Optional: keep them colored green
-  };
+  const currentStep = history[currentIndex] || { nodes: initialData, explanation: "Initializing...", activeStep: null };
 
   return (
-    <div className="p-6 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl backdrop-blur-md shadow-xl flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">Merge Sort</h2>
-          <p className="text-sm text-[var(--foreground)]/60">Divide & Conquer</p>
+    <div className="flex flex-col gap-6">
+      <div className="p-8 bg-[#1C1C1C] border border-[#333333] rounded-3xl shadow-2xl font-sans text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+             style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12 relative z-10">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+              Merge Sort <span className="text-white/40">Lemma</span>
+            </h2>
+            <div className="flex items-center gap-2">
+               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+               <p className="text-[10px] font-mono uppercase tracking-widest text-white/30">Temporal Tree Navigation</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner">
+            <button onClick={generateArray} className="p-2 hover:bg-white/10 rounded-xl text-white/40 active:scale-95 transition-all"><RotateCcw size={20} /></button>
+            {!isPlaying ? (
+              <button onClick={() => setIsPlaying(true)} className="flex items-center gap-2 px-6 py-2 bg-[#58C4DD] text-black rounded-xl hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest shadow-[0_0_20px_#58C4DD44]"><Play size={14} fill="currentColor" /> EXECUTE</button>
+            ) : (
+              <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-[#FC6255]/20 text-[#FC6255] border border-[#FC6255]/50 rounded-xl font-black text-[10px] uppercase tracking-widest"><Pause size={14} fill="currentColor" /> HALT</button>
+            )}
+          </div>
         </div>
 
-        {/* Status Badge */}
-        <div className="px-4 py-2 bg-[var(--foreground)]/5 rounded-full border border-[var(--card-border)] text-xs font-mono font-bold text-[var(--foreground)]/80 flex items-center gap-2">
-            {status.includes("Split") ? <Split size={14} className="text-blue-400"/> : <Merge size={14} className="text-purple-400"/>}
-            {status}
+        {/* Animation Canvas */}
+        <div className="relative min-h-[520px] bg-black/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl flex flex-col items-center justify-center px-10">
+            
+            <AnimatePresence mode="wait">
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-10 text-center z-30">
+                    <div className="p-4 bg-[#FFFF00]/5 border border-[#FFFF00]/20 rounded-2xl backdrop-blur-md shadow-2xl">
+                        <div className="flex items-center justify-center gap-2 mb-1 opacity-40">
+                            <Info size={10} className="text-[#FFFF00]" />
+                            <span className="text-[8px] font-black uppercase tracking-tighter">Analysis Entry</span>
+                        </div>
+                        <p className="text-[10px] text-[#FFFF00] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.explanation}</p>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
+
+            {/* Tree Visualization */}
+            <div className="relative w-full h-full flex items-center justify-center">
+                {currentStep.nodes.map((node) => {
+                    const isSorted = node.status === 'sorted';
+                    const isActive = node.status === 'active-split';
+                    
+                    return (
+                        <motion.div key={node.id} layout transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                            animate={{ 
+                                x: (node.logicalIndex - (ARRAY_SIZE - 1) / 2) * 75, 
+                                y: node.level * 90 - 60,
+                                borderColor: isActive ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : MANIM_COLORS.blue,
+                                boxShadow: isActive ? `0 0 35px ${MANIM_COLORS.gold}44` : isSorted ? `0 0 20px ${MANIM_COLORS.green}33` : "none",
+                                scale: isActive ? 1.1 : 1,
+                                opacity: 1
+                            }}
+                            className="absolute flex flex-col items-center justify-center w-14 h-14 border-[2.5px] rounded-2xl font-mono bg-[#1C1C1C] z-20"
+                            style={{ color: isActive ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : "white" }}
+                        >
+                            <span className="text-xl font-bold">{node.value}</span>
+                            <div className="absolute -bottom-5 text-[8px] font-mono text-white/20 uppercase">
+                                0x{node.id.split('-').pop()?.slice(0, 4)}
+                            </div>
+                        </motion.div>
+                    );
+                })}
+            </div>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={generateArray}
-            className="p-2 hover:bg-[var(--foreground)]/10 rounded-lg transition-colors"
-            title="Reset Array"
-            disabled={isSorting}
-          >
-            <RotateCcw size={20} />
-          </button>
-          {!isSorting ? (
-            <button
-              onClick={mergeSort}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-gradient-to)] text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
-            >
-              <Play size={18} fill="currentColor" />
-              Visualize
-            </button>
-          ) : (
-            <button
-              onClick={() => { stopRef.current = true; setIsSorting(false); setStatus("Stopped"); }}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-500 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition-all font-medium"
-            >
-              <Pause size={18} fill="currentColor" />
-              Stop
-            </button>
-          )}
-        </div>
-      </div>
+        {/* Premium Scrubber */}
+        <div className="mt-8 p-6 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+            <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-3">
+                    <GitPullRequest size={14} className="text-[#58C4DD]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Step {currentIndex + 1} of {history.length}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-white/10 rounded-lg text-white/40"><ChevronLeft size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-white/10 rounded-lg text-white/40"><ChevronRight size={18} /></button>
+                </div>
+            </div>
 
-      <div className="relative flex items-end justify-center gap-2 h-64 px-4 pb-8 bg-[var(--foreground)]/5 rounded-2xl border border-[var(--card-border)] overflow-hidden">
-        {/* Helper Lines */}
-        <div className="absolute inset-0 flex flex-col justify-between p-4 opacity-10 pointer-events-none">
-            <div className="w-full h-px bg-[var(--foreground)]" />
-            <div className="w-full h-px bg-[var(--foreground)]" />
-            <div className="w-full h-px bg-[var(--foreground)]" />
-        </div>
-
-        {array.map((value, idx) => {
-          const isLeft = leftRange && idx >= leftRange[0] && idx <= leftRange[1];
-          const isRight = rightRange && idx >= rightRange[0] && idx <= rightRange[1];
-          const isMerging = idx === mergeIndex;
-          const isFinalSorted = sortedIndices.has(idx) && !isLeft && !isRight;
-
-          let bgClass = "bg-[var(--foreground)]/20";
-          let shadow = "none";
-          
-          if (isMerging) {
-              bgClass = "bg-yellow-400";
-              shadow = "0 0 15px rgba(250, 204, 21, 0.6)";
-          } else if (isLeft) {
-              bgClass = "bg-blue-500";
-          } else if (isRight) {
-              bgClass = "bg-purple-500";
-          } else if (isFinalSorted) {
-              bgClass = "bg-green-500";
-          }
-
-          return (
-            <div key={idx} className="relative flex flex-col items-center gap-2 w-8 sm:w-10 h-full justify-end group">
-                <motion.div
-                    layout
-                    initial={{ height: 0 }}
-                    animate={{ 
-                        height: `${value}%`,
-                        backgroundColor: isMerging ? "#facc15" : isLeft ? "#3b82f6" : isRight ? "#a855f7" : isFinalSorted ? "#22c55e" : "rgba(255,255,255,0.15)"
-                    }}
-                    style={{ boxShadow: shadow }}
-                    className={`w-full rounded-t-lg backdrop-blur-sm border-x border-t border-[var(--foreground)]/10 transition-all duration-150`}
+            <div className="relative flex items-center group/slider">
+                <div className="absolute w-full h-1 bg-white/10 rounded-full" />
+                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
+                <input 
+                    type="range" min="0" max={history.length - 1} value={currentIndex} 
+                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                    className="w-full h-6 opacity-0 cursor-pointer z-10"
+                />
+                <div className="absolute w-1.5 h-4 bg-[#FFFF00] rounded-full shadow-[0_0_15px_#FFFF00] pointer-events-none transition-all"
+                    style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-4 gap-4 text-xs">
-         <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--foreground)]/5">
-             <div className="w-3 h-3 rounded-full bg-blue-500" /> Left Partition
-         </div>
-         <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--foreground)]/5">
-             <div className="w-3 h-3 rounded-full bg-purple-500" /> Right Partition
-         </div>
-         <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--foreground)]/5">
-             <div className="w-3 h-3 rounded-full bg-yellow-400" /> Merging
-         </div>
-         <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--foreground)]/5">
-             <div className="w-3 h-3 rounded-full bg-green-500" /> Sorted
-         </div>
+        </div>
       </div>
     </div>
   );
