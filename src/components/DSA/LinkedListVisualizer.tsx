@@ -45,7 +45,24 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
   }]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Resize Observer
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setDimensions({
+          width: entries[0].contentRect.width,
+          height: entries[0].contentRect.height
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const addStep = (newNodes: Node[], msg: string, step: string | null, highlighted: string | null) => {
     const next: HistoryStep = {
@@ -137,6 +154,11 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
 
   const currentStep = history[currentIndex] || { nodes: nodes, explanation: "Initializing...", activeStep: null, highlightedId: null };
 
+  // Responsive Scaling Logic
+  const contentWidth = Math.max(800, (currentStep.nodes.length + 1) * 160);
+  const contentHeight = 300;
+  const scale = Math.min( (dimensions.width - 80) / contentWidth, (dimensions.height - 80) / contentHeight, 1 );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="p-8 bg-[#1C1C1C] border border-[#333333] rounded-3xl shadow-2xl font-sans text-white relative overflow-hidden">
@@ -169,7 +191,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         </div>
 
         {/* Animation Canvas */}
-        <div className="relative min-h-[400px] bg-black/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl flex flex-wrap items-center justify-start p-10 gap-y-24">
+        <div ref={containerRef} className="relative min-h-[400px] bg-black/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl flex items-center justify-center p-10">
           
           <AnimatePresence>
             {currentStep.activeStep && (
@@ -180,49 +202,56 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             )}
           </AnimatePresence>
 
-          <AnimatePresence mode="popLayout">
-            {currentStep.nodes.map((node) => (
-              <React.Fragment key={node.id}>
-                <div className="relative flex items-center">
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ 
-                      opacity: 1, scale: 1,
-                      borderColor: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : MANIM_COLORS.blue,
-                      boxShadow: currentStep.highlightedId === node.id ? `0 0 40px ${MANIM_COLORS.gold}33` : "none"
-                    }}
-                    exit={{ opacity: 0, scale: 0 }}
-                    className="group relative flex items-center justify-center w-20 h-20 border-[3px] rounded-full font-mono text-xl font-medium bg-[#1C1C1C] z-20"
-                    style={{ color: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : MANIM_COLORS.text }}
-                  >
-                    {node.value}
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                      <span className="text-[9px] font-mono text-white/20 uppercase tracking-tighter">addr</span>
-                      <span className="text-[10px] font-mono text-[#58C4DD]/60">0x{node.id.slice(-4)}</span>
-                    </div>
+          <motion.div 
+            animate={{ scale: scale }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className="flex flex-wrap items-center justify-center gap-y-24"
+            style={{ width: contentWidth, transformOrigin: 'center center' }}
+          >
+            <AnimatePresence mode="popLayout">
+                {currentStep.nodes.map((node) => (
+                <React.Fragment key={node.id}>
+                    <div className="relative flex items-center">
+                    <motion.div
+                        layout
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ 
+                        opacity: 1, scale: 1,
+                        borderColor: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : MANIM_COLORS.blue,
+                        boxShadow: currentStep.highlightedId === node.id ? `0 0 40px ${MANIM_COLORS.gold}33` : "none"
+                        }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        className="group relative flex items-center justify-center w-20 h-20 border-[3px] rounded-full font-mono text-xl font-medium bg-[#1C1C1C] z-20"
+                        style={{ color: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : MANIM_COLORS.text }}
+                    >
+                        {node.value}
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                        <span className="text-[9px] font-mono text-white/20 uppercase tracking-tighter">addr</span>
+                        <span className="text-[10px] font-mono text-[#58C4DD]/60">0x{node.id.slice(-4)}</span>
+                        </div>
 
-                    {currentStep.highlightedId === node.id && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-20">
-                            <div className="text-[#FFFF00]"><MousePointer2 size={18} fill="currentColor" className="rotate-90" /></div>
-                            <span className="text-[10px] font-bold text-[#FFFF00] font-mono tracking-widest bg-black/40 px-2 py-0.5 rounded-full border border-yellow-500/20">CURR</span>
-                        </motion.div>
-                    )}
+                        {currentStep.highlightedId === node.id && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-20">
+                                <div className="text-[#FFFF00]"><MousePointer2 size={18} fill="currentColor" className="rotate-90" /></div>
+                                <span className="text-[10px] font-bold text-[#FFFF00] font-mono tracking-widest bg-black/40 px-2 py-0.5 rounded-full border border-yellow-500/20">CURR</span>
+                            </motion.div>
+                        )}
 
-                    <button onClick={() => deleteNode(node.id)} className="absolute -right-2 -bottom-2 p-1.5 bg-[#FC6255] text-white rounded-full opacity-0 group-hover:opacity-100 transition-all transform hover:scale-110"><Trash2 size={12} /></button>
-                  </motion.div>
-
-                  <div className="flex items-center h-full">
-                    <motion.div initial={{ width: 0 }} animate={{ width: 64 }} className="relative h-[2px]" style={{ backgroundColor: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : `${MANIM_COLORS.blue}44` }}>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 border-t-2 border-r-2" style={{ borderColor: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : `${MANIM_COLORS.blue}44` }} />
-                        <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-white/10 uppercase tracking-tighter italic">next</div>
+                        <button onClick={() => deleteNode(node.id)} className="absolute -right-2 -bottom-2 p-1.5 bg-[#FC6255] text-white rounded-full opacity-0 group-hover:opacity-100 transition-all transform hover:scale-110"><Trash2 size={12} /></button>
                     </motion.div>
-                  </div>
-                </div>
-              </React.Fragment>
-            ))}
-            <div className="w-14 h-14 rounded-2xl border-2 border-[#FC6255]/30 flex items-center justify-center text-[#FC6255] font-mono text-xs font-bold tracking-widest bg-[#FC6255]/5 ml-4">NULL</div>
-          </AnimatePresence>
+
+                    <div className="flex items-center h-full">
+                        <motion.div initial={{ width: 0 }} animate={{ width: 64 }} className="relative h-[2px]" style={{ backgroundColor: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : `${MANIM_COLORS.blue}44` }}>
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 border-t-2 border-r-2" style={{ borderColor: currentStep.highlightedId === node.id ? MANIM_COLORS.gold : `${MANIM_COLORS.blue}44` }} />
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-white/10 uppercase tracking-tighter italic">next</div>
+                        </motion.div>
+                    </div>
+                    </div>
+                </React.Fragment>
+                ))}
+                <div className="w-14 h-14 rounded-2xl border-2 border-[#FC6255]/30 flex items-center justify-center text-[#FC6255] font-mono text-xs font-bold tracking-widest bg-[#FC6255]/5 ml-4">NULL</div>
+            </AnimatePresence>
+          </motion.div>
 
           <AnimatePresence mode="wait">
             <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full text-center z-30 pointer-events-none px-10">

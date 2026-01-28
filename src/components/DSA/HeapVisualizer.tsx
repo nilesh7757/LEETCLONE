@@ -38,8 +38,25 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [opHistory, setOpHistory] = useState<HistoryStep[]>([]);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Resize Observer
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setDimensions({
+          width: entries[0].contentRect.width,
+          height: entries[0].contentRect.height
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // 1. Layout Logic (Array to Tree Mapping)
   const getLayout = (heap: number[]) => {
@@ -174,12 +191,10 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
   };
 
   // 3. Perfect Fitting Logic
-  const canvasW = 800;
-  const canvasH = 500;
   const treeW = currentStep.bounds.maxX - currentStep.bounds.minX;
   const treeH = currentStep.bounds.maxY - currentStep.bounds.minY;
   const treeCenterX = (currentStep.bounds.minX + currentStep.bounds.maxX) / 2;
-  const scale = Math.min( (canvasW - 120) / Math.max(treeW, 100), (canvasH - 150) / Math.max(treeH, 100), 1 );
+  const scale = Math.min( (dimensions.width - 120) / Math.max(treeW, 100), (dimensions.height - 150) / Math.max(treeH, 100), 1 );
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden">
@@ -203,7 +218,7 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         {/* Canvas */}
-        <div className="relative min-h-[550px] bg-black/40 rounded-[2.5rem] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
+        <div ref={containerRef} className="relative min-h-[550px] bg-black/40 rounded-[2.5rem] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
             
             <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
                  style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
@@ -213,7 +228,7 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
                 animate={{ 
                     scale: scale,
                     x: -treeCenterX * scale,
-                    y: -450 * scale + (canvasH / 2) // Shifted higher
+                    y: -450 * scale + (dimensions.height / 2) // Shifted higher
                 }}
                 transition={{ type: "spring", stiffness: 80, damping: 25 }}
                 className="relative w-full h-full flex items-center justify-center"

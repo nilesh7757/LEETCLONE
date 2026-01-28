@@ -43,6 +43,8 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [opHistory, setOpHistory] = useState<HistoryStep[]>([]);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Inputs
   const [queryL, setQueryL] = useState("2");
@@ -51,6 +53,21 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
   const [updateVal, setUpdateVal] = useState("10");
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Resize Observer
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setDimensions({
+          width: entries[0].contentRect.width,
+          height: entries[0].contentRect.height
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // Update array from input
   const handleArrayUpdate = () => {
@@ -259,58 +276,153 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, opHistory.length, speed]);
 
-  const currentStep = opHistory[currentIndex] || { 
-    nodes: getLayout(currentTree, arrayData.length).nodes, 
-    explanation: "Segment Tree initialized. Ready for Range Sum Queries.", 
-    activeStep: null, 
-    highlightedId: null,
-    activeRange: null,
-    bounds: getLayout(currentTree, arrayData.length).bounds
-  };
+    const currentStep = opHistory[currentIndex] || {
 
-  const canvasW = 800;
-  const canvasH = 500;
-  const treeW = currentStep.bounds.maxX - currentStep.bounds.minX;
-  const treeH = currentStep.bounds.maxY - currentStep.bounds.minY;
-  const treeCenterX = (currentStep.bounds.minX + currentStep.bounds.maxX) / 2;
-  const scale = Math.min( (canvasW - 120) / Math.max(treeW, 100), (canvasH - 180) / Math.max(treeH, 100), 1 );
+      nodes: getLayout(currentTree, arrayData.length).nodes,
 
-  return (
-    <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden">
-      <div className="p-6 bg-[#0A0A0A] border border-white/10 rounded-[3rem] shadow-2xl font-sans text-white relative overflow-hidden group">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-12 relative z-10 gap-6">
-          <div className="space-y-1">
-            <h2 className="text-3xl font-light text-[#58C4DD]">Segment Tree <span className="text-white/20 italic">Lemma</span></h2>
-            <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/30">Auto-Scaling RSQ Engine</p>
+      explanation: "Segment Tree initialized. Ready for Range Sum Queries.",
+
+      activeStep: null,
+
+      highlightedId: null,
+
+      activeRange: null,
+
+      bounds: getLayout(currentTree, arrayData.length).bounds
+
+    };
+
+  
+
+    // Fitting logic
+
+    const treeW = currentStep.bounds.maxX - currentStep.bounds.minX;
+
+    const treeH = currentStep.bounds.maxY - currentStep.bounds.minY;
+
+    const treeCenterX = (currentStep.bounds.minX + currentStep.bounds.maxX) / 2;
+
+    const scale = Math.min( (dimensions.width - 100) / Math.max(treeW, 100), (dimensions.height - 180) / Math.max(treeH, 100), 1 );
+
+  
+
+    return (
+
+      <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden">
+
+        <div className="p-6 bg-[#0A0A0A] border border-white/10 rounded-[3rem] shadow-2xl font-sans text-white relative overflow-hidden group">
+
+          
+
+          {/* Header */}
+
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-12 relative z-10 gap-6">
+
+            <div className="space-y-1">
+
+              <h2 className="text-3xl font-light text-[#58C4DD]">Segment Tree <span className="text-white/20 italic">Lemma</span></h2>
+
+              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/30">Auto-Scaling RSQ Engine</p>
+
+            </div>
+
+  
+
+            <div className="flex items-center gap-4 flex-wrap">
+
+              {/* Array Input */}
+
+              <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-white/30">
+
+                  <span className="text-[9px] font-black font-mono text-white/20 uppercase ml-2">Array</span>
+
+                  <input value={arrayInput} onChange={e=>setArrayInput(e.target.value)} onBlur={handleArrayUpdate} className="w-32 bg-transparent text-center font-mono text-xs font-bold text-white focus:outline-none" placeholder="1, 2, 3..." />
+
+              </div>
+
+  
+
+              {/* Build Button */}
+
+              <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-white/30">
+
+                 <button onClick={() => recordOperation('BUILD')} className="p-2 bg-white text-black rounded-xl active:scale-90 shadow-lg flex items-center gap-2 px-4 font-bold text-xs"><Hammer size={14} strokeWidth={3}/> BUILD TREE</button>
+
+              </div>
+
+  
+
+              {/* Query Inputs */}
+
+              <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-[#58C4DD]/30">
+
+                  <span className="text-[9px] font-black font-mono text-white/20 uppercase ml-2">Query</span>
+
+                  <input value={queryL} onChange={e=>setQueryL(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#58C4DD] focus:outline-none" />
+
+                  <span className="text-white/20">-</span>
+
+                  <input value={queryR} onChange={e=>setQueryR(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#58C4DD] focus:outline-none" />
+
+                  <button onClick={() => recordOperation('QUERY')} className="p-2 bg-[#58C4DD] text-black rounded-xl active:scale-90 shadow-lg"><Search size={14} strokeWidth={3}/></button>
+
+              </div>
+
+  
+
+              {/* Update Inputs */}
+
+              <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-[#83C167]/30">
+
+                  <span className="text-[9px] font-black font-mono text-white/20 uppercase ml-2">Update</span>
+
+                  <input value={updateIdx} onChange={e=>setUpdateIdx(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#83C167] focus:outline-none" />
+
+                  <span className="text-white/20">=</span>
+
+                  <input value={updateVal} onChange={e=>setUpdateVal(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#83C167] focus:outline-none" />
+
+                  <button onClick={() => recordOperation('UPDATE')} className="p-2 bg-[#83C167] text-black rounded-xl active:scale-90 shadow-lg"><Edit3 size={14} strokeWidth={3}/></button>
+
+              </div>
+
+            </div>
+
           </div>
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-white/30">
-                <span className="text-[9px] font-black font-mono text-white/20 uppercase ml-2">Array</span>
-                <input value={arrayInput} onChange={e=>setArrayInput(e.target.value)} onBlur={handleArrayUpdate} className="w-32 bg-transparent text-center font-mono text-xs font-bold text-white focus:outline-none" placeholder="1, 2, 3..." />
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-white/30">
-               <button onClick={() => recordOperation('BUILD')} className="p-2 bg-white text-black rounded-xl active:scale-90 shadow-lg flex items-center gap-2 px-4 font-bold text-xs"><Hammer size={14} strokeWidth={3}/> BUILD TREE</button>
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-[#58C4DD]/30">
-                <span className="text-[9px] font-black font-mono text-white/20 uppercase ml-2">Query</span>
-                <input value={queryL} onChange={e=>setQueryL(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#58C4DD] focus:outline-none" />
-                <span className="text-white/20">-</span>
-                <input value={queryR} onChange={e=>setQueryR(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#58C4DD] focus:outline-none" />
-                <button onClick={() => recordOperation('QUERY')} className="p-2 bg-[#58C4DD] text-black rounded-xl active:scale-90 shadow-lg"><Search size={14} strokeWidth={3}/></button>
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner group transition-all hover:border-[#83C167]/30">
-                <span className="text-[9px] font-black font-mono text-white/20 uppercase ml-2">Update</span>
-                <input value={updateIdx} onChange={e=>setUpdateIdx(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#83C167] focus:outline-none" />
-                <span className="text-white/20">=</span>
-                <input value={updateVal} onChange={e=>setUpdateVal(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#83C167] focus:outline-none" />
-                <button onClick={() => recordOperation('UPDATE')} className="p-2 bg-[#83C167] text-black rounded-xl active:scale-90 shadow-lg"><Edit3 size={14} strokeWidth={3}/></button>
-            </div>
-          </div>
-        </div>
 
-        <div className="relative min-h-[550px] bg-black/40 rounded-[2.5rem] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
-            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-            <motion.div animate={{ scale: scale, x: -treeCenterX * scale, y: -450 * scale + (canvasH / 2) }} transition={{ type: "spring", stiffness: 80, damping: 25 }} className="relative w-full h-full flex items-center justify-center">
+  
+
+          {/* Canvas */}
+
+          <div ref={containerRef} className="relative min-h-[550px] bg-black/40 rounded-[2.5rem] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
+
+              
+
+              <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+
+                   style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+  
+
+              <motion.div 
+
+                  animate={{ 
+
+                      scale: scale,
+
+                      x: -treeCenterX * scale,
+
+                      y: -450 * scale + (dimensions.height / 2) // Root at Extreme Top
+
+                  }}
+
+                  transition={{ type: "spring", stiffness: 80, damping: 25 }}
+
+                  className="relative w-full h-full flex items-center justify-center"
+
+              >
+
+  
                 <svg className="absolute pointer-events-none overflow-visible w-full h-full" style={{ zIndex: 10 }}>
                     {currentStep.nodes.map((node) => {
                         if (!node.parentId) return null;
