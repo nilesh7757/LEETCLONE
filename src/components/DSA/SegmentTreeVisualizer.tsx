@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, Pause, Sparkles, Hash, Target, Info, ChevronRight, ChevronLeft, GitMerge, MousePointer2, Plus, Search, Cpu, Edit3, Hammer } from "lucide-react";
+import { Play, Pause, ChevronRight, ChevronLeft, GitMerge, MousePointer2, Search, Cpu, Edit3, Hammer, Target } from "lucide-react";
 
 // --- Types & Constants ---
 const MANIM_COLORS = {
@@ -199,7 +199,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
       const l = parseInt(queryL); const r = parseInt(queryR);
       if (isNaN(l) || isNaN(r) || l > r || l < 0 || r >= n) return;
       const statuses: Record<number, string> = {};
-      const query = (node: number, start: number, end: number) => {
+      const query = (node: number, start: number, end: number): number => {
         record(`Evaluating range [${start}, ${end}] for Query [${l}, ${r}].`, "QUERY_RECURSE", `node-${node}`, [l, r], statuses);
         if (r < start || end < l) {
           record(`Range [${start}, ${end}] is disjoint from [${l}, ${r}]. Returning 0.`, "OUT_OF_BOUNDS", `node-${node}`, [l, r], statuses);
@@ -220,7 +220,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
       const idx = parseInt(updateIdx); const val = parseInt(updateVal);
       if (isNaN(idx) || isNaN(val) || idx < 0 || idx >= n) return;
       const statuses: Record<number, string> = {};
-      const update = (node: number, start: number, end: number) => {
+      const update = (node: number, start: number, end: number): void => {
         statuses[node] = 'updating';
         record(`Traversing to index ${idx}. Current node range: [${start}, ${end}].`, "UPDATE_DESCEND", `node-${node}`, null, statuses);
         if (start === end) {
