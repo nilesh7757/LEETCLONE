@@ -27,13 +27,21 @@ import {
   Sliders, Crown, MoveHorizontal, Network, ListTree, BoxSelect,
   Link, Search, ListOrdered, FileSearch, Route, Cpu,
   GraduationCap, ChevronRight, Binary, Microscope, Compass,
-  ArrowDownNarrowWide, Activity, GitPullRequest, GitMerge, Target
+  ArrowDownNarrowWide, Activity, GitPullRequest, GitMerge, Target, Menu, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- Documentation Components ---
+// ... (DocSection and ComplexityCard remain same)
 
-const DocSection = ({ title, icon: Icon, children, color = "#58C4DD" }: any) => (
+interface DocSectionProps {
+  title: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+  color?: string;
+}
+
+const DocSection = ({ title, icon: Icon, children, color = "#58C4DD" }: DocSectionProps) => (
   <section className="relative p-8 bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden group transition-all hover:border-white/20">
     <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 group-hover:opacity-[0.07] transition-all duration-700">
       <Icon size={120} style={{ color }} />
@@ -65,6 +73,7 @@ const ComplexityCard = ({ time, space }: { time: string, space: string }) => (
 );
 
 const dsaCategories = [
+// ... (categories remain same)
   {
     id: "BINARY_SEARCH",
     title: "Binary Search",
@@ -210,7 +219,7 @@ const dsaCategories = [
         <div className="space-y-8">
           <ComplexityCard time="O(log N) Insert" space="O(N)" />
           <DocSection title="Bubble Logic" icon={ArrowDownNarrowWide} color="#58C4DD">
-            <p>When the property is violated, elements "Bubble Up" or "Sink Down" through recursive swaps until the hierarchy is restored. This maintenance occurs in $O(\log N)$ time.</p>
+            <p>When the property is violated, elements &quot;Bubble Up&quot; or &quot;Sink Down&quot; through recursive swaps until the hierarchy is restored. This maintenance occurs in $O(\log N)$ time.</p>
           </DocSection>
         </div>
       </div>
@@ -231,7 +240,7 @@ const dsaCategories = [
         <div className="space-y-8">
           <ComplexityCard time="O(log N) Query" space="O(4N)" />
           <DocSection title="Contribution Lemma" icon={Zap} color="#83C167">
-            <p>During a query, if a node's interval is fully contained within the query range, it returns its pre-computed value immediately. Otherwise, it delegates to its children, combining their partial results.</p>
+            <p>During a query, if a node&apos;s interval is fully contained within the query range, it returns its pre-computed value immediately. Otherwise, it delegates to its children, combining their partial results.</p>
           </DocSection>
         </div>
       </div>
@@ -242,16 +251,29 @@ const dsaCategories = [
 export default function DSAPage() {
   const [selectedCategory, setSelectedCategory] = useState(dsaCategories[0]);
   const [animationSpeed, setAnimationSpeed] = useState(800);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <main className="min-h-screen bg-[#0A0A0A] pt-24 pb-12 px-4 sm:px-6 lg:px-8 text-white">
+    <main className="min-h-screen bg-[#0A0A0A] pt-24 pb-12 px-4 sm:px-6 lg:px-8 text-white relative">
       {/* 3B1B Grid Background */}
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" 
            style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+        
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#58C4DD]/20 rounded-xl text-[#58C4DD]"><GraduationCap size={20} /></div>
+                <h1 className="text-xl font-light tracking-tight text-white">DSA <span className="text-[#58C4DD] font-medium">Visualizer</span></h1>
+            </div>
+            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 bg-white/10 rounded-xl text-white/70 hover:bg-white/20 transition-all">
+                <Menu size={24} />
+            </button>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-[#58C4DD]/20 rounded-xl text-[#58C4DD]"><GraduationCap size={24} /></div>
@@ -275,9 +297,37 @@ export default function DSAPage() {
           </motion.div>
         </div>
 
+        {/* Mobile Sidebar / Drawer */}
+        <AnimatePresence>
+            {isMobileMenuOpen && (
+                <motion.div 
+                    initial={{ opacity: 0, x: "100%" }} 
+                    animate={{ opacity: 1, x: 0 }} 
+                    exit={{ opacity: 0, x: "100%" }} 
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="fixed inset-0 z-50 bg-[#0A0A0A] flex flex-col p-6 lg:hidden"
+                >
+                    <div className="flex items-center justify-between mb-8">
+                        <span className="text-xs font-black tracking-[0.3em] text-white/40 uppercase">Select Manifold</span>
+                        <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-white/10 rounded-full text-white/60 hover:bg-white/20">
+                            <X size={24} />
+                        </button>
+                    </div>
+                    <div className="overflow-y-auto flex-1 space-y-3 pb-8">
+                        {dsaCategories.map((cat) => (
+                        <button key={cat.id} onClick={() => { setSelectedCategory(cat); setIsMobileMenuOpen(false); }} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedCategory.id === cat.id ? "bg-white/10 border-[#58C4DD]/50" : "bg-transparent border-white/5"}`}>
+                            <div className={`p-2.5 rounded-xl ${selectedCategory.id === cat.id ? "bg-[#58C4DD]/20" : "bg-white/5"}`}>{cat.icon}</div>
+                            <div><h4 className="font-bold text-sm text-white tracking-wide">{cat.title}</h4></div>
+                        </button>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-3 space-y-4 max-h-[75vh] overflow-y-auto pr-4 scrollbar-hide">
+          {/* Desktop Sidebar Navigation */}
+          <div className="hidden lg:block lg:col-span-3 space-y-4 max-h-[75vh] overflow-y-auto pr-4 scrollbar-hide sticky top-24">
             <h3 className="text-[10px] font-black text-white/20 px-4 uppercase tracking-[0.25em] mb-4">Coordinate Systems</h3>
             {dsaCategories.map((cat) => (
               <button key={cat.id} onClick={() => setSelectedCategory(cat)} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 group ${selectedCategory.id === cat.id ? "bg-white/10 border-[#58C4DD]/50 shadow-[0_0_20px_rgba(88,196,221,0.1)] translate-x-2" : "bg-transparent border-white/5 hover:border-white/20"}`}>
@@ -288,12 +338,18 @@ export default function DSAPage() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-9">
+          <div className="lg:col-span-9 w-full">
             <AnimatePresence mode="wait">
               <motion.div key={selectedCategory.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
                 
+                {/* Mobile Specific Controls */}
+                <div className="lg:hidden mb-6 p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between">
+                    <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Speed</span>
+                    <input type="range" min="100" max="2000" step="100" value={animationSpeed} onChange={(e) => setAnimationSpeed(parseInt(e.target.value))} className="w-32 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#FFFF00]" />
+                </div>
+
                 {/* The Visualizer */}
-                <div className="mb-12">{selectedCategory.component(animationSpeed)}</div>
+                <div className="mb-12 w-full overflow-hidden">{selectedCategory.component(animationSpeed)}</div>
 
                 {/* Mathematical Documentation */}
                 <div className="mt-12">

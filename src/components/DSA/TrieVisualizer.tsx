@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, Pause, Sparkles, Hash, Target, Info, ChevronRight, ChevronLeft, GitMerge, MousePointer2, Plus, Search, Cpu } from "lucide-react";
+import { Play, RotateCcw, Pause, Sparkles, ChevronRight, ChevronLeft, MousePointer2, Plus, Search } from "lucide-react";
 
 // --- Types & Palette ---
 const MANIM_COLORS = {
@@ -44,43 +44,60 @@ class TrieNode {
   }
 }
 
+// 1. Position Calculation
+const getLayout = (trieRoot: TrieNode) => {
+  const visualNodes: VisualNode[] = [];
+  let minX = 0, maxX = 0, minY = 0, maxY = 0;
+
+  const calculate = (node: TrieNode, x: number, y: number, offset: number, parentId: string | null) => {
+    visualNodes.push({ id: node.id, char: node.char, x, y, parentId, isEndOfWord: node.isEndOfWord, status: 'idle' });
+
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+
+    const children = Object.keys(node.children).sort();
+    const count = children.length;
+    if (count === 0) return;
+
+    const spacing = offset * 2 / Math.max(count - 1, 1);
+    let startX = x - offset;
+    if (count === 1) startX = x;
+
+    children.forEach((char, i) => {
+      const childX = count === 1 ? x : startX + i * spacing;
+      calculate(node.children[char], childX, y + 100, offset * 0.45, node.id);
+    });
+  };
+
+  calculate(trieRoot, 0, 0, 280, null);
+  return { nodes: visualNodes, bounds: { minX, maxX, minY, maxY } };
+};
+
 export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
-  const [root, setRoot] = useState<TrieNode>(new TrieNode("*"));
+  const rootRef = useRef<TrieNode>(new TrieNode("*"));
   const [inputValue, setInputValue] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [opHistory, setOpHistory] = useState<HistoryStep[]>([]);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Position Calculation
-  const getLayout = (trieRoot: TrieNode) => {
-    const visualNodes: VisualNode[] = [];
-    let minX = 0, maxX = 0, minY = 0, maxY = 0;
-
-    const calculate = (node: TrieNode, x: number, y: number, offset: number, parentId: string | null) => {
-      visualNodes.push({ id: node.id, char: node.char, x, y, parentId, isEndOfWord: node.isEndOfWord, status: 'idle' });
-
-      if (x < minX) minX = x; if (x > maxX) maxX = x;
-      if (y < minY) minY = y; if (y > maxY) maxY = y;
-
-      const children = Object.keys(node.children).sort();
-      const count = children.length;
-      if (count === 0) return;
-
-      const spacing = offset * 2 / Math.max(count - 1, 1);
-      let startX = x - offset;
-      if (count === 1) startX = x;
-
-      children.forEach((char, i) => {
-        const childX = count === 1 ? x : startX + i * spacing;
-        calculate(node.children[char], childX, y + 100, offset * 0.45, node.id);
-      });
-    };
-
-    calculate(trieRoot, 0, 0, 280, null);
-    return { nodes: visualNodes, bounds: { minX, maxX, minY, maxY } };
-  };
+  // Resize Observer
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setDimensions({
+          width: entries[0].contentRect.width,
+          height: entries[0].contentRect.height
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // 2. History Recording
   const recordOperation = (type: 'INSERT' | 'SEARCH', word: string) => {
@@ -88,13 +105,13 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     const targetWord = word.toUpperCase().slice(0, 8);
     setIsPlaying(false);
     const steps: HistoryStep[] = [];
-    let currentTrie = root;
+    const currentTrie = rootRef.current;
 
-    const record = (msg: string, step: string | null, hId: string | null, statusOverride?: Record<string, any>) => {
+    const record = (msg: string, step: string | null, hId: string | null, statusOverride?: Record<string, string>) => {
       const layout = getLayout(currentTrie);
       const frameNodes = layout.nodes.map(n => ({
         ...n,
-        status: statusOverride?.[n.id] || (n.id === hId ? 'active' : 'idle')
+        status: (statusOverride?.[n.id] as VisualNode['status']) || (n.id === hId ? 'active' : 'idle')
       }));
       steps.push({
         nodes: frameNodes,
@@ -162,17 +179,22 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, opHistory.length, speed]);
 
-  const currentStep = opHistory[currentIndex] || { 
-    nodes: getLayout(root).nodes, explanation: "System ready.", activeStep: null, highlightedId: null, bounds: getLayout(root).bounds
+  const defaultStep = { 
+    nodes: getLayout(new TrieNode("*")).nodes, 
+    explanation: "System ready.", 
+    activeStep: null, 
+    highlightedId: null, 
+    bounds: getLayout(new TrieNode("*")).bounds
   };
 
+  const currentStep = opHistory[currentIndex] || defaultStep;
+
   // 3. Scale & Center Logic
-  const canvasW = 800;
-  const canvasH = 500;
+
   const treeW = currentStep.bounds.maxX - currentStep.bounds.minX;
   const treeH = currentStep.bounds.maxY - currentStep.bounds.minY;
   const treeCenterX = (currentStep.bounds.minX + currentStep.bounds.maxX) / 2;
-  const scale = Math.min( (canvasW - 160) / Math.max(treeW, 100), (canvasH - 200) / Math.max(treeH, 100), 1 );
+  const scale = Math.min( (dimensions.width - 100) / Math.max(treeW, 100), (dimensions.height - 100) / Math.max(treeH, 100), 1 );
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden">
@@ -191,12 +213,12 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
                 <button onClick={() => recordOperation('INSERT', inputValue)} className="p-2 bg-[#58C4DD] text-black rounded-xl active:scale-90 shadow-lg"><Plus size={16} strokeWidth={3}/></button>
                 <button onClick={() => recordOperation('SEARCH', inputValue)} className="p-2 bg-[#FFFF00] text-black rounded-xl active:scale-90 shadow-lg"><Search size={16} strokeWidth={3}/></button>
             </div>
-            <button onClick={() => { setRoot(new TrieNode("*")); setOpHistory([]); setCurrentIndex(0); }} className="p-3 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-[#FC6255] transition-all"><RotateCcw size={18} /></button>
+            <button onClick={() => { rootRef.current = new TrieNode("*"); setOpHistory([]); setCurrentIndex(0); }} className="p-3 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-[#FC6255] transition-all"><RotateCcw size={18} /></button>
           </div>
         </div>
 
         {/* Canvas */}
-        <div className="relative min-h-[550px] bg-black/40 rounded-[2.5rem] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
+        <div ref={containerRef} className="relative min-h-[550px] bg-black/40 rounded-[2.5rem] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
             {/* Scale Wrapper */}
@@ -204,7 +226,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
                 animate={{ 
                     scale: scale,
                     x: -treeCenterX * scale,
-                    y: (canvasH / 2) - 450 // Fixed top position
+                    y: (dimensions.height / 2) - 450 // Fixed top position relative to dynamic height
                 }}
                 transition={{ type: "spring", stiffness: 80, damping: 25 }}
                 className="relative w-full h-full flex items-center justify-center"
