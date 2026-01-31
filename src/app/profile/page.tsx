@@ -2,16 +2,20 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { UserCircle, Mail, LogOut, Globe, FileText, Camera, Save, Loader2, TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban, CheckCircle, Award, X, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  UserCircle, Mail, LogOut, Globe, Camera, Save, Loader2, 
+  TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban, 
+  CheckCircle, Award, X, Sparkles, Zap, Hash, Target, PenTool 
+} from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import dynamic from 'next/dynamic';
-
-const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false }); // Attempt named then default
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useTheme } from "next-themes";
+
+const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false });
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -82,8 +86,7 @@ export default function ProfilePage() {
     setLoading(true);
 
     try {
-      const { data } = await axios.put("/api/profile/update", formData);
-      
+      await axios.put("/api/profile/update", formData);
       await update(formData); // Update local session
       toast.success("Profile updated successfully");
     } catch (error: any) {
@@ -119,8 +122,8 @@ export default function ProfilePage() {
 
   if (status === "loading") {
     return (
-      <main className="min-h-screen flex items-center justify-center p-4">
-        <Loader />
+      <main className="min-h-screen flex items-center justify-center p-4 bg-[var(--background)]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-cyan)]" />
       </main>
     );
   }
@@ -132,427 +135,362 @@ export default function ProfilePage() {
 
   const warnings = stats?.user?.warnings || 0;
   const isBanned = stats?.user?.isBanned || false;
-  const health = isBanned ? 0 : Math.max(0, 100 - (warnings * 33));
   
-  let healthColor = "bg-green-500";
-  let healthText = "Good Standing";
-  let HealthIcon = ShieldCheck;
-
-  if (isBanned) {
-      healthColor = "bg-red-500";
-      healthText = "Account Banned";
-      HealthIcon = Ban;
-  } else if (warnings === 1) {
-      healthColor = "bg-yellow-500";
-      healthText = "Warning Issued";
-      HealthIcon = AlertTriangle;
-  } else if (warnings >= 2) {
-      healthColor = "bg-orange-500";
-      healthText = "At Risk";
-      HealthIcon = AlertTriangle;
-  }
+  // Rank Logic
+  const rating = stats?.user?.rating || 1500;
+  let rankColor = "var(--muted-foreground)";
+  let rankTitle = "Unrated";
+  if (rating >= 2400) { rankColor = "var(--viz-rose)"; rankTitle = "Grandmaster"; }
+  else if (rating >= 2000) { rankColor = "var(--viz-amber)"; rankTitle = "Master"; }
+  else if (rating >= 1600) { rankColor = "var(--viz-cyan)"; rankTitle = "Expert"; }
+  else if (rating >= 1200) { rankColor = "var(--viz-emerald)"; rankTitle = "Pupil"; }
+  else { rankColor = "var(--viz-slate)"; rankTitle = "Newbie"; }
 
   return (
-    <div className="w-full">
-      {/* Background Gradients */}
-      <div className="fixed inset-0 bg-[var(--background)] -z-20 transition-colors duration-300" />
-      <div className="fixed inset-0 bg-grid-pattern opacity-10 -z-10" />
+    <div className="min-h-screen w-full relative pb-20 overflow-x-hidden pt-8">
+      {/* Deep Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-[var(--background)]">
+         <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-[var(--viz-cyan)]/5 rounded-full blur-[150px] opacity-40" />
+         <div className="absolute bottom-[10%] right-[-10%] w-[800px] h-[800px] bg-[var(--viz-purple)]/5 rounded-full blur-[150px] opacity-40" />
+      </div>
 
-      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Panel: Profile Settings Form */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="lg:col-span-5 xl:col-span-4 p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md h-fit"
-        >
-            <div className="flex justify-between items-center mb-8 border-b border-[var(--card-border)] pb-6">
-            <h2 className="text-2xl font-bold text-[var(--foreground)]">Profile Settings</h2>
-            <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-lg transition-colors flex items-center gap-2"
-            >
-                <LogOut className="w-3.5 h-3.5" /> Sign Out
-            </button>
-            </div>
-
-            {/* Account Health Section */}
-            {!loadingStats && (
-                <div className="mb-8 p-4 rounded-xl bg-[var(--background)] border border-[var(--card-border)]">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <HealthIcon className={`w-5 h-5 ${isBanned ? 'text-red-500' : warnings > 0 ? 'text-yellow-500' : 'text-green-500'}`} />
-                            <span className="font-semibold text-sm text-[var(--foreground)]">Account Health</span>
-                        </div>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isBanned ? 'bg-red-500/10 text-red-500' : warnings > 0 ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-500'}`}>
-                            {healthText}
-                        </span>
-                    </div>
-                    <div className="w-full bg-[var(--foreground)]/10 rounded-full h-2.5 overflow-hidden">
-                        <div 
-                            className={`h-2.5 rounded-full transition-all duration-500 ${healthColor}`} 
-                            style={{ width: `${health}%` }}
-                        ></div>
-                    </div>
-                    {warnings > 0 && !isBanned && (
-                        <p className="text-xs text-[var(--foreground)]/60 mt-2">
-                            You have {warnings} warning(s). reaching 3 warnings will result in a ban.
-                        </p>
-                    )}
-                    {isBanned && (
-                        <p className="text-xs text-red-500 mt-2">
-                            Your account has been suspended due to violations.
-                        </p>
-                    )}
-                </div>
-            )}
-
-            <form onSubmit={handleUpdate} className="space-y-6">
-            <div className="flex flex-col items-center space-y-4 mb-6">
-                <div className="relative group">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[var(--card-border)] bg-[var(--card-bg)] shadow-inner">
-                    {formData.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={formData.image}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                    />
-                    ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <UserCircle className="w-16 h-16 text-[var(--foreground)]/40" />
-                    </div>
-                    )}
-                </div>
-                
-                {/* Overlay for upload */}
-                <div 
-                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm"
-                    onClick={() => fileInputRef.current?.click()}
-                >
-                    {uploading ? (
-                    <Loader2 className="w-8 h-8 text-white animate-spin" />
-                    ) : (
-                    <Camera className="w-8 h-8 text-white" />
-                    )}
-                </div>
-                <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                />
-                </div>
-                <p className="text-[var(--foreground)]/60 text-xs flex items-center gap-1">
-                    <Mail className="w-3 h-3" /> {session?.user?.email}
-                </p>
-
-                <div className="flex justify-center gap-8 w-full py-4 border-y border-[var(--card-border)] mt-2">
-                    <div className="text-center">
-                        <div className="text-xl font-bold text-[var(--foreground)]">{stats?.user?.followersCount || 0}</div>
-                        <div className="text-xs text-[var(--foreground)]/60 uppercase tracking-wide font-medium">Followers</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-xl font-bold text-[var(--foreground)]">{stats?.user?.followingCount || 0}</div>
-                        <div className="text-xs text-[var(--foreground)]/60 uppercase tracking-wide font-medium">Following</div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-4">
-                <div>
-                    <label className="block text-xs font-medium text-[var(--foreground)]/70 mb-1">Full Name</label>
-                    <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-[var(--foreground)]/70 mb-1">Headline</label>
-                    <input
-                        type="text"
-                        value={formData.bio}
-                        onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                        placeholder="Software Engineer..."
-                        className="w-full px-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-[var(--foreground)]/70 mb-1">Website</label>
-                    <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--foreground)]/60" />
-                        <input
-                            type="url"
-                            value={formData.website}
-                            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-[var(--foreground)]/70 mb-1">About</label>
-                    <textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        rows={4}
-                        className="w-full px-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none resize-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-[var(--foreground)]/70 mb-2 uppercase tracking-wider">Technical Skills</label>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                        {formData.skills.map((skill) => (
-                            <span 
-                                key={skill}
-                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-xs font-bold border border-blue-500/20"
-                            >
-                                {skill}
-                                <button type="button" onClick={() => removeSkill(skill)} className="hover:text-blue-700 transition-colors">
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        ))}
-                    </div>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={skillInput}
-                            onChange={(e) => setSkillInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                            placeholder="Add a skill (e.g. React)"
-                            className="flex-1 px-3 py-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-sm text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] outline-none"
-                        />
-                        <button
-                            type="button"
-                            onClick={addSkill}
-                            className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-bold hover:opacity-90"
-                        >
-                            Add
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <button
-                type="submit"
-                disabled={loading || uploading}
-                className="w-full py-2.5 text-sm font-medium text-[var(--background)] bg-[var(--foreground)] rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
-            >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save Changes
-            </button>
-            </form>
-        </motion.div>
-
-        {/* Right Panel: Stats & Graphs */}
-        <motion.div 
-            initial={{ opacity: 0, x: 20 }}
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT PANEL: Identity Editor */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-7 xl:col-span-8 space-y-8"
-        >
-            {/* Solved Problems Card */}
-            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)]">
-                        <Award className="w-6 h-6" />
+            transition={{ duration: 0.6, type: "spring" }}
+            className="lg:col-span-5 xl:col-span-4 space-y-6"
+          >
+            {/* Identity Card */}
+            <div className="relative p-8 rounded-[2.5rem] bg-[var(--card)]/40 backdrop-blur-xl border border-[var(--border)] overflow-hidden shadow-2xl">
+                {/* Top Gradient */}
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[var(--viz-cyan)]/10 to-transparent opacity-50" />
+                
+                <div className="relative flex flex-col items-center">
+                    {/* Avatar Uploader */}
+                    <div className="relative mb-8 group">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-cyan)] to-[var(--viz-purple)] opacity-20 blur-xl animate-pulse" />
+                        <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-[var(--viz-cyan)] to-[var(--viz-purple)] relative z-10 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                            <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--card)] bg-[var(--card)] relative">
+                                {formData.image ? (
+                                    <img src={formData.image} alt="Profile" className="w-full h-full object-cover transition-opacity group-hover:opacity-50" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[var(--muted)] group-hover:opacity-50 transition-opacity">
+                                        <UserCircle className="w-16 h-16 text-[var(--muted-foreground)]" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Camera className="w-8 h-8 text-[var(--foreground)]" />
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                        
+                        {/* Rank Badge */}
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-lg flex items-center gap-2 whitespace-nowrap z-20">
+                            <Award size={14} style={{ color: rankColor }} />
+                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: rankColor }}>{rankTitle}</span>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-xl font-bold text-[var(--foreground)]">Solved Problems</h3>
-                        <p className="text-sm text-[var(--foreground)]/60">Total Solved: <span className="font-mono font-bold text-[var(--accent-gradient-to)]">{stats?.user?.solvedCount || 0}</span></p>
-                    </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-xl bg-[var(--background)]/50 border border-[var(--card-border)] flex items-center justify-between">
-                        <div>
-                            <p className="text-xs text-[var(--foreground)]/60 font-medium uppercase tracking-wider mb-1">Easy</p>
-                            <p className="text-2xl font-bold text-green-500">{stats?.user?.solvedEasy || 0}</p>
-                        </div>
-                        <div className="p-2 bg-green-500/10 rounded-full text-green-500">
-                            <CheckCircle className="w-5 h-5" />
-                        </div>
+                    {/* Email Display */}
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--background)]/50 border border-[var(--border)] mb-6">
+                        <Mail size={12} className="text-[var(--muted-foreground)]" />
+                        <span className="text-xs font-mono text-[var(--muted-foreground)]">{session?.user?.email}</span>
                     </div>
-                    <div className="p-4 rounded-xl bg-[var(--background)]/50 border border-[var(--card-border)] flex items-center justify-between">
-                        <div>
-                            <p className="text-xs text-[var(--foreground)]/60 font-medium uppercase tracking-wider mb-1">Medium</p>
-                            <p className="text-2xl font-bold text-yellow-500">{stats?.user?.solvedMedium || 0}</p>
+
+                    {/* Edit Form */}
+                    <form onSubmit={handleUpdate} className="w-full space-y-5">
+                        <div className="space-y-4">
+                            <div className="group">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1 block group-focus-within:text-[var(--viz-cyan)] transition-colors">Identity</label>
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full bg-transparent border-b border-[var(--border)] py-2 text-[var(--foreground)] font-bold focus:border-[var(--viz-cyan)] focus:outline-none transition-colors placeholder:text-[var(--muted-foreground)]/30"
+                                    placeholder="Enter your name"
+                                />
+                            </div>
+                            <div className="group">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1 block group-focus-within:text-[var(--viz-cyan)] transition-colors">Headline</label>
+                                <input
+                                    type="text"
+                                    value={formData.bio}
+                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                    className="w-full bg-transparent border-b border-[var(--border)] py-2 text-[var(--foreground)] font-medium focus:border-[var(--viz-cyan)] focus:outline-none transition-colors placeholder:text-[var(--muted-foreground)]/30"
+                                    placeholder="Software Engineer..."
+                                />
+                            </div>
+                            <div className="group">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1 block group-focus-within:text-[var(--viz-cyan)] transition-colors">Neural Link</label>
+                                <div className="flex items-center gap-2 border-b border-[var(--border)] py-2 focus-within:border-[var(--viz-cyan)] transition-colors">
+                                    <Globe size={14} className="text-[var(--muted-foreground)]" />
+                                    <input
+                                        type="url"
+                                        value={formData.website}
+                                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                        className="w-full bg-transparent text-[var(--foreground)] font-mono text-sm focus:outline-none placeholder:text-[var(--muted-foreground)]/30"
+                                        placeholder="https://your-portfolio.io"
+                                    />
+                                </div>
+                            </div>
+                            <div className="group pt-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-2 block group-focus-within:text-[var(--viz-cyan)] transition-colors">About</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    rows={4}
+                                    className="w-full px-4 py-3 rounded-2xl bg-[var(--background)]/30 border border-[var(--border)] text-sm text-[var(--foreground)] focus:border-[var(--viz-cyan)] focus:outline-none resize-none transition-all"
+                                    placeholder="Tell us about your coding journey..."
+                                />
+                            </div>
                         </div>
-                        <div className="p-2 bg-yellow-500/10 rounded-full text-yellow-500">
-                            <CheckCircle className="w-5 h-5" />
+
+                        {/* Skills */}
+                        <div className="pt-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 block">Skill Matrix</label>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                <AnimatePresence>
+                                    {formData.skills.map((skill) => (
+                                        <motion.span 
+                                            key={skill}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.8 }}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] rounded-lg text-xs font-bold border border-[var(--viz-cyan)]/20"
+                                        >
+                                            {skill}
+                                            <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-400 transition-colors">
+                                                <X size={12} />
+                                            </button>
+                                        </motion.span>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={skillInput}
+                                    onChange={(e) => setSkillInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                                    placeholder="Add skill..."
+                                    className="flex-1 px-4 py-2 rounded-xl bg-[var(--background)]/30 border border-[var(--border)] text-sm text-[var(--foreground)] focus:border-[var(--viz-cyan)] outline-none"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addSkill}
+                                    className="px-4 py-2 bg-[var(--background)]/50 border border-[var(--border)] hover:border-[var(--viz-cyan)] text-[var(--viz-cyan)] rounded-xl transition-all"
+                                >
+                                    <Sparkles size={16} />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-[var(--background)]/50 border border-[var(--card-border)] flex items-center justify-between">
-                        <div>
-                            <p className="text-xs text-[var(--foreground)]/60 font-medium uppercase tracking-wider mb-1">Hard</p>
-                            <p className="text-2xl font-bold text-red-500">{stats?.user?.solvedHard || 0}</p>
+
+                        {/* Save Button */}
+                        <div className="pt-4 flex gap-4">
+                            <button
+                                type="submit"
+                                disabled={loading || uploading}
+                                className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-[var(--background)] bg-[var(--foreground)] rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(var(--foreground-rgb),0.2)]"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                Save Configuration
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => signOut({ callbackUrl: "/" })}
+                                className="px-4 py-3 text-xs font-black uppercase tracking-widest text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all flex items-center gap-2"
+                            >
+                                <LogOut size={14} />
+                            </button>
                         </div>
-                        <div className="p-2 bg-red-500/10 rounded-full text-red-500">
-                            <CheckCircle className="w-5 h-5" />
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
+          </motion.div>
 
-            {/* Rating Graph Card */}
-            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)]">
-                        <TrendingUp className="w-6 h-6" />
-                    </div>
+          {/* RIGHT PANEL: Stats Dashboard */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, type: "spring" }}
+            className="lg:col-span-7 xl:col-span-8 space-y-6"
+          >
+            {/* Rating Graph */}
+            <div className="p-8 rounded-[2.5rem] bg-[var(--card)]/40 backdrop-blur-xl border border-[var(--border)] shadow-xl relative overflow-hidden">
+                <div className="flex justify-between items-start mb-8 relative z-10">
                     <div>
-                        <h3 className="text-xl font-bold text-[var(--foreground)]">Contest Rating</h3>
-                        <p className="text-sm text-[var(--foreground)]/60">Current Rating: <span className="font-mono font-bold text-[var(--accent-gradient-to)]">{stats?.user?.rating || 1500}</span></p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <Zap size={16} className="text-[var(--viz-cyan)]" fill="currentColor" />
+                            <h3 className="text-xs font-black text-[var(--viz-cyan)] uppercase tracking-widest">Rating Trajectory</h3>
+                        </div>
+                        <div className="text-4xl font-black text-[var(--foreground)] tracking-tight font-mono">{rating}</div>
                     </div>
                 </div>
-                
-                <div className="h-[300px] w-full">
+
+                <div className="h-[300px] w-full relative z-10">
                     {loadingStats ? (
-                        <div className="h-full flex items-center justify-center text-[var(--foreground)]/40">
-                            <Loader2 className="w-8 h-8 animate-spin" />
+                        <div className="h-full flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-cyan)]" />
                         </div>
                     ) : stats?.ratingHistory?.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={stats.ratingHistory}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" opacity={0.5} />
+                            <AreaChart data={stats.ratingHistory}>
+                                <defs>
+                                    <linearGradient id="ratingGradientProfile" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--viz-cyan)" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="var(--viz-cyan)" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} vertical={false} />
                                 <XAxis 
                                     dataKey="date" 
-                                    stroke="var(--foreground)" 
-                                    opacity={0.5} 
-                                    tick={{fontSize: 12}} 
+                                    stroke="var(--muted-foreground)" 
+                                    tick={{fontSize: 10, fill: 'var(--muted-foreground)'}} 
+                                    tickLine={false}
+                                    axisLine={false}
                                     tickMargin={10}
                                 />
                                 <YAxis 
-                                    stroke="var(--foreground)" 
-                                    opacity={0.5} 
-                                    tick={{fontSize: 12}}
-                                    domain={['dataMin - 50', 'dataMax + 50']}
+                                    stroke="var(--muted-foreground)" 
+                                    tick={{fontSize: 10, fill: 'var(--muted-foreground)'}} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    domain={['dataMin - 100', 'dataMax + 100']}
                                 />
                                 <Tooltip 
                                     contentStyle={{ 
-                                        backgroundColor: 'var(--card-bg)', 
-                                        borderColor: 'var(--card-border)',
-                                        borderRadius: '8px',
-                                        color: 'var(--foreground)'
+                                        backgroundColor: 'var(--card)', 
+                                        borderColor: 'var(--border)',
+                                        borderRadius: '12px',
+                                        color: 'var(--foreground)',
+                                        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
                                     }}
-                                    itemStyle={{ color: 'var(--foreground)' }}
-                                    labelStyle={{ color: 'var(--foreground)', marginBottom: '5px' }}
+                                    itemStyle={{ color: 'var(--viz-cyan)', fontWeight: 'bold' }}
+                                    labelStyle={{ color: 'var(--muted-foreground)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}
                                 />
-                                <Line 
+                                <Area 
                                     type="monotone" 
                                     dataKey="rating" 
-                                    stroke="var(--foreground)" 
-                                    strokeWidth={2} 
-                                    dot={{ r: 4, fill: 'var(--card-bg)', strokeWidth: 2 }}
-                                    activeDot={{ r: 6 }} 
+                                    stroke="var(--viz-cyan)" 
+                                    strokeWidth={3} 
+                                    fillOpacity={1} 
+                                    fill="url(#ratingGradientProfile)" 
                                 />
-                            </LineChart>
+                            </AreaChart>
                         </ResponsiveContainer>
                     ) : (
-                         <div className="h-full flex flex-col items-center justify-center text-[var(--foreground)]/40 border-2 border-dashed border-[var(--card-border)] rounded-xl">
-                            <TrendingUp className="w-10 h-10 mb-2 opacity-50" />
-                            <p>No contest history yet.</p>
-                            <p className="text-xs">Participate in contests to establish your rating!</p>
+                         <div className="h-full flex flex-col items-center justify-center text-[var(--muted-foreground)] opacity-50">
+                            <TrendingUp size={40} className="mb-4" />
+                            <p className="text-sm font-medium">No contest data available.</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Contribution Calendar Card */}
-            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md overflow-hidden">
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="p-2 rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)]">
-                        <Calendar className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-bold text-[var(--foreground)]">Submission Heatmap</h3>
-                        <p className="text-sm text-[var(--foreground)]/60">Activity in {new Date().getFullYear()}</p>
+            {/* Solved Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-[2rem] bg-[var(--card)]/40 backdrop-blur-md border border-[var(--border)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--viz-emerald)]/10 to-transparent opacity-50" />
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2.5 rounded-xl bg-[var(--viz-emerald)]/10 text-[var(--viz-emerald)]">
+                                <CheckCircle size={18} />
+                            </div>
+                            <span className="text-2xl font-black font-mono text-[var(--foreground)]">{stats?.user?.solvedEasy || 0}</span>
+                        </div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-[var(--viz-emerald)]">Easy Solved</div>
                     </div>
                 </div>
-
-                <div className="flex flex-col items-center">
-                    <div className="w-full overflow-x-auto pb-4 custom-scrollbar flex justify-center">
-                        {loadingStats ? (
-                            <div className="py-12 flex items-center justify-center text-[var(--foreground)]/40">
-                                <Loader2 className="w-8 h-8 animate-spin" />
+                <div className="p-6 rounded-[2rem] bg-[var(--card)]/40 backdrop-blur-md border border-[var(--border)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--viz-amber)]/10 to-transparent opacity-50" />
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2.5 rounded-xl bg-[var(--viz-amber)]/10 text-[var(--viz-amber)]">
+                                <Target size={18} />
                             </div>
-                        ) : stats?.calendarData?.length > 0 ? (
-                            <div className="p-4 bg-[var(--background)]/30 rounded-xl border border-[var(--card-border)] w-fit">
-                                <ActivityCalendar 
-                                    data={stats.calendarData}
-                                    theme={{
-                                        light: ['#f0f0f0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-                                        dark: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
-                                    }}
-                                    colorScheme={theme === 'dark' ? 'dark' : 'light'}
-                                    blockSize={13}
-                                    blockMargin={4}
-                                    fontSize={12}
-                                    showWeekdayLabels={true}
-                                    labels={{
-                                        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                                        weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-                                        totalCount: '{{count}} submissions in {{year}}',
-                                        legend: {
-                                            less: 'Less',
-                                            more: 'More',
-                                        },
-                                    }}
-                                    renderBlock={(block: any, activity: any) => (
-                                        React.cloneElement(block, {
-                                            onMouseEnter: () => setHoveredDay(activity),
-                                            onMouseLeave: () => setHoveredDay(null),
-                                        })
-                                    )}
-                                />
-                            </div>
-                        ) : (
-                            <div className="py-12 flex flex-col items-center justify-center text-[var(--foreground)]/40 border-2 border-dashed border-[var(--card-border)] rounded-xl w-full">
-                                <Calendar className="w-10 h-10 mb-2 opacity-50" />
-                                <p>No activity yet.</p>
-                                <p className="text-xs">Solve problems to see your heatmap!</p>
-                            </div>
-                        )}
+                            <span className="text-2xl font-black font-mono text-[var(--foreground)]">{stats?.user?.solvedMedium || 0}</span>
+                        </div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-[var(--viz-amber)]">Medium Solved</div>
                     </div>
-                    
-                    {!loadingStats && stats?.calendarData?.length > 0 && (
-                        <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-[var(--foreground)] uppercase tracking-widest min-h-[16px]">
-                            {hoveredDay ? (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="flex items-center gap-2 text-purple-500"
-                                >
-                                    <Sparkles className="w-3 h-3" />
-                                    {new Date(hoveredDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}: {hoveredDay.count} {hoveredDay.count === 1 ? 'submission' : 'submissions'}
-                                </motion.div>
-                            ) : (
-                                <div className="opacity-40 flex items-center gap-2">
-                                    <Sparkles className="w-3 h-3" /> Hover over squares to see daily activity
-                                </div>
+                </div>
+                <div className="p-6 rounded-[2rem] bg-[var(--card)]/40 backdrop-blur-md border border-[var(--border)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--viz-rose)]/10 to-transparent opacity-50" />
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2.5 rounded-xl bg-[var(--viz-rose)]/10 text-[var(--viz-rose)]">
+                                <Award size={18} />
+                            </div>
+                            <span className="text-2xl font-black font-mono text-[var(--foreground)]">{stats?.user?.solvedHard || 0}</span>
+                        </div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-[var(--viz-rose)]">Hard Solved</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Heatmap */}
+            <div className="p-8 rounded-[2.5rem] bg-[var(--card)]/40 backdrop-blur-xl border border-[var(--border)] shadow-xl">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-2">
+                        <Calendar size={16} className="text-[var(--viz-purple)]" />
+                        <h3 className="text-xs font-black text-[var(--viz-purple)] uppercase tracking-widest">Neural Activity</h3>
+                    </div>
+                    {hoveredDay && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-xs font-mono font-bold text-[var(--foreground)] bg-[var(--background)]/50 px-3 py-1 rounded-full border border-[var(--border)]"
+                        >
+                            {new Date(hoveredDay.date).toLocaleDateString()} : <span className="text-[var(--viz-purple)]">{hoveredDay.count}</span>
+                        </motion.div>
+                    )}
+                </div>
+
+                <div className="w-full overflow-x-auto pb-2 flex justify-center">
+                    {loadingStats ? (
+                        <div className="py-12">
+                            <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-purple)]" />
+                        </div>
+                    ) : stats?.calendarData?.length > 0 ? (
+                        <ActivityCalendar 
+                            data={stats.calendarData}
+                            theme={{
+                                light: ['var(--muted)', 'var(--viz-purple)'],
+                                dark: ['rgba(255,255,255,0.05)', '#d8b4fe'],
+                            }}
+                            colorScheme={theme === 'dark' ? 'dark' : 'light'}
+                            blockSize={14}
+                            blockMargin={4}
+                            fontSize={10}
+                            blockRadius={4}
+                            renderBlock={(block: any, activity: any) => (
+                                React.cloneElement(block, {
+                                    onMouseEnter: () => setHoveredDay(activity),
+                                    onMouseLeave: () => setHoveredDay(null),
+                                    style: { 
+                                        fill: activity.count > 0 ? `rgba(var(--viz-purple-rgb), ${Math.min(1, 0.3 + (activity.level * 0.15))})` : undefined,
+                                        stroke: activity.count > 0 ? `rgba(var(--viz-purple-rgb), 0.5)` : 'transparent',
+                                        strokeWidth: 1
+                                    }
+                                })
                             )}
+                        />
+                    ) : (
+                        <div className="py-12 flex flex-col items-center justify-center text-[var(--muted-foreground)] opacity-50">
+                            <Calendar size={32} className="mb-2" />
+                            <p className="text-xs">No transmission data recorded.</p>
                         </div>
                     )}
                 </div>
             </div>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
 
-function Loader() {
-  return (
-    <div className="flex items-center justify-center space-x-2 text-[var(--foreground)]">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        className="w-6 h-6 border-2 border-[var(--foreground)]/50 border-t-[var(--foreground)] rounded-full"
-      />
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

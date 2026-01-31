@@ -2,18 +2,12 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, Pause, Sparkles, Hash, Info, ChevronRight, ChevronLeft } from "lucide-react";
+import { 
+  Play, RotateCcw, Pause, Sparkles, Hash, Info, ChevronRight, 
+  ChevronLeft, Check
+} from "lucide-react";
 
 const ARRAY_SIZE = 10;
-
-const MANIM_COLORS = { 
-  text: "var(--foreground)", 
-  background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-};
 
 interface VisualNode {
   id: string;
@@ -36,7 +30,6 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Pre-compute Bubble Sort History with high granularity
   const history = useMemo(() => {
     if (initialData.length === 0) return [];
     
@@ -59,7 +52,6 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
 
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n - i - 1; j++) {
-        // Step A: Highlight current comparison
         currentNodes = currentNodes.map(node => {
             if (node.logicalIndex === j || node.logicalIndex === j + 1) {
                 return { ...node, status: 'comparing' };
@@ -69,7 +61,6 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
         record(`Comparing indices ${j} and ${j+1}: ${arr[j].value} vs ${arr[j+1].value}`, "SCAN", [j, j+1]);
 
         if (arr[j].value > arr[j + 1].value) {
-          // Step B: Mark as Swapping
           currentNodes = currentNodes.map(node => {
             if (node.logicalIndex === j || node.logicalIndex === j + 1) {
                 return { ...node, status: 'swapping' };
@@ -78,10 +69,8 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
           });
           record(`Match: ${arr[j].value} > ${arr[j+1].value}. Elements will swap positions.`, "SWAP_DECISION", [j, j+1]);
 
-          // Step C: Execute Swap
           const nodeJ = currentNodes.find(n => n.logicalIndex === j)!;
           const nodeJ1 = currentNodes.find(n => n.logicalIndex === j + 1)!;
-          
           const idJ = nodeJ.id;
           const idJ1 = nodeJ1.id;
 
@@ -91,12 +80,9 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
             return node;
           });
           
-          // Local logic sync
           [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
-          
           record(`Transformation executed. Indices updated.`, "SWAP_DONE", [j, j+1]);
 
-          // Step D: Reset swap status back to idle
           currentNodes = currentNodes.map(node => 
             (node.id === idJ || node.id === idJ1) ? { ...node, status: 'idle' } : node
           );
@@ -107,7 +93,6 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
           );
         }
       }
-      // Step E: End of pass - mark the bubbled element as sorted
       const sortedIdx = n - i - 1;
       currentNodes = currentNodes.map(node => 
         node.logicalIndex === sortedIdx ? { ...node, status: 'sorted' } : node
@@ -119,17 +104,10 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
     return steps;
   }, [initialData]);
 
-  // 2. Playback System
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => {
-          if (prev >= history.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
+        setCurrentIndex((prev) => prev >= history.length - 1 ? (setIsPlaying(false), prev) : prev + 1);
       }, speed);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -155,79 +133,58 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
-        {/* Chalkboard Background */}
+      <div className="p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         
-        {/* Header Section */}
         <div className="flex items-center justify-between mb-12 relative z-10">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
-              Bubble Sort <span className="text-muted-foreground/40">Analysis</span>
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-amber)]">
+              Bubble Sort <span className="text-[var(--muted-foreground)]/40">Analysis</span>
             </h2>
             <div className="flex items-center gap-2">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/30">Temporal Manifold Navigation</p>
+               <div className="h-1 w-12 bg-[var(--viz-amber)] rounded-full" />
+               <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/30">Temporal Manifold Navigation</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl border border-border shadow-inner">
-            <button onClick={generateArray} className="p-2 hover:bg-background/10 rounded-xl text-muted-foreground/40 active:scale-95 transition-all"><RotateCcw size={20} /></button>
+          <div className="flex items-center gap-3 bg-[var(--muted)] p-2 rounded-2xl border border-[var(--border)] shadow-inner">
+            <button onClick={generateArray} className="p-2 hover:bg-[var(--accent)] rounded-xl text-[var(--muted-foreground)] active:scale-95 transition-all"><RotateCcw size={20} /></button>
             {!isPlaying ? (
-              <button onClick={() => setIsPlaying(true)} className="flex items-center gap-2 px-6 py-2 bg-[#58C4DD] text-black rounded-xl hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest shadow-[0_0_20px_#58C4DD44]"><Play size={14} fill="currentColor" /> EXECUTE</button>
+              <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-amber)] text-[var(--background)] rounded-xl hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest shadow-lg"><Play size={14} fill="currentColor" /> EXECUTE</button>
             ) : (
-              <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-[#FC6255]/20 text-[#FC6255] border border-[#FC6255]/50 rounded-xl font-black text-[10px] uppercase tracking-widest"><Pause size={14} fill="currentColor" /> HALT</button>
+              <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/50 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[var(--viz-rose)]/30 transition-all"><Pause size={14} fill="currentColor" /> HALT</button>
             )}
           </div>
         </div>
 
-        {/* The "Video" Canvas */}
-        <div className="relative min-h-[480px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-2xl flex flex-col items-center justify-center px-10">
-            
-            {/* Range Highlight (Active Lemma) */}
-            {currentStep.comparisonRange && (
-                <motion.div 
-                    className="absolute bottom-20 border-2 border-primary/20 bg-primary/5 rounded-2xl z-0"
-                    animate={{ 
-                        x: ( (currentStep.comparisonRange[0] + currentStep.comparisonRange[1])/2 - (ARRAY_SIZE - 1) / 2 ) * 65,
-                        width: 120, // Two bars width + gap
-                        height: "70%",
-                        opacity: 1
-                    }}
-                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                />
+        <div className="relative min-h-[480px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-2xl flex flex-col items-center justify-center px-10">
+            {currentStep.activeStep && (
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-amber)]/10 border border-[var(--viz-amber)]/30 rounded-full z-30 shadow-lg pointer-events-none">
+                    <Sparkles size={12} className="text-[var(--viz-amber)]" />
+                    <span className="text-[9px] font-black font-mono text-[var(--viz-amber)] uppercase tracking-[0.2em]">{currentStep.activeStep}</span>
+                </motion.div>
             )}
 
-            {/* Logical Step Badge */}
-            <AnimatePresence>
-                {currentStep.activeStep && (
-                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30">
-                        <Sparkles size={12} className="text-[#58C4DD]" />
-                        <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.activeStep}</span>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Subtitle / Explanation */}
             <AnimatePresence mode="wait">
-                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-10 text-center z-30">
-                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl backdrop-blur-md shadow-2xl">
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-10 text-center z-30 pointer-events-none">
+                    <div className="p-4 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-2xl">
                         <div className="flex items-center justify-center gap-2 mb-1 opacity-40">
-                            <Info size={10} className="text-primary" />
-                            <span className="text-[8px] font-black uppercase tracking-tighter text-foreground">Analysis Entry</span>
+                            <Info size={10} className="text-[var(--primary)]" />
+                            <span className="text-[8px] font-black uppercase tracking-tighter text-[var(--foreground)]">Analysis Entry</span>
                         </div>
-                        <p className="text-[10px] text-primary font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.explanation}</p>
+                        <p className="text-[10px] text-[var(--viz-amber)] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.explanation}</p>
                     </div>
                 </motion.div>
             </AnimatePresence>
 
-            {/* Elements Visualization */}
             <div className="relative w-full h-full flex items-end justify-center pb-32">
                 {currentStep.nodes.map((node) => {
                     const isComparing = node.status === 'comparing';
                     const isSwapping = node.status === 'swapping';
                     const isSorted = node.status === 'sorted';
+                    const nodeColor = isSwapping ? "var(--viz-rose)" : isComparing ? "var(--viz-amber)" : isSorted ? "var(--viz-green)" : "rgba(var(--viz-blue-rgb), 0.15)";
+                    const nodeColorRGB = isSwapping ? "var(--viz-red-rgb)" : isComparing ? "var(--viz-gold-rgb)" : isSorted ? "var(--viz-green-rgb)" : "var(--viz-blue-rgb)";
                     
                     return (
                         <motion.div
@@ -236,56 +193,53 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
                             animate={{ 
                                 x: (node.logicalIndex - (ARRAY_SIZE - 1) / 2) * 65, 
                                 height: `${node.value}%`,
-                                backgroundColor: isSwapping ? MANIM_COLORS.red : isComparing ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : "rgba(88,196,221,0.15)",
-                                borderColor: isSwapping ? MANIM_COLORS.red : isComparing ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : "rgba(88,196,221,0.3)",
-                                boxShadow: isComparing || isSwapping ? `0 0 35px ${isSwapping ? MANIM_COLORS.red : MANIM_COLORS.gold}44` : isSorted ? `0 0 15px ${MANIM_COLORS.green}22` : "none",
+                                backgroundColor: nodeColor,
+                                borderColor: isSwapping || isComparing || isSorted ? nodeColor : "rgba(var(--viz-blue-rgb), 0.3)",
+                                boxShadow: isComparing || isSwapping || isSorted ? `0 0 35px rgba(${nodeColorRGB}, 0.3)` : "none",
                                 scale: isComparing || isSwapping ? 1.1 : 1,
-                                opacity: 1
                             }}
                             transition={{ type: "spring", stiffness: 120, damping: 25 }}
                             className="absolute bottom-0 w-12 border-t-2 border-x-2 rounded-t-xl z-20 flex flex-col items-center justify-start pt-2 font-mono overflow-hidden"
                         >
-                            <span className={`text-xs font-bold ${isComparing || isSwapping ? 'text-black' : 'text-foreground/60'}`}>{node.value}</span>
-                            <div className="mt-auto pb-1 text-[8px] opacity-20 uppercase">0x{node.id.slice(-4)}</div>
+                            <span className={`text-xs font-bold ${isComparing || isSwapping ? 'text-[var(--background)]' : 'text-[var(--foreground)]/60'}`}>{node.value}</span>
+                            <div className={`mt-auto pb-1 text-[8px] opacity-20 uppercase ${isComparing || isSwapping ? 'text-[var(--background)]' : 'text-[var(--foreground)]'}`}>0x{node.id.slice(-4)}</div>
                         </motion.div>
                     );
                 })}
             </div>
         </div>
 
-        {/* Premium Scrubber Section */}
-        <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+        <div className="mt-8 p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Step {currentIndex + 1} of {history.length}</span>
+                    <Hash size={14} className="text-[var(--primary)]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40"><ChevronRight size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronLeft size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronRight size={18} /></button>
                 </div>
             </div>
 
             <div className="relative flex items-center group/slider">
-                <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
+                <div className="absolute w-full h-1 bg-[var(--background)]/10 rounded-full" />
+                <div className="absolute h-1 bg-[var(--viz-amber)] rounded-full shadow-[0_0_10px_rgba(var(--viz-blue-rgb), 0.4)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={history.length - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-primary rounded-full shadow-[0_0_15px_#FFFF00] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-amber)] rounded-full shadow-[0_0_15px_rgba(var(--viz-gold-rgb), 0.5)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
         </div>
       </div>
 
-      {/* Methodology Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex items-center justify-center gap-12">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Scanning Manifold</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#FC6255]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Displacement</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Ordered Manifold</span></div>
+      <div className="px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex items-center justify-center gap-12">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Scanning Manifold</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Displacement</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Ordered Manifold</span></div>
       </div>
     </div>
   );

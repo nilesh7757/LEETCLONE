@@ -13,15 +13,15 @@ export const CodeSnippet = ({ code, language = "cpp" }: { code: string, language
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-border bg-card/50 group">
-      <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
+    <div className="rounded-2xl overflow-hidden bg-[var(--card)] group shadow-sm">
+      <div className="flex items-center justify-between px-4 py-2 bg-[var(--muted)] border-b border-[var(--border)]">
         <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">{language}</span>
-        <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors">
-          {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+        <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-[var(--accent)] rounded-md">
+          {copied ? <Check size={14} className="text-[var(--viz-green)]" /> : <Copy size={14} />}
         </button>
       </div>
       <div className="p-4 overflow-x-auto">
-        <pre className="text-xs font-mono leading-relaxed text-foreground/80">
+        <pre className="text-xs font-mono leading-relaxed text-[var(--foreground)]/80">
           <code>{code}</code>
         </pre>
       </div>
@@ -36,32 +36,33 @@ interface DocSectionProps {
   color?: string;
 }
 
-export const DocSection = ({ title, icon: Icon, children, color = "#58C4DD" }: DocSectionProps) => (
-  <section className="relative p-8 bg-card/30 border border-border rounded-[2.5rem] overflow-hidden group transition-all hover:border-foreground/20">
-    <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:scale-110 group-hover:opacity-[0.1] transition-all duration-700">
+export const DocSection = ({ title, icon: Icon, children, color = "var(--viz-blue)" }: DocSectionProps) => (
+  <section className="relative p-8 bg-[var(--card)] rounded-[2.5rem] overflow-hidden group transition-all shadow-sm hover:shadow-md">
+    <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 group-hover:opacity-[0.07] transition-all duration-700 pointer-events-none">
       <Icon size={120} style={{ color }} />
     </div>
     <h4 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color }}>
       <div className="w-1 h-6 rounded-full" style={{ backgroundColor: color }} />
       {title}
     </h4>
-    <div className="relative z-10 leading-relaxed text-sm font-light text-muted-foreground space-y-4">
+    <div className="relative z-10 leading-relaxed text-sm font-light text-[var(--muted-foreground)] space-y-4">
       {children}
     </div>
   </section>
 );
 
 export const ComplexityCard = ({ time, space }: { time: string, space: string }) => (
-  <div className="p-6 bg-card/40 border border-border rounded-[2rem] flex flex-col gap-4">
-    <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Asymptotic Bounds</h5>
+  <div className="p-6 bg-[var(--card)] rounded-[2rem] flex flex-col gap-4 shadow-sm relative overflow-hidden">
+    <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[var(--viz-gold)]/20 to-transparent" />
+    <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Asymptotic Bounds</h5>
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-1">
-        <p className="text-[10px] text-muted-foreground/40 font-mono">Temporal</p>
-        <p className="text-lg font-bold text-[#f59e0b] font-mono">{time}</p>
+        <p className="text-[10px] text-[var(--muted-foreground)]/50 font-mono">Temporal</p>
+        <p className="text-lg font-bold text-[var(--viz-gold)] font-mono">{time}</p>
       </div>
       <div className="space-y-1">
-        <p className="text-[10px] text-muted-foreground/40 font-mono">Spatial</p>
-        <p className="text-lg font-bold text-[#58C4DD] font-mono">{space}</p>
+        <p className="text-[10px] text-[var(--muted-foreground)]/50 font-mono">Spatial</p>
+        <p className="text-lg font-bold text-[var(--viz-blue)] font-mono">{space}</p>
       </div>
     </div>
   </div>

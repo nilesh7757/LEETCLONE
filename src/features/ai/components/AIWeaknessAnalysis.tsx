@@ -123,18 +123,19 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
   );
 
   if (!analysis) return (
-    <div className="bg-gradient-to-br from-purple-600/5 to-blue-600/5 border border-dashed border-[var(--card-border)] rounded-2xl p-8 mb-16 flex flex-col items-center justify-center text-center space-y-4">
-       <div className="p-3 bg-purple-500/10 rounded-full">
-          <BrainCircuit className="w-8 h-8 text-purple-500" />
+    <div className="bg-gradient-to-br from-[var(--viz-purple)]/5 to-[var(--viz-blue)]/5 border border-dashed border-[var(--border)] rounded-[2.5rem] p-12 mb-16 flex flex-col items-center justify-center text-center space-y-6 shadow-sm relative overflow-hidden">
+       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-grid-pattern" />
+       <div className="p-4 bg-[var(--viz-purple)]/10 rounded-2xl text-[var(--viz-purple)] shadow-inner">
+          <BrainCircuit className="w-10 h-10" />
        </div>
-       <div>
-          <h3 className="text-lg font-bold text-[var(--foreground)]">Personalized Skill Mapping</h3>
-          <p className="text-sm text-[var(--foreground)]/60 max-w-sm mx-auto">Let AI analyze your recent performance to identify patterns you should practice next.</p>
+       <div className="space-y-2">
+          <h3 className="text-2xl font-light tracking-tight text-[var(--foreground)]">Personalized <span className="text-[var(--viz-purple)] font-medium">Skill Mapping</span></h3>
+          <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto font-light leading-relaxed">Let AI analyze your recent performance to identify hidden patterns and optimize your next practice unit.</p>
        </div>
        <button 
           onClick={fetchAnalysis}
           disabled={isLoading}
-          className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          className="px-10 py-3 bg-[var(--viz-purple)] text-[var(--background)] font-black text-[10px] uppercase tracking-[0.2em] rounded-xl transition-all hover:scale-105 shadow-lg shadow-[var(--viz-purple)]/20 flex items-center gap-3 disabled:opacity-50 cursor-pointer"
        >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           Run AI Skill Analysis
@@ -149,58 +150,61 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-purple-600/10 via-[var(--card-bg)] to-blue-600/10 border border-purple-500/20 rounded-2xl p-8 mb-16 relative overflow-hidden group shadow-xl"
+      className="bg-[var(--card)] rounded-[2.5rem] p-10 mb-16 relative overflow-hidden group shadow-xl"
     >
-      <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-        <Sparkles className="w-32 h-32 text-purple-500" />
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--viz-purple)]/20 to-transparent" />
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-grid-pattern" />
+      
+      <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-all duration-700 pointer-events-none">
+        <Sparkles className="w-48 h-48 text-[var(--viz-purple)]" />
       </div>
 
       <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-purple-500 rounded-lg shadow-lg shadow-purple-500/20">
-            <BrainCircuit className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-3 mb-10">
+          <div className="p-2.5 bg-[var(--viz-purple)]/10 rounded-xl text-[var(--viz-purple)] shadow-sm">
+            <BrainCircuit className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-bold text-[var(--foreground)]">AI Skill Analysis</h2>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)]">AI Intelligence <span className="text-[var(--muted-foreground)]/40 font-light tracking-widest uppercase text-[10px] ml-2">Layer 01</span></h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-500 mb-1 block">Current Weakness</label>
-              <h3 className="text-3xl font-black text-[var(--foreground)]">{analysis.weakness}</h3>
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--viz-purple)] block opacity-60">Identified Critical Weakness</label>
+              <h3 className="text-4xl font-light tracking-tight text-[var(--foreground)]">{analysis.weakness}</h3>
             </div>
-            <p className="text-[var(--foreground)]/70 leading-relaxed max-w-lg">
+            <p className="text-[var(--muted-foreground)] leading-relaxed max-w-lg font-light">
               {analysis.analysis}
             </p>
             
             {!studyPlanId && (
               <div className="pt-2">
-                 <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/40 mb-2 block">Custom Request (Optional)</label>
+                 <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40 mb-3 block">Neural Focus Override</label>
                  <textarea
                     value={customRequest}
                     onChange={(e) => setCustomRequest(e.target.value)}
                     placeholder="e.g. 'I want to practice SQL Joins' or 'System Design of WhatsApp'"
-                    className="w-full p-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl text-sm text-[var(--foreground)] focus:ring-2 focus:ring-purple-500/50 outline-none resize-none h-20 transition-all"
+                    className="w-full p-4 bg-[var(--muted)] rounded-2xl text-sm text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-purple)]/20 outline-none resize-none h-24 transition-all shadow-inner border-none"
                  />
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-sm font-medium text-purple-500 bg-purple-500/5 px-3 py-1.5 rounded-full w-fit border border-purple-500/10">
+            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-[var(--viz-purple)] bg-[var(--viz-purple)]/5 px-4 py-2 rounded-xl w-fit">
               <CheckCircle className="w-4 h-4" />
-              Recommended: {analysis.recommendedTopic}
+              Recommended Focus: {analysis.recommendedTopic}
             </div>
           </div>
 
-          <div className="flex flex-col items-center md:items-end justify-center gap-3">
+          <div className="flex flex-col items-center lg:items-end justify-center gap-4">
             <button
               onClick={handleGenerateProblem}
               disabled={isGenerating || isGeneratingPlan}
-              className="group/btn relative w-full md:w-fit px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer overflow-hidden"
+              className="group/btn relative w-full lg:w-fit px-10 py-4 bg-[var(--viz-purple)] text-[var(--background)] rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-105 shadow-xl shadow-[var(--viz-purple)]/20 flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer overflow-hidden"
             >
               {isGenerating ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Generating...</>
+                <><Loader2 className="w-5 h-5 animate-spin" /> Synthesizing...</>
               ) : (
-                <><Sparkles className="w-5 h-5" /> {studyPlanId ? "Generate Next Problem" : "Quick Practice"}</>
+                <><Sparkles className="w-5 h-5" /> {studyPlanId ? "Generate Next Unit" : "Begin Neural Unit"}</>
               )}
             </button>
 
@@ -208,18 +212,20 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
               <button
                 onClick={handleGenerateStudyPlan}
                 disabled={isGenerating || isGeneratingPlan}
-                className="group/btn relative w-full md:w-fit px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
+                className="group/btn relative w-full lg:w-fit px-10 py-4 bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-[var(--muted)] flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {isGeneratingPlan ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Building Plan...</>
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Constructing...</>
                 ) : (
-                  <><BookOpen className="w-5 h-5" /> Create AI Study Plan</>
+                  <><BookOpen className="w-5 h-5 text-[var(--viz-purple)]" /> Construct Manifold</>
                 )}
               </button>
             )}
-            <p className="mt-1 text-[10px] text-[var(--foreground)]/40 font-medium uppercase tracking-wider text-right">
-              Powered by Groq • Llama 3.3
-            </p>
+            <div className="mt-2 text-right">
+              <p className="text-[9px] text-[var(--muted-foreground)]/40 font-black uppercase tracking-[0.3em]">
+                System Architecture: Gemini 2.0
+              </p>
+            </div>
           </div>
         </div>
       </div>

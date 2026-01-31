@@ -14,11 +14,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-rose)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-rose)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 const NUM_NODES = 6;
@@ -167,7 +167,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -175,21 +175,21 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
         {/* Header UI */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-rose)]">
               Topo-Sort <span className="text-muted-foreground/40">Lemma</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+               <div className="h-1 w-12 bg-[var(--viz-rose)] rounded-full" />
                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Kahn's Manifold Synthesis</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-             <button onClick={generateRandomEdges} className="p-3 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground"><Shuffle size={20}/></button>
-             <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
+             <button onClick={generateRandomEdges} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><Shuffle size={20}/></button>
+             <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
              
              {!isPlaying ? (
-                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[#58C4DD] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
+                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-rose)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                     <Play size={16} fill="currentColor"/> EXECUTE
                 </button>
              ) : (
@@ -202,14 +202,14 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
 
         {/* Visual Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div ref={containerRef} className="lg:col-span-8 relative min-h-[450px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center p-8">
+            <div ref={containerRef} className="lg:col-span-8 relative min-h-[450px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-8">
                 
                 {/* Logic Step Badge */}
                 <AnimatePresence>
                     {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30 shadow-lg">
-                            <Zap size={12} className="text-[#58C4DD]" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.step}</span>
+                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-rose)]/10 border border-[var(--viz-rose)]/30 rounded-full z-30 shadow-lg">
+                            <Zap size={12} className="text-[var(--viz-rose)]" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-rose)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -217,8 +217,8 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
                 {/* Explanation Box */}
                 <AnimatePresence mode="wait">
                     <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-8 w-full max-w-[400px] px-10 text-center z-30">
-                        <div className="p-4 bg-card/80 border border-border rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[#f59e0b] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
+                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
+                            <p className="text-[10px] text-[var(--viz-rose)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -241,7 +241,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
                                     key={`edge-${i}`}
                                     x1={start.x} y1={start.y} x2={end.x} y2={end.y}
                                     stroke="currentColor"
-                                    className={`${isActive ? "text-[#f59e0b]" : isResolved ? "text-[#83C167] opacity-20" : "text-muted-foreground/10"}`}
+                                    className={`${isActive ? "text-[var(--viz-rose)]" : isResolved ? "text-[var(--viz-green)] opacity-20" : "text-muted-foreground/10"}`}
                                     strokeWidth={isActive ? 3 : 1.5}
                                     markerEnd="url(#topo-arrow)"
                                     initial={{ opacity: 0 }}
@@ -278,7 +278,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
 
             {/* Sidebar: Result & Stream */}
             <div className="lg:col-span-4 flex flex-col gap-6">
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex flex-col gap-4">
+                <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <ListOrdered size={14}/> Sorted Sequence
                     </h3>
@@ -289,7 +289,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
                                     key={`res-${idx}`}
                                     initial={{ scale: 0, x: -20 }}
                                     animate={{ scale: 1, x: 0 }}
-                                    className="w-8 h-8 rounded-lg border border-[#83C167] bg-[#83C167]/10 flex items-center justify-center font-mono text-xs font-black text-[#83C167]"
+                                    className="w-8 h-8 rounded-lg border border-[var(--viz-green)] bg-[var(--viz-green)]/10 flex items-center justify-center font-mono text-xs font-black text-[var(--viz-green)]"
                                 >
                                     {labels[idx]}
                                 </motion.div>
@@ -299,7 +299,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex-1 flex flex-col gap-4 overflow-hidden h-[240px]">
+                <div className="p-6 bg-muted  rounded-[2rem] flex-1 flex flex-col gap-4 overflow-hidden h-[240px]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Activity size={14}/> Resolve Stream
                     </h3>
@@ -312,7 +312,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
                                 >
-                                    <span className="text-[#58C4DD]">»</span>
+                                    <span className="text-[var(--viz-rose)]">»</span>
                                     {log}
                                 </motion.div>
                             ))}
@@ -321,13 +321,13 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem]">
+                <div className="p-6 bg-muted  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                         <Layers size={14}/> Buffer (In-Degree 0)
                     </h3>
                     <div className="flex flex-wrap gap-2 justify-center">
                         {currentStep.queue.map((idx) => (
-                            <div key={`q-${idx}`} className="w-8 h-8 rounded bg-[#58C4DD]/10 border border-[#58C4DD]/30 flex items-center justify-center text-[10px] font-black text-[#58C4DD]">
+                            <div key={`q-${idx}`} className="w-8 h-8 rounded bg-[var(--viz-rose)]/10 border border-[var(--viz-rose)]/30 flex items-center justify-center text-[10px] font-black text-[var(--viz-rose)]">
                                 {labels[idx]}
                             </div>
                         ))}
@@ -338,10 +338,10 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
         </div>
 
         {/* Scrubber UI */}
-        <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+        <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-rose)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -352,13 +352,13 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_var(--viz-rose)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-rose)] rounded-full shadow-[0_0_15px_var(--viz-rose)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -366,10 +366,10 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Extraction</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Ready Manifold</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Resolved Dependency</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Extraction</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Ready Manifold</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Resolved Dependency</span></div>
          <div className="flex items-center gap-3"><Network size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Linear Resolution</span></div>
       </div>
     </div>

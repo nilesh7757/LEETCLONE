@@ -14,11 +14,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-amber)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-amber)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 const UNIT_WIDTH = 60;
@@ -222,7 +222,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -230,11 +230,11 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
         {/* Header UI */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-amber)]">
               Quick Sort <span className="text-muted-foreground/40">Visualizer</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+               <div className="h-1 w-12 bg-[var(--viz-amber)] rounded-full" />
                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Divide & Conquer</p>
             </div>
           </div>
@@ -242,7 +242,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
           <div className="flex items-center gap-3">
              {isEditing && (
                  <>
-                    <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-xl border border-border">
+                    <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-xl ">
                         <input 
                             type="number" 
                             value={inputValue} 
@@ -250,7 +250,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
                             placeholder="NUM"
                             className="w-12 bg-transparent text-center text-xs font-bold focus:outline-none"
                         />
-                        <button onClick={addItem} className="p-2 hover:bg-[#83C167]/20 rounded-lg text-[#83C167] transition-all"><Plus size={14}/></button>
+                        <button onClick={addItem} className="p-2 hover:bg-[var(--viz-green)]/20 rounded-lg text-[var(--viz-green)] transition-all"><Plus size={14}/></button>
                     </div>
                     <div className="w-px h-6 bg-border mx-1" />
                  </>
@@ -265,10 +265,10 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
 
              {!isEditing && (
                 <>
-                    <button onClick={generateArray} className="p-3 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground" title="Randomize"><RotateCcw size={20}/></button>
+                    <button onClick={generateArray} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground" title="Randomize"><RotateCcw size={20}/></button>
                     
                     {!isPlaying ? (
-                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[#58C4DD] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
+                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-amber)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                             <Play size={16} fill="currentColor"/> START
                         </button>
                     ) : (
@@ -282,7 +282,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center p-8">
+        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-8">
             
             {/* Range Indicator */}
             <AnimatePresence>
@@ -295,7 +295,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
                             width: (currentStep.activeRange[1] - currentStep.activeRange[0] + 1) * UNIT_WIDTH + 20,
                         }}
                         exit={{ opacity: 0 }}
-                        className="absolute h-[200px] border-2 border-dashed border-[#58C4DD]/20 rounded-3xl bg-[#58C4DD]/5 z-0 pointer-events-none"
+                        className="absolute h-[200px] border-2 border-dashed border-[var(--viz-amber)]/20 rounded-3xl bg-[var(--viz-amber)]/5 z-0 pointer-events-none"
                     />
                 )}
             </AnimatePresence>
@@ -338,7 +338,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
                                     </button>
                                 )}
                                 {isPivot && !isEditing && (
-                                    <div className="absolute -top-6 text-[8px] font-bold text-[#FC6255] uppercase tracking-widest">Pivot</div>
+                                    <div className="absolute -top-6 text-[8px] font-bold text-[var(--viz-rose)] uppercase tracking-widest">Pivot</div>
                                 )}
                             </motion.div>
                         );
@@ -347,7 +347,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
             </div>
 
             {/* Logs Overlay */}
-            <div className={`absolute top-6 left-6 z-30 w-[250px] bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm max-h-[200px] overflow-hidden flex flex-col transition-opacity ${isEditing ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+            <div className={`absolute top-6 left-6 z-30 w-[250px] bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm max-h-[200px] overflow-hidden flex flex-col transition-opacity ${isEditing ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-2">
                         <Activity size={12} /> Partition Log
                 </span>
@@ -360,7 +360,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
                                 animate={{ opacity: 1, x: 0 }}
                                 className="text-[9px] font-mono text-muted-foreground/70 leading-tight"
                             >
-                                <span className="text-[#58C4DD] mr-1">›</span>{log}
+                                <span className="text-[var(--viz-amber)] mr-1">›</span>{log}
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -371,8 +371,8 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
             <AnimatePresence mode="wait">
                 {!isEditing && (
                     <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-8 w-full flex justify-center z-30 pointer-events-none">
-                        <div className="px-6 py-3 bg-card/90 border border-border rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
-                            <p className="text-xs text-[#f59e0b] font-mono font-medium">{currentStep.message}</p>
+                        <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
+                            <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
                         </div>
                     </motion.div>
                 )}
@@ -381,10 +381,10 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Timeline Scrubber */}
-        <div className={`mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+        <div className={`mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Step {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-amber)] rounded-full shadow-[0_0_15px_var(--viz-amber)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -409,10 +409,10 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#FC6255]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Pivot Element</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Comparing</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Sorted</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Pivot Element</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Comparing</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Sorted</span></div>
          <div className="flex items-center gap-3"><Split size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Range</span></div>
       </div>
     </div>

@@ -97,18 +97,24 @@ export default function ChatSidebar() {
   };
 
   return (
-    <div className="w-80 border-r border-[var(--card-border)] bg-[var(--card-bg)] h-full flex flex-col shrink-0">
-      <div className="p-4 border-b border-[var(--card-border)]">
-        <h2 className="font-bold text-lg text-[var(--foreground)]">Messages</h2>
+    <div className="w-80 border-r border-white/5 bg-[var(--card)]/30 backdrop-blur-xl h-full flex flex-col shrink-0 relative z-20">
+      <div className="p-6 border-b border-white/5 flex items-center gap-3">
+        <div className="p-2 rounded-xl bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]">
+            <MessageSquare size={18} />
+        </div>
+        <h2 className="font-black text-sm uppercase tracking-widest text-[var(--foreground)]">Neural Link</h2>
       </div>
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
         {loading ? (
           <div className="flex justify-center p-8">
-            <Loader2 className="w-6 h-6 animate-spin text-[var(--foreground)]/40" />
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--viz-cyan)]" />
           </div>
         ) : conversations.length === 0 ? (
-          <div className="p-8 text-center text-sm text-[var(--foreground)]/60">
-            No conversations yet. Start a chat from a user profile!
+          <div className="flex flex-col items-center justify-center h-48 text-center p-4 rounded-3xl border border-dashed border-white/10 bg-white/5">
+            <UserCircle className="w-10 h-10 text-[var(--muted-foreground)] mb-3 opacity-50" />
+            <p className="text-xs font-medium text-[var(--muted-foreground)]">No active signals.</p>
+            <p className="text-[10px] text-[var(--muted-foreground)]/50 mt-1">Initiate a link from a profile.</p>
           </div>
         ) : (
           conversations.map((chat) => {
@@ -121,41 +127,41 @@ export default function ChatSidebar() {
               <Link
                 key={chat.id}
                 href={`/chat/${chat.id}`}
-                className={`block p-4 border-b border-[var(--card-border)] hover:bg-[var(--foreground)]/5 transition-colors ${
-                  isActive ? "bg-[var(--foreground)]/10" : ""
+                className={`group relative block p-4 rounded-2xl border transition-all duration-300 ${
+                  isActive 
+                    ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)]/30 shadow-[0_0_20px_rgba(var(--viz-cyan-rgb),0.1)]" 
+                    : "bg-transparent border-transparent hover:bg-white/5 hover:border-white/10"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden">
+                    <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-colors ${isActive ? "border-[var(--viz-cyan)]" : "border-transparent group-hover:border-white/10"}`}>
                       {otherUser?.image ? (
                         <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <UserCircle className="w-6 h-6 text-[var(--foreground)]/40" />
+                        <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
+                          <UserCircle className="w-6 h-6 text-[var(--muted-foreground)]" />
                         </div>
                       )}
                     </div>
                     {isOnline && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--background)] rounded-full" />
+                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[var(--viz-emerald)] border-2 border-[var(--card)] rounded-full shadow-[0_0_10px_var(--viz-emerald)] animate-pulse" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <h3 className="font-medium text-[var(--foreground)] truncate">{otherUser?.name || "Unknown User"}</h3>
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className={`font-bold text-sm truncate ${isActive ? "text-[var(--viz-cyan)]" : "text-[var(--foreground)]"}`}>
+                        {otherUser?.name || "Unknown Entity"}
+                      </h3>
                       {chat.lastMessage && (
-                        <span className="text-[10px] text-[var(--foreground)]/40 shrink-0 ml-2">
-                          {formatDistanceToNow(new Date(chat.lastMessage.createdAt), { addSuffix: true })}
+                        <span className="text-[9px] font-mono text-[var(--muted-foreground)] shrink-0 opacity-60">
+                          {formatDistanceToNow(new Date(chat.lastMessage.createdAt))}
                         </span>
                       )}
                     </div>
-                    {!isOnline && lastActive && (
-                      <p className="text-[10px] text-[var(--foreground)]/40 mb-1">
-                        Last active: {formatDistanceToNow(lastActive, { addSuffix: true })}
-                      </p>
-                    )}
-                    <p className="text-sm text-[var(--foreground)]/60 truncate">
-                      {chat.lastMessage?.content || "No messages yet"}
+                    
+                    <p className={`text-xs truncate font-medium ${isActive ? "text-[var(--foreground)]/80" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]/60"}`}>
+                      {chat.lastMessage?.content || "No transmission data"}
                     </p>
                   </div>
                 </div>
@@ -167,3 +173,5 @@ export default function ChatSidebar() {
     </div>
   );
 }
+
+import { MessageSquare } from "lucide-react";

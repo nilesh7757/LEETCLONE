@@ -48,15 +48,15 @@ export default function UserTopNav() {
       {status === "authenticated" && (
         <Link
           href={dailySlug ? `/problems/${dailySlug}` : "/problems"}
-          className={`flex items-center gap-2 px-2 py-1.5 transition-all duration-300 ${
+          className={`flex items-center gap-2 px-2 py-1.5 transition-all duration-300 rounded-lg hover:bg-[var(--foreground)]/5 ${
             solvedToday
-              ? "text-orange-600 dark:text-orange-400"
-              : "text-[var(--foreground)]/60"
+              ? "text-[var(--viz-gold)]"
+              : "text-[var(--muted-foreground)]"
           }`}
         >
           <Flame
             className={`w-5 h-5 ${
-              solvedToday ? "fill-orange-500 text-orange-500" : ""
+              solvedToday ? "fill-[var(--viz-gold)] text-[var(--viz-gold)]" : ""
             }`}
           />
           <span className="text-sm font-bold">{streak}</span>

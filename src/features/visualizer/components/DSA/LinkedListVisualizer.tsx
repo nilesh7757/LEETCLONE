@@ -13,11 +13,11 @@ const GAP_SIZE = 60; // Space for the arrow
 
 // Manim-inspired Palette
 const COLORS = { 
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC",
+  blue: "var(--viz-lime)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-amber)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-lime)",
   muted: "rgba(255,255,255,0.1)"
 };
 
@@ -228,15 +228,15 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     <div className="flex flex-col gap-6 select-none font-sans">
       
       {/* --- Main Dashboard --- */}
-      <div className="bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
+      <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
          {/* Background Grid */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
          {/* Header & Inputs */}
-         <div className="relative z-10 p-6 border-b border-border bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
+         <div className="relative z-10 p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#58C4DD]/10 rounded-2xl text-[#58C4DD]">
+                <div className="p-3 bg-[var(--viz-lime)]/10 rounded-2xl text-[var(--viz-lime)]">
                     <LinkIcon size={24} />
                 </div>
                 <div>
@@ -245,23 +245,23 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl border border-border shadow-sm">
+            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl  shadow-sm">
                 <div className="flex items-center gap-3 px-4 border-r border-border">
                     <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-wider">Data</span>
                     <input 
                         type="number" value={inputValue} 
                         onChange={e => setInputValue(e.target.value)}
                         placeholder="VAL"
-                        className="w-12 bg-transparent font-mono text-sm font-bold text-[#f59e0b] focus:outline-none text-center placeholder:text-muted-foreground/30"
+                        className="w-12 bg-transparent font-mono text-sm font-bold text-[var(--viz-amber)] focus:outline-none text-center placeholder:text-muted-foreground/30"
                     />
                 </div>
-                <button onClick={pushBack} className="p-2 hover:bg-[#83C167]/10 rounded-xl text-[#83C167] transition-all" title="Push Back">
+                <button onClick={pushBack} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all" title="Push Back">
                     <Plus size={18} />
                 </button>
-                <button onClick={popBack} className="p-2 hover:bg-[#FC6255]/10 rounded-xl text-[#FC6255] transition-all" title="Pop Back">
+                <button onClick={popBack} className="p-2 hover:bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)] transition-all" title="Pop Back">
                     <Trash2 size={18} />
                 </button>
-                <button onClick={search} className="p-2 hover:bg-[#58C4DD]/10 rounded-xl text-[#58C4DD] transition-all" title="Search">
+                <button onClick={search} className="p-2 hover:bg-[var(--viz-lime)]/10 rounded-xl text-[var(--viz-lime)] transition-all" title="Search">
                     <Search size={18} />
                 </button>
                 <div className="w-[1px] h-6 bg-border mx-1" />
@@ -341,15 +341,15 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
          </div>
 
          {/* --- Info Footer --- */}
-         <div className="border-t border-border bg-card p-6 flex flex-col md:flex-row gap-8 items-center">
+         <div className="bg-[var(--card)] p-6 flex flex-col md:flex-row gap-8 items-center">
             
             <div className="flex-1 w-full space-y-4">
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-card border border-border">
+                <div className="p-4 rounded-2xl bg-muted/30  flex items-center gap-4">
+                    <div className="p-2 rounded-lg bg-card ">
                         <Hash size={14} className="text-muted-foreground" />
                     </div>
                     <p className="font-mono text-sm leading-relaxed text-foreground/80 flex-1">
-                        <span className="text-[#58C4DD] mr-2">»</span>
+                        <span className="text-[var(--viz-lime)] mr-2">»</span>
                         {currentStep.message}
                     </p>
                 </div>
@@ -381,7 +381,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
          {/* Progress Line */}
          <div className="h-1 w-full bg-muted">
              <motion.div 
-                className="h-full bg-[#58C4DD]" 
+                className="h-full bg-[var(--viz-lime)]" 
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentIndex + 1) / history.length) * 100}%` }}
              />

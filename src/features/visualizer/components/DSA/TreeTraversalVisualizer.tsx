@@ -11,11 +11,11 @@ import {
 
 // Professional Palette - High Fidelity
 const MANIM_COLORS = { 
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC",
+  blue: "var(--viz-lavender)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-cyan)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-lavender)",
   cyan: "#4FD1C5"
 };
 
@@ -217,17 +217,17 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       {/* Academy Header */}
       <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-6 relative z-10 gap-4">
         <div className="space-y-1">
-          <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+          <h2 className="text-2xl font-light tracking-tight text-[var(--viz-lavender)]">
             Tree <span className="text-muted-foreground/40">Manifold Traversal</span>
           </h2>
           <div className="flex items-center gap-3">
-             <div className="h-1 w-12 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD]" />
-             <div className="flex bg-muted/50 p-1 rounded-lg border border-border shadow-inner">
+             <div className="h-1 w-12 bg-[var(--viz-lavender)] rounded-full shadow-[0_0_10px_var(--viz-lavender)]" />
+             <div className="flex bg-muted/50 p-1 rounded-lg  shadow-inner">
                 {(['PRE', 'IN', 'POST'] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => { setMode(t); setHistory([]); setCurrentIndex(0); }}
-                    className={`px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === t ? "bg-[#58C4DD] text-black shadow-lg scale-105" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
+                    className={`px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === t ? "bg-[var(--viz-lavender)] text-black shadow-lg scale-105" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
                   >
                     {t === 'PRE' ? 'Pre' : t === 'IN' ? 'In' : 'Post'} Order
                   </button>
@@ -236,8 +236,8 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-muted/50 p-2 rounded-2xl border border-border shadow-inner">
-          <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-3 bg-card hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
+        <div className="flex items-center gap-3 bg-muted/50 p-2 rounded-2xl  shadow-inner">
+          <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-3 bg-card hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
             <RotateCcw size={20}/>
           </button>
           <div className="w-[1px] h-10 bg-border mx-1" />
@@ -247,7 +247,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
               setIsPlaying(!isPlaying);
             }} 
             className={`flex items-center gap-3 px-8 py-3 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${
-              isPlaying ? "bg-[#FC6255]/20 text-[#FC6255] border border-[#FC6255]/30" : "bg-[#58C4DD] text-black hover:shadow-[#58C4DD]/20"
+              isPlaying ? "bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/30" : "bg-[var(--viz-lavender)] text-black hover:shadow-[var(--viz-lavender)]/20"
             }`}
           >
             {isPlaying ? <><Pause size={18} fill="currentColor" /> HALT</> : <><Play size={18} fill="currentColor" /> EXECUTE</>}
@@ -257,7 +257,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Visual Engine - Main Canvas */}
-        <div ref={containerRef} className="lg:col-span-8 relative min-h-[450px] bg-muted/10 rounded-[3rem] border border-border overflow-hidden shadow-inner flex items-center justify-center p-10">
+        <div ref={containerRef} className="lg:col-span-8 relative min-h-[450px] bg-muted/10 rounded-[3rem]  overflow-hidden shadow-inner flex items-center justify-center p-10">
           
           {/* Manim Grid Backdrop */}
           <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
@@ -267,9 +267,9 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
           <div className="absolute top-8 left-10 flex flex-col gap-4 z-30">
             <AnimatePresence>
               {currentStep.stepType !== "IDLE" && (
-                <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="flex items-center gap-3 px-5 py-2.5 bg-card/80 backdrop-blur-xl border border-border rounded-2xl shadow-xl">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD] animate-pulse shadow-[0_0_10px_#58C4DD]" />
-                  <span className="text-[10px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.3em]">{currentStep.stepType}</span>
+                <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="flex items-center gap-3 px-5 py-2.5 bg-card/80 backdrop-blur-xl  rounded-2xl shadow-xl">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)] animate-pulse shadow-[0_0_10px_var(--viz-lavender)]" />
+                  <span className="text-[10px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-[0.3em]">{currentStep.stepType}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -278,8 +278,8 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
           {/* Narrative Prompt */}
           <AnimatePresence mode="wait">
               <motion.div key={currentIndex} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute bottom-10 w-full max-w-[500px] px-10 text-center z-30 pointer-events-none">
-                  <div className="p-5 bg-card/90 border border-border rounded-3xl backdrop-blur-md shadow-2xl">
-                      <p className="text-[11px] text-[#f59e0b] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.message}</p>
+                  <div className="p-5 bg-card/90  rounded-3xl backdrop-blur-md shadow-2xl">
+                      <p className="text-[11px] text-[var(--viz-cyan)] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.message}</p>
                   </div>
               </motion.div>
           </AnimatePresence>
@@ -319,7 +319,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                                 repeat: Infinity,
                                 ease: "easeInOut"
                             }}
-                            className="shadow-[0_0_15px_#f59e0b]"
+                            className="shadow-[0_0_15px_var(--viz-cyan)]"
                         />
                     )}
                 </g>
@@ -361,10 +361,10 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
             <motion.div 
                 animate={{ x: currentStep.activeX || dimensions.width / 2, y: currentStep.activeY || 80 }}
                 transition={{ type: "spring", stiffness: 80, damping: 15 }}
-                className="absolute w-20 h-20 rounded-full border-2 border-dashed border-[#f59e0b]/40 shadow-[0_0_60px_#f59e0b33] pointer-events-none z-20 flex items-center justify-center"
+                className="absolute w-20 h-20 rounded-full border-2 border-dashed border-[var(--viz-cyan)]/40 shadow-[0_0_60px_var(--viz-cyan)33] pointer-events-none z-20 flex items-center justify-center"
                 style={{ position: 'absolute', left: 0, top: 0, translateX: '-50%', translateY: '-50%' }}
             >
-                <div className="w-3 h-3 bg-[#f59e0b] rounded-full shadow-[0_0_20px_#f59e0b] animate-pulse" />
+                <div className="w-3 h-3 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_20px_var(--viz-cyan)] animate-pulse" />
                 <div className="absolute inset-0 border-2 border-white/5 rounded-full animate-spin-slow" />
             </motion.div>
           </div>
@@ -375,10 +375,10 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
             {/* Recursion Stack - Depth Visualization */}
             <div className="p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl h-[260px] flex flex-col shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-5">
-                    <Layers size={80} className="text-[#9A72AC]" />
+                    <Layers size={80} className="text-[var(--viz-lavender)]" />
                 </div>
                 <h3 className="text-[11px] font-black uppercase text-muted-foreground/40 tracking-[0.3em] flex items-center gap-3 relative z-10">
-                    <div className="w-1.5 h-4 bg-[#9A72AC] rounded-full" />
+                    <div className="w-1.5 h-4 bg-[var(--viz-lavender)] rounded-full" />
                     Recursion Stack
                 </h3>
                 <div className="flex-1 flex flex-col-reverse gap-3 overflow-y-auto pr-2 scrollbar-hide relative z-10">
@@ -389,13 +389,13 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
-                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#9A72AC]/20 to-[#9A72AC]/5 border border-[#9A72AC]/30 flex items-center justify-between px-5 shadow-lg"
+                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[var(--viz-lavender)]/20 to-[var(--viz-lavender)]/5 border border-[var(--viz-lavender)]/30 flex items-center justify-between px-5 shadow-lg"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-2 h-2 rounded-full bg-[#9A72AC] shadow-[0_0_10px_#9A72AC]" />
-                                    <span className="text-sm font-black font-mono text-[#9A72AC]">Node {val}</span>
+                                    <div className="w-2 h-2 rounded-full bg-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
+                                    <span className="text-sm font-black font-mono text-[var(--viz-lavender)]">Node {val}</span>
                                 </div>
-                                <span className="text-[9px] font-bold text-[#9A72AC]/40 font-mono tracking-tighter">depth_{idx}</span>
+                                <span className="text-[9px] font-bold text-[var(--viz-lavender)]/40 font-mono tracking-tighter">depth_{idx}</span>
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -411,10 +411,10 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
             {/* Sequence Resolution */}
             <div className="p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl flex-1 flex flex-col shadow-2xl overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-6 opacity-5">
-                    <ListTree size={100} className="text-[#58C4DD]" />
+                    <ListTree size={100} className="text-[var(--viz-lavender)]" />
                 </div>
                 <h3 className="text-[11px] font-black uppercase text-muted-foreground/40 tracking-[0.3em] flex items-center gap-3 relative z-10">
-                    <div className="w-1.5 h-4 bg-[#58C4DD] rounded-full" />
+                    <div className="w-1.5 h-4 bg-[var(--viz-lavender)] rounded-full" />
                     Mapped Sequence
                 </h3>
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 relative z-10">
@@ -425,7 +425,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                                 key={`${val}-${idx}`}
                                 initial={{ scale: 0, opacity: 0, rotate: -15, y: 10 }}
                                 animate={{ scale: 1, opacity: 1, rotate: 0, y: 0 }}
-                                className="w-12 h-12 rounded-[1rem] bg-[#58C4DD]/10 border border-[#58C4DD]/30 flex items-center justify-center text-sm font-black text-[#58C4DD] shadow-[0_10px_20px_rgba(0,0,0,0.2)] relative overflow-hidden group hover:scale-110 transition-transform"
+                                className="w-12 h-12 rounded-[1rem] bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 flex items-center justify-center text-sm font-black text-[var(--viz-lavender)] shadow-[0_10px_20px_rgba(0,0,0,0.2)] relative overflow-hidden group hover:scale-110 transition-transform"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-30" />
                                 {val}
@@ -438,11 +438,11 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                   <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-black/40 rounded-2xl border border-white/5 text-center shadow-inner">
                         <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Complexity</div>
-                        <div className="text-sm font-black text-[#83C167] font-mono shadow-text">O(N)</div>
+                        <div className="text-sm font-black text-[var(--viz-green)] font-mono shadow-text">O(N)</div>
                       </div>
                       <div className="p-3 bg-black/40 rounded-2xl border border-white/5 text-center shadow-inner">
                         <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Depth</div>
-                        <div className="text-sm font-black text-[#f59e0b] font-mono shadow-text">O(H)</div>
+                        <div className="text-sm font-black text-[var(--viz-cyan)] font-mono shadow-text">O(H)</div>
                       </div>
                   </div>
                 </div>
@@ -452,15 +452,15 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
       {/* Controller Interface */}
       <div className="mt-6 p-8 bg-card/30 border border-white/5 rounded-[3.5rem] flex flex-col gap-8 relative z-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#58C4DD]/30 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--viz-lavender)]/30 to-transparent" />
           <div className="flex items-center justify-between px-6">
               <div className="flex items-center gap-4">
-                  <div className="p-3 bg-[#f59e0b]/10 rounded-2xl border border-[#f59e0b]/20 shadow-lg shadow-[#f59e0b]/5">
-                    <Hash size={18} className="text-[#f59e0b]" />
+                  <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl border border-[var(--viz-cyan)]/20 shadow-lg shadow-[var(--viz-cyan)]/5">
+                    <Hash size={18} className="text-[var(--viz-cyan)]" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/50">Sequence State</span>
-                    <span className="text-xs font-mono text-[#f59e0b] font-bold">Frame {currentIndex + 1} <span className="mx-2 opacity-20">/</span> {history.length || 1}</span>
+                    <span className="text-xs font-mono text-[var(--viz-cyan)] font-bold">Frame {currentIndex + 1} <span className="mx-2 opacity-20">/</span> {history.length || 1}</span>
                   </div>
               </div>
               <div className="flex items-center gap-3">
@@ -471,30 +471,30 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
           <div className="relative flex items-center group/slider px-6">
               <div className="absolute left-6 right-6 h-1.5 bg-black/40 rounded-full shadow-inner" />
-              <div className="absolute left-6 h-1.5 bg-gradient-to-r from-[#58C4DD] via-[#9A72AC] to-[#83C167] rounded-full shadow-[0_0_20px_#58C4DD66]" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 48px)` }} />
+              <div className="absolute left-6 h-1.5 bg-gradient-to-r from-[var(--viz-lavender)] via-[var(--viz-lavender)] to-[var(--viz-green)] rounded-full shadow-[0_0_20px_var(--viz-lavender)66]" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 48px)` }} />
               <input 
                   type="range" min="0" max={Math.max(0, history.length - 1)} value={currentIndex} 
                   onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                   className="w-full h-10 opacity-0 cursor-pointer z-10"
               />
-              <div className="absolute w-3 h-7 bg-[#f59e0b] rounded-full shadow-[0_0_30px_#f59e0b] border-2 border-white/40 pointer-events-none transition-all duration-300"
+              <div className="absolute w-3 h-7 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_30px_var(--viz-cyan)] border-2 border-white/40 pointer-events-none transition-all duration-300"
                   style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 6px)` }}
               />
           </div>
       </div>
 
       {/* Professional Legend */}
-      <div className="mt-2 px-12 py-6 bg-muted/5 border border-border/20 rounded-[3rem] flex flex-wrap items-center justify-center gap-x-16 gap-y-4 opacity-60 hover:opacity-100 transition-opacity">
+      <div className="mt-2 px-12 py-6 bg-muted/5 /20 rounded-[3rem] flex flex-wrap items-center justify-center gap-x-16 gap-y-4 opacity-60 hover:opacity-100 transition-opacity">
          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-[#f59e0b] shadow-[0_0_10px_#f59e0b]" />
+            <div className="w-3 h-3 rounded-full bg-[var(--viz-cyan)] shadow-[0_0_10px_var(--viz-cyan)]" />
             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Active LENS</span>
          </div>
          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-md bg-[#9A72AC] shadow-[0_0_10px_#9A72AC]" />
+            <div className="w-3 h-3 rounded-md bg-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">In Recursion Stack</span>
          </div>
          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-[#58C4DD] shadow-[0_0_10px_#58C4DD]" />
+            <div className="w-3 h-3 rounded-full bg-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Mapped (Sequence)</span>
          </div>
          <div className="flex items-center gap-3">

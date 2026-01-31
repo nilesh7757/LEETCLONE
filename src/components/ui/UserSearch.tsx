@@ -72,7 +72,7 @@ export default function UserSearch({ className }: { className?: string }) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setIsOpen(true)}
           placeholder="Search users..."
-          className="w-full py-1.5 pl-9 pr-8 text-sm bg-[var(--background)] border border-[var(--card-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--foreground)]/20 text-[var(--foreground)] placeholder:text-[var(--foreground)]/50 transition-colors"
+          className="w-full py-1.5 pl-9 pr-8 text-sm bg-[var(--background)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--foreground)]/20 text-[var(--foreground)] placeholder:text-[var(--foreground)]/50 transition-colors shadow-sm"
         />
         {loading ? (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -89,7 +89,7 @@ export default function UserSearch({ className }: { className?: string }) {
       </div>
 
       {isOpen && (results.length > 0 || loading) && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full left-0 mt-1 w-full bg-[var(--background)] rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
            {loading && results.length === 0 ? (
               <div className="p-4 text-center text-xs text-[var(--foreground)]/60">Searching...</div>
            ) : results.length > 0 ? (
@@ -99,9 +99,9 @@ export default function UserSearch({ className }: { className?: string }) {
                     key={user.id} 
                     href={`/profile/${user.id}`}
                     onClick={() => { setIsOpen(false); setQuery(""); }}
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-[var(--foreground)]/5 transition-colors"
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-[var(--primary)]/10 transition-all group"
                   >
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--foreground)]/10 shrink-0">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--foreground)]/10 shrink-0 border border-transparent group-hover:border-[var(--primary)]/30 transition-all shadow-sm">
                       {user.image ? (
                         <Image src={user.image} alt={user.name || "User"} width={32} height={32} className="object-cover w-full h-full" />
                       ) : (
@@ -111,11 +111,11 @@ export default function UserSearch({ className }: { className?: string }) {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-[var(--foreground)] truncate">
+                      <div className="text-sm font-medium text-[var(--foreground)] truncate group-hover:text-[var(--primary)] transition-colors">
                         {user.name || "Anonymous User"}
                       </div>
-                      <div className="text-xs text-[var(--foreground)]/50">
-                        Rating: {user.rating}
+                      <div className="text-xs text-[var(--foreground)]/50 group-hover:text-[var(--primary)]/60 transition-colors">
+                        Rating: <span className="text-[var(--viz-gold)] font-bold">{user.rating}</span>
                       </div>
                     </div>
                   </Link>

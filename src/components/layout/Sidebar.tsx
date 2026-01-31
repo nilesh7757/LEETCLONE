@@ -32,18 +32,32 @@ interface SidebarItemProps {
 }
 
 function SidebarItem({ icon: Icon, label, href, isActive, color }: SidebarItemProps) {
+  const activeColor = color || "var(--primary)";
+  const activeColorRGB = activeColor.includes("viz-blue") ? "var(--viz-blue-rgb)" : 
+                        activeColor.includes("viz-purple") ? "var(--viz-purple-rgb)" :
+                        activeColor.includes("viz-red") ? "var(--viz-red-rgb)" :
+                        activeColor.includes("viz-gold") ? "var(--viz-gold-rgb)" :
+                        activeColor.includes("viz-green") ? "var(--viz-green-rgb)" : "var(--viz-blue-rgb)";
+
   return (
     <Link
       href={href}
       className={classNames(
         "group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200",
         isActive 
-          ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" 
+          ? `text-[var(--foreground)]` 
           : "text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
       )}
+      style={isActive ? { 
+        backgroundColor: `rgba(${activeColorRGB}, 0.1)`,
+        boxShadow: `0 0 20px rgba(${activeColorRGB}, 0.05)`
+      } : {}}
     >
-      <Icon className={classNames("w-5 h-5 transition-colors", isActive ? (color || "text-[var(--foreground)]") : "text-[var(--foreground)]/50 group-hover:text-[var(--foreground)]")} />
-      <span>{label}</span>
+      <Icon 
+        className="w-5 h-5 transition-colors" 
+        style={{ color: isActive ? activeColor : undefined }}
+      />
+      <span style={{ color: isActive ? activeColor : undefined }}>{label}</span>
     </Link>
   );
 }
@@ -53,18 +67,18 @@ export default function Sidebar() {
   const { data: session, status } = useSession();
 
   const navItems = [
-    { label: "Problems", href: "/problems", icon: Code2 },
-    { label: "Study Plans", href: "/study-plans", icon: BookOpen },
-    { label: "Interview", href: "/interview", icon: MonitorPlay },
-    { label: "Contest", href: "/contest", icon: Trophy },
-    { label: "Visualize", href: "/dsa", icon: PenTool },
-    { label: "Leaderboard", href: "/leaderboard", icon: LineChart },
-    { label: "Blog", href: "/blog", icon: Globe },
-    { label: "Chat", href: "/chat", icon: MessageSquare },
+    { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)" },
+    { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)" },
+    { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)" },
+    { label: "Contest", href: "/contest", icon: Trophy, color: "var(--viz-gold)" },
+    { label: "Visualize", href: "/dsa", icon: PenTool, color: "var(--viz-blue)" },
+    { label: "Leaderboard", href: "/leaderboard", icon: LineChart, color: "var(--viz-green)" },
+    { label: "Blog", href: "/blog", icon: Globe, color: "var(--viz-green)" },
+    { label: "Chat", href: "/chat", icon: MessageSquare, color: "var(--viz-blue)" },
   ];
 
   return (
-    <aside className="w-64 h-screen border-r border-[var(--card-border)] bg-[var(--background)] flex flex-col fixed left-0 top-0 z-50">
+    <aside className="w-64 h-screen bg-[var(--background)] flex flex-col fixed left-0 top-0 z-50">
       
       {/* Header / Logo */}
       <div className="p-6 pb-2">
@@ -95,7 +109,7 @@ export default function Sidebar() {
 
         {session?.user?.role === "ADMIN" && (
            <>
-            <div className="h-px bg-[var(--card-border)] my-4 mx-2" />
+            <div className="h-px bg-[var(--primary)]/10 my-4 mx-2" />
             <SidebarItem 
                 label="Admin" 
                 href="/admin" 
@@ -108,7 +122,7 @@ export default function Sidebar() {
       </div>
 
       {/* Footer Section: User Profile */}
-      <div className="p-4 border-t border-[var(--card-border)] bg-[var(--background)]">
+      <div className="p-4 bg-[var(--background)]">
         {status === "authenticated" && session.user ? (
           <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer group relative">
              <Link href="/profile" className="flex items-center gap-3 flex-1 min-w-0">

@@ -14,11 +14,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-cyan)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-cyan)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 interface WindowStep {
@@ -147,7 +147,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -155,30 +155,30 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
         {/* Header UI */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
               Sliding Window <span className="text-muted-foreground/40">Lemma</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+               <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Dynamic Manifold Interval Resolve</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl border border-border shadow-inner">
+          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl  shadow-inner">
             <div className="flex items-center gap-2 px-3 border-r border-border">
-                <Type size={14} className="text-[#f59e0b] opacity-40" />
+                <Type size={14} className="text-[var(--viz-cyan)] opacity-40" />
                 <input 
                     type="text" value={inputString} 
                     onChange={e => { setInputString(e.target.value.toUpperCase().slice(0, 12)); setCurrentIndex(0); }}
                     placeholder="BUFFER"
-                    className="w-24 bg-transparent text-center font-mono text-sm font-bold text-[#f59e0b] focus:outline-none placeholder:text-muted-foreground/20"
+                    className="w-24 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-muted-foreground/20"
                 />
             </div>
             
             <div className="flex gap-1">
               <button onClick={() => { setInputString("ABCBCAD"); setCurrentIndex(0); }} className="p-2 hover:bg-white/5 rounded-xl text-muted-foreground/40 transition-all"><RotateCcw size={20}/></button>
               {!isPlaying ? (
-                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[#58C4DD] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
+                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                     <Play size={16} fill="currentColor"/> EXECUTE
                 </button>
               ) : (
@@ -192,14 +192,14 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
 
         {/* Visual Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div ref={containerRef} className="lg:col-span-3 relative min-h-[400px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center p-10">
+            <div ref={containerRef} className="lg:col-span-3 relative min-h-[400px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-10">
                 
                 {/* Logic Step Badge */}
                 <AnimatePresence>
                     {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30 shadow-lg">
-                            <Zap size={12} className="text-[#58C4DD]" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.step}</span>
+                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full z-30 shadow-lg">
+                            <Zap size={12} className="text-[var(--viz-cyan)]" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -207,7 +207,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                 {/* Window Manifold Box */}
                 {currentStep.end > currentStep.start && (
                     <motion.div 
-                        className="absolute border-2 border-[#58C4DD]/20 bg-gradient-to-b from-[#58C4DD]/5 to-transparent rounded-[2rem] z-0"
+                        className="absolute border-2 border-[var(--viz-cyan)]/20 bg-gradient-to-b from-[var(--viz-cyan)]/5 to-transparent rounded-[2rem] z-0"
                         animate={{ 
                             x: ( (currentStep.start + currentStep.end - 1)/2 - (chars.length - 1) / 2 ) * UNIT_WIDTH,
                             width: (currentStep.end - currentStep.start) * UNIT_WIDTH + 10,
@@ -221,8 +221,8 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                 {/* Explanation Box */}
                 <AnimatePresence mode="wait">
                     <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-10 text-center z-30">
-                        <div className="p-4 bg-card/80 border border-border rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[#f59e0b] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
+                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
+                            <p className="text-[10px] text-[var(--viz-cyan)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -240,14 +240,14 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                                 <AnimatePresence>
                                     {isL && (
                                         <motion.div key="ptr-l" layoutId="ptr-l" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="absolute -top-16 flex flex-col items-center">
-                                            <span className="text-[7px] font-black text-[#58C4DD] mb-1">LEFT</span>
-                                            <ArrowDown size={12} className="text-[#58C4DD]" />
+                                            <span className="text-[7px] font-black text-[var(--viz-cyan)] mb-1">LEFT</span>
+                                            <ArrowDown size={12} className="text-[var(--viz-cyan)]" />
                                         </motion.div>
                                     )}
                                     {isR && (
                                         <motion.div key="ptr-r" layoutId="ptr-r" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="absolute -top-16 flex flex-col items-center">
-                                            <span className="text-[7px] font-black text-[#83C167] mb-1">RIGHT</span>
-                                            <ArrowDown size={12} className="text-[#83C167]" />
+                                            <span className="text-[7px] font-black text-[var(--viz-green)] mb-1">RIGHT</span>
+                                            <ArrowDown size={12} className="text-[var(--viz-green)]" />
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -266,7 +266,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                                 >
                                     <span className={`text-base font-black ${inW ? "text-foreground" : "text-muted-foreground/40"}`}>{char}</span>
                                     {isC && (
-                                        <motion.div layoutId="warn" className="absolute -bottom-8"><ShieldAlert size={14} className="text-[#FC6255]" /></motion.div>
+                                        <motion.div layoutId="warn" className="absolute -bottom-8"><ShieldAlert size={14} className="text-[var(--viz-rose)]" /></motion.div>
                                     )}
                                 </motion.div>
                             </div>
@@ -277,7 +277,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
 
             {/* Sidebar: Set Manifold & Log */}
             <div className="flex flex-col gap-6">
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex flex-col gap-4">
+                <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Database size={14}/> Set Manifold
                     </h3>
@@ -289,7 +289,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     exit={{ scale: 0 }}
-                                    className="w-8 h-8 rounded border border-[#58C4DD] bg-[#58C4DD]/10 flex items-center justify-center font-mono text-[10px] font-black text-[#58C4DD]"
+                                    className="w-8 h-8 rounded border border-[var(--viz-cyan)] bg-[var(--viz-cyan)]/10 flex items-center justify-center font-mono text-[10px] font-black text-[var(--viz-cyan)]"
                                 >
                                     {char}
                                 </motion.div>
@@ -299,7 +299,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex-1 flex flex-col gap-4 overflow-hidden h-[240px]">
+                <div className="p-6 bg-muted  rounded-[2rem] flex-1 flex flex-col gap-4 overflow-hidden h-[240px]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Activity size={14}/> Manifold Log
                     </h3>
@@ -312,7 +312,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
                                 >
-                                    <span className="text-[#58C4DD]">»</span>
+                                    <span className="text-[var(--viz-cyan)]">»</span>
                                     {log}
                                 </motion.div>
                             ))}
@@ -321,11 +321,11 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem]">
+                <div className="p-6 bg-muted  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                         <Maximize size={14}/> Max Length
                     </h3>
-                    <div className="text-3xl font-black font-mono text-[#83C167] text-center shadow-text">
+                    <div className="text-3xl font-black font-mono text-[var(--viz-green)] text-center shadow-text">
                         {currentStep.maxLength}
                     </div>
                 </div>
@@ -333,10 +333,10 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
         </div>
 
         {/* Scrubber UI */}
-        <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+        <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-cyan)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -347,13 +347,13 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_15px_var(--viz-cyan)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -361,10 +361,10 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Window Interval</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#FC6255]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Set Collision</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Window Interval</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Set Collision</span></div>
          <div className="flex items-center gap-3"><Activity size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Dynamic Synthesis</span></div>
       </div>
     </div>

@@ -13,7 +13,9 @@ import {
   History, 
   Calendar, 
   CheckCircle, 
-  Clock 
+  Clock,
+  Zap,
+  BrainCircuit
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -57,50 +59,58 @@ export default function InterviewConfigPage() {
   };
 
   return (
-    <main className="min-h-screen pt-24 pb-16 px-4 max-w-4xl mx-auto flex flex-col items-center">
+    <main className="min-h-screen pt-12 pb-16 px-4 max-w-5xl mx-auto flex flex-col items-center">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-12"
+        className="text-center mb-16 space-y-4"
       >
-        <div className="p-4 bg-purple-500/10 rounded-2xl w-fit mx-auto mb-6">
-          <Mic className="w-12 h-12 text-purple-500" />
+        <div className="p-4 bg-[var(--viz-red)]/10 rounded-[2rem] w-fit mx-auto mb-6 shadow-sm">
+          <Mic className="w-12 h-12 text-[var(--viz-red)]" />
         </div>
-        <h1 className="text-4xl font-black text-[var(--foreground)] mb-4">AI Mock Interview</h1>
-        <p className="text-lg text-[var(--foreground)]/60 max-w-lg mx-auto">
-          Practice high-pressure technical interviews with an AI that evaluates your skills and coding logic in real-time.
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-[10px] font-black tracking-[0.4em] text-[var(--muted-foreground)]/40 uppercase">Assessment Protocol</span>
+          <h1 className="text-5xl font-light tracking-tight text-[var(--foreground)]">
+            AI Mock <span className="text-[var(--viz-red)] font-medium">Interview</span>
+          </h1>
+        </div>
+        <p className="text-lg text-[var(--muted-foreground)] max-w-lg mx-auto font-light leading-relaxed">
+          Practice high-pressure technical interviews with an AI that evaluates your logic and coding in real-time.
         </p>
       </motion.div>
 
       {/* Config Card */}
-      <div className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-8 shadow-xl mb-12">
-        <div className="grid gap-8">
-          <div className="space-y-3">
-            <label className="text-sm font-bold uppercase tracking-widest text-[var(--foreground)]/40 flex items-center gap-2">
-              <Layout className="w-4 h-4" /> Interview Role/Topic
+      <div className="w-full bg-[var(--card)] rounded-[3rem] p-10 shadow-2xl mb-20 relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--viz-red)]/20 to-transparent" />
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-grid-pattern" />
+        
+        <div className="grid gap-10 relative z-10">
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)]/40 flex items-center gap-2">
+              <Layout className="w-4 h-4 text-[var(--viz-red)]" /> Target Role / Specialization
             </label>
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. Frontend Developer, Machine Learning Engineer..."
-              className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl text-[var(--foreground)] focus:ring-2 focus:ring-purple-500/50 outline-none transition-all text-lg"
+              className="w-full px-8 py-5 bg-[var(--muted)] rounded-2xl text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-red)]/20 outline-none transition-all text-xl font-light shadow-inner border-none"
             />
           </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-bold uppercase tracking-widest text-[var(--foreground)]/40 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" /> Level
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)]/40 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[var(--viz-gold)]" /> Operational Complexity
             </label>
             <div className="grid grid-cols-3 gap-4">
               {["Entry", "Senior", "Staff"].map((level) => (
                 <button
                   key={level}
                   onClick={() => setDifficulty(level)}
-                  className={`py-3 rounded-xl font-bold transition-all border ${
+                  className={`py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
                     difficulty === level 
-                      ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20" 
-                      : "bg-[var(--background)] border border-[var(--card-border)] text-[var(--foreground)]/60 hover:border-[var(--foreground)]/20"
+                      ? "bg-[var(--viz-red)] border-[var(--viz-red)] text-[var(--background)] shadow-xl shadow-[var(--viz-red)]/20" 
+                      : "bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)]/60 hover:bg-[var(--accent)] hover:text-[var(--foreground)]"
                   }`}
                 >
                   {level}
@@ -112,29 +122,31 @@ export default function InterviewConfigPage() {
           <button
             onClick={startInterview}
             disabled={isGenerating || !topic.trim()}
-            className="w-full py-5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-black text-xl transition-all shadow-xl shadow-purple-500/20 disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer"
+            className="w-full py-6 bg-[var(--viz-red)] text-[var(--background)] rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] shadow-2xl shadow-[var(--viz-red)]/30 disabled:opacity-50 flex items-center justify-center gap-4 cursor-pointer"
           >
-            {isGenerating ? <><Loader2 className="w-6 h-6 animate-spin" /> Preparing Room...</> : <><Sparkles className="w-6 h-6" /> Start My Interview</>}
+            {isGenerating ? <><Loader2 className="w-6 h-6 animate-spin" /> Preparing Manifold...</> : <><Zap className="w-6 h-6 fill-current" /> Initialize Assessment</>}
           </button>
         </div>
       </div>
 
       {/* History Section */}
-      <div className="w-full max-w-4xl mb-12">
-        <div className="flex items-center gap-3 mb-6 px-2">
-          <div className="p-2 bg-[var(--foreground)]/5 rounded-lg">
-            <History className="w-5 h-5 text-[var(--foreground)]/60" />
-          </div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">Interview History</h2>
+      <div className="w-full max-w-5xl mb-20">
+        <div className="flex items-center gap-4 mb-10">
+            <div className="h-[1px] flex-1 bg-[var(--viz-red)]/10" />
+            <h2 className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] flex items-center gap-3">
+              <History size={14} className="text-[var(--viz-red)]" />
+              Temporal Logs
+            </h2>
+            <div className="h-[1px] flex-1 bg-[var(--viz-red)]/10" />
         </div>
 
         {isLoadingHistory ? (
-          <div className="py-12 flex justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+          <div className="py-20 flex justify-center">
+            <Loader2 className="w-10 h-10 animate-spin text-[var(--viz-red)]/40" />
           </div>
         ) : history.length === 0 ? (
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-12 text-center border-dashed">
-            <p className="text-[var(--foreground)]/40 text-sm italic">No past interviews found. Start your first session above!</p>
+          <div className="bg-[var(--card)] rounded-[3rem] p-20 text-center shadow-xl">
+            <p className="text-[var(--muted-foreground)]/20 text-xs font-mono uppercase tracking-widest italic">Neural history empty. Commence assessment to populate logs.</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -142,36 +154,39 @@ export default function InterviewConfigPage() {
               <Link 
                 key={session.id} 
                 href={`/interview/${session.id}`}
-                className="bg-[var(--card-bg)] border border-[var(--card-border)] p-5 rounded-2xl hover:border-purple-500/30 transition-all flex items-center justify-between group shadow-sm"
+                className="bg-[var(--card)] p-6 rounded-[2rem] transition-all duration-300 hover:shadow-2xl hover:-translate-x-1 flex items-center justify-between group relative overflow-hidden"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl ${session.status === 'COMPLETED' ? 'bg-green-500/10' : 'bg-yellow-500/10'}`}>
+                <div className="absolute left-0 top-0 h-full w-1 bg-[var(--border)] group-hover:bg-[var(--viz-red)] transition-all duration-300" />
+                <div className="flex items-center gap-6">
+                  <div className={`p-3 rounded-xl shadow-inner ${session.status === 'COMPLETED' ? 'bg-[var(--viz-green)]/10 text-[var(--viz-green)]' : 'bg-[var(--viz-gold)]/10 text-[var(--viz-gold)]'}`}>
                     {session.status === 'COMPLETED' ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-6 h-6" />
                     ) : (
-                      <Clock className="w-5 h-5 text-yellow-500" />
+                      <Clock className="w-6 h-6" />
                     )}
                   </div>
                   <div>
-                    <h4 className="font-bold text-[var(--foreground)] group-hover:text-purple-500 transition-colors">
+                    <h4 className="text-xl font-bold text-[var(--foreground)] group-hover:text-[var(--viz-red)] transition-colors truncate">
                       {session.topic}
                     </h4>
-                    <div className="flex items-center gap-3 text-xs text-[var(--foreground)]/40 mt-1 uppercase font-bold tracking-tighter">
-                      <span>{session.difficulty}</span>
+                    <div className="flex items-center gap-4 text-[10px] font-mono font-black text-[var(--muted-foreground)]/40 mt-2 uppercase tracking-widest">
+                      <span className="text-[var(--viz-red)]/60">{session.difficulty}</span>
                       <span>•</span>
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(session.createdAt).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(session.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-8">
                   {session.status === 'COMPLETED' && (
                     <div className="text-right">
-                      <div className="text-xl font-black text-[var(--foreground)]">{session.score}%</div>
-                      <div className="text-[10px] uppercase font-black text-green-500 tracking-widest">Score</div>
+                      <div className="text-2xl font-black text-[var(--foreground)] font-mono">{session.score}%</div>
+                      <div className="text-[9px] uppercase font-black text-[var(--viz-green)] tracking-[0.2em]">Efficiency</div>
                     </div>
                   )}
-                  <ArrowRight className="w-5 h-5 text-[var(--foreground)]/20 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+                  <div className="p-2 bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)]/20 group-hover:text-[var(--viz-red)] transition-all">
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Link>
             ))}
@@ -180,15 +195,17 @@ export default function InterviewConfigPage() {
       </div>
 
       {/* Info Footer */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-center pb-16 border-t border-[var(--card-border)] pt-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full text-center pb-20 mt-12">
         {[
-          { icon: User, text: "Personalized based on your skills" },
-          { icon: Code, text: "Coding & System Design included" },
-          { icon: Mic, text: "Real-time AI evaluation" },
+          { icon: User, text: "Personalized Neural Mapping" },
+          { icon: Code, text: "Real-time Vector Analysis" },
+          { icon: Mic, text: "High-Frequency Evaluation" },
         ].map((item, i) => (
-          <div key={i} className="p-4 space-y-2">
-            <item.icon className="w-6 h-6 text-purple-500 mx-auto" />
-            <p className="text-xs font-medium text-[var(--foreground)]/60">{item.text}</p>
+          <div key={i} className="space-y-4 group">
+            <div className="p-4 bg-[var(--muted)] rounded-2xl w-fit mx-auto transition-transform group-hover:scale-110 duration-500 shadow-inner">
+              <item.icon className="w-6 h-6 text-[var(--viz-red)]" />
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/60">{item.text}</p>
           </div>
         ))}
       </div>

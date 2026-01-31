@@ -14,11 +14,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-lavender)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-cyan)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-lavender)"
 };
 
 interface VisualNode {
@@ -363,7 +363,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -371,17 +371,17 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
         {/* Header UI */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-lavender)]">
               Segment <span className="text-muted-foreground/40">Lemma Engine</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
-               <div className="flex bg-muted p-1 rounded-lg border border-border">
+               <div className="h-1 w-12 bg-[var(--viz-lavender)] rounded-full" />
+               <div className="flex bg-muted p-1 rounded-lg ">
                   {['SUM', 'MIN', 'MAX'].map((mode) => (
                     <button 
                         key={mode}
                         onClick={() => { setTreeMode(mode as any); setHistory([]); setCurrentIndex(0); }}
-                        className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${treeMode === mode ? "bg-[#58C4DD] text-black" : "text-muted-foreground/40"}`}
+                        className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${treeMode === mode ? "bg-[var(--viz-lavender)] text-black" : "text-muted-foreground/40"}`}
                     >
                         {mode}
                     </button>
@@ -391,40 +391,40 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl border border-border">
-                <input value={arrayInput} onChange={e=>setArrayInput(e.target.value)} className="w-24 bg-transparent text-center font-mono text-xs font-bold text-[#f59e0b] focus:outline-none" placeholder="1,2,3..." />
+            <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl ">
+                <input value={arrayInput} onChange={e=>setArrayInput(e.target.value)} className="w-24 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none" placeholder="1,2,3..." />
                 <button onClick={() => {
                      const arr = arrayInput.split(',').map(Number).filter(n => !isNaN(n));
                      if(arr.length > 0) { setArrayData(arr); setHistory([]); recordOperation('BUILD'); }
-                }} className="p-2 hover:bg-white/5 rounded-xl text-xs font-bold text-foreground transition-all flex items-center gap-2 px-3 border border-border"><Hammer size={14}/> BUILD</button>
+                }} className="p-2 hover:bg-white/5 rounded-xl text-xs font-bold text-foreground transition-all flex items-center gap-2 px-3 "><Hammer size={14}/> BUILD</button>
             </div>
             
-            <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl border border-border shadow-inner">
-                <input type="number" value={queryL} onChange={e=>setQueryL(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#58C4DD] focus:outline-none" />
+            <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl  shadow-inner">
+                <input type="number" value={queryL} onChange={e=>setQueryL(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-lavender)] focus:outline-none" />
                 <span className="text-muted-foreground/20">-</span>
-                <input type="number" value={queryR} onChange={e=>setQueryR(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#58C4DD] focus:outline-none" />
-                <button onClick={() => recordOperation('QUERY')} className="p-2 hover:bg-[#58C4DD]/10 rounded-xl text-[#58C4DD]" title="Query Range"><Search size={18}/></button>
+                <input type="number" value={queryR} onChange={e=>setQueryR(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-lavender)] focus:outline-none" />
+                <button onClick={() => recordOperation('QUERY')} className="p-2 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)]" title="Query Range"><Search size={18}/></button>
             </div>
 
-            <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl border border-border shadow-inner">
-                <input type="number" value={updateIdx} onChange={e=>setUpdateIdx(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#83C167] focus:outline-none" />
+            <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl  shadow-inner">
+                <input type="number" value={updateIdx} onChange={e=>setUpdateIdx(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-green)] focus:outline-none" />
                 <span className="text-muted-foreground/20">=</span>
-                <input type="number" value={updateVal} onChange={e=>setUpdateVal(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[#83C167] focus:outline-none" />
-                <button onClick={() => recordOperation('UPDATE')} className="p-2 hover:bg-[#83C167]/10 rounded-xl text-[#83C167]" title="Update Index"><Edit3 size={18}/></button>
+                <input type="number" value={updateVal} onChange={e=>setUpdateVal(e.target.value)} className="w-8 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-green)] focus:outline-none" />
+                <button onClick={() => recordOperation('UPDATE')} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)]" title="Update Index"><Edit3 size={18}/></button>
             </div>
           </div>
         </div>
 
         {/* Visual Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div ref={containerRef} className="lg:col-span-3 relative min-h-[520px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center">
+            <div ref={containerRef} className="lg:col-span-3 relative min-h-[520px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center">
                 
                 {/* Logic Step Badge */}
                 <AnimatePresence>
                     {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30">
-                            <Zap size={12} className="text-[#58C4DD]" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.step}</span>
+                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
+                            <Zap size={12} className="text-[var(--viz-lavender)]" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -433,12 +433,12 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
                 <AnimatePresence mode="wait">
                     <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-10 text-center z-30 flex flex-col items-center gap-4">
                         {currentStep.queryResult !== undefined && currentStep.queryResult !== null && (
-                            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="px-6 py-2 bg-[#f59e0b] text-black font-black rounded-xl shadow-lg border border-white/20 flex items-center gap-3">
+                            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="px-6 py-2 bg-[var(--viz-cyan)] text-black font-black rounded-xl shadow-lg border border-white/20 flex items-center gap-3">
                                 <Target size={18}/> RESULT: {currentStep.queryResult}
                             </motion.div>
                         )}
-                        <div className="p-4 bg-card/80 border border-border rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[#f59e0b] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
+                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
+                            <p className="text-[10px] text-[var(--viz-cyan)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -504,7 +504,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
                                     <span className="text-[6px] opacity-30 uppercase tracking-tighter">[{node.start}-{node.end}]</span>
                                     {isA && (
                                         <motion.div layoutId="ptr" className="absolute -top-10 flex flex-col items-center">
-                                            <ArrowUp size={14} className="text-[#58C4DD]" />
+                                            <ArrowUp size={14} className="text-[var(--viz-lavender)]" />
                                         </motion.div>
                                     )}
                                 </motion.div>
@@ -516,7 +516,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
 
             {/* Sidebar: Log & Array Map */}
             <div className="flex flex-col gap-6">
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
+                <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Activity size={14}/> Manifold Log
                     </h3>
@@ -529,7 +529,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
                                 >
-                                    <span className="text-[#58C4DD]">»</span>
+                                    <span className="text-[var(--viz-lavender)]">»</span>
                                     {log}
                                 </motion.div>
                             ))}
@@ -538,7 +538,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem]">
+                <div className="p-6 bg-muted  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                         <Database size={14}/> Memory Array
                     </h3>
@@ -566,10 +566,10 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
         </div>
 
         {/* Scrubber UI */}
-        <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+        <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-cyan)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -580,13 +580,13 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full shadow-[0_0_10px_var(--viz-lavender)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_15px_var(--viz-cyan)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -594,10 +594,10 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Captured segment</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#FC6255]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active update</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive probe</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Captured segment</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active update</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive probe</span></div>
          <div className="flex items-center gap-3"><Cpu size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Utility Manifold</span></div>
       </div>
     </div>

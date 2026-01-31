@@ -13,11 +13,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-cyan)",
+  green: "var(--viz-deep-purple)",
+  gold: "var(--viz-deep-purple)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 interface FibStep {
@@ -114,7 +114,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -122,29 +122,29 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
         {/* Header UI */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
               Fibonacci <span className="text-muted-foreground/40">Manifold</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+               <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Tabulation Memoization Synthesis</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl border border-border shadow-inner">
+          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl  shadow-inner">
             <div className="flex items-center gap-2 px-3 border-r border-border">
                 <span className="text-[9px] font-black font-mono text-muted-foreground/20 uppercase">Target (N)</span>
                 <input 
                     type="number" value={n} 
                     onChange={e => setN(Math.max(1, Math.min(15, parseInt(e.target.value)||1)))}
-                    className="w-10 bg-transparent text-center font-mono text-sm font-bold text-[#f59e0b] focus:outline-none"
+                    className="w-10 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-deep-purple)] focus:outline-none"
                 />
             </div>
             
             <div className="flex gap-1">
               <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-white/5 rounded-xl text-muted-foreground/40 transition-all"><RotateCcw size={20}/></button>
               {!isPlaying ? (
-                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[#58C4DD] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
+                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                     <Play size={16} fill="currentColor"/> EXECUTE
                 </button>
               ) : (
@@ -158,14 +158,14 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
 
         {/* Visual Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3 relative min-h-[400px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center p-10">
+            <div className="lg:col-span-3 relative min-h-[400px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-10">
                 
                 {/* Logic Step Badge */}
                 <AnimatePresence>
                     {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30 shadow-lg">
-                            <Zap size={12} className="text-[#58C4DD]" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.step}</span>
+                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full z-30 shadow-lg">
+                            <Zap size={12} className="text-[var(--viz-cyan)]" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -173,8 +173,8 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                 {/* Explanation Box */}
                 <AnimatePresence mode="wait">
                     <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-10 text-center z-30">
-                        <div className="p-4 bg-card/80 border border-border rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[#f59e0b] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
+                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
+                            <p className="text-[10px] text-[var(--viz-deep-purple)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -204,7 +204,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                                         {val !== null ? val : "?"}
                                     </span>
                                     {isA && (
-                                        <motion.div layoutId="ptr" className="absolute -top-10"><ArrowUp size={14} className="text-[#f59e0b]" /></motion.div>
+                                        <motion.div layoutId="ptr" className="absolute -top-10"><ArrowUp size={14} className="text-[var(--viz-deep-purple)]" /></motion.div>
                                     )}
                                 </motion.div>
                             </div>
@@ -215,7 +215,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
 
             {/* Sidebar: Synthesis Log */}
             <div className="flex flex-col gap-6">
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
+                <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Activity size={14}/> Synthesis Stream
                     </h3>
@@ -228,7 +228,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
                                 >
-                                    <span className="text-[#58C4DD]">»</span>
+                                    <span className="text-[var(--viz-cyan)]">»</span>
                                     {log}
                                 </motion.div>
                             ))}
@@ -237,11 +237,11 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem]">
+                <div className="p-6 bg-muted  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                         <Cpu size={14}/> Invariant
                     </h3>
-                    <div className="p-3 bg-card border border-border rounded-xl font-mono text-[9px] text-[#83C167] border-l-4 border-l-[#83C167] shadow-xl">
+                    <div className="p-3 bg-card  rounded-xl font-mono text-[9px] text-[var(--viz-deep-purple)] border-l-4 border-l-[var(--viz-deep-purple)] shadow-xl">
                         dp[i] = dp[i-1] + dp[i-2]
                     </div>
                 </div>
@@ -249,10 +249,10 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Scrubber UI */}
-        <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+        <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-deep-purple)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -263,13 +263,13 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-deep-purple)] rounded-full shadow-[0_0_15px_var(--viz-deep-purple)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -277,10 +277,10 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active State</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Dependency Bit</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Stabilized DP</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-deep-purple)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active State</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Dependency Bit</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-deep-purple)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Stabilized DP</span></div>
          <div className="flex items-center gap-3"><TrendingUp size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Bottom-Up Memo</span></div>
       </div>
     </div>

@@ -42,8 +42,9 @@ export default function Logo({ className = "w-8 h-8" }: { className?: string }) 
 
       <defs>
         <linearGradient id="logo-gradient" x1="35" y1="25" x2="75" y2="75" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3b82f6" /> {/* blue-500 */}
-          <stop offset="1" stopColor="#8b5cf6" /> {/* purple-500 */}
+          <stop stopColor="var(--viz-blue)" />
+          <stop offset="0.5" stopColor="var(--viz-purple)" />
+          <stop offset="1" stopColor="var(--viz-gold)" />
         </linearGradient>
       </defs>
     </svg>

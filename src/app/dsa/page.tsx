@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDownNarrowWide, Search, Database, Network, 
   Infinity as InfinityIcon, Sparkles, Layers, 
-  ArrowDownWideNarrow, X, Menu, GraduationCap, Share2
+  X, Menu
 } from "lucide-react";
 
 import { dsaCategories } from "@/components/dsa/dsaCategories";
@@ -78,68 +78,41 @@ export default function DSAPage() {
   };
 
   return (
-    <div className="w-full relative min-h-screen bg-background text-foreground">
-      {/* 3B1B Grid Background */}
-      <div className="fixed inset-0 opacity-[0.03] dark:opacity-[0.03] pointer-events-none" 
+    <div className="w-full relative min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors duration-500 overflow-x-hidden">
+      {/* Background Decorative Elements */}
+      <div className="fixed inset-0 opacity-[0.03] pointer-events-none" 
            style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
+      
+      <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[var(--viz-blue)]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--viz-purple)]/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="w-full relative z-10 px-4 md:px-0">
-        
-        {/* Header */}
+      <div className="w-full relative z-10 px-4 md:px-8 lg:px-12 max-w-[1600px] mx-auto py-12">
         <DSAHeader 
           animationSpeed={animationSpeed} 
           setAnimationSpeed={setAnimationSpeed} 
           handleShare={handleShare} 
         />
 
-        {/* Controls */}
-        <DSAControls 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-          activeGroup={activeGroup} 
-          setActiveGroup={setActiveGroup} 
-          groups={groups} 
-        />
+        <div className="mt-12">
+          <DSAControls 
+            searchTerm={searchTerm} 
+            setSearchTerm={setSearchTerm} 
+            activeGroup={activeGroup} 
+            setActiveGroup={setActiveGroup} 
+            groups={groups} 
+          />
+        </div>
 
-        {/* Mobile Menu Button (Floating) */}
-        <div className="lg:hidden fixed bottom-6 right-6 z-50">
+        <div className="lg:hidden fixed bottom-8 right-8 z-50">
             <button 
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="p-4 bg-[#58C4DD] text-black rounded-2xl shadow-xl hover:scale-110 transition-all active:scale-95"
+                className="p-5 bg-[var(--primary)] text-[var(--background)] rounded-2xl shadow-2xl hover:scale-110 transition-all active:scale-95 shadow-[var(--primary)]/20"
             >
-                <Menu size={24} />
+                <Menu size={28} />
             </button>
         </div>
 
-        {/* Mobile Sidebar / Drawer */}
-        <AnimatePresence>
-            {isMobileMenuOpen && (
-                <motion.div 
-                    initial={{ opacity: 0, x: "100%" }} 
-                    animate={{ opacity: 1, x: 0 }} 
-                    exit={{ opacity: 0, x: "100%" }} 
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    className="fixed inset-0 z-50 bg-background flex flex-col p-6 lg:hidden"
-                >
-                    <div className="flex items-center justify-between mb-8">
-                        <span className="text-xs font-black tracking-[0.3em] text-muted-foreground uppercase">Select Manifold</span>
-                        <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80">
-                            <X size={24} />
-                        </button>
-                    </div>
-                    <div className="overflow-y-auto flex-1 space-y-3 pb-8">
-                        {filteredCategories.map((cat) => (
-                        <button key={cat.id} onClick={() => { setSelectedCategory(cat); setIsMobileMenuOpen(false); }} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedCategory.id === cat.id ? "bg-muted border-[#58C4DD]/50" : "bg-transparent border-border"}`}>
-                            <div className={`p-2.5 rounded-xl ${selectedCategory.id === cat.id ? "bg-[#58C4DD]/20" : "bg-muted"}`}>{cat.icon}</div>
-                            <div><h4 className="font-bold text-sm tracking-wide">{cat.title}</h4></div>
-                        </button>
-                        ))}
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mt-16">
           {/* Sidebar */}
           <DSASidebar 
             filteredCategories={filteredCategories} 
@@ -148,12 +121,15 @@ export default function DSAPage() {
           />
 
           {/* Main Content */}
-          <DSAMainContent 
-            selectedCategory={selectedCategory} 
-            animationSpeed={animationSpeed} 
-          />
+          <div className="lg:col-span-9">
+            <DSAMainContent 
+              selectedCategory={selectedCategory} 
+              animationSpeed={animationSpeed} 
+            />
+          </div>
         </div>
       </div>
     </div>
   );
+
 }

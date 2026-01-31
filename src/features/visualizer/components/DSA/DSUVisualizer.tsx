@@ -14,11 +14,11 @@ const ANIMATION_SPEED_MS = 800;
 
 // Manim-inspired Palette
 const COLORS = [
-  "#58C4DD", // Blue
-  "#83C167", // Green
-  "#f59e0b", // Gold
-  "#FC6255", // Red
-  "#9A72AC", // Purple
+  "var(--viz-lime)", // Blue
+  "var(--viz-green)", // Green
+  "var(--viz-amber)", // Gold
+  "var(--viz-rose)", // Red
+  "var(--viz-lime)", // Purple
   "#EC4899", // Pink
   "#14B8A6", // Teal
   "#F43F5E", // Rose
@@ -297,12 +297,12 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
   return (
     <div className="flex flex-col gap-6 select-none">
       {/* --- Main Container --- */}
-      <div className="bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+      <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative">
         
         {/* Header / Controls */}
-        <div className="p-6 border-b border-border bg-muted/20 flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="p-6 bg-muted/20 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#58C4DD]/10 rounded-2xl text-[#58C4DD]">
+                <div className="p-3 bg-[var(--viz-lime)]/10 rounded-2xl text-[var(--viz-lime)]">
                     <Network size={28} />
                 </div>
                 <div>
@@ -312,7 +312,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
 
             {/* Playback Controls */}
-            <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl border border-border shadow-sm">
+            <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl  shadow-sm">
                 <button onClick={reset} className="p-2.5 hover:bg-muted rounded-xl text-muted-foreground transition-all" title="Reset">
                     <RotateCcw size={18} />
                 </button>
@@ -323,7 +323,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
                 <button 
                     onClick={() => setIsPlaying(!isPlaying)} 
                     disabled={currentIndex >= history.length - 1}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg ${isPlaying ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-[#58C4DD] text-black hover:scale-105"}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg ${isPlaying ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-[var(--viz-lime)] text-black hover:scale-105"}`}
                 >
                     {isPlaying ? <Pause size={16} fill="currentColor"/> : <Play size={16} fill="currentColor"/>}
                     {isPlaying ? "Pause" : "Auto"}
@@ -340,13 +340,13 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
             {/* LEFT: GRAPH PLAYGROUND */}
             <div className="relative border-b lg:border-b-0 lg:border-r border-border bg-muted/5 p-8 flex flex-col items-center justify-center group/graph">
                 <div className="absolute top-6 left-6 flex items-center gap-2 pointer-events-none">
-                    <div className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+                    <div className="w-2 h-2 rounded-full bg-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Interaction Graph</span>
                 </div>
                 
                 {/* Interaction Hint */}
                 <div className="absolute top-6 right-6 opacity-0 group-hover/graph:opacity-100 transition-opacity pointer-events-none">
-                    <span className="text-[9px] font-mono bg-card border border-border px-2 py-1 rounded text-muted-foreground">Click nodes to connect</span>
+                    <span className="text-[9px] font-mono bg-card  px-2 py-1 rounded text-muted-foreground">Click nodes to connect</span>
                 </div>
 
                 <div className="relative w-[400px] h-[400px]">
@@ -356,7 +356,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
                             const p1 = graphPositions[u];
                             const p2 = graphPositions[v];
                             const isNew = currentStep.highlightEdge && currentStep.highlightEdge[0] === u && currentStep.highlightEdge[1] === v;
-                            const edgeColor = isNew ? "#f59e0b" : "#58C4DD";
+                            const edgeColor = isNew ? "var(--viz-amber)" : "var(--viz-lime)";
                             
                             return (
                                 <motion.line 
@@ -412,7 +412,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
             {/* RIGHT: FOREST STRUCTURE */}
             <div className="relative bg-muted/10 p-8 flex flex-col items-center justify-center">
                 <div className="absolute top-6 left-6 flex items-center gap-2 pointer-events-none">
-                    <div className="w-2 h-2 rounded-full bg-[#58C4DD]" />
+                    <div className="w-2 h-2 rounded-full bg-[var(--viz-lime)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Internal Forest State</span>
                 </div>
 
@@ -471,7 +471,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
                                 >
                                     <span className={`text-xs font-bold font-mono ${isPath || isActive || isHovered ? "text-black" : "text-foreground"}`}>{i}</span>
                                     {isRoot && currentStep.rank[i] > 0 && (
-                                        <div className="absolute -top-5 px-1.5 py-0.5 rounded bg-background border border-border text-[8px] font-mono text-muted-foreground">
+                                        <div className="absolute -top-5 px-1.5 py-0.5 rounded bg-background  text-[8px] font-mono text-muted-foreground">
                                             R:{currentStep.rank[i]}
                                         </div>
                                     )}
@@ -484,9 +484,9 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         {/* --- Memory Tape Visualization (NEW) --- */}
-        <div className="border-t border-border bg-card p-6 flex flex-col gap-4">
+        <div className="bg-[var(--card)] p-6 flex flex-col gap-4">
             <div className="flex items-center gap-2">
-                <Database size={16} className="text-[#58C4DD]" />
+                <Database size={16} className="text-[var(--viz-lime)]" />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Memory Tape (Array State)</span>
             </div>
             
@@ -511,7 +511,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
                         >
                             <span className="text-[8px] font-mono text-muted-foreground mb-1">IDX {i}</span>
                             <div className="w-full h-[1px] bg-border mb-2" />
-                            <span className={`text-sm font-bold font-mono ${isRoot ? "text-[#83C167]" : "text-foreground"}`}>{p}</span>
+                            <span className={`text-sm font-bold font-mono ${isRoot ? "text-[var(--viz-green)]" : "text-foreground"}`}>{p}</span>
                         </motion.div>
                     );
                 })}
@@ -523,7 +523,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider ${currentStep.phase === "UNION" ? "bg-[#f59e0b] text-black" : currentStep.phase === "COMPRESS" ? "bg-[#83C167] text-black" : "bg-muted text-muted-foreground"}`}>
+                        <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider ${currentStep.phase === "UNION" ? "bg-[var(--viz-amber)] text-black" : currentStep.phase === "COMPRESS" ? "bg-[var(--viz-green)] text-black" : "bg-muted text-muted-foreground"}`}>
                             {currentStep.phase}
                         </div>
                         <span className="text-xs font-mono text-foreground/80">{currentStep.message}</span>
@@ -535,7 +535,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
                 {/* Progress Bar */}
                 <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <motion.div 
-                        className="h-full bg-[#58C4DD]" 
+                        className="h-full bg-[var(--viz-lime)]" 
                         initial={{ width: 0 }}
                         animate={{ width: `${((currentIndex + 1) / history.length) * 100}%` }}
                     />

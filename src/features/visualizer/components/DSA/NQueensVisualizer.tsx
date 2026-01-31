@@ -10,11 +10,11 @@ import {
 
 // Professional Palette
 const MANIM_COLORS = { 
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-cyan)",
+  green: "var(--viz-deep-purple)",
+  gold: "var(--viz-deep-purple)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 interface NQueensStep {
@@ -118,7 +118,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
   }, [history, currentIndex, n]);
 
   return (
-    <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+    <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
       {/* Grid Backdrop */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
            style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -126,21 +126,21 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
       {/* Header UI */}
       <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
         <div className="space-y-1">
-          <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+          <h2 className="text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
             N-Queens <span className="text-muted-foreground/40">Recursive Lemma</span>
           </h2>
           <div className="flex items-center gap-3">
-             <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+             <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
              <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Backtracking State Visualizer</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl border border-border shadow-inner">
+        <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl  shadow-inner">
           <div className="flex items-center gap-3 px-3 border-r border-border">
               <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest">Dimension</span>
-              <div className="flex items-center bg-background/50 rounded-lg p-0.5 border border-border">
+              <div className="flex items-center bg-background/50 rounded-lg p-0.5 ">
                 <button onClick={() => setN(p => Math.max(4, p - 1))} className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">-</button>
-                <span className="w-8 text-center font-mono text-sm font-bold text-[#f59e0b]">{n}</span>
+                <span className="w-8 text-center font-mono text-sm font-bold text-[var(--viz-deep-purple)]">{n}</span>
                 <button onClick={() => setN(p => Math.min(10, p + 1))} className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">+</button>
               </div>
           </div>
@@ -153,8 +153,8 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
               }} 
               className={`p-2 rounded-xl transition-all ${
                 isPlaying 
-                ? "bg-[#FC6255]/10 text-[#FC6255]" 
-                : "bg-[#83C167]/10 text-[#83C167]"
+                ? "bg-[var(--viz-rose)]/10 text-[var(--viz-rose)]" 
+                : "bg-[var(--viz-deep-purple)]/10 text-[var(--viz-deep-purple)]"
               }`}
               title={isPlaying ? "Pause" : "Start Simulation"}
             >
@@ -174,14 +174,14 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Chessboard Container */}
-        <div className="lg:col-span-3 relative aspect-square max-w-[500px] mx-auto w-full bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex items-center justify-center p-6">
+        <div className="lg:col-span-3 relative aspect-square max-w-[500px] mx-auto w-full bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex items-center justify-center p-6">
           
           {/* Logic Step Badge */}
           <AnimatePresence>
               {currentStep.step !== "BOOT" && (
-                  <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30">
-                      <Zap size={12} className="text-[#58C4DD]" />
-                      <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.step}</span>
+                  <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full z-30">
+                      <Zap size={12} className="text-[var(--viz-cyan)]" />
+                      <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                   </motion.div>
               )}
           </AnimatePresence>
@@ -189,8 +189,8 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
           {/* Status Explanation */}
           <AnimatePresence mode="wait">
               <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-6 w-full max-w-[300px] px-6 text-center z-30">
-                  <div className="p-3 bg-card/80 border border-border rounded-2xl backdrop-blur-md shadow-2xl">
-                      <p className="text-[9px] text-[#f59e0b] font-mono italic uppercase tracking-tighter leading-tight">{currentStep.message}</p>
+                  <div className="p-3 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
+                      <p className="text-[9px] text-[var(--viz-deep-purple)] font-mono italic uppercase tracking-tighter leading-tight">{currentStep.message}</p>
                   </div>
               </motion.div>
           </AnimatePresence>
@@ -213,11 +213,11 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
                                     exit={{ scale: 0 }} 
                                     className="relative z-10"
                                   >
-                                      <Crown size={n > 8 ? 20 : 32} className="text-[#58C4DD]" fill="currentColor" />
+                                      <Crown size={n > 8 ? 20 : 32} className="text-[var(--viz-cyan)]" fill="currentColor" />
                                       <motion.div 
                                         animate={{ opacity: [0.2, 0.5, 0.2] }} 
                                         transition={{ repeat: Infinity, duration: 2 }}
-                                        className="absolute inset-0 bg-[#58C4DD]/20 blur-xl rounded-full" 
+                                        className="absolute inset-0 bg-[var(--viz-cyan)]/20 blur-xl rounded-full" 
                                       />
                                   </motion.div>
                               )}
@@ -225,14 +225,14 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
                                 <motion.div 
                                   initial={{ scale: 0 }} 
                                   animate={{ scale: 1 }} 
-                                  className="w-3 h-3 rounded-full bg-[#f59e0b] shadow-[0_0_15px_#f59e0b66]" 
+                                  className="w-3 h-3 rounded-full bg-[var(--viz-deep-purple)] shadow-[0_0_15px_var(--viz-deep-purple)66]" 
                                 />
                               )}
                               {cell === 3 && (
                                 <motion.div 
                                   initial={{ scale: 0.5, opacity: 0 }} 
                                   animate={{ scale: 1, opacity: 1 }} 
-                                  className="text-[#FC6255] relative z-10 drop-shadow-[0_0_10px_#FC625544]"
+                                  className="text-[var(--viz-rose)] relative z-10 drop-shadow-[0_0_10px_var(--viz-rose)44]"
                                 >
                                   <X size={n > 8 ? 24 : 36} strokeWidth={3} />
                                 </motion.div>
@@ -242,7 +242,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
                             <motion.div 
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
-                              className="absolute inset-0 bg-[#FC6255]/10 border border-[#FC6255]/30 z-0" 
+                              className="absolute inset-0 bg-[var(--viz-rose)]/10 border border-[var(--viz-rose)]/30 z-0" 
                             />
                           )}
                       </div>
@@ -253,7 +253,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
 
         {/* Sidebar: Resolution Log */}
         <div className="flex flex-col gap-6">
-            <div className="p-6 bg-muted border border-border rounded-[2rem] flex flex-col gap-4 flex-1 h-[350px] overflow-hidden">
+            <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[350px] overflow-hidden">
                 <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                     <Activity size={14}/> Execution Flow
                 </h3>
@@ -264,9 +264,9 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
                                 key={`log-${currentIndex}-${i}`}
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className={`text-[9px] font-mono flex gap-2 border-l-2 pl-2 ${i === 0 ? "text-[#58C4DD] border-[#58C4DD]" : "text-muted-foreground/40 border-border"}`}
+                                className={`text-[9px] font-mono flex gap-2 border-l-2 pl-2 ${i === 0 ? "text-[var(--viz-cyan)] border-[var(--viz-cyan)]" : "text-muted-foreground/40 border-border"}`}
                             >
-                                <span className={i === 0 ? "text-[#58C4DD]" : "text-muted-foreground/20"}>»</span>
+                                <span className={i === 0 ? "text-[var(--viz-cyan)]" : "text-muted-foreground/20"}>»</span>
                                 {log}
                             </motion.div>
                         ))}
@@ -274,22 +274,22 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
                 </div>
             </div>
 
-            <div className="p-6 bg-muted border border-border rounded-[2rem]">
+            <div className="p-6 bg-muted  rounded-[2rem]">
                 <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                     <Cpu size={14}/> State Metrics
                 </h3>
                 <div className="space-y-3">
                     <div className="flex justify-between text-[9px] font-mono">
                         <span className="text-muted-foreground/40 uppercase tracking-tighter">Current Col</span>
-                        <span className="text-[#58C4DD] font-black">{currentStep.col}</span>
+                        <span className="text-[var(--viz-cyan)] font-black">{currentStep.col}</span>
                     </div>
                     <div className="flex justify-between text-[9px] font-mono">
                         <span className="text-muted-foreground/40 uppercase tracking-tighter">Exploration</span>
-                        <span className="text-[#83C167] font-black uppercase">Active</span>
+                        <span className="text-[var(--viz-deep-purple)] font-black uppercase">Active</span>
                     </div>
                     <div className="flex justify-between text-[9px] font-mono">
                         <span className="text-muted-foreground/40 uppercase tracking-tighter">Time Complexity</span>
-                        <span className="text-[#f59e0b] font-black uppercase">O(N!)</span>
+                        <span className="text-[var(--viz-deep-purple)] font-black uppercase">O(N!)</span>
                     </div>
                 </div>
             </div>
@@ -297,10 +297,10 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
       </div>
 
       {/* Scrubber UI */}
-      <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+      <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
           <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
-                  <Hash size={14} className="text-[#f59e0b]" />
+                  <Hash size={14} className="text-[var(--viz-deep-purple)]" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -311,23 +311,23 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
 
           <div className="relative flex items-center group/slider">
               <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-              <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / Math.max(1, (history.length - 1))) * 100}%` }} />
+              <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)44]" style={{ width: `${(currentIndex / Math.max(1, (history.length - 1))) * 100}%` }} />
               <input 
                   type="range" min="0" max={Math.max(0, history.length - 1)} value={currentIndex} 
                   onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                   className="w-full h-6 opacity-0 cursor-pointer z-10"
               />
-              <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+              <div className="absolute w-1.5 h-4 bg-[var(--viz-deep-purple)] rounded-full shadow-[0_0_15px_var(--viz-deep-purple)] pointer-events-none transition-all"
                   style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 3px)` }}
               />
           </div>
       </div>
 
       {/* Legend */}
-      <div className="mt-8 px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Safe Placement</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#FC6255]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Conflict Detected</span></div>
+      <div className="mt-8 px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-deep-purple)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Safe Placement</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Conflict Detected</span></div>
          <div className="flex items-center gap-3"><Sparkles size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Optimized Traversal</span></div>
       </div>
     </div>

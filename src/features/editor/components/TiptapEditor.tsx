@@ -21,7 +21,7 @@ const TiptapEditor = ({ description, onChange, editable = true }: TiptapEditorPr
       StarterKit.configure({
         codeBlock: {
           HTMLAttributes: {
-            class: 'rounded-md bg-[var(--foreground)]/5 border border-[var(--card-border)] p-4 font-mono text-sm text-[var(--foreground)] my-4',
+            class: 'rounded-2xl bg-[var(--foreground)]/5 p-4 font-mono text-sm text-[var(--foreground)] my-4',
           },
         },
       }),
@@ -43,7 +43,7 @@ const TiptapEditor = ({ description, onChange, editable = true }: TiptapEditorPr
     },
     editorProps: {
       attributes: {
-        class: 'prose max-w-none min-h-[150px] p-4 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-[var(--foreground)] [&_h1]:mb-6 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-[var(--foreground)] [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[var(--foreground)] [&_h3]:mt-6 [&_h3]:mb-3 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-400 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_pre]:bg-[var(--foreground)]/5 [&_pre]:p-4 [&_pre]:rounded-md [&_pre]:my-4 [&_pre]:border [&_pre]:border-[var(--card-border)] [&_code]:bg-[var(--foreground)]/10 [&_code]:px-1 [&_code]:rounded text-[var(--foreground)]',
+        class: 'prose max-w-none min-h-[300px] p-8 rounded-b-[2rem] bg-[var(--background)]/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] hover:bg-[var(--background)]/60 focus:bg-[var(--background)]/70 transition-all duration-300 outline-none [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-[var(--foreground)] [&_h1]:mb-6 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-[var(--foreground)] [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[var(--foreground)] [&_h3]:mt-6 [&_h3]:mb-3 [&_blockquote]:border-l-4 [&_blockquote]:border-[var(--viz-purple)]/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-[var(--muted-foreground)] [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_pre]:bg-[var(--foreground)]/5 [&_pre]:p-4 [&_pre]:rounded-2xl [&_pre]:my-4 [&_code]:bg-[var(--foreground)]/10 [&_code]:px-1 [&_code]:rounded text-[var(--foreground)]',
       },
     },
     editable: editable,

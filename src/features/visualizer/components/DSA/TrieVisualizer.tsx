@@ -13,11 +13,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-lavender)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-cyan)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-lavender)"
 };
 
 interface VisualNode {
@@ -272,7 +272,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -280,28 +280,28 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
         {/* Header UI */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#58C4DD]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-lavender)]">
               Trie <span className="text-muted-foreground/40">Lemma Analyzer</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#58C4DD] rounded-full" />
+               <div className="h-1 w-12 bg-[var(--viz-lavender)] rounded-full" />
                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Prefix Memory Manifold</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl border border-border shadow-inner">
+          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl  shadow-inner">
             <div className="flex items-center gap-2 px-3 border-r border-border">
                 <input 
                     type="text" value={inputValue} 
                     onChange={e => setInputValue(e.target.value.toUpperCase())}
                     placeholder="KEY"
-                    className="w-20 bg-transparent text-center font-mono text-sm font-bold text-[#f59e0b] focus:outline-none placeholder:text-muted-foreground/20"
+                    className="w-20 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-muted-foreground/20"
                 />
             </div>
             
             <div className="flex gap-1">
-              <button onClick={() => recordOperation('INSERT', inputValue)} className="p-2 hover:bg-[#83C167]/10 rounded-xl text-[#83C167] transition-all" title="Insert"><Plus size={20}/></button>
-              <button onClick={() => recordOperation('SEARCH', inputValue)} className="p-2 hover:bg-[#58C4DD]/10 rounded-xl text-[#58C4DD] transition-all" title="Search"><Search size={20}/></button>
+              <button onClick={() => recordOperation('INSERT', inputValue)} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all" title="Insert"><Plus size={20}/></button>
+              <button onClick={() => recordOperation('SEARCH', inputValue)} className="p-2 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)] transition-all" title="Search"><Search size={20}/></button>
               <div className="w-px h-6 bg-border mx-1" />
               <button onClick={() => { rootRef.current = new TrieNode("*"); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-red-500/10 rounded-xl text-muted-foreground/40 hover:text-red-500 transition-all"><RotateCcw size={20}/></button>
             </div>
@@ -310,14 +310,14 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
 
         {/* Visual Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div ref={containerRef} className="lg:col-span-3 relative min-h-[520px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center">
+            <div ref={containerRef} className="lg:col-span-3 relative min-h-[520px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center">
                 
                 {/* Logic Step Badge */}
                 <AnimatePresence>
                     {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full z-30">
-                            <Zap size={12} className="text-[#58C4DD]" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.step}</span>
+                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
+                            <Zap size={12} className="text-[var(--viz-lavender)]" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -325,8 +325,8 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
                 {/* Explanation Box */}
                 <AnimatePresence mode="wait">
                     <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-10 text-center z-30">
-                        <div className="p-4 bg-card/80 border border-border rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[#f59e0b] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
+                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
+                            <p className="text-[10px] text-[var(--viz-cyan)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -388,7 +388,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
                                 >
                                     <span className={`text-sm font-black ${isS || isA || isM ? "text-black" : "text-foreground"}`}>{isRoot ? "●" : node.char}</span>
                                     {node.isEndOfWord && !isRoot && (
-                                        <div className="absolute -bottom-2 w-2 h-2 rounded-full bg-[#83C167] shadow-[0_0_10px_#83C167]" />
+                                        <div className="absolute -bottom-2 w-2 h-2 rounded-full bg-[var(--viz-green)] shadow-[0_0_10px_var(--viz-green)]" />
                                     )}
                                 </motion.div>
                             );
@@ -399,7 +399,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
 
             {/* Sidebar: Memory Log */}
             <div className="flex flex-col gap-6">
-                <div className="p-6 bg-muted border border-border rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
+                <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Activity size={14}/> Bit Stream
                     </h3>
@@ -412,7 +412,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
                                 >
-                                    <span className="text-[#58C4DD]">»</span>
+                                    <span className="text-[var(--viz-lavender)]">»</span>
                                     {log}
                                 </motion.div>
                             ))}
@@ -421,13 +421,13 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
                     </div>
                 </div>
 
-                <div className="p-6 bg-muted border border-border rounded-[2rem]">
+                <div className="p-6 bg-muted  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                         <Type size={14}/> Word Buffer
                     </h3>
                     <div className="flex gap-1 justify-center">
                         {currentStep.activeWord.split('').map((char, i) => (
-                            <div key={i} className="w-6 h-8 bg-card border border-border rounded flex items-center justify-center font-mono text-xs font-black text-[#f59e0b]">
+                            <div key={i} className="w-6 h-8 bg-card  rounded flex items-center justify-center font-mono text-xs font-black text-[var(--viz-cyan)]">
                                 {char}
                             </div>
                         ))}
@@ -437,10 +437,10 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         {/* Scrubber UI */}
-        <div className="mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+        <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-cyan)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -454,13 +454,13 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full shadow-[0_0_10px_var(--viz-lavender)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_15px_var(--viz-cyan)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -468,10 +468,10 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Resolution</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#FC6255]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Memory Miss</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Resolution</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Memory Miss</span></div>
          <div className="flex items-center gap-3"><Cpu size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Prefix Manifold</span></div>
       </div>
     </div>

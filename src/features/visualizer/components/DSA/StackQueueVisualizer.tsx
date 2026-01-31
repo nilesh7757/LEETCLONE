@@ -14,11 +14,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-lime)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-amber)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-lime)"
 };
 
 interface DataItem {
@@ -128,7 +128,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -141,30 +141,30 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
             </h2>
             <div className="flex items-center gap-3">
                <div className="h-1 w-12 rounded-full" style={{ backgroundColor: activeColor }} />
-               <div className="flex bg-muted p-1 rounded-lg border border-border">
-                  <button onClick={() => { setMode("STACK"); setItems([]); setHistory([]); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "STACK" ? "bg-[#58C4DD] text-black" : "text-muted-foreground/40"}`}>LIFO Stack</button>
-                  <button onClick={() => { setMode("QUEUE"); setItems([]); setHistory([]); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "QUEUE" ? "bg-[#83C167] text-black" : "text-muted-foreground/40"}`}>FIFO Queue</button>
+               <div className="flex bg-muted p-1 rounded-lg ">
+                  <button onClick={() => { setMode("STACK"); setItems([]); setHistory([]); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "STACK" ? "bg-[var(--viz-lime)] text-black" : "text-muted-foreground/40"}`}>LIFO Stack</button>
+                  <button onClick={() => { setMode("QUEUE"); setItems([]); setHistory([]); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "QUEUE" ? "bg-[var(--viz-green)] text-black" : "text-muted-foreground/40"}`}>FIFO Queue</button>
                </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-             <button onClick={() => { setItems([]); setHistory([]); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
+             <button onClick={() => { setItems([]); setHistory([]); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
           </div>
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center p-12">
+        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-12">
             
             {/* Controls Overlay */}
-            <div className="absolute top-6 right-6 z-30 flex flex-col gap-2 pointer-events-auto bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm">
+            <div className="absolute top-6 right-6 z-30 flex flex-col gap-2 pointer-events-auto bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                     <input 
                         type="number" 
                         value={inputValue} 
                         onChange={(e) => setInputValue(e.target.value)}
                         placeholder="RND"
-                        className="w-12 bg-muted/50 border border-border rounded-lg text-center text-xs font-mono py-1.5 focus:outline-none focus:border-foreground/50"
+                        className="w-12 bg-muted/50  rounded-lg text-center text-xs font-mono py-1.5 focus:outline-none focus:border-foreground/50"
                     />
                     <button 
                         onClick={() => recordOperation('ADD')}
@@ -175,7 +175,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                 </div>
                 <button 
                     onClick={() => recordOperation('REMOVE')}
-                    className="w-full bg-muted text-muted-foreground border border-border text-[10px] font-bold uppercase tracking-wide py-2 px-3 rounded-lg hover:bg-muted/80 hover:text-foreground transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-muted text-muted-foreground  text-[10px] font-bold uppercase tracking-wide py-2 px-3 rounded-lg hover:bg-muted/80 hover:text-foreground transition-all flex items-center justify-center gap-2"
                 >
                     <Trash2 size={12} /> {mode === 'STACK' ? 'Pop' : 'Dequeue'}
                 </button>
@@ -183,7 +183,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
 
             {/* Info Overlay */}
             <div className="absolute top-6 left-6 z-30 flex flex-col gap-2 pointer-events-none max-w-[200px]">
-                <div className="bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm">
+                <div className="bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
                             <Activity size={12} /> Buffer Specs
                     </span>
@@ -195,17 +195,17 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                         {mode === 'STACK' ? (
                             <div className="flex justify-between text-[10px] font-mono">
                                 <span className="text-muted-foreground">Top</span>
-                                <span className="font-bold text-[#58C4DD]">{currentStep.items.length > 0 ? currentStep.items[currentStep.items.length - 1].value : '-'}</span>
+                                <span className="font-bold text-[var(--viz-lime)]">{currentStep.items.length > 0 ? currentStep.items[currentStep.items.length - 1].value : '-'}</span>
                             </div>
                         ) : (
                             <>
                                 <div className="flex justify-between text-[10px] font-mono">
                                     <span className="text-muted-foreground">Front</span>
-                                    <span className="font-bold text-[#FC6255]">{currentStep.items.length > 0 ? currentStep.items[0].value : '-'}</span>
+                                    <span className="font-bold text-[var(--viz-rose)]">{currentStep.items.length > 0 ? currentStep.items[0].value : '-'}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px] font-mono">
                                     <span className="text-muted-foreground">Rear</span>
-                                    <span className="font-bold text-[#83C167]">{currentStep.items.length > 0 ? currentStep.items[currentStep.items.length - 1].value : '-'}</span>
+                                    <span className="font-bold text-[var(--viz-green)]">{currentStep.items.length > 0 ? currentStep.items[currentStep.items.length - 1].value : '-'}</span>
                                 </div>
                             </>
                         )}
@@ -213,7 +213,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                 </div>
                 
                 {/* Logs */}
-                <div className="bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm max-h-[200px] overflow-hidden flex flex-col">
+                <div className="bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm max-h-[200px] overflow-hidden flex flex-col">
                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-2">
                             <Layout size={12} /> Log
                     </span>
@@ -241,7 +241,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                         /* STACK VISUAL */
                         <div key="stack-container" className="relative">
                             <div className="w-48 h-[360px] border-x-4 border-b-4 border-dashed border-border/50 rounded-b-3xl bg-background/20 backdrop-blur-sm flex flex-col-reverse justify-start items-center p-4 gap-2 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#58C4DD]/5 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--viz-lime)]/5 to-transparent pointer-events-none" />
                                 <AnimatePresence mode="popLayout">
                                     {currentStep.items.map((item, index) => (
                                         <motion.div
@@ -251,11 +251,11 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                                             animate={{ y: 0, opacity: 1, scale: 1 }}
                                             exit={{ y: -400, opacity: 0, scale: 0.5, transition: { duration: 0.4 } }}
                                             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                                            className="w-full h-12 rounded-xl border border-[#58C4DD]/30 bg-background shadow-lg flex items-center justify-center relative z-10"
+                                            className="w-full h-12 rounded-xl border border-[var(--viz-lime)]/30 bg-background shadow-lg flex items-center justify-center relative z-10"
                                         >
-                                            <span className="text-sm font-bold font-mono text-[#58C4DD]">{item.value}</span>
+                                            <span className="text-sm font-bold font-mono text-[var(--viz-lime)]">{item.value}</span>
                                             {index === currentStep.items.length - 1 && (
-                                                <div className="absolute -right-12 text-[9px] font-bold text-[#58C4DD] flex items-center gap-1">
+                                                <div className="absolute -right-12 text-[9px] font-bold text-[var(--viz-lime)] flex items-center gap-1">
                                                     <ChevronsLeft />
                                                 </div>
                                             )}
@@ -269,7 +269,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                         /* QUEUE VISUAL */
                         <div key="queue-container" className="relative w-full max-w-[600px]">
                             <div className="w-full h-24 border-y-4 border-dashed border-border/50 bg-background/20 backdrop-blur-sm flex items-center justify-end px-4 gap-2 relative overflow-hidden rounded-xl">
-                                <div className="absolute inset-0 bg-gradient-to-l from-[#83C167]/5 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-l from-[var(--viz-green)]/5 to-transparent pointer-events-none" />
                                 <AnimatePresence mode="popLayout">
                                     {currentStep.items.map((item, index) => (
                                         <motion.div
@@ -279,17 +279,17 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                                             animate={{ x: 0, opacity: 1, scale: 1 }}
                                             exit={{ x: -100, opacity: 0, scale: 0.5, transition: { duration: 0.4 } }}
                                             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                                            className="min-w-[60px] h-14 rounded-xl border border-[#83C167]/30 bg-background shadow-lg flex items-center justify-center relative z-10"
+                                            className="min-w-[60px] h-14 rounded-xl border border-[var(--viz-green)]/30 bg-background shadow-lg flex items-center justify-center relative z-10"
                                         >
-                                            <span className="text-sm font-bold font-mono text-[#83C167]">{item.value}</span>
+                                            <span className="text-sm font-bold font-mono text-[var(--viz-green)]">{item.value}</span>
                                             {index === 0 && (
-                                                <div className="absolute -top-8 text-[9px] font-bold text-[#FC6255] flex flex-col items-center">
+                                                <div className="absolute -top-8 text-[9px] font-bold text-[var(--viz-rose)] flex flex-col items-center">
                                                     FRONT
                                                     <ChevronsDown size={12} />
                                                 </div>
                                             )}
                                             {index === currentStep.items.length - 1 && (
-                                                <div className="absolute -bottom-8 text-[9px] font-bold text-[#83C167] flex flex-col items-center">
+                                                <div className="absolute -bottom-8 text-[9px] font-bold text-[var(--viz-green)] flex flex-col items-center">
                                                     <ChevronsUp size={12} />
                                                     REAR
                                                 </div>
@@ -313,8 +313,8 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
             {/* Explanation Toast */}
             <AnimatePresence mode="wait">
                 <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-8 w-full flex justify-center z-30 pointer-events-none">
-                    <div className="px-6 py-3 bg-card/90 border border-border rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
-                        <p className="text-xs text-[#f59e0b] font-mono font-medium">{currentStep.message}</p>
+                    <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
+                        <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
                     </div>
                 </motion.div>
             </AnimatePresence>
@@ -322,10 +322,10 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
         </div>
 
         {/* Timeline Scrubber */}
-        <div className={`mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity`}>
+        <div className={`mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity`}>
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Operation Sequence {currentIndex + 1} of {history.length || 1}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -342,7 +342,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-amber)] rounded-full shadow-[0_0_15px_var(--viz-amber)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>

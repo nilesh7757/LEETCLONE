@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
+import { Layers } from "lucide-react";
 
 interface DSASidebarProps {
   filteredCategories: any[];
@@ -10,25 +12,68 @@ interface DSASidebarProps {
 
 export const DSASidebar = ({ filteredCategories, selectedCategory, setSelectedCategory }: DSASidebarProps) => {
   return (
-    <div className="hidden lg:block lg:col-span-3 space-y-4 max-h-[75vh] overflow-y-auto pr-4 scrollbar-hide sticky top-32">
-      <h3 className="text-[10px] font-black text-muted-foreground/30 px-4 uppercase tracking-[0.25em] mb-4">Coordinate Systems</h3>
+    <div className="hidden lg:block lg:col-span-3 space-y-4 max-h-[80vh] overflow-y-auto pr-6 scrollbar-hide sticky top-12 pb-20">
+      <div className="flex items-center gap-3 px-4 mb-6 opacity-40">
+        <Layers size={14} className="text-[var(--primary)]" />
+        <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Coordinate Systems</h3>
+      </div>
+      
       {filteredCategories.length > 0 ? (
-        filteredCategories.map((cat) => (
-          <button 
-            key={cat.id} 
-            onClick={() => setSelectedCategory(cat)} 
-            className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 group ${selectedCategory.id === cat.id ? "bg-muted border-[#58C4DD]/50 shadow-[0_0_20px_rgba(88,196,221,0.1)] translate-x-2" : "bg-transparent border-border hover:border-foreground/20"}`}
-          >
-            <div className={`p-2.5 rounded-xl transition-colors ${selectedCategory.id === cat.id ? "bg-[#58C4DD]/20" : "bg-muted group-hover:bg-muted/80"}`}>{cat.icon}</div>
-            <div>
-              <h4 className="font-bold text-xs tracking-wide">{cat.title}</h4>
-              <p className="text-[9px] text-muted-foreground font-mono mt-0.5 uppercase tracking-tighter">{cat.description}</p>
-            </div>
-          </button>
-        ))
+        <div className="space-y-2">
+          {filteredCategories.map((cat) => {
+            const isActive = selectedCategory.id === cat.id;
+            const themeColor = cat.themeColor || "var(--primary)";
+            const themeRGB = cat.themeRGB || "var(--viz-blue-rgb)";
+            
+            return (
+              <button 
+                key={cat.id} 
+                onClick={() => setSelectedCategory(cat)} 
+                className={`w-full text-left p-5 rounded-[1.5rem] transition-all duration-300 flex items-center gap-5 group relative overflow-hidden ${
+                  isActive 
+                    ? "bg-[var(--muted)] shadow-xl translate-x-2" 
+                    : "bg-transparent hover:bg-[var(--muted)]/40 hover:translate-x-1"
+                }`}
+              >
+                {isActive && (
+                  <motion.div 
+                    layoutId="sidebar-active-glow"
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: `linear-gradient(to right, ${themeColor}0D, transparent)` }}
+                  />
+                )}
+                
+                <div className={`p-3 rounded-2xl transition-all duration-500 shadow-inner ${
+                  isActive ? "text-[var(--background)] scale-110 shadow-lg" : "bg-[var(--muted)] text-[var(--muted-foreground)]/40 group-hover:text-[var(--muted-foreground)]"
+                }`}
+                style={isActive ? { backgroundColor: themeColor, boxShadow: `0 0 20px rgba(${themeRGB}, 0.2)` } : {}}
+                >
+                  {React.cloneElement(cat.icon as React.ReactElement, { size: 20 })}
+                </div>
+                
+                <div className="flex-1 min-w-0 relative z-10">
+                  <h4 className={`font-bold text-sm tracking-tight transition-colors ${isActive ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]/60 group-hover:text-[var(--foreground)]"}`}>
+                    {cat.title}
+                  </h4>
+                  <p className="text-[9px] text-[var(--muted-foreground)]/40 font-mono mt-1 uppercase tracking-tighter line-clamp-1">
+                    {cat.description}
+                  </p>
+                </div>
+
+                {isActive && (
+                  <motion.div 
+                    layoutId="active-indicator" 
+                    className="w-1.5 h-1.5 rounded-full shadow-lg" 
+                    style={{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       ) : (
-        <div className="p-8 text-center border border-dashed border-border rounded-2xl">
-          <p className="text-[10px] text-muted-foreground/40 font-mono uppercase tracking-widest">No matching manifolds</p>
+        <div className="p-12 text-center bg-[var(--muted)]/20 rounded-[2.5rem] border border-dashed border-[var(--border)]">
+          <p className="text-[10px] text-[var(--muted-foreground)]/40 font-mono uppercase tracking-widest text-center">No matching manifolds detected</p>
         </div>
       )}
     </div>

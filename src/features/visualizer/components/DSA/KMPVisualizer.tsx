@@ -14,11 +14,11 @@ const VIEWPORT_WIDTH = 800; // Approximate visual width
 
 // Manim-inspired Palette
 const COLORS = { 
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC",
+  blue: "var(--viz-cyan)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-gold)",
+  red: "var(--viz-red)",
+  purple: "var(--viz-purple)",
   dark: "#1e1e1e",
   muted: "rgba(255,255,255,0.1)"
 };
@@ -185,15 +185,15 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
     <div className="flex flex-col gap-6 select-none font-sans">
       
       {/* --- Main Dashboard --- */}
-      <div className="bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
+      <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
          {/* Background Grid */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
          {/* Header & Inputs */}
-         <div className="relative z-10 p-6 border-b border-border bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
+         <div className="relative z-10 p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#58C4DD]/10 rounded-2xl text-[#58C4DD]">
+                <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl text-[var(--viz-cyan)]">
                     <Search size={24} />
                 </div>
                 <div>
@@ -202,7 +202,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl border border-border shadow-sm">
+            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl  shadow-sm">
                 <div className="flex items-center gap-2 px-3 border-r border-border">
                     <span className="text-[9px] font-black text-muted-foreground/50">TEXT</span>
                     <input 
@@ -216,7 +216,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                     <input 
                         type="text" value={pattern} 
                         onChange={e => { setPattern(e.target.value.toUpperCase()); setIsPlaying(false); }}
-                        className="w-24 bg-transparent font-mono text-xs font-bold text-[#58C4DD] focus:outline-none placeholder:text-muted-foreground/20 text-center"
+                        className="w-24 bg-transparent font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-muted-foreground/20 text-center"
                     />
                 </div>
                 <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all">
@@ -224,7 +224,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                 </button>
                 <button 
                     onClick={() => setIsPlaying(!isPlaying)} 
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-lg ${isPlaying ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-[#58C4DD] text-black hover:scale-105"}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-lg ${isPlaying ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-[var(--viz-cyan)] text-black hover:scale-105"}`}
                 >
                     {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
                     {isPlaying ? "Pause" : "Run"}
@@ -236,10 +236,10 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
          <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center overflow-hidden">
             
             {/* Center Focus Marker (The Lens) */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-[60px] -ml-[30px] border-x-2 border-dashed border-[#58C4DD]/20 bg-[#58C4DD]/5 z-0" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-[60px] -ml-[30px] border-x-2 border-dashed border-[var(--viz-cyan)]/20 bg-[var(--viz-cyan)]/5 z-0" />
             <div className="absolute left-1/2 top-8 -translate-x-1/2 flex flex-col items-center z-10 opacity-50">
-                <ArrowDown size={16} className="text-[#58C4DD] animate-bounce" />
-                <span className="text-[9px] font-mono font-black text-[#58C4DD] tracking-widest mt-1">LENS</span>
+                <ArrowDown size={16} className="text-[var(--viz-cyan)] animate-bounce" />
+                <span className="text-[9px] font-mono font-black text-[var(--viz-cyan)] tracking-widest mt-1">LENS</span>
             </div>
 
             {/* Gradient Mask for Edges */}
@@ -331,7 +331,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
          </div>
 
          {/* --- Info Footer --- */}
-         <div className="border-t border-border bg-card p-6 flex flex-col lg:flex-row gap-8">
+         <div className="bg-[var(--card)] p-6 flex flex-col lg:flex-row gap-8">
             
             {/* Status Panel */}
             <div className="flex-1 space-y-4">
@@ -341,9 +341,9 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                         {currentStep.phase}
                     </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border">
+                <div className="p-4 rounded-2xl bg-muted/30 ">
                     <p className="font-mono text-sm leading-relaxed text-foreground/80">
-                        <span className="text-[#58C4DD] mr-2">»</span>
+                        <span className="text-[var(--viz-cyan)] mr-2">»</span>
                         {currentStep.message}
                     </p>
                 </div>
@@ -373,7 +373,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
          {/* Progress Line */}
          <div className="h-1 w-full bg-muted">
              <motion.div 
-                className="h-full bg-[#58C4DD]" 
+                className="h-full bg-[var(--viz-cyan)]" 
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentIndex + 1) / history.length) * 100}%` }}
              />

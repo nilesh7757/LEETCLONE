@@ -13,11 +13,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-rose)",
+  green: "var(--viz-rose)",
+  gold: "var(--viz-amber)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 type Node = { id: number; x: number; y: number };
@@ -341,7 +341,7 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -349,14 +349,14 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[#83C167]">
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-rose)]">
               MST <span className="text-muted-foreground/40">Chronicle Resolver</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[#83C167] rounded-full" />
-               <div className="flex bg-muted p-1 rounded-lg border border-border">
-                  <button onClick={() => { setMode("PRIM"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "PRIM" ? "bg-[#83C167] text-black" : "text-muted-foreground/40"}`}>Prim's</button>
-                  <button onClick={() => { setMode("KRUSKAL"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "KRUSKAL" ? "bg-[#f59e0b] text-black" : "text-muted-foreground/40"}`}>Kruskal's</button>
+               <div className="h-1 w-12 bg-[var(--viz-rose)] rounded-full" />
+               <div className="flex bg-muted p-1 rounded-lg ">
+                  <button onClick={() => { setMode("PRIM"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "PRIM" ? "bg-[var(--viz-rose)] text-black" : "text-muted-foreground/40"}`}>Prim's</button>
+                  <button onClick={() => { setMode("KRUSKAL"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "KRUSKAL" ? "bg-[var(--viz-amber)] text-black" : "text-muted-foreground/40"}`}>Kruskal's</button>
                </div>
             </div>
           </div>
@@ -364,10 +364,10 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
           <div className="flex items-center gap-3">
              {isEditing && (
                  <>
-                    <button onClick={addNode} className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-xs font-bold text-muted-foreground hover:text-foreground">
+                    <button onClick={addNode} className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-white/5 rounded-xl  transition-all text-xs font-bold text-muted-foreground hover:text-foreground">
                         <Plus size={14}/> Node
                     </button>
-                    <button onClick={clearGraph} className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-xs font-bold text-muted-foreground hover:text-foreground">
+                    <button onClick={clearGraph} className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-white/5 rounded-xl  transition-all text-xs font-bold text-muted-foreground hover:text-foreground">
                         <Trash2 size={14}/> Clear
                     </button>
                      <div className="w-[1px] h-6 bg-border mx-1" />
@@ -376,18 +376,18 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
 
              <button 
                 onClick={() => { setIsEditing(!isEditing); setIsPlaying(false); setSelectedNode(null); }} 
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all text-xs font-bold ${isEditing ? "bg-white text-black border-white shadow-xl" : "bg-muted text-muted-foreground border-border hover:text-foreground"}`}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all text-xs font-bold ${isEditing ? "bg-[var(--viz-rose)] text-black border-[var(--viz-rose)] shadow-[0_0_20px_rgba(88,196,221,0.4)]" : "bg-muted text-muted-foreground border-border hover:text-foreground"}`}
              >
-                {isEditing ? <><X size={14} /> Done</> : <><Edit3 size={14} /> Edit</>}
+                {isEditing ? <><Check size={14} /> Done</> : <><Edit3 size={14} /> Edit</>}
              </button>
 
              {!isEditing && (
                 <>
-                    <button onClick={generateGraph} className="p-3 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground" title="Randomize"><RefreshCw size={20}/></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl border border-border transition-all text-muted-foreground hover:text-foreground" title="Reset"><RotateCcw size={20}/></button>
+                    <button onClick={generateGraph} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground" title="Randomize"><RefreshCw size={20}/></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground" title="Reset"><RotateCcw size={20}/></button>
                     
                     {!isPlaying ? (
-                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className={`flex items-center gap-2 px-6 py-3 ${mode === 'PRIM' ? 'bg-[#83C167]' : 'bg-[#f59e0b]'} text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg`}>
+                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className={`flex items-center gap-2 px-6 py-3 ${mode === 'PRIM' ? 'bg-[var(--viz-rose)]' : 'bg-[var(--viz-amber)]'} text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg`}>
                             <Play size={16} fill="currentColor"/> START
                         </button>
                     ) : (
@@ -401,15 +401,15 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair">
+        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair">
             
             <div ref={containerRef} className="absolute inset-0 w-full h-full">
                 {/* Mode Indicator (Edit Mode) */}
                 <AnimatePresence>
                     {isEditing && (
                         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-6 left-0 right-0 flex justify-center pointer-events-none z-30">
-                            <div className="px-4 py-2 bg-black/80 text-white backdrop-blur-md rounded-full border border-white/10 shadow-2xl flex items-center gap-3">
-                                <Move size={12} className="text-[#f59e0b]" />
+                            <div className="px-4 py-2 bg-black/80 text-white backdrop-blur-md rounded-full border border-white/5 shadow-2xl flex items-center gap-3">
+                                <Move size={12} className="text-[var(--viz-amber)]" />
                                 <span className="text-[10px] font-bold tracking-wide">
                                     {selectedNode !== null ? `Select target to link Node ${selectedNode}` : "Drag nodes • Click to Link"}
                                 </span>
@@ -420,7 +420,7 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
 
                 {/* Priority Queue Overlay */}
                 <div className="absolute top-6 right-6 z-30 flex flex-col items-end gap-2 pointer-events-none">
-                    <div className="bg-card/90 backdrop-blur border border-border px-3 py-1.5 rounded-lg shadow-sm">
+                    <div className="bg-card/90 backdrop-blur  px-3 py-1.5 rounded-lg shadow-sm">
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                              <Activity size={12} /> {mode === "PRIM" ? "Priority Queue" : "Sorted Pipeline"}
                         </span>
@@ -434,7 +434,7 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0 }}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg border text-[10px] font-mono shadow-sm backdrop-blur-sm ${currentStep.currentEdgeId === edge.id ? "bg-[#58C4DD] text-black border-[#58C4DD]" : "bg-card/80 border-border text-muted-foreground"}`}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg border text-[10px] font-mono shadow-sm backdrop-blur-sm ${currentStep.currentEdgeId === edge.id ? "bg-[var(--viz-rose)] text-black border-[var(--viz-rose)]" : "bg-card/80 border-border text-muted-foreground"}`}
                                 >
                                     <span>{edge.u}↔{edge.v}</span>
                                     <span className="font-black bg-black/10 px-1 rounded">{edge.weight}</span>
@@ -449,7 +449,7 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
                 {/* Logic Step Badge */}
                 <AnimatePresence>
                     {!isEditing && currentStep.step && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className={`absolute top-8 left-10 flex items-center gap-2 px-4 py-2 border rounded-full z-30 shadow-lg pointer-events-none ${mode === 'PRIM' ? 'bg-[#83C167]/10 border-[#83C167]/30 text-[#83C167]' : 'bg-[#f59e0b]/10 border-[#f59e0b]/30 text-[#f59e0b]'}`}>
+                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className={`absolute top-8 left-10 flex items-center gap-2 px-4 py-2 border rounded-full z-30 shadow-lg pointer-events-none ${mode === 'PRIM' ? 'bg-[var(--viz-rose)]/10 border-[var(--viz-rose)]/30 text-[var(--viz-rose)]' : 'bg-[var(--viz-amber)]/10 border-[var(--viz-amber)]/30 text-[var(--viz-amber)]'}`}>
                             <Zap size={12} />
                             <span className="text-[9px] font-black font-mono uppercase tracking-[0.2em]">{currentStep.step}</span>
                         </motion.div>
@@ -460,8 +460,8 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
                 <AnimatePresence mode="wait">
                     {!isEditing && (
                         <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full flex justify-center z-30 pointer-events-none">
-                            <div className="px-6 py-3 bg-card/90 border border-border rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
-                                <p className="text-xs text-[#f59e0b] font-mono font-medium">{currentStep.message}</p>
+                            <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
+                                <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
                             </div>
                         </motion.div>
                     )}
@@ -480,7 +480,7 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
                                     layout
                                     x1={x1} y1={y1} x2={x2} y2={y2}
                                     stroke="currentColor"
-                                    className={`${isMst ? "text-[#f59e0b]" : isCurrent ? "text-[#58C4DD]" : isInPq ? "text-muted-foreground/30" : "text-muted-foreground/15"}`}
+                                    className={`${isMst ? "text-[var(--viz-amber)]" : isCurrent ? "text-[var(--viz-rose)]" : isInPq ? "text-muted-foreground/30" : "text-muted-foreground/15"}`}
                                     strokeWidth={isMst ? 5 : isCurrent ? 4 : 2}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -543,10 +543,10 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         {/* Timeline Scrubber */}
-        <div className={`mt-8 p-6 bg-muted border border-border rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+        <div className={`mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Temporal Frame {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -557,13 +557,13 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[#83C167] rounded-full shadow-[0_0_10px_#83C16744]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_var(--viz-rose)44]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={history.length - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-amber)] rounded-full shadow-[0_0_15px_var(--viz-amber)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -571,10 +571,10 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20 border border-border rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">MST Edge</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#58C4DD]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[#83C167]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Visited Node</span></div>
+      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">MST Edge</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Visited Node</span></div>
          <div className="flex items-center gap-3"><Layers size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Greedy Integration</span></div>
       </div>
     </div>

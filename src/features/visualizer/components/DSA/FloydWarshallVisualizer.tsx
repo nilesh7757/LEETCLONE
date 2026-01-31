@@ -14,11 +14,11 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC",
+  blue: "var(--viz-rose)",
+  green: "var(--viz-green)",
+  gold: "var(--viz-amber)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)",
   muted: "rgba(255,255,255,0.1)"
 };
 
@@ -185,7 +185,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     <div className="flex flex-col gap-6 font-sans select-none">
       
       {/* --- Main Dashboard --- */}
-      <div className="p-8 bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
+      <div className="p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
         {/* Background Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
@@ -194,7 +194,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#58C4DD]/10 rounded-xl text-[#58C4DD]">
+                <div className="p-2 bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)]">
                     <Grid size={24} />
                 </div>
                 <div>
@@ -209,7 +209,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
              <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
              <button 
                 onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[#58C4DD] text-black hover:scale-105"}`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[var(--viz-rose)] text-black hover:scale-105"}`}
              >
                 {isPlaying ? <><Pause size={16} fill="currentColor"/> PAUSE</> : <><Play size={16} fill="currentColor"/> RUN</>}
              </button>
@@ -220,7 +220,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Matrix View */}
-            <div className="lg:col-span-5 relative p-6 bg-muted/30 rounded-[2rem] border border-border overflow-hidden shadow-inner flex flex-col items-center">
+            <div className="lg:col-span-5 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
                 <div className="absolute top-4 left-6 z-20">
                     <AnimatePresence mode="wait">
                         <motion.div 
@@ -228,10 +228,10 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                             initial={{ opacity: 0, y: -10 }} 
                             animate={{ opacity: 1, y: 0 }} 
                             exit={{ opacity: 0, y: -10 }} 
-                            className="flex items-center gap-2 px-3 py-1.5 bg-card/80 border border-border backdrop-blur-md rounded-full shadow-sm"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-card/80  backdrop-blur-md rounded-full shadow-sm"
                         >
-                            <Zap size={12} className="text-[#58C4DD]" fill="#58C4DD" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-widest">{currentStep.step}</span>
+                            <Zap size={12} className="text-[var(--viz-rose)]" fill="var(--viz-rose)" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-rose)] uppercase tracking-widest">{currentStep.step}</span>
                         </motion.div>
                     </AnimatePresence>
                 </div>
@@ -242,7 +242,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                         <div className="flex">
                             <div className="w-10 h-10" />
                             {Array.from({ length: numNodes }).map((_, c) => (
-                                <div key={`col-${c}`} className={`w-12 h-10 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.j === c ? "text-[#FC6255] scale-125" : "text-muted-foreground/30"}`}>
+                                <div key={`col-${c}`} className={`w-12 h-10 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.j === c ? "text-[var(--viz-rose)] scale-125" : "text-muted-foreground/30"}`}>
                                     {c}
                                 </div>
                             ))}
@@ -251,7 +251,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                         {currentStep.matrix.map((row, r) => (
                             <div key={`row-${r}`} className="flex mb-1">
                                 {/* Row Header */}
-                                <div className={`w-10 h-12 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.i === r ? "text-[#58C4DD] scale-125" : "text-muted-foreground/30"}`}>
+                                <div className={`w-10 h-12 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.i === r ? "text-[var(--viz-rose)] scale-125" : "text-muted-foreground/30"}`}>
                                     {r}
                                 </div>
                                 {row.map((val, c) => {
@@ -276,7 +276,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                                                 }}
                                                 className="w-10 h-10 border rounded-lg flex items-center justify-center text-xs font-mono font-bold shadow-sm"
                                             >
-                                                <span className={isTarget ? "text-[#FC6255]" : (isVia1 || isVia2) ? "text-[#58C4DD]" : isPivot ? "text-[#f59e0b]" : "text-muted-foreground"}>{val === INF ? "∞" : val}</span>
+                                                <span className={isTarget ? "text-[var(--viz-rose)]" : (isVia1 || isVia2) ? "text-[var(--viz-rose)]" : isPivot ? "text-[var(--viz-amber)]" : "text-muted-foreground"}>{val === INF ? "∞" : val}</span>
                                             </motion.div>
                                         </div>
                                     );
@@ -288,23 +288,23 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
 
                 {/* Variable Monitor */}
                 <div className="mt-4 grid grid-cols-3 gap-2 w-full max-w-[300px]">
-                    <div className="p-2 bg-card/50 border border-border rounded-lg flex flex-col items-center">
+                    <div className="p-2 bg-card/50  rounded-lg flex flex-col items-center">
                         <span className="text-[7px] font-black text-muted-foreground/40 uppercase">Via (k)</span>
-                        <span className="text-xs font-black text-[#f59e0b]">{currentStep.k !== -1 ? currentStep.k : "-"}</span>
+                        <span className="text-xs font-black text-[var(--viz-amber)]">{currentStep.k !== -1 ? currentStep.k : "-"}</span>
                     </div>
-                    <div className="p-2 bg-card/50 border border-border rounded-lg flex flex-col items-center">
+                    <div className="p-2 bg-card/50  rounded-lg flex flex-col items-center">
                         <span className="text-[7px] font-black text-muted-foreground/40 uppercase">From (i)</span>
-                        <span className="text-xs font-black text-[#58C4DD]">{currentStep.i !== null ? currentStep.i : "-"}</span>
+                        <span className="text-xs font-black text-[var(--viz-rose)]">{currentStep.i !== null ? currentStep.i : "-"}</span>
                     </div>
-                    <div className="p-2 bg-card/50 border border-border rounded-lg flex flex-col items-center">
+                    <div className="p-2 bg-card/50  rounded-lg flex flex-col items-center">
                         <span className="text-[7px] font-black text-muted-foreground/40 uppercase">To (j)</span>
-                        <span className="text-xs font-black text-[#FC6255]">{currentStep.j !== null ? currentStep.j : "-"}</span>
+                        <span className="text-xs font-black text-[var(--viz-rose)]">{currentStep.j !== null ? currentStep.j : "-"}</span>
                     </div>
                 </div>
             </div>
 
             {/* Topology View */}
-            <div className="lg:col-span-4 relative p-6 bg-muted/30 rounded-[2rem] border border-border overflow-hidden shadow-inner flex flex-col items-center justify-center min-h-[300px]">
+            <div className="lg:col-span-4 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center min-h-[300px]">
                 <div className="absolute top-4 left-6 flex items-center gap-2 text-muted-foreground/20">
                     <Network size={12}/>
                     <span className="text-[8px] font-black uppercase tracking-widest">Graph State</span>
@@ -373,31 +373,31 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
             {/* Sidebar Logic */}
             <div className="lg:col-span-3 flex flex-col gap-6">
                 {/* Logic Card */}
-                <div className="p-6 bg-muted/20 border border-border rounded-[2rem] flex flex-col gap-4">
+                <div className="p-6 bg-muted/20  rounded-[2rem] flex flex-col gap-4">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Cpu size={14}/> Logic Core
                     </h3>
                     <div className="space-y-3 font-mono text-[9px]">
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[#58C4DD]/10 border-[#58C4DD] text-[#58C4DD]" : "border-transparent text-muted-foreground/40"}`}>
+                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-transparent text-muted-foreground/40"}`}>
                             CHECK: Dist[i][k] + Dist[k][j] &lt; Dist[i][j]
                         </div>
                         {currentStep.i !== null && currentStep.k !== -1 && currentStep.j !== null && (
                             <div className="pl-2 border-l-2 border-border/50 text-[10px] text-muted-foreground">
-                                <span className="text-[#58C4DD]">{currentStep.matrix[currentStep.i][currentStep.k] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.k]}</span>
+                                <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.i][currentStep.k] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.k]}</span>
                                 {" + "}
-                                <span className="text-[#58C4DD]">{currentStep.matrix[currentStep.k][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.k][currentStep.j]}</span>
+                                <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.k][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.k][currentStep.j]}</span>
                                 {" vs "}
-                                <span className="text-[#FC6255]">{currentStep.matrix[currentStep.i][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.j]}</span>
+                                <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.i][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.j]}</span>
                             </div>
                         )}
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 4 ? "bg-[#83C167]/10 border-[#83C167] text-[#83C167]" : "border-transparent text-muted-foreground/40"}`}>
+                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 4 ? "bg-[var(--viz-green)]/10 border-[var(--viz-green)] text-[var(--viz-green)]" : "border-transparent text-muted-foreground/40"}`}>
                             UPDATE: Dist[i][j] = New Path
                         </div>
                     </div>
                 </div>
 
                 {/* Log Stream */}
-                <div className="p-6 bg-muted/20 border border-border rounded-[2rem] flex-1 h-[200px] overflow-hidden">
+                <div className="p-6 bg-muted/20  rounded-[2rem] flex-1 h-[200px] overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-2">
                         <Activity size={14}/> Log
                     </h3>
@@ -410,7 +410,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/70 flex gap-2 border-l-2 border-border pl-2 py-0.5"
                                 >
-                                    <span className="text-[#58C4DD]">»</span>
+                                    <span className="text-[var(--viz-rose)]">»</span>
                                     {log}
                                 </motion.div>
                             ))}
@@ -421,10 +421,10 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         </div>
 
         {/* Footer */}
-        <div className="mt-4 p-6 bg-muted/30 border border-border rounded-[2.5rem] flex flex-col gap-6">
+        <div className="mt-4 p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
                         Frame {currentIndex + 1} / {history.length}
                     </span>
@@ -439,7 +439,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
             <div className="relative flex items-center group/slider h-4">
                 <div className="absolute w-full h-1 bg-background/20 rounded-full" />
                 <motion.div 
-                    className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" 
+                    className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_var(--viz-rose)44]" 
                     initial={{ width: 0 }}
                     animate={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }}
                 />
@@ -456,7 +456,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                         key={currentIndex} 
                         initial={{ opacity: 0, y: 5 }} 
                         animate={{ opacity: 1, y: 0 }} 
-                        className="px-4 py-2 rounded-lg bg-card border border-border/50 text-[10px] font-mono text-[#f59e0b] text-center max-w-2xl"
+                        className="px-4 py-2 rounded-lg bg-card /50 text-[10px] font-mono text-[var(--viz-amber)] text-center max-w-2xl"
                     >
                         {currentStep.message}
                     </motion.div>
@@ -465,10 +465,10 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         </div>
 
         {/* Legend */}
-        <div className="px-10 py-6 bg-muted/10 border border-border/50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#58C4DD]" /><span className="text-[9px] font-bold uppercase tracking-wider">Via Path (i→k, k→j)</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#FC6255]" /><span className="text-[9px] font-bold uppercase tracking-wider">Target (i→j)</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#f59e0b]" /><span className="text-[9px] font-bold uppercase tracking-wider">Intermediate (k)</span></div>
+        <div className="px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Via Path (i→k, k→j)</span></div>
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Target (i→j)</span></div>
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-amber)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Intermediate (k)</span></div>
         </div>
 
       </div>

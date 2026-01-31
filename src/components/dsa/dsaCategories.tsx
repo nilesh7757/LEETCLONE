@@ -4,10 +4,13 @@ import {
   GitBranch, Share2, Cpu, Network, Layers, GitMerge, RotateCcw, Zap,
   Database, Sliders, GitPullRequest, FastForward, Link, Infinity as InfinityIcon,
   ShoppingBag, Route, MoveHorizontal, ListOrdered, ListTree, Crown, X,
-  FileSearch, BoxSelect, Binary, Sparkles, Layout, Terminal, TrendingUp
+  FileSearch, BoxSelect, Binary, Sparkles, Layout, Terminal, TrendingUp,
+  AlertTriangle
 } from "lucide-react";
 
 import SortingVisualizer from "@/features/visualizer/components/DSA/SortingVisualizer";
+import SelectionSortVisualizer from "@/features/visualizer/components/DSA/SelectionSortVisualizer";
+import InsertionSortVisualizer from "@/features/visualizer/components/DSA/InsertionSortVisualizer";
 import MergeSortVisualizer from "@/features/visualizer/components/DSA/MergeSortVisualizer";
 import QuickSortVisualizer from "@/features/visualizer/components/DSA/QuickSortVisualizer";
 import BinarySearchVisualizer from "@/features/visualizer/components/DSA/BinarySearchVisualizer";
@@ -24,6 +27,7 @@ import StackQueueVisualizer from "@/features/visualizer/components/DSA/StackQueu
 import GraphVisualizer from "@/features/visualizer/components/DSA/GraphVisualizer";
 import TopoSortVisualizer from "@/features/visualizer/components/DSA/TopoSortVisualizer";
 import DijkstraVisualizer from "@/features/visualizer/components/DSA/DijkstraVisualizer";
+import BellmanFordVisualizer from "@/features/visualizer/components/DSA/BellmanFordVisualizer";
 import MSTVisualizer from "@/features/visualizer/components/DSA/MSTVisualizer";
 import FloydWarshallVisualizer from "@/features/visualizer/components/DSA/FloydWarshallVisualizer";
 import FibonacciVisualizer from "@/features/visualizer/components/DSA/FibonacciVisualizer";
@@ -37,19 +41,21 @@ export const dsaCategories = [
   {
     id: "SORTING",
     title: "Bubble Sort",
-    icon: <ArrowDownNarrowWide className="text-[#FFFF00]" />,
+    icon: <ArrowDownNarrowWide />,
+    themeColor: "var(--viz-amber)",
+    themeRGB: "var(--viz-amber-rgb)",
     description: "Stable monotonic bubbling.",
     component: (speed: number) => <SortingVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Monotonic Bubbling" icon={Activity} color="#FFFF00">
+          <DocSection title="Monotonic Bubbling" icon={Activity} color="var(--viz-amber)">
             <p>Bubble Sort is a stable, comparison-based algorithm that iteratively transforms a manifold into a monotonic sequence. It operates by repeatedly stepping through the list, comparing adjacent elements and swapping them if they are in the wrong order.</p>
             <p>The name &quot;Bubble Sort&quot; comes from the way smaller elements &quot;bubble&quot; to the top of the list (beginning of the array) while larger elements sink to the bottom.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N²)" space="O(1)" />
-            <DocSection title="Stability Lemma" icon={Check} color="#83C167">
+            <DocSection title="Stability Lemma" icon={Check} color="var(--viz-deep-purple)">
               <p>Bubble sort is <strong>Stable</strong>; it preserves the relative order of equal elements. This is a critical property when sorting complex manifolds with multi-key dependencies.</p>
             </DocSection>
           </div>
@@ -58,13 +64,13 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00]" /> Swapping Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Swapping Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Iterate through the array multiple times. In each pass, compare adjacent elements and swap if $A[j] &gt; A[j+1]$.
                     </p>
@@ -76,10 +82,98 @@ export const dsaCategories = [
     )
   },
   {
+    id: "SELECTION_SORT",
+    title: "Selection Sort",
+    icon: <Target />,
+    themeColor: "var(--viz-deep-purple)",
+    themeRGB: "var(--viz-deep-purple-rgb)",
+    description: "Extremum search protocol.",
+    component: (speed: number) => <SelectionSortVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Extremum Search" icon={Search} color="var(--viz-deep-purple)">
+            <p>Selection Sort operates on the principle of <strong>In-Place Extremum Selection</strong>. It conceptually divides the manifold into a sorted and an unsorted sub-manifold.</p>
+            <p>In each iteration, the algorithm performs a linear scan to identify the absolute minimum element in the unsorted region and displaces it to the boundary of the sorted region.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(N²)" space="O(1)" />
+            <DocSection title="Displacement Lemma" icon={Zap} color="var(--viz-rose)">
+              <p>Unlike Bubble Sort, Selection Sort performs at most <strong>$N-1$ swaps</strong>. This makes it more efficient in scenarios where memory write operations (displacement) are significantly more expensive than comparisons.</p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Selection Logic</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+                        Maintain `min_idx`. For each $i$ from $0$ to $n-2$, find the minimum in the range $[i+1, n-1]$ and swap it with $A[i]$.
+                    </p>
+                    <CodeSnippet code={`void selectionSort(vector<int>& arr) {\n    int n = arr.size();\n    for (int i = 0; i < n - 1; i++) {\n        int min_idx = i;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] < arr[min_idx])\n                min_idx = j;\n        }\n        if (min_idx != i)\n            swap(arr[min_idx], arr[i]);\n    }\n}`} />
+                </div>
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "INSERTION_SORT",
+    title: "Insertion Sort",
+    icon: <Sliders />,
+    themeColor: "var(--viz-amber)",
+    themeRGB: "var(--viz-amber-rgb)",
+    description: "Online incremental sorting.",
+    component: (speed: number) => <InsertionSortVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Manifold Expansion" icon={Layers} color="var(--viz-amber)">
+            <p>Insertion Sort builds the sorted manifold <strong>One Element at a Time</strong>. It is analogous to the way most people sort a hand of playing cards.</p>
+            <p>Each new element is extracted and inserted into its correct relative position within the already sorted sub-manifold, shifting larger elements to the right to create space.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(N²)" space="O(1)" />
+            <DocSection title="Online Algorithm" icon={Zap} color="var(--viz-deep-purple)">
+              <p>Insertion Sort is an <strong>Online Algorithm</strong>; it can sort a manifold as it receives it. It is also extremely efficient for manifolds that are already substantially ordered, reaching $O(N)$ in the best case.</p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Insertion Logic</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+                        Iterate from $i=1$ to $n-1$. Pick $A[i]$ and insert it into the sorted sequence $A[0...i-1]$ by shifting elements.
+                    </p>
+                    <CodeSnippet code={`void insertionSort(vector<int>& arr) {\n    int n = arr.size();\n    for (int i = 1; i < n; i++) {\n        int key = arr[i];\n        int j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j = j - 1;\n        }\n        arr[j + 1] = key;\n    }\n}`} />
+                </div>
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
     id: "BINARY_SEARCH",
     title: "Binary Search",
-    icon: <Search className="text-[#58C4DD]" />,
-    description: "Interval reduction lemma.",
+    icon: <Search />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "O(log N) interval reduction.",
     component: (speed: number) => <BinarySearchVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -90,7 +184,7 @@ export const dsaCategories = [
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N)" space="O(1)" />
-            <DocSection title="The Median Lemma" icon={Target} color="#f59e0b">
+            <DocSection title="The Median Lemma" icon={Target} color="var(--viz-amber)">
               <p>At every step, we calculate the median index m. By comparing V[m] to the target T, we define a logical boundary. If V[m] {"<"} T, the entire left sub-manifold is discarded as non-viable.</p>
             </DocSection>
           </div>
@@ -100,31 +194,31 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Algorithm Steps</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Algorithm Steps</h4>
                     <ul className="space-y-4 text-xs text-muted-foreground leading-relaxed font-mono">
                         <li className="flex gap-3">
-                            <span className="text-[#83C167] font-bold">01.</span>
+                            <span className="text-[var(--viz-deep-purple)] font-bold">01.</span>
                             Initialize two pointers, `low = 0` and `high = n - 1`.
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-[#83C167] font-bold">02.</span>
+                            <span className="text-[var(--viz-deep-purple)] font-bold">02.</span>
                             Loop while `low {"<="} high`. Calculate `mid = low + (high - low) / 2` to avoid overflow.
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-[#83C167] font-bold">03.</span>
+                            <span className="text-[var(--viz-deep-purple)] font-bold">03.</span>
                             Compare `arr[mid]` with `target`.
                             <br/> - If equal, return `mid`.
                             <br/> - If `arr[mid] {"<"} target`, ignore left half (`low = mid + 1`).
                             <br/> - If `arr[mid] &gt; target`, ignore right half (`high = mid - 1`).
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-[#83C167] font-bold">04.</span>
+                            <span className="text-[var(--viz-deep-purple)] font-bold">04.</span>
                             If loop ends, target is not present. Return -1.
                         </li>
                     </ul>
@@ -139,8 +233,10 @@ export const dsaCategories = [
   {
     id: "LINKED_LIST",
     title: "Linked List",
-    icon: <GitBranch className="text-[#58C4DD]" />,
-    description: "Discrete memory references.",
+    icon: <Link />,
+    themeColor: "var(--viz-lime)",
+    themeRGB: "var(--viz-lime-rgb)",
+    description: "Pointer-based linear topology.",
     component: (speed: number) => <LinkedListVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -151,11 +247,11 @@ export const dsaCategories = [
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N) Search" space="O(N)" />
-            <DocSection title="Pointer Anatomy" icon={Share2} color="#FFFF00">
+            <DocSection title="Pointer Anatomy" icon={Share2} color="var(--viz-amber)">
               <ul className="space-y-3 list-none">
-                <li className="flex gap-2"><span className="text-[#58C4DD] font-bold">● Value:</span> The payload residing at the address.</li>
-                <li className="flex gap-2"><span className="text-[#FFFF00] font-bold">● Next:</span> A hex reference to the successor manifold.</li>
-                <li className="flex gap-2"><span className="text-[#FC6255] font-bold">● NULL:</span> The termination signal of the sequence.</li>
+                <li className="flex gap-2"><span className="text-[var(--viz-cyan)] font-bold">● Value:</span> The payload residing at the address.</li>
+                <li className="flex gap-2"><span className="text-[var(--viz-amber)] font-bold">● Next:</span> A hex reference to the successor manifold.</li>
+                <li className="flex gap-2"><span className="text-[var(--viz-rose)] font-bold">● NULL:</span> The termination signal of the sequence.</li>
               </ul>
             </DocSection>
           </div>
@@ -165,13 +261,13 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Node Structure</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Node Structure</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Unlike an array where `A[i]` is just a value, a Node in a Linked List is a container (struct/class) holding both the data and the navigation logic (pointer).
                     </p>
@@ -180,7 +276,7 @@ export const dsaCategories = [
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Traversal Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Traversal Logic</h4>
                     <CodeSnippet code={`void traverse(Node* head) {\n    Node* temp = head;\n    while (temp != nullptr) {\n        cout << temp->data << " -> ";\n        temp = temp->next;\n    }\n    cout << "NULL";
 }`} />
                 </div>
@@ -192,8 +288,10 @@ export const dsaCategories = [
   {
     id: "GRAPH_BFS",
     title: "Graph Traversal",
-    icon: <Network className="text-[#83C167]" />,
-    description: "Breadth-first connectivity lemma.",
+    icon: <Network />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "Relational manifold search.",
     component: (speed: number) => <GraphVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -201,17 +299,17 @@ export const dsaCategories = [
           <DocSection title="Traversal Topology" icon={Network}>
             <p>Graph traversal algorithms explore nodes and edges to determine connectivity or search for specific properties.</p>
             <ul className="mt-4 space-y-3">
-                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[#58C4DD]">BFS (Breadth-First):</strong> Explores neighbor-by-neighbor, like a wave expanding from a source. Ideal for shortest paths in unweighted graphs.</li>
-                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[#FC6255]">DFS (Depth-First):</strong> Plunges as deep as possible down each branch before backtracking. Useful for cycle detection, topological sorting, and maze solving.</li>
+                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-cyan)]">BFS (Breadth-First):</strong> Explores neighbor-by-neighbor, like a wave expanding from a source. Ideal for shortest paths in unweighted graphs.</li>
+                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-rose)]">DFS (Depth-First):</strong> Plunges as deep as possible down each branch before backtracking. Useful for cycle detection, topological sorting, and maze solving.</li>
             </ul>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(V + E)" space="O(V)" />
             <div className="grid grid-cols-2 gap-4">
-                <DocSection title="Queue Lemma" icon={Layers} color="#58C4DD">
+                <DocSection title="Queue Lemma" icon={Layers} color="var(--viz-cyan)">
                 <p>BFS uses a <strong>FIFO Queue</strong> to ensure strictly layered exploration.</p>
                 </DocSection>
-                <DocSection title="Recursion Stack" icon={GitBranch} color="#FC6255">
+                <DocSection title="Recursion Stack" icon={GitBranch} color="var(--viz-rose)">
                 <p>DFS relies on a <strong>LIFO Stack</strong> (or recursion) to backtrack efficiently.</p>
                 </DocSection>
             </div>
@@ -222,13 +320,13 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> BFS Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> BFS Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Maintain a `visited` array to prevent cycles and a `queue` for layer-by-layer processing.
                     </p>
@@ -236,7 +334,7 @@ export const dsaCategories = [
 }`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> DFS Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> DFS Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Use recursion to dive deep. Mark node as visited upon entry and explore all unvisited neighbors.
                     </p>
@@ -248,9 +346,54 @@ export const dsaCategories = [
     )
   },
   {
+    id: "BELLMAN_FORD",
+    title: "Bellman-Ford",
+    icon: <TrendingUp />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "Negative edge tolerance protocol.",
+    component: (speed: number) => <BellmanFordVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Relaxation Principle" icon={Activity} color="var(--viz-rose)">
+            <p>The Bellman-Ford algorithm computes shortest paths from a single source to all other nodes. Unlike Dijkstra, it can handle <strong>Negative Edge Weights</strong>.</p>
+            <p>It operates by repeatedly <strong>relaxing</strong> all edges of the graph. After $V-1$ iterations, all shortest paths are guaranteed to be found, provided no negative cycles exist.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(V * E)" space="O(V)" />
+            <DocSection title="Cycle Detection" icon={AlertTriangle} color="var(--viz-rose)">
+              <p>A unique capability of Bellman-Ford is the detection of <strong>Negative Weight Cycles</strong>. If an edge can still be relaxed after $V-1$ iterations, a negative cycle is present, making the "shortest" path undefined.</p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Core Logic</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+                        Iterate $V-1$ times through all edges $(u, v)$ with weight $w$. Update $dist[v] = min(dist[v], dist[u] + w)$.
+                    </p>
+                    <CodeSnippet code={`struct Edge { int u, v, w; };\n\nvoid bellmanFord(int V, int S, vector<Edge>& edges) {\n    vector<int> dist(V, INT_MAX);\n    dist[S] = 0;\n\n    for (int i = 1; i < V; i++) {\n        for (auto& e : edges) {\n            if (dist[e.u] != INT_MAX && dist[e.u] + e.w < dist[e.v])\n                dist[e.v] = dist[e.u] + e.w;\n        }\n    }\n\n    // Detect negative cycle\n    for (auto& e : edges) {\n        if (dist[e.u] != INT_MAX && dist[e.u] + e.w < dist[e.v])\n            cout << "Negative Cycle Detected";\n    }\n}`} />
+                </div>
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
     id: "MST",
     title: "Minimum Spanning Tree",
-    icon: <GitMerge className="text-[#FFFF00]" />,
+    icon: <GitMerge />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
     description: "Prim's greedy optimization.",
     component: (speed: number) => <MSTVisualizer speed={speed} />,
     detailedDocs: (
@@ -259,17 +402,17 @@ export const dsaCategories = [
           <DocSection title="Greedy Optimization" icon={Network}>
             <p>A Minimum Spanning Tree (MST) connects all vertices with the minimum possible total edge weight, without cycles.</p>
             <ul className="mt-4 space-y-3">
-                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[#83C167]">Prim's Algorithm:</strong> Grows a single tree from a starting node, always adding the cheapest connection to the unvisited frontier. Ideal for dense graphs.</li>
-                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[#f59e0b]">Kruskal's Algorithm:</strong> Sorts all edges by weight and iteratively adds them if they don't form a cycle (using Disjoint Set Union). Better for sparse graphs.</li>
+                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-deep-purple)]">Prim's Algorithm:</strong> Grows a single tree from a starting node, always adding the cheapest connection to the unvisited frontier. Ideal for dense graphs.</li>
+                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-amber)]">Kruskal's Algorithm:</strong> Sorts all edges by weight and iteratively adds them if they don't form a cycle (using Disjoint Set Union). Better for sparse graphs.</li>
             </ul>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(E log V)" space="O(V + E)" />
             <div className="grid grid-cols-2 gap-4">
-                <DocSection title="Cut Property (Prim)" icon={Zap} color="#83C167">
+                <DocSection title="Cut Property (Prim)" icon={Zap} color="var(--viz-deep-purple)">
                 <p>Always chooses the minimum weight edge crossing from visited to unvisited sets.</p>
                 </DocSection>
-                <DocSection title="Cycle Property (Kruskal)" icon={RotateCcw} color="#f59e0b">
+                <DocSection title="Cycle Property (Kruskal)" icon={RotateCcw} color="var(--viz-amber)">
                 <p>Adds edges in ascending order of weight, skipping any that connect nodes already in the same component.</p>
                 </DocSection>
             </div>
@@ -280,13 +423,13 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Prim's Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Prim's Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Use a Priority Queue to pick the smallest edge connected to the MST.
                     </p>
@@ -296,7 +439,7 @@ export const dsaCategories = [
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" /> Kruskal's Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Kruskal's Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Sort all edges, then use DSU (Disjoint Set Union) to merge components.
                     </p>
@@ -310,9 +453,11 @@ export const dsaCategories = [
   },
   {
     id: "DIJKSTRA",
-    title: "Dijkstra's Algorithm",
-    icon: <Route className="text-[#FC6255]" />,
-    description: "Shortest path relaxation.",
+    title: "Dijkstra Protocol",
+    icon: <Zap />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "Single-source shortest path.",
     component: (speed: number) => <DijkstraVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -323,7 +468,7 @@ export const dsaCategories = [
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(E log V)" space="O(V + E)" />
-            <DocSection title="Relaxation Lemma" icon={Activity} color="#FFFF00">
+            <DocSection title="Relaxation Lemma" icon={Activity} color="var(--viz-amber)">
               <p>For an edge $(u, v)$ with weight $w$, if the distance to $u$ plus $w$ is less than the current distance to $v$, we <strong>relax</strong> the edge: $d[v] = d[u] + w$. This strictly decreases the potential of the system.</p>
             </DocSection>
           </div>
@@ -333,18 +478,18 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Algorithm Steps</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Algorithm Steps</h4>
                     <ul className="space-y-4 text-xs text-muted-foreground leading-relaxed font-mono">
-                        <li className="flex gap-3"><span className="text-[#83C167] font-bold">01.</span> Initialize `dist[]` to Infinity, `dist[source] = 0`.</li>
-                        <li className="flex gap-3"><span className="text-[#83C167] font-bold">02.</span> Use a Priority Queue (Min-Heap) to store `{" {distance, node}"}`.</li>
-                        <li className="flex gap-3"><span className="text-[#83C167] font-bold">03.</span> Pop the node with minimum distance. If already processed, skip.</li>
-                        <li className="flex gap-3"><span className="text-[#83C167] font-bold">04.</span> Iterate neighbors. If `dist[u] + w {"<"} dist[v]`, update `dist[v]` and push to PQ.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">01.</span> Initialize `dist[]` to Infinity, `dist[source] = 0`.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">02.</span> Use a Priority Queue (Min-Heap) to store `{" {distance, node}"}`.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">03.</span> Pop the node with minimum distance. If already processed, skip.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">04.</span> Iterate neighbors. If `dist[u] + w {"<"} dist[v]`, update `dist[v]` and push to PQ.</li>
                     </ul>
                 </div>
                 
@@ -358,8 +503,10 @@ export const dsaCategories = [
   {
     id: "STACK_QUEUE",
     title: "Stack & Queue",
-    icon: <Layers className="text-[#FC6255]" />,
-    description: "LIFO & FIFO memory buffers.",
+    icon: <Database />,
+    themeColor: "var(--viz-lime)",
+    themeRGB: "var(--viz-lime-rgb)",
+    description: "LIFO and FIFO data buffers.",
     component: (speed: number) => <StackQueueVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -369,7 +516,7 @@ export const dsaCategories = [
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(1) Ops" space="O(N)" />
-            <DocSection title="Access Lemma" icon={ArrowDownNarrowWide} color="#58C4DD">
+            <DocSection title="Access Lemma" icon={ArrowDownNarrowWide} color="var(--viz-cyan)">
               <p><strong>Stack:</strong> Push/Pop operates on the <em>Top</em>. Useful for recursion, undo mechanisms, and parsing.</p>
               <p><strong>Queue:</strong> Enqueue/Dequeue operates on <em>Rear/Front</em>. Essential for scheduling, buffering, and BFS.</p>
             </DocSection>
@@ -380,13 +527,13 @@ export const dsaCategories = [
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Stack (LIFO)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Stack (LIFO)</h4>
                     <CodeSnippet code={`stack<int> s;
 s.push(10); // Add to top
 s.push(20);
@@ -395,7 +542,7 @@ s.pop(); // Removes 20`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> Queue (FIFO)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Queue (FIFO)</h4>
                     <CodeSnippet code={`queue<int> q;
 q.push(10); // Add to rear
 q.push(20);
@@ -410,19 +557,21 @@ q.pop(); // Removes 10`} />
   {
     id: "QUICK_SORT",
     title: "Quick Sort",
-    icon: <Sliders className="text-[#FC6255]" />,
-    description: "Recursive partitioning lemma.",
+    icon: <Zap />,
+    themeColor: "var(--viz-amber)",
+    themeRGB: "var(--viz-amber-rgb)",
+    description: "Pivot-based partitioning.",
     component: (speed: number) => <QuickSortVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Partition Strategy" icon={Binary} color="#FC6255">
+          <DocSection title="Partition Strategy" icon={Binary} color="var(--viz-rose)">
             <p>Quick Sort is a <strong>Divide and Conquer</strong> algorithm driven by the <strong>Pivot Standard</strong>. It selects a 'pivot' element and partitions the array so that all smaller elements move to its left and larger ones to its right.</p>
             <p>We visualize the <strong>Lomuto Partition Scheme</strong>, which is simpler to implement but may perform more swaps than Hoare's scheme. It iterates a single pointer to expand the 'smaller elements' region.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N log N)" space="O(log N)" />
-            <DocSection title="Recursive Depth" icon={GitPullRequest} color="#58C4DD">
+            <DocSection title="Recursive Depth" icon={GitPullRequest} color="var(--viz-cyan)">
               <p>Efficiency hinges on the pivot. A balanced pivot splits the array evenly (logarithmic depth). A poor pivot (e.g., smallest/largest element) degrades performance to O(N²).</p>
             </DocSection>
           </div>
@@ -432,18 +581,18 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> Lomuto Partition Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Lomuto Partition Logic</h4>
                     <ul className="space-y-4 text-xs text-muted-foreground leading-relaxed font-mono">
-                        <li className="flex gap-3"><span className="text-[#FC6255] font-bold">01.</span> <strong className="text-foreground">Pivot Selection:</strong> Choose the last element (or random) as the pivot.</li>
-                        <li className="flex gap-3"><span className="text-[#FC6255] font-bold">02.</span> <strong className="text-foreground">Boundary Tracking:</strong> Maintain index `i` (initially `low - 1`) to mark the end of the "smaller than pivot" region.</li>
-                        <li className="flex gap-3"><span className="text-[#FC6255] font-bold">03.</span> <strong className="text-foreground">Scanning:</strong> Iterate `j` from `low` to `high - 1`. If `arr[j] {"<"} pivot`, increment `i` and swap `arr[i]` with `arr[j]`.</li>
-                        <li className="flex gap-3"><span className="text-[#FC6255] font-bold">04.</span> <strong className="text-foreground">Placement:</strong> Finally, swap the pivot (`arr[high]`) with `arr[i + 1]` to place it in its correct sorted position.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">01.</span> <strong className="text-foreground">Pivot Selection:</strong> Choose the last element (or random) as the pivot.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">02.</span> <strong className="text-foreground">Boundary Tracking:</strong> Maintain index `i` (initially `low - 1`) to mark the end of the "smaller than pivot" region.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">03.</span> <strong className="text-foreground">Scanning:</strong> Iterate `j` from `low` to `high - 1`. If `arr[j] {"<"} pivot`, increment `i` and swap `arr[i]` with `arr[j]`.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">04.</span> <strong className="text-foreground">Placement:</strong> Finally, swap the pivot (`arr[high]`) with `arr[i + 1]` to place it in its correct sorted position.</li>
                     </ul>
                 </div>
                 
@@ -457,19 +606,21 @@ q.pop(); // Removes 10`} />
   {
     id: "MERGE_SORT",
     title: "Merge Sort",
-    icon: <FastForward className="text-[#83C167]" />,
-    description: "Stable recursive re-assembly.",
+    icon: <Layers />,
+    themeColor: "var(--viz-amber)",
+    themeRGB: "var(--viz-amber-rgb)",
+    description: "Divide-and-conquer recursion.",
     component: (speed: number) => <MergeSortVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Atomic Decomposition" icon={Microscope} color="#83C167">
+          <DocSection title="Atomic Decomposition" icon={Microscope} color="var(--viz-deep-purple)">
             <p>Merge Sort treats sorting as a process of <strong>Recursive Decomposition</strong>. The manifold is split into atomic units (single elements) which are inherently sorted. The true logic resides in the <strong>Conquer Phase</strong>.</p>
             <p>By merging two sorted sub-manifolds, we maintain a stable order while re-assembling the full vector space.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N log N)" space="O(N)" />
-            <DocSection title="Merging Lemma" icon={GitMerge} color="#FFFF00">
+            <DocSection title="Merging Lemma" icon={GitMerge} color="var(--viz-amber)">
               <p>During the merge, we compare the leading elements of two sub-manifolds. The smaller element is moved to the parent manifold, ensuring that each re-assembled level is perfectly ordered.</p>
             </DocSection>
           </div>
@@ -479,13 +630,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Merge Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Merge Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         The `merge` function uses a temporary array to interleave elements from two sorted halves (`left` and `right`) into a single sorted sequence.
                     </p>
@@ -494,7 +645,7 @@ q.pop(); // Removes 10`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Recursive Driver</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Recursive Driver</h4>
                     <CodeSnippet code={`void mergeSort(vector<int>& arr, int l, int r) {\n    if (l >= r) return;\n    int m = l + (r - l) / 2;\n    mergeSort(arr, l, m);\n    mergeSort(arr, m + 1, r);\n    merge(arr, l, m, r);
 }`} />
                 </div>
@@ -505,9 +656,11 @@ q.pop(); // Removes 10`} />
   },
   {
     id: "BST",
-    title: "BST",
-    icon: <Database className="text-[#58C4DD]" />,
-    description: "Non-linear hierarchy mapping.",
+    title: "Binary Search Tree",
+    icon: <GitBranch />,
+    themeColor: "var(--viz-lavender)",
+    themeRGB: "var(--viz-lavender-rgb)",
+    description: "Hierarchical sorted manifold.",
     component: (speed: number) => <BSTVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -518,7 +671,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N)" space="O(N)" />
-            <DocSection title="Geometric Balance" icon={Check} color="#FFFF00">
+            <DocSection title="Geometric Balance" icon={Check} color="var(--viz-amber)">
               <p>The effectiveness of a BST is directly proportional to its <strong>Structural Balance</strong>. A skewed tree degenerates into a linear manifold ($O(N)$), while a balanced tree maintains optimal $O(\\$log N)$ performance.</p>
             </DocSection>
           </div>
@@ -528,13 +681,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Search Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Search Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Navigate the tree by comparing `val` with `root-&gt;val`. Go left if smaller, right if larger.
                     </p>
@@ -546,7 +699,7 @@ q.pop(); // Removes 10`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Insert Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Insert Logic</h4>
                     <CodeSnippet code={`TreeNode* insert(TreeNode* root, int val) {\n    if (!root) return new TreeNode(val);\n    \n    if (val < root->val)
         root->left = insert(root->left, val);
     else if (val > root->val)
@@ -562,20 +715,22 @@ q.pop(); // Removes 10`} />
   },
   {
     id: "TRIE",
-    title: "Trie",
-    icon: <Microscope className="text-[#FFFF00]" />,
-    description: "Prefix manifold sharing.",
+    title: "Trie (Prefix Tree)",
+    icon: <BoxSelect />,
+    themeColor: "var(--viz-lavender)",
+    themeRGB: "var(--viz-lavender-rgb)",
+    description: "Optimized string retrieval manifold.",
     component: (speed: number) => <TrieVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Prefix Compression" icon={Cpu} color="#FFFF00">
+          <DocSection title="Prefix Compression" icon={Cpu} color="var(--viz-lavender)">
             <p>A Trie (Prefix Tree) optimizes sequence storage by <strong>Sharing Common Prefixes</strong>. Instead of storing the full sequence, each node represents a single character manifold.</p>
             <p>This allows for ultra-fast $O(L)$ lookups (where $L$ is sequence length) and is the foundation for autocomplete and linguistic analysis systems.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(L) per Op" space="O(Alphabet * N)" />
-            <DocSection title="Path Resolution" icon={Activity} color="#58C4DD">
+            <DocSection title="Path Resolution" icon={Activity} color="var(--viz-cyan)">
               <p>Traversal through a Trie is deterministic. Each character in the query sequence acts as a directional signal to the next memory cell, resolving the presence of a sequence through path existence.</p>
             </DocSection>
           </div>
@@ -585,13 +740,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00]" /> Trie Node</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-lavender)]" /> Trie Node</h4>
                     <CodeSnippet code={`struct TrieNode {\n    TrieNode* children[26];\n    bool isEndOfWord;\n    \n    TrieNode() {\n        isEndOfWord = false;\n        for (int i = 0; i < 26; i++) 
             children[i] = nullptr;
     }
@@ -599,7 +754,7 @@ q.pop(); // Removes 10`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Insertion</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Insertion</h4>
                     <CodeSnippet code={`void insert(string word) {\n    TrieNode* curr = root;\n    for (char c : word) {\n        int idx = c - 'a';\n        if (!curr->children[idx])
             curr->children[idx] = new TrieNode();\n        curr = curr->children[idx];\n    }\n    curr->isEndOfWord = true;
 }`} />
@@ -611,20 +766,22 @@ q.pop(); // Removes 10`} />
   },
   {
     id: "HEAP",
-    title: "Min-Heap",
-    icon: <ListTree className="text-[#FFFF00]" />,
-    description: "Priority reduction tree.",
+    title: "Binary Heap",
+    icon: <Binary />,
+    themeColor: "var(--viz-lavender)",
+    themeRGB: "var(--viz-lavender-rgb)",
+    description: "Complete tree priority manifold.",
     component: (speed: number) => <HeapVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Priority Ordering" icon={Target} color="#FFFF00">
+          <DocSection title="Priority Ordering" icon={Target} color="var(--viz-amber)">
             <p>A Min-Heap is a specialized complete tree that maintains the <strong>Heap Property</strong>: the value of each node is less than or equal to the values of its children. This ensures that the global minimum is always at the root manifold.</p>
             <p>It is the primary engine for <strong>Priority Queues</strong> and greedy algorithmic choices.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N) Insert" space="O(N)" />
-            <DocSection title="Bubble Logic" icon={ArrowDownNarrowWide} color="#58C4DD">
+            <DocSection title="Bubble Logic" icon={ArrowDownNarrowWide} color="var(--viz-cyan)">
               <p>When the property is violated, elements &quot;Bubble Up&quot; or &quot;Sink Down&quot; through recursive swaps until the hierarchy is restored. This maintenance occurs in $O(\\$log N)$ time.</p>
             </DocSection>
           </div>
@@ -634,13 +791,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00]" /> Heapify Up (Insert)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Heapify Up (Insert)</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         After inserting at the end, swap with parent if the heap property is violated. Repeat until root.
                     </p>
@@ -650,7 +807,7 @@ q.pop(); // Removes 10`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> Heapify Down (Extract)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Heapify Down (Extract)</h4>
                     <CodeSnippet code={`void heapifyDown(int i) {\n    int smallest = i;\n    int l = 2*i + 1, r = 2*i + 2;\n    \n    if (l < n && heap[l] < heap[smallest]) smallest = l;\n    if (r < n && heap[r] < heap[smallest]) smallest = r;\n    \n    if (smallest != i) {\n        swap(heap[i], heap[smallest]);\n        heapifyDown(smallest);
     }
 }`} />
@@ -663,8 +820,10 @@ q.pop(); // Removes 10`} />
   {
     id: "SEGMENT_TREE",
     title: "Segment Tree",
-    icon: <BoxSelect className="text-[#58C4DD]" />,
-    description: "Range query manifold.",
+    icon: <BoxSelect />,
+    themeColor: "var(--viz-lavender)",
+    themeRGB: "var(--viz-lavender-rgb)",
+    description: "Range query optimization protocol.",
     component: (speed: number) => <SegmentTreeVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -675,7 +834,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N) Query" space="O(4N)" />
-            <DocSection title="Contribution Lemma" icon={Zap} color="#83C167">
+            <DocSection title="Contribution Lemma" icon={Zap} color="var(--viz-deep-purple)">
               <p>During a query, if a node&apos;s interval is fully contained within the query range, it returns its pre-computed value immediately. Otherwise, it delegates to its children, combining their partial results.</p>
             </DocSection>
           </div>
@@ -685,19 +844,19 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Build (Recursive)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Build (Recursive)</h4>
                     <CodeSnippet code={`void build(int node, int start, int end) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(2*node, start, mid);\n        build(2*node+1, mid+1, end);\n        tree[node] = tree[2*node] + tree[2*node+1];\n    }
 }`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Range Query</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Range Query</h4>
                     <CodeSnippet code={`int query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) return 0;\n    if (l <= start && end <= r) return tree[node];\n    \n    int mid = (start + end) / 2;\n    return query(2*node, start, mid, l, r) + 
            query(2*node+1, mid+1, end, l, r);
 }`} />
@@ -710,7 +869,9 @@ q.pop(); // Removes 10`} />
   {
     id: "KMP",
     title: "KMP Algorithm",
-    icon: <FileSearch className="text-[#83C167]" />,
+    icon: <FileSearch />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
     description: "Linear string pattern matching.",
     component: (speed: number) => <KMPVisualizer speed={speed} />,
     detailedDocs: (
@@ -722,7 +883,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N + M)" space="O(M)" />
-            <DocSection title="No Backtracking" icon={FastForward} color="#FFFF00">
+            <DocSection title="No Backtracking" icon={FastForward} color="var(--viz-amber)">
               <p>Unlike naive matching which backtracks to $i+1$, KMP slides the pattern by $\\$pi$[q] characters, guaranteeing linear time complexity $O(N)$.</p>
             </DocSection>
           </div>
@@ -731,13 +892,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> LPS Array</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> LPS Array</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Compute the Longest Prefix Suffix (LPS) array to determine jump distances.
                     </p>
@@ -745,7 +906,7 @@ q.pop(); // Removes 10`} />
 }`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Matching Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Matching Logic</h4>
                     <CodeSnippet code={`void KMPSearch(string pat, string txt) {\n    int M = pat.length();\n    int N = txt.length();\n    vector<int> lps = computeLPS(pat);\n    int i = 0, j = 0;\n    while (i < N) {\n        if (pat[j] == txt[i]) { j++; i++; }\n        if (j == M) {\n            cout << "Found at " << i - j;
             j = lps[j - 1];\n        } else if (i < N && pat[j] != txt[i]) {\n            if (j != 0) j = lps[j - 1];\n            else i++;\n        }
     }
@@ -759,8 +920,10 @@ q.pop(); // Removes 10`} />
   {
     id: "DSU",
     title: "Disjoint Set Union",
-    icon: <Link className="text-[#58C4DD]" />,
-    description: "Connectivity & equivalence classes.",
+    icon: <Network />,
+    themeColor: "var(--viz-lime)",
+    themeRGB: "var(--viz-lime-rgb)",
+    description: "Equivalence class management.",
     component: (speed: number) => <DSUVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -770,7 +933,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(α(N))" space="O(N)" />
-            <DocSection title="Path Compression" icon={Zap} color="#FFFF00">
+            <DocSection title="Path Compression" icon={Zap} color="var(--viz-amber)">
               <p>By making every node on the path point directly to the root during a `find` operation, we flatten the tree structure, ensuring subsequent operations are extremely fast.</p>
             </DocSection>
           </div>
@@ -779,20 +942,20 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Find with Compression</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Find with Compression</h4>
                     <CodeSnippet code={`int find(int i) {\n    if (parent[i] == i)
         return i;
     return parent[i] = find(parent[i]);
 }`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Union by Rank</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Union by Rank</h4>
                     <CodeSnippet code={`void unite(int i, int j) {\n    int root_i = find(i);
     int root_j = find(j);
     if (root_i != root_j) {
@@ -811,9 +974,11 @@ q.pop(); // Removes 10`} />
   },
   {
     id: "FIBONACCI",
-    title: "Fibonacci (DP)",
-    icon: <InfinityIcon className="text-[#FC6255]" />,
-    description: "Memoized recursive expansion.",
+    title: "Fibonacci Sequence",
+    icon: <InfinityIcon />,
+    themeColor: "var(--viz-deep-purple)",
+    themeRGB: "var(--viz-deep-purple-rgb)",
+    description: "DP state memoization.",
     component: (speed: number) => <FibonacciVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -824,7 +989,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(N)" />
-            <DocSection title="State Transition" icon={GitBranch} color="#58C4DD">
+            <DocSection title="State Transition" icon={GitBranch} color="var(--viz-cyan)">
               <p>We define the state simply as index $i$. The transition is deterministic: $dp[i] = dp[i-1] + dp[i-2]$.</p>
             </DocSection>
           </div>
@@ -833,13 +998,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> Recursive Memoization</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Recursive Memoization</h4>
                     <CodeSnippet code={`int fib(int n, vector<int>& memo) {\n    if (n <= 1) return n;
     if (memo[n] != -1) return memo[n];
     return memo[n] = fib(n-1, memo) + fib(n-2, memo);
@@ -853,46 +1018,48 @@ q.pop(); // Removes 10`} />
   {
     id: "KNAPSACK",
     title: "0/1 Knapsack",
-    icon: <ShoppingBag className="text-[#FFFF00]" />,
-    description: "Constrained combinatorial optimization.",
+    icon: <ShoppingBag />,
+    themeColor: "var(--viz-deep-purple)",
+    themeRGB: "var(--viz-deep-purple-rgb)",
+    description: "Optimal binary decision manifold.",
     component: (speed: number) => <KnapsackVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         {/* New Structured Explanation Section */}
         <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="#83C167">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-deep-purple)">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-4">
-                        <h5 className="text-[#83C167] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" />
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
                             Operational Logic
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The algorithm utilizes <strong>Optimal Substructure</strong>. It solves the problem by breaking it into smaller sub-capacities and sub-sets of items, building a global solution from local optima.
                         </p>
                         <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
-                            <li className="flex gap-2"><span className="text-[#83C167]">01.</span> Sort items by index</li>
-                            <li className="flex gap-2"><span className="text-[#83C167]">02.</span> Binary decision: Take vs Leave</li>
-                            <li className="flex gap-2"><span className="text-[#83C167]">03.</span> Memorize sub-problem results</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">01.</span> Sort items by index</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">02.</span> Binary decision: Take vs Leave</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">03.</span> Memorize sub-problem results</li>
                         </ul>
                     </div>
                     
                     <div className="space-y-4">
-                        <h5 className="text-[#58C4DD] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" />
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
                             Algorithm Output
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The output is a <strong>Value Optimization Matrix</strong>. The bottom-right cell contains the maximum possible value that can be squeezed into the knapsack under the weight constraint.
                         </p>
-                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[#58C4DD] text-center">
+                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[var(--viz-cyan)] text-center">
                             Table[N][W] = Max Value
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h5 className="text-[#FFFF00] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00]" />
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
                             Your Expectations
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
@@ -910,11 +1077,11 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N * W)" space="O(N * W)" />
-            <DocSection title="Decision Boundary" icon={Binary} color="#FFFF00">
+            <DocSection title="Decision Boundary" icon={Binary} color="var(--viz-amber)">
               <p>At each item $i$ and capacity $w$, we have a binary choice: </p>
               <ul className="text-xs space-y-2 text-muted-foreground font-mono">
-                  <li><strong className="text-[#FC6255]">Exclude:</strong> Inherit value from $dp[i-1][w]$</li>
-                  <li><strong className="text-[#83C167]">Include:</strong> Add $val[i]$ to $dp[i-1][w-wt[i]]$</li>
+                  <li><strong className="text-[var(--viz-rose)]">Exclude:</strong> Inherit value from $dp[i-1][w]$</li>
+                  <li><strong className="text-[var(--viz-deep-purple)]">Include:</strong> Add $val[i]$ to $dp[i-1][w-wt[i]]$</li>
               </ul>
             </DocSection>
           </div>
@@ -923,13 +1090,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Tutorial & Recurrence</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Tutorial & Recurrence</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> The Recurrence Relation</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> The Recurrence Relation</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono bg-muted/30 p-4 rounded-xl border border-border">
                         if wt[i] {"<="} w:
                         <br/>&nbsp;&nbsp;dp[i][w] = max(val[i] + dp[i-1][w-wt[i]], dp[i-1][w])
@@ -942,7 +1109,7 @@ q.pop(); // Removes 10`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> 3. Implementation (C++)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> 3. Implementation (C++)</h4>
                     <CodeSnippet code={`int knapSack(int W, vector<int>& wt, vector<int>& val, int n) {\n    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));\n\n    for (int i = 1; i <= n; i++) {\n        for (int w = 0; w <= W; w++) {\n            if (wt[i - 1] <= w)
                 dp[i][w] = max(val[i - 1] + dp[i - 1][w - wt[i - 1]], 
                                dp[i - 1][w]);
@@ -961,46 +1128,48 @@ q.pop(); // Removes 10`} />
   {
     id: "FLOYD_WARSHALL",
     title: "Floyd-Warshall",
-    icon: <Route className="text-[#83C167]" />,
-    description: "All-pairs shortest path topology.",
+    icon: <Route />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "All-pairs shortest paths.",
     component: (speed: number) => <FloydWarshallVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         {/* New Structured Explanation Section */}
         <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="#83C167">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-deep-purple)">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-4">
-                        <h5 className="text-[#83C167] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" />
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
                             Operational Logic
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The algorithm operates on a <strong>State-Space Transformation</strong>. It starts with direct edge weights and iteratively relaxes the entire manifold by considering every node as a mandatory "waypoint" (Intermediate Node $k$).
                         </p>
                         <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
-                            <li className="flex gap-2"><span className="text-[#83C167]">01.</span> Map direct connections</li>
-                            <li className="flex gap-2"><span className="text-[#83C167]">02.</span> Expand via node $k=0 … N$</li>
-                            <li className="flex gap-2"><span className="text-[#83C167]">03.</span> Update global invariants</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">01.</span> Map direct connections</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">02.</span> Expand via node $k=0 … N$</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">03.</span> Update global invariants</li>
                         </ul>
                     </div>
                     
                     <div className="space-y-4">
-                        <h5 className="text-[#58C4DD] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" />
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
                             Algorithm Output
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The final product is an <strong>All-Pairs Distance Tensor</strong>. Every cell $(i, j)$ in the matrix will contain the absolute minimum cost to travel between those two coordinates, regardless of how many intermediate jumps are required.
                         </p>
-                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[#58C4DD] text-center">
+                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[var(--viz-cyan)] text-center">
                             Matrix[i][j] = Shortest(i → j)
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h5 className="text-[#FFFF00] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00]" />
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
                             Your Expectations
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
@@ -1018,9 +1187,9 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(V³)" space="O(V²)" />
-            <DocSection title="The Relaxation Lemma" icon={Activity} color="#58C4DD">
+            <DocSection title="The Relaxation Lemma" icon={Activity} color="var(--viz-cyan)">
               <p>For every pair $(i, j)$, we check if a path going through node $k$ is shorter than the best path found so far:</p>
-              <p className="font-mono text-[#FFFF00] bg-white/5 p-3 rounded-lg border border-white/10 text-center">
+              <p className="font-mono text-[var(--viz-amber)] bg-white/5 p-3 rounded-lg border border-white/10 text-center">
                 $D[i][j] = min(D[i][j], D[i][k] + D[k][j])$
               </p>
               <p className="mt-4">This <strong>Triangle Inequality</strong> check ensures that the manifold converges to the global minimum distance for all pairs.</p>
@@ -1031,17 +1200,17 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Tutorial & Implementation</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Tutorial & Implementation</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> 1. Initialization</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> 1. Initialization</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Create a matrix `dist` where `dist[i][j]` is the weight of the edge from $i$ to $j$. Set `dist[i][i] = 0` and `dist[i][j] = INF` if no direct edge exists.
                     </p>
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2 mt-8"><div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00]" /> 2. The K-Loop (Crucial)</h4>
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2 mt-8"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> 2. The K-Loop (Crucial)</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         The outermost loop (indexed by $k$) represents the <strong>Intermediate Node</strong>. We are asking: "Can node $k$ improve the path between any $i$ and $j$?" 
                     </p>
@@ -1051,7 +1220,7 @@ q.pop(); // Removes 10`} />
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> 3. Standard C++ Implementation</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> 3. Standard C++ Implementation</h4>
                     <CodeSnippet code={`void floydWarshall(int V, vector<vector<int>>& graph) {\n    vector<vector<int>> dist = graph;\n\n    for (int k = 0; k < V; k++) {\n        for (int i = 0; i < V; i++) {\n            for (int j = 0; j < V; j++) {\n                // If i->k and k->j paths exist\n                if (dist[i][k] != INF && dist[k][j] != INF) {\n                    if (dist[i][k] + dist[k][j] < dist[i][j]) {\n                        dist[i][j] = dist[i][k] + dist[k][j];\n                    }\n                }
             }
         }
@@ -1062,7 +1231,7 @@ q.pop(); // Removes 10`} />
             </div>
 
             <div className="mt-12 p-8 bg-white/[0.03] border border-white/10 rounded-[2rem]">
-                <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Sparkles className="text-[#FFFF00]" size={20} /> Handling Negative Cycles</h4>
+                <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Sparkles className="text-[var(--viz-amber)]" size={20} /> Handling Negative Cycles</h4>
                 <p className="text-sm text-white/60 leading-relaxed">
                     Floyd-Warshall can detect <strong>Negative Weight Cycles</strong>. If after the algorithm finishes, any diagonal element `dist[i][i]` is less than 0, then a negative cycle exists that passes through node $i$. This is a unique advantage over Dijkstra's algorithm.
                 </p>
@@ -1074,8 +1243,10 @@ q.pop(); // Removes 10`} />
   {
     id: "SLIDING_WINDOW",
     title: "Sliding Window",
-    icon: <MoveHorizontal className="text-[#58C4DD]" />,
-    description: "Linear state maintenance.",
+    icon: <BoxSelect />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "Efficient range sum processing.",
     component: (speed: number) => <SlidingWindowVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -1085,7 +1256,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(1)" />
-            <DocSection title="Monotonicity" icon={ArrowDownNarrowWide} color="#FFFF00">
+            <DocSection title="Monotonicity" icon={ArrowDownNarrowWide} color="var(--viz-amber)">
               <p>For dynamic windows, the window expands by moving the right pointer and contracts by moving the left pointer to satisfy constraints, maintaining a valid state at all times.</p>
             </DocSection>
           </div>
@@ -1094,13 +1265,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Dynamic Window</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Dynamic Window</h4>
                     <CodeSnippet code={`int maxSubArrayLen(int target, vector<int>& nums) {\n    int left = 0, curr = 0, ans = 0;
     for (int right = 0; right < nums.size(); right++) {
         curr += nums[right];
@@ -1120,8 +1291,10 @@ q.pop(); // Removes 10`} />
   {
     id: "TOPO_SORT",
     title: "Topological Sort",
-    icon: <ListOrdered className="text-[#FC6255]" />,
-    description: "DAG dependency resolution.",
+    icon: <MoveHorizontal />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "DAG linear ordering.",
     component: (speed: number) => <TopoSortVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -1132,7 +1305,7 @@ q.pop(); // Removes 10`} />
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(V + E)" space="O(V)" />
-            <DocSection title="Indegree Lemma" icon={ArrowDownNarrowWide} color="#FFFF00">
+            <DocSection title="Indegree Lemma" icon={ArrowDownNarrowWide} color="var(--viz-amber)">
               <p>In Kahn's Algorithm, nodes with 0 indegree have no dependencies and can be processed immediately. Removing them potentially frees up their neighbors.</p>
             </DocSection>
           </div>
@@ -1141,13 +1314,13 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[#83C167]" />Implementation Guide</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> Kahn's Algorithm (BFS)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Kahn's Algorithm (BFS)</h4>
                     <CodeSnippet code={`vector<int> kahn(int V, vector<vector<int>>& adj) {\n    vector<int> indegree(V, 0);
     for (int u = 0; u < V; u++)
         for (int v : adj[u]) indegree[v]++;
@@ -1173,46 +1346,48 @@ q.pop(); // Removes 10`} />
   },
   {
     id: "N_QUEENS",
-    title: "N-Queens",
-    icon: <Crown className="text-[#58C4DD]" />,
-    description: "Backtracking state space.",
+    title: "N-Queens Protocol",
+    icon: <Crown />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "Backtracking search manifold.",
     component: (speed: number) => <NQueensVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="#58C4DD">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-4">
-                        <h5 className="text-[#58C4DD] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" />
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
                             Operational Logic
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The algorithm utilizes <strong>Backtracking (DFS)</strong> to explore the state space. It attempts to place queens column-by-column, ensuring no two queens attack each other.
                         </p>
                         <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
-                            <li className="flex gap-2"><span className="text-[#58C4DD]">01.</span> Position row-by-row</li>
-                            <li className="flex gap-2"><span className="text-[#58C4DD]">02.</span> Validate safety constraints</li>
-                            <li className="flex gap-2"><span className="text-[#58C4DD]">03.</span> Backtrack on conflict</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-cyan)]">01.</span> Position row-by-row</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-cyan)]">02.</span> Validate safety constraints</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-cyan)]">03.</span> Backtrack on conflict</li>
                         </ul>
                     </div>
                     
                     <div className="space-y-4">
-                        <h5 className="text-[#83C167] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" />
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
                             Safety Invariants
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             For every placement $(r, c)$, the algorithm verifies three invariants: the horizontal row, the upper diagonal, and the lower diagonal.
                         </p>
-                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[#83C167] text-center">
+                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[var(--viz-deep-purple)] text-center">
                             No shared Row | Diag1 | Diag2
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h5 className="text-[#f59e0b] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
                             Complexity Lemma
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
@@ -1224,13 +1399,13 @@ q.pop(); // Removes 10`} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Placement Rules" icon={Crown} color="#f59e0b">
+          <DocSection title="Placement Rules" icon={Crown} color="var(--viz-amber)">
             <p>The N-Queens problem asks us to place N queens on an N×N chessboard so that no two queens can attack each other.</p>
             <p>This means no two queens can be in the same <strong>row</strong>, <strong>column</strong>, or <strong>diagonal</strong>. It&apos;s a classic example of using backtracking to explore possible solutions efficiently.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N!)" space="O(N)" />
-            <DocSection title="Recursive Branching" icon={RotateCcw} color="#FC6255">
+            <DocSection title="Recursive Branching" icon={RotateCcw} color="var(--viz-rose)">
               <p>We place queens one by one in different columns. For each column, we try all rows. If a placement is safe, we move to the next column. If we get stuck, we <strong>backtrack</strong> and try a different row in the previous column.</p>
             </DocSection>
           </div>
@@ -1239,20 +1414,20 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[#83C167]" />C++ Implementation</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> isSafe Utility</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> isSafe Utility</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         This function checks the three primary attack vectors: the row to the left, and both upper/lower left diagonals.
                     </p>
                     <CodeSnippet code={`bool isSafe(int row, int col, vector<string>& board, int n) {\n    // Row check\n    for (int i = 0; i < col; i++)\n        if (board[row][i] == 'Q') return false;\n\n    // Upper diagonal\n    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--)\n        if (board[i][j] == 'Q') return false;\n\n    // Lower diagonal\n    for (int i = row, j = col; i < n && j >= 0; i++, j++)\n        if (board[i][j] == 'Q') return false;\n\n    return true;\n}`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Core Recursive Solver</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Core Recursive Solver</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         The solver iterates through every row in the current column, attempting a placement and recursing.
                     </p>
@@ -1266,49 +1441,51 @@ q.pop(); // Removes 10`} />
   {
     id: "TREE_TRAVERSAL",
     title: "Tree Traversal",
-    icon: <ListTree className="text-[#58C4DD]" />,
-    description: "Recursive manifold navigation.",
+    icon: <ListTree />,
+    themeColor: "var(--viz-lavender)",
+    themeRGB: "var(--viz-lavender-rgb)",
+    description: "BFS and DFS unit traversal.",
     component: (speed: number) => <TreeTraversalVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="#58C4DD">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-4">
-                        <h5 className="text-[#58C4DD] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" />
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
                             Pre-Order (Root-L-R)
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             Process the current node before its sub-manifolds. Ideal for <strong>Topology Duplication</strong> or serializing a tree structure for storage.
                         </p>
-                        <div className="p-3 bg-[#58C4DD]/5 rounded-xl border border-[#58C4DD]/20 font-mono text-[10px] text-[#58C4DD] text-center">
+                        <div className="p-3 bg-[var(--viz-cyan)]/5 rounded-xl border border-[var(--viz-cyan)]/20 font-mono text-[10px] text-[var(--viz-cyan)] text-center">
                             Process → Left → Right
                         </div>
                     </div>
                     
                     <div className="space-y-4">
-                        <h5 className="text-[#83C167] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" />
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
                             In-Order (L-Root-R)
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             Process nodes in non-decreasing order for <strong>BST Manifolds</strong>. Essential for validating BST properties and range queries.
                         </p>
-                        <div className="p-3 bg-[#83C167]/5 rounded-xl border border-[#83C167]/20 font-mono text-[10px] text-[#83C167] text-center">
+                        <div className="p-3 bg-[var(--viz-deep-purple)]/5 rounded-xl border border-[var(--viz-deep-purple)]/20 font-mono text-[10px] text-[var(--viz-deep-purple)] text-center">
                             Left → Process → Right
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h5 className="text-[#FC6255] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" />
+                        <h5 className="text-[var(--viz-rose)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" />
                             Post-Order (L-R-Root)
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             Process sub-manifolds before the parent. Required for <strong>Space Deallocation</strong> (bottom-up deletion) and expression evaluation.
                         </p>
-                        <div className="p-3 bg-[#FC6255]/5 rounded-xl border border-[#FC6255]/20 font-mono text-[10px] text-[#FC6255] text-center">
+                        <div className="p-3 bg-[var(--viz-rose)]/5 rounded-xl border border-[var(--viz-rose)]/20 font-mono text-[10px] text-[var(--viz-rose)] text-center">
                             Left → Right → Process
                         </div>
                     </div>
@@ -1317,13 +1494,13 @@ q.pop(); // Removes 10`} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Recursive Lemma" icon={Zap} color="#83C167">
+          <DocSection title="Recursive Lemma" icon={Zap} color="var(--viz-deep-purple)">
             <p>Every traversal is a specific mapping of a 2D hierarchical manifold into a 1D sequence. The <strong>Recursive Depth</strong> ensures that the entire state space is explored by following the pointer hierarchy.</p>
             <p>While DFS variations (Pre/In/Post) follow the stack-based depth plunge, <strong>BFS (Level-Order)</strong> explores the manifold layered by their geodesic distance from the root.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(H)" />
-            <DocSection title="The Visit Standard" icon={Activity} color="#f59e0b">
+            <DocSection title="The Visit Standard" icon={Activity} color="var(--viz-amber)">
               <p>In all 3 traversals, every node is visited exactly once. The complexity remains $O(N)$ regardless of the order. The spatial bound $O(H)$ fluctuates based on tree balance ($log N$ to $N$).</p>
             </DocSection>
           </div>
@@ -1332,21 +1509,21 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[#83C167]" />Implementation Matrix</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />Implementation Matrix</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> Pre-Order</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Pre-Order</h4>
                     <CodeSnippet code={`void preOrder(Node* root) {\n    if (!root) return;\n    cout << root->val << " ";\n    preOrder(root->left);\n    preOrder(root->right);\n}`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> In-Order</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> In-Order</h4>
                     <CodeSnippet code={`void inOrder(Node* root) {\n    if (!root) return;\n    inOrder(root->left);\n    cout << root->val << " ";\n    inOrder(root->right);\n}`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#FC6255]" /> Post-Order</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Post-Order</h4>
                     <CodeSnippet code={`void postOrder(Node* root) {\n    if (!root) return;\n    postOrder(root->left);\n    postOrder(root->right);\n    cout << root->val << " ";\n}`} />
                 </div>
             </div>
@@ -1356,52 +1533,54 @@ q.pop(); // Removes 10`} />
   },
   {
     id: "KADANE",
-    title: "Kadane's Algorithm",
-    icon: <TrendingUp className="text-[#83C167]" />,
-    description: "Maximum subarray sum lemma.",
+    title: "Kadane's Lemma",
+    icon: <TrendingUp />,
+    themeColor: "var(--viz-deep-purple)",
+    themeRGB: "var(--viz-deep-purple-rgb)",
+    description: "Maximum subarray sum manifold.",
     component: (speed: number) => <KadaneVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="#83C167">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-deep-purple)">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-4">
-                        <h5 className="text-[#83C167] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" />
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
                             Operational Logic
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             Kadane&apos;s algorithm utilizes a <strong>Local Optimization</strong> strategy. At each index $i$, it decides whether to extend the existing subarray or start a new one from $i$.
                         </p>
                         <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
-                            <li className="flex gap-2"><span className="text-[#83C167]">01.</span> Accumulate current sum</li>
-                            <li className="flex gap-2"><span className="text-[#83C167]">02.</span> Update global maximum</li>
-                            <li className="flex gap-2"><span className="text-[#83C167]">03.</span> Reset if sum {"<"} 0</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">01.</span> Accumulate current sum</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">02.</span> Update global maximum</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">03.</span> Reset if sum {"<"} 0</li>
                         </ul>
                     </div>
                     
                     <div className="space-y-4">
-                        <h5 className="text-[#58C4DD] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" />
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
                             The DP Invariant
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The state $dp[i]$ represents the maximum subarray sum ending at index $i$. The recurrence is: $dp[i] = max(A[i], A[i] + dp[i-1])$.
                         </p>
-                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[#58C4DD] text-center">
+                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[var(--viz-cyan)] text-center">
                             Local[i] = max(A[i], Local[i-1] + A[i])
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h5 className="text-[#f59e0b] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
                             Asymptotic Bound
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             Kadane&apos;s algorithm reduces the combinatorial space from $O(N^2)$ contiguous subarrays to a single $O(N)$ pass, achieving optimal linear efficiency.
                         </p>
-                        <div className="flex items-center gap-3 text-[10px] font-bold text-[#f59e0b] uppercase tracking-widest bg-[#f59e0b]/5 p-2 rounded-lg border border-[#f59e0b]/20">
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-[var(--viz-amber)] uppercase tracking-widest bg-[var(--viz-amber)]/5 p-2 rounded-lg border border-[var(--viz-amber)]/20">
                             <Activity size={12} /> Temporal: O(N)
                         </div>
                     </div>
@@ -1410,13 +1589,13 @@ q.pop(); // Removes 10`} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="The Greedy Choice" icon={Target} color="#f59e0b">
+          <DocSection title="The Greedy Choice" icon={Target} color="var(--viz-amber)">
             <p>The core insight of Kadane&apos;s algorithm is that if a prefix has a negative sum, it can never be part of a maximum subarray starting at a later index.</p>
             <p>By &quot;dropping&quot; the current sum when it falls below zero, we effectively prune the search space and maintain a linear time complexity manifold.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(1)" />
-            <DocSection title="Convergence Lemma" icon={Zap} color="#83C167">
+            <DocSection title="Convergence Lemma" icon={Zap} color="var(--viz-deep-purple)">
               <p>Because we only make a single pass over the array and use two scalar variables, the algorithm is both temporally and spatially optimal for this manifold. It transforms a local decision into a global guarantee.</p>
             </DocSection>
           </div>
@@ -1425,20 +1604,20 @@ q.pop(); // Removes 10`} />
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[#83C167]" />Manifold Implementation</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />Manifold Implementation</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#83C167]" /> Standard Approach</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Standard Approach</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         Iterate through the array, maintaining `curr` (local potential) and `best` (global optimum). If the potential collapses below zero, we restart from the next manifold cell.
                     </p>
                     <CodeSnippet code={`long long maxSubarraySum(int arr[], int n) {\n    long long best = -1e18, curr = 0;\n\n    for (int i = 0; i < n; i++) {\n        curr += arr[i];\n\n        if (curr > best) \n            best = curr;\n\n        if (curr < 0) \n            curr = 0;\n    }\n    return best;\n}`} />
                 </div>
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#58C4DD]" /> DP Variation</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> DP Variation</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         This variation handles cases where all elements are negative by explicitly choosing between the current element and the sum of the current element plus the previous local optimum.
                     </p>
@@ -1450,3 +1629,12 @@ q.pop(); // Removes 10`} />
     )
   },
 ];
+
+
+
+
+
+
+
+
+

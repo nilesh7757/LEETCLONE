@@ -14,17 +14,17 @@ import {
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
   background: "var(--card)",
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC",
+  blue: "var(--viz-cyan)",
+  green: "var(--viz-deep-purple)",
+  gold: "var(--viz-amber)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)",
   muted: "rgba(255,255,255,0.1)"
 };
 
 const ITEMS = [
   { id: 1, name: "Gem", w: 1, v: 10, icon: Gem, color: "#EC4899" },
-  { id: 2, name: "Crown", w: 2, v: 25, icon: Crown, color: "#f59e0b" },
+  { id: 2, name: "Crown", w: 2, v: 25, icon: Crown, color: "var(--viz-amber)" },
   { id: 3, name: "Phone", w: 3, v: 40, icon: Smartphone, color: "#3B82F6" },
   { id: 4, name: "Laptop", w: 4, v: 60, icon: Laptop, color: "#A855F7" },
 ];
@@ -159,7 +159,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
     <div className="flex flex-col gap-6 font-sans select-none">
       
       {/* --- Main Dashboard --- */}
-      <div className="p-8 bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
+      <div className="p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
         {/* Background Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
@@ -168,7 +168,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
         <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#58C4DD]/10 rounded-xl text-[#58C4DD]">
+                <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)]">
                     <Database size={24} />
                 </div>
                 <div>
@@ -182,7 +182,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
              <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
              <button 
                 onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[#58C4DD] text-black hover:scale-105"}`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[var(--viz-cyan)] text-black hover:scale-105"}`}
              >
                 {isPlaying ? <><Pause size={16} fill="currentColor"/> PAUSE</> : <><Play size={16} fill="currentColor"/> RUN</>}
              </button>
@@ -193,7 +193,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* DP Table Stage */}
-            <div className="lg:col-span-8 relative p-6 bg-muted/30 rounded-[2rem] border border-border overflow-hidden shadow-inner flex flex-col items-center">
+            <div className="lg:col-span-8 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
                 
                 {/* Step Badge */}
                 <div className="absolute top-6 left-6 z-20">
@@ -203,10 +203,10 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                             initial={{ opacity: 0, y: -10 }} 
                             animate={{ opacity: 1, y: 0 }} 
                             exit={{ opacity: 0, y: -10 }} 
-                            className="flex items-center gap-2 px-3 py-1.5 bg-card/80 border border-border backdrop-blur-md rounded-full shadow-sm"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-card/80  backdrop-blur-md rounded-full shadow-sm"
                         >
-                            <Zap size={12} className="text-[#58C4DD]" fill="#58C4DD" />
-                            <span className="text-[9px] font-black font-mono text-[#58C4DD] uppercase tracking-widest">{currentStep.step}</span>
+                            <Zap size={12} className="text-[var(--viz-cyan)]" fill="var(--viz-cyan)" />
+                            <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-widest">{currentStep.step}</span>
                         </motion.div>
                     </AnimatePresence>
                 </div>
@@ -219,7 +219,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                         <div className="flex mb-2">
                             <div className="w-20" /> {/* Spacer */}
                             {Array.from({ length: CAPACITY + 1 }).map((_, c) => (
-                                <div key={`col-${c}`} className={`w-12 h-8 flex items-center justify-center font-mono text-[9px] font-black uppercase tracking-tight transition-colors ${currentStep.weight === c ? "text-[#f59e0b]" : "text-muted-foreground/30"}`}>
+                                <div key={`col-${c}`} className={`w-12 h-8 flex items-center justify-center font-mono text-[9px] font-black uppercase tracking-tight transition-colors ${currentStep.weight === c ? "text-[var(--viz-amber)]" : "text-muted-foreground/30"}`}>
                                     {c}kg
                                 </div>
                             ))}
@@ -229,7 +229,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                         {currentStep.dp.map((row, r) => (
                             <div key={`row-${r}`} className="flex mb-1">
                                 {/* Row Label */}
-                                <div className={`w-32 h-10 flex items-center justify-start gap-2 font-mono text-[9px] font-bold uppercase tracking-tight transition-colors px-2 border-r border-border/50 ${currentStep.itemIdx === r ? "text-[#58C4DD] bg-[#58C4DD]/5" : "text-muted-foreground/30"}`}>
+                                <div className={`w-32 h-10 flex items-center justify-start gap-2 font-mono text-[9px] font-bold uppercase tracking-tight transition-colors px-2 border-r border-border/50 ${currentStep.itemIdx === r ? "text-[var(--viz-cyan)] bg-[var(--viz-cyan)]/5" : "text-muted-foreground/30"}`}>
                                     {r === 0 ? "INIT (0, $0)" : (
                                         <div className="flex flex-col leading-none">
                                             <span>{ITEMS[r-1].name}</span>
@@ -264,7 +264,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                                 }}
                                                 className="w-10 h-10 border rounded-lg flex items-center justify-center text-xs font-mono font-bold shadow-sm z-10"
                                             >
-                                                <span className={isCurrent ? "text-[#58C4DD]" : isExcludeDep ? "text-[#FC6255]" : isIncludeDep ? "text-[#83C167]" : "text-muted-foreground"}>{val}</span>
+                                                <span className={isCurrent ? "text-[var(--viz-cyan)]" : isExcludeDep ? "text-[var(--viz-rose)]" : isIncludeDep ? "text-[var(--viz-deep-purple)]" : "text-muted-foreground"}>{val}</span>
                                             </motion.div>
                                             
                                             {/* Flying Value Animation (Optional visual flair) */}
@@ -273,7 +273,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                                     initial={{ opacity: 0, scale: 0 }}
                                                     animate={{ opacity: 1, scale: 1.5 }}
                                                     exit={{ opacity: 0 }}
-                                                    className="absolute -top-4 text-[8px] font-black text-[#f59e0b] z-20"
+                                                    className="absolute -top-4 text-[8px] font-black text-[var(--viz-amber)] z-20"
                                                 >
                                                     {currentStep.decision === 'INCLUDE' ? 'INC' : 'EXC'}
                                                 </motion.div>
@@ -288,30 +288,30 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
 
                 {/* Decision Panel */}
                 <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-[500px]">
-                    <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "EXCLUDE" ? "bg-[#FC6255]/10 border-[#FC6255]/40 shadow-[0_0_15px_#FC625522]" : "bg-card/50 border-border opacity-40"}`}>
+                    <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "EXCLUDE" ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)]/40 shadow-[0_0_15px_var(--viz-rose)22]" : "bg-card/50 border-border opacity-40"}`}>
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-[9px] font-black uppercase text-[#FC6255] tracking-widest flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase text-[var(--viz-rose)] tracking-widest flex items-center gap-2">
                                 <RotateCcw size={10} /> Exclude
                             </span>
-                            {currentStep.decision === "EXCLUDE" && <Trophy size={12} className="text-[#FC6255]" />}
+                            {currentStep.decision === "EXCLUDE" && <Trophy size={12} className="text-[var(--viz-rose)]" />}
                         </div>
                         <div className="text-[10px] font-mono text-muted-foreground space-y-1">
                             <p className="opacity-50">Inherit Previous State</p>
                             <div className="flex items-center justify-between bg-black/20 p-1.5 rounded">
                                 <span>DP[{currentStep.itemIdx-1}][{currentStep.weight}]</span>
-                                <span className="text-[#FC6255] font-bold text-sm">
+                                <span className="text-[var(--viz-rose)] font-bold text-sm">
                                     {currentStep.itemIdx > 0 ? currentStep.dp[currentStep.itemIdx-1][currentStep.weight] : 0}
                                 </span>
                             </div>
                         </div>
                     </div>
                     
-                    <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "INCLUDE" ? "bg-[#83C167]/10 border-[#83C167]/40 shadow-[0_0_15px_#83C16722]" : "bg-card/50 border-border opacity-40"}`}>
+                    <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "INCLUDE" ? "bg-[var(--viz-deep-purple)]/10 border-[var(--viz-deep-purple)]/40 shadow-[0_0_15px_var(--viz-deep-purple)22]" : "bg-card/50 border-border opacity-40"}`}>
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-[9px] font-black uppercase text-[#83C167] tracking-widest flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase text-[var(--viz-deep-purple)] tracking-widest flex items-center gap-2">
                                 <Plus size={10} /> Include
                             </span>
-                            {currentStep.decision === "INCLUDE" && <Trophy size={12} className="text-[#83C167]" />}
+                            {currentStep.decision === "INCLUDE" && <Trophy size={12} className="text-[var(--viz-deep-purple)]" />}
                         </div>
                         <div className="text-[10px] font-mono text-muted-foreground space-y-1">
                             <p className="opacity-50">Item Value + Rem. Cap.</p>
@@ -319,7 +319,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                 <span className="truncate max-w-[80px]">
                                     {currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].v : 0} + DP[{currentStep.itemIdx-1}][{Math.max(0, currentStep.weight - (currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].w : 0))}]
                                 </span>
-                                <span className="text-[#83C167] font-bold text-sm">
+                                <span className="text-[var(--viz-deep-purple)] font-bold text-sm">
                                     {currentStep.itemIdx > 0 && ITEMS[currentStep.itemIdx-1].w <= currentStep.weight 
                                         ? ITEMS[currentStep.itemIdx-1].v + currentStep.dp[currentStep.itemIdx-1][currentStep.weight - ITEMS[currentStep.itemIdx-1].w] 
                                         : "N/A"}
@@ -334,7 +334,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             <div className="lg:col-span-4 flex flex-col gap-6">
                 
                 {/* Active Item Card */}
-                <div className="p-6 bg-muted/20 border border-border rounded-[2rem]">
+                <div className="p-6 bg-muted/20  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
                         <ShoppingBag size={14}/> Active Item
                     </h3>
@@ -345,7 +345,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                 initial={{ opacity: 0, x: 10 }} 
                                 animate={{ opacity: 1, x: 0 }} 
                                 exit={{ opacity: 0, x: -10 }} 
-                                className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border shadow-md"
+                                className="flex items-center gap-4 p-4 bg-card rounded-2xl  shadow-md"
                             >
                                 <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center">
                                     {React.createElement(ITEMS[currentStep.itemIdx - 1].icon, { size: 24, style: { color: ITEMS[currentStep.itemIdx - 1].color } })}
@@ -353,10 +353,10 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                 <div className="flex-1">
                                     <h4 className="text-xs font-black uppercase tracking-tight">{ITEMS[currentStep.itemIdx - 1].name}</h4>
                                     <div className="flex gap-3 mt-1.5">
-                                        <span className="text-[9px] font-mono bg-[#58C4DD]/10 text-[#58C4DD] px-1.5 py-0.5 rounded">
+                                        <span className="text-[9px] font-mono bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] px-1.5 py-0.5 rounded">
                                             {ITEMS[currentStep.itemIdx-1].w}kg
                                         </span>
-                                        <span className="text-[9px] font-mono bg-[#83C167]/10 text-[#83C167] px-1.5 py-0.5 rounded">
+                                        <span className="text-[9px] font-mono bg-[var(--viz-deep-purple)]/10 text-[var(--viz-deep-purple)] px-1.5 py-0.5 rounded">
                                             ${ITEMS[currentStep.itemIdx-1].v}
                                         </span>
                                     </div>
@@ -371,18 +371,18 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                 </div>
 
                 {/* Pseudocode Flow */}
-                <div className="p-6 bg-muted/20 border border-border rounded-[2rem] flex-1 min-h-[200px]">
+                <div className="p-6 bg-muted/20  rounded-[2rem] flex-1 min-h-[200px]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
                         <Cpu size={14}/> Logic Flow
                     </h3>
                     <div className="space-y-2 font-mono text-[9px]">
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 1 ? "bg-[#58C4DD]/10 border-[#58C4DD] text-[#58C4DD]" : "border-transparent text-muted-foreground/40"}`}>
+                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 1 ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)] text-[var(--viz-cyan)]" : "border-transparent text-muted-foreground/40"}`}>
                             1. Check weight: Item.w &le; Capacity?
                         </div>
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 2 ? "bg-[#FC6255]/10 border-[#FC6255] text-[#FC6255]" : "border-transparent text-muted-foreground/40"}`}>
+                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 2 ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-transparent text-muted-foreground/40"}`}>
                             2. Overflow: Keep previous max
                         </div>
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[#83C167]/10 border-[#83C167] text-[#83C167]" : "border-transparent text-muted-foreground/40"}`}>
+                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[var(--viz-deep-purple)]/10 border-[var(--viz-deep-purple)] text-[var(--viz-deep-purple)]" : "border-transparent text-muted-foreground/40"}`}>
                             3. Fit: Max(Include, Exclude)
                         </div>
                     </div>
@@ -391,10 +391,10 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
         </div>
 
         {/* Footer: Timeline & Logs */}
-        <div className="mt-4 p-6 bg-muted/30 border border-border rounded-[2.5rem] flex flex-col gap-6">
+        <div className="mt-4 p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[#f59e0b]" />
+                    <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
                         Step {currentIndex + 1} / {history.length}
                     </span>
@@ -409,7 +409,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             <div className="relative flex items-center group/slider h-4">
                 <div className="absolute w-full h-1 bg-background/20 rounded-full" />
                 <motion.div 
-                    className="absolute h-1 bg-[#58C4DD] rounded-full shadow-[0_0_10px_#58C4DD44]" 
+                    className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)44]" 
                     initial={{ width: 0 }}
                     animate={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }}
                 />
@@ -427,7 +427,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                         key={currentIndex} 
                         initial={{ opacity: 0, y: 5 }} 
                         animate={{ opacity: 1, y: 0 }} 
-                        className="px-4 py-2 rounded-lg bg-card border border-border/50 text-[10px] font-mono text-[#f59e0b] text-center max-w-2xl"
+                        className="px-4 py-2 rounded-lg bg-card /50 text-[10px] font-mono text-[var(--viz-amber)] text-center max-w-2xl"
                     >
                         {currentStep.message}
                     </motion.div>
@@ -436,11 +436,11 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
         </div>
 
         {/* Legend */}
-        <div className="px-10 py-6 bg-muted/10 border border-border/50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#58C4DD]" /><span className="text-[9px] font-bold uppercase tracking-wider">Current Cell</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#f59e0b]" /><span className="text-[9px] font-bold uppercase tracking-wider">Dependency</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#83C167]" /><span className="text-[9px] font-bold uppercase tracking-wider">Include</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#FC6255]" /><span className="text-[9px] font-bold uppercase tracking-wider">Exclude</span></div>
+        <div className="px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-cyan)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Current Cell</span></div>
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-amber)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Dependency</span></div>
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-deep-purple)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Include</span></div>
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Exclude</span></div>
         </div>
 
       </div>

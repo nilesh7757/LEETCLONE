@@ -10,11 +10,11 @@ import {
 
 // Consistency with other visualizers in the Academy of Algorithms
 const MANIM_COLORS = { 
-  blue: "#58C4DD",
-  green: "#83C167",
-  gold: "#f59e0b",
-  red: "#FC6255",
-  purple: "#9A72AC"
+  blue: "var(--viz-cyan)",
+  green: "var(--viz-deep-purple)",
+  gold: "var(--viz-deep-purple)",
+  red: "var(--viz-rose)",
+  purple: "var(--viz-purple)"
 };
 
 const ARRAY_SIZE = 12;
@@ -151,17 +151,17 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
       {/* Header UI */}
       <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-6 relative z-10 gap-4">
         <div className="space-y-1">
-          <h2 className="text-xl font-light tracking-tight text-[#58C4DD]">
+          <h2 className="text-xl font-light tracking-tight text-[var(--viz-cyan)]">
             Kadane&apos;s <span className="text-muted-foreground/40">Subarray Lemma</span>
           </h2>
           <div className="flex items-center gap-3">
-             <div className="h-1 w-8 bg-[#58C4DD] rounded-full" />
+             <div className="h-1 w-8 bg-[var(--viz-cyan)] rounded-full" />
              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Linear Optimization Engine</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-xl border border-border shadow-inner">
-          <button onClick={generateArray} className="p-2 bg-card hover:bg-white/5 rounded-lg border border-border transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
+        <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-xl  shadow-inner">
+          <button onClick={generateArray} className="p-2 bg-card hover:bg-white/5 rounded-lg  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
             <RotateCcw size={16}/>
           </button>
           <div className="w-[1px] h-6 bg-border mx-1" />
@@ -171,7 +171,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
               setIsPlaying(!isPlaying);
             }} 
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
-              isPlaying ? "bg-[#FC6255]/20 text-[#FC6255] border border-[#FC6255]/30" : "bg-[#58C4DD] text-black"
+              isPlaying ? "bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/30" : "bg-[var(--viz-cyan)] text-black"
             }`}
           >
             {isPlaying ? <><Pause size={14} fill="currentColor" /> HALT</> : <><Play size={14} fill="currentColor" /> EXECUTE</>}
@@ -181,15 +181,15 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Visualization Area */}
-        <div className="lg:col-span-3 relative min-h-[320px] bg-muted/10 rounded-[2rem] border border-border/50 overflow-hidden shadow-inner flex flex-col items-center justify-center p-6 md:p-10">
+        <div className="lg:col-span-3 relative min-h-[320px] bg-muted/10 rounded-[2rem] /50 overflow-hidden shadow-inner flex flex-col items-center justify-center p-6 md:p-10">
           
           {/* Logic Step Badge */}
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
             <AnimatePresence>
               {currentStep.stepType !== "INIT" && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex items-center gap-2 px-3 py-1.5 bg-[#58C4DD]/10 border border-[#58C4DD]/30 rounded-full w-fit">
-                  <Zap size={10} className="text-[#58C4DD]" />
-                  <span className="text-[8px] font-black font-mono text-[#58C4DD] uppercase tracking-[0.2em]">{currentStep.stepType}</span>
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full w-fit">
+                  <Zap size={10} className="text-[var(--viz-cyan)]" />
+                  <span className="text-[8px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-[0.2em]">{currentStep.stepType}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -199,13 +199,13 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
           <div className="absolute top-6 right-6 flex flex-col items-end gap-1 pointer-events-none">
             <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/40">Potential Sum</span>
             <div className="flex items-center gap-2">
-              <span className={`text-xl font-black font-mono ${currentStep.currentSum < 0 ? 'text-[#FC6255]' : 'text-[#58C4DD]'}`}>
+              <span className={`text-xl font-black font-mono ${currentStep.currentSum < 0 ? 'text-[var(--viz-rose)]' : 'text-[var(--viz-cyan)]'}`}>
                 {currentStep.currentSum}
               </span>
               <div className="w-1 h-8 bg-border/30 rounded-full overflow-hidden flex flex-col justify-end">
                 <motion.div 
                   animate={{ height: `${Math.min(100, Math.max(0, (currentStep.currentSum / 50) * 100))}%` }}
-                  className="w-full bg-[#58C4DD] shadow-[0_0_10px_#58C4DD]"
+                  className="w-full bg-[var(--viz-cyan)] shadow-[0_0_10px_var(--viz-cyan)]"
                 />
               </div>
             </div>
@@ -214,8 +214,8 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
           {/* Subtitle / Narrative */}
           <AnimatePresence mode="wait">
               <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-6 w-full max-w-[400px] px-6 text-center z-30 pointer-events-none">
-                  <div className="p-3 bg-card/90 border border-border rounded-xl backdrop-blur-md shadow-xl">
-                      <p className="text-[10px] text-[#f59e0b] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.explanation}</p>
+                  <div className="p-3 bg-card/90  rounded-xl backdrop-blur-md shadow-xl">
+                      <p className="text-[10px] text-[var(--viz-deep-purple)] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.explanation}</p>
                   </div>
               </motion.div>
           </AnimatePresence>
@@ -239,7 +239,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                                 exit={{ opacity: 0, y: -5 }}
                                 className="flex flex-col items-center"
                               >
-                                <TrendingUp size={14} className="text-[#f59e0b]" />
+                                <TrendingUp size={14} className="text-[var(--viz-deep-purple)]" />
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -257,12 +257,12 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                           }}
                           className="relative w-10 h-14 rounded-xl border flex flex-col items-center justify-center transition-all duration-500"
                         >
-                            <span className={`text-xs font-black font-mono ${val < 0 ? "text-[#FC6255]" : isCurrentPointer ? "text-black" : "text-foreground"}`}>{val}</span>
+                            <span className={`text-xs font-black font-mono ${val < 0 ? "text-[var(--viz-rose)]" : isCurrentPointer ? "text-black" : "text-foreground"}`}>{val}</span>
                             <span className="absolute -bottom-5 text-[7px] font-mono font-bold text-muted-foreground/30 uppercase">{idx}</span>
                             
                             {/* Range Indicator */}
                             {isInCurrentRange && (
-                                <motion.div layoutId="range-box" className="absolute -inset-1.5 border border-dashed border-[#58C4DD]/40 rounded-lg pointer-events-none" />
+                                <motion.div layoutId="range-box" className="absolute -inset-1.5 border border-dashed border-[var(--viz-cyan)]/40 rounded-lg pointer-events-none" />
                             )}
                         </motion.div>
 
@@ -270,7 +270,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                         <div className="h-4 mt-6">
                           <AnimatePresence>
                             {isInBestRange && (
-                              <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} className="w-1 h-1 rounded-full bg-[#83C167] shadow-[0_0_10px_#83C167]" />
+                              <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} className="w-1 h-1 rounded-full bg-[var(--viz-deep-purple)] shadow-[0_0_10px_var(--viz-deep-purple)]" />
                             )}
                           </AnimatePresence>
                         </div>
@@ -283,7 +283,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
         {/* Sidebar Metrics */}
         <div className="flex flex-col gap-4">
             {/* State Invariants */}
-            <div className="p-5 bg-muted/20 border border-border rounded-[2rem] space-y-4 backdrop-blur-sm flex-1 flex flex-col justify-center">
+            <div className="p-5 bg-muted/20  rounded-[2rem] space-y-4 backdrop-blur-sm flex-1 flex flex-col justify-center">
                 <h3 className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                     <Cpu size={12}/> Invariants
                 </h3>
@@ -291,18 +291,18 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                     <div className="flex flex-col gap-1">
                         <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter text-muted-foreground/50">
                           <span>Local Max</span>
-                          <span className="text-[#58C4DD]">DP[i]</span>
+                          <span className="text-[var(--viz-cyan)]">DP[i]</span>
                         </div>
-                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-white/5 font-mono text-base font-bold text-[#58C4DD] text-right">
+                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-white/5 font-mono text-base font-bold text-[var(--viz-cyan)] text-right">
                           {currentStep.currentSum}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter text-muted-foreground/50">
                           <span>Global Max</span>
-                          <span className="text-[#83C167]">Result</span>
+                          <span className="text-[var(--viz-deep-purple)]">Result</span>
                         </div>
-                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-white/5 font-mono text-base font-bold text-[#83C167] text-right">
+                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-white/5 font-mono text-base font-bold text-[var(--viz-deep-purple)] text-right">
                           {currentStep.maxSum}
                         </div>
                     </div>
@@ -312,10 +312,10 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
       </div>
 
       {/* Control Interface */}
-      <div className="mt-4 p-4 bg-muted/10 border border-border/50 rounded-[2rem] flex flex-col gap-4 relative z-10 backdrop-blur-sm">
+      <div className="mt-4 p-4 bg-muted/10 /50 rounded-[2rem] flex flex-col gap-4 relative z-10 backdrop-blur-sm">
           <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-2">
-                  <Hash size={12} className="text-[#f59e0b]" />
+                  <Hash size={12} className="text-[var(--viz-deep-purple)]" />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Step {currentIndex + 1} / {history.length || 1}</span>
               </div>
               <div className="flex items-center gap-1">
@@ -326,23 +326,23 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
           <div className="relative flex items-center group/slider px-2">
               <div className="absolute left-2 right-2 h-0.5 bg-background/20 rounded-full" />
-              <div className="absolute left-2 h-0.5 bg-[#58C4DD] rounded-full" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 16px)` }} />
+              <div className="absolute left-2 h-0.5 bg-[var(--viz-cyan)] rounded-full" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 16px)` }} />
               <input 
                   type="range" min="0" max={history.length - 1} value={currentIndex} 
                   onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                   className="w-full h-4 opacity-0 cursor-pointer z-10"
               />
-              <div className="absolute w-1.5 h-3 bg-[#f59e0b] rounded-full shadow-[0_0_10px_#f59e0b] pointer-events-none transition-all"
+              <div className="absolute w-1.5 h-3 bg-[var(--viz-deep-purple)] rounded-full shadow-[0_0_10px_var(--viz-deep-purple)] pointer-events-none transition-all"
                   style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 3px)` }}
               />
           </div>
       </div>
 
       {/* Legend */}
-      <div className="mt-2 px-8 py-4 bg-muted/5 border border-border/20 rounded-[2rem] flex flex-wrap items-center justify-center gap-x-10 gap-y-3 opacity-50 hover:opacity-100 transition-opacity">
-         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#f59e0b]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Probe</span></div>
-         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[#58C4DD]/30 border border-[#58C4DD]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Chain</span></div>
-         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full border border-[#83C167]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Optimum</span></div>
+      <div className="mt-2 px-8 py-4 bg-muted/5 /20 rounded-[2rem] flex flex-wrap items-center justify-center gap-x-10 gap-y-3 opacity-50 hover:opacity-100 transition-opacity">
+         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-deep-purple)]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Probe</span></div>
+         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-cyan)]/30 border border-[var(--viz-cyan)]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Chain</span></div>
+         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full border border-[var(--viz-deep-purple)]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Optimum</span></div>
       </div>
     </div>
   );

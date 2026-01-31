@@ -39,7 +39,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
     }`;
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 rounded-t-lg border-t border-x border-[var(--card-border)] bg-[var(--card-bg)]">
+    <div className="flex flex-wrap items-center gap-1 p-3 rounded-t-[2rem] bg-[var(--card)]/30 backdrop-blur-xl mb-px">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -77,7 +77,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
         <Strikethrough className="w-4 h-4" />
       </button>
       
-      <div className="w-[1px] h-4 bg-[var(--card-border)] mx-1" />
+      <div className="w-[1px] h-4 bg-white/10 mx-1" />
 
       <button
         type="button"
@@ -109,44 +109,44 @@ const Toolbar = ({ editor }: ToolbarProps) => {
 
       {/* Link Modal */}
       {isLinkModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
            <div 
-             className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
+             className="bg-[var(--card)]/80 backdrop-blur-2xl rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 border border-white/5"
              onKeyDown={(e) => {
                if (e.key === 'Enter') { e.preventDefault(); saveLink(); }
                if (e.key === 'Escape') setIsLinkModalOpen(false);
              }}
            >
-              <div className="px-4 py-3 border-b border-[var(--card-border)] flex items-center justify-between bg-[var(--background)]/50">
-                 <h3 className="text-sm font-bold text-[var(--foreground)]">Edit Link</h3>
+              <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/5">
+                 <h3 className="text-sm font-black uppercase tracking-widest text-[var(--foreground)]">Edit Link</h3>
                  <button onClick={() => setIsLinkModalOpen(false)} className="text-[var(--foreground)]/40 hover:text-[var(--foreground)] transition-colors">
                     <X className="w-4 h-4" />
                  </button>
               </div>
-              <div className="p-4 space-y-4">
-                 <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/50">URL</label>
+              <div className="p-6 space-y-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-[var(--muted-foreground)]">URL Endpoint</label>
                     <input 
                        autoFocus
                        type="text"
                        value={linkUrl}
                        onChange={(e) => setLinkUrl(e.target.value)}
-                       placeholder="https://example.com"
-                       className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--card-border)] rounded-lg text-sm text-[var(--foreground)] outline-none focus:ring-1 focus:ring-blue-500"
+                       placeholder="https://neural-link.io"
+                       className="w-full px-4 py-3 bg-[var(--background)]/50 rounded-xl text-sm text-[var(--foreground)] outline-none focus:ring-1 focus:ring-[var(--viz-cyan)]/30 transition-all"
                     />
                  </div>
-                 <div className="flex items-center gap-2 pt-2">
+                 <div className="flex items-center gap-3 pt-2">
                     <button 
                        onClick={() => { setLinkUrl(''); saveLink(); }}
-                       className="flex-1 px-3 py-2 text-xs font-medium text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
+                       className="flex-1 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all"
                     >
-                       Remove Link
+                       Remove
                     </button>
                     <button 
                        onClick={saveLink}
-                       className="flex-1 px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                       className="flex-1 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-black bg-[var(--viz-cyan)] hover:opacity-90 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--viz-cyan)]/20"
                     >
-                       <Check className="w-3.5 h-3.5" /> Save
+                       <Check className="w-3.5 h-3.5" strokeWidth={3} /> Save Link
                     </button>
                  </div>
               </div>

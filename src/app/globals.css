@@ -6,51 +6,170 @@
 }
 
 :root {
-  /* Default (Dark) */
-  --background: #000000;
-  --foreground: #ffffff;
-  --grid-color: rgba(255, 255, 255, 0.05);
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-border: rgba(255, 255, 255, 0.1);
-  --accent-gradient-from: #e4e4e7;
-  --accent-gradient-to: #71717a;
+  /* Global Design System - Default (Dark) */
+  --background: #09090b;
+  --foreground: #fafafa;
+  
+  --card: #121214;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  
+  --primary: #58C4DD;
+  --primary-foreground: #09090b;
+  
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.06);
+  --ring: #58C4DD;
 
-  /* Visualization Colors */
-  --board-bg: #0a0a0a;
-  --board-border: rgba(255, 255, 255, 0.1);
-  --cell-light: rgba(255, 255, 255, 0.02);
-  --cell-dark: rgba(255, 255, 255, 0.05);
+  --grid-color: rgba(255, 255, 255, 0.03);
+  
+  /* Dark Theme Standard (Neuro-Visualize) */
+  --viz-blue: #38bdf8;
+  --viz-blue-rgb: 56, 189, 248;
+  --viz-green: #4ade80;
+  --viz-green-rgb: 74, 222, 128;
+  --viz-gold: #f59e0b;
+  --viz-gold-rgb: 245, 158, 11;
+  --viz-red: #fb7185;
+  --viz-red-rgb: 251, 113, 133;
+  --viz-purple: #a78bfa;
+  --viz-purple-rgb: 167, 139, 250;
+
+  /* User Aero-Palette (Specific mapped variables) */
+  --viz-lime: #a3e635;
+  --viz-lime-rgb: 163, 230, 53;
+  --viz-lavender: #d8b4fe;
+  --viz-lavender-rgb: 216, 180, 254;
+  --viz-cyan: #22d3ee;
+  --viz-cyan-rgb: 34, 211, 238;
+  --viz-rose: #fda4af;
+  --viz-rose-rgb: 253, 164, 175;
+  --viz-amber: #f97316;
+  --viz-amber-rgb: 249, 115, 22;
+  --viz-deep-purple: #8b5cf6;
+  --viz-deep-purple-rgb: 139, 92, 246;
+
+  --viz-emerald: #10b981;
+  --viz-emerald-rgb: 16, 185, 129;
+  --viz-slate: #64748b;
+  --viz-slate-rgb: 100, 116, 139;
+  --viz-fuchsia: #d946ef;
+  --viz-fuchsia-rgb: 217, 70, 239;
 }
 
 [data-theme='light'] {
-  --background: #ffffff;
+  --background: #fafafa;
   --foreground: #09090b;
-  --grid-color: rgba(0, 0, 0, 0.05);
-  --card-bg: rgba(0, 0, 0, 0.03);
-  --card-border: rgba(0, 0, 0, 0.1);
-  --accent-gradient-from: #09090b;
-  --accent-gradient-to: #52525b;
+  
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  
+  --primary: #0ea5e9;
+  --primary-foreground: #fafafa;
+  
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  
+  --accent: #f4f4f5;
+  --accent-foreground: #09090b;
+  
+  --border: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.1);
+  --input: rgba(0, 0, 0, 0.06);
+  --ring: #0ea5e9;
 
-  --board-bg: #ffffff;
-  --board-border: #e2e8f0;
-  --cell-light: #ffffff;
-  --cell-dark: #f1f5f9;
+  --grid-color: rgba(0, 0, 0, 0.03);
+  
+  /* Light Theme Specific Aero-Palette */
+  --viz-blue: #0ea5e9;
+  --viz-blue-rgb: 14, 165, 233;
+  --viz-green: #84cc16;
+  --viz-green-rgb: 132, 204, 22;
+  --viz-gold: #f59e0b;
+  --viz-gold-rgb: 245, 158, 11;
+  --viz-red: #f43f5e;
+  --viz-red-rgb: 244, 63, 94;
+  --viz-purple: #8b5cf6;
+  --viz-purple-rgb: 139, 92, 246;
+
+  --viz-lime: #65a30d;
+  --viz-lavender: #a855f7;
+  --viz-cyan: #0891b2;
+  --viz-rose: #e11d48;
+  --viz-amber: #d97706;
+  --viz-deep-purple: #7c3aed;
+
+  --viz-emerald: #059669;
+  --viz-emerald-rgb: 5, 150, 105;
+  --viz-slate: #475569;
+  --viz-slate-rgb: 71, 85, 105;
+  --viz-fuchsia: #c026d3;
+  --viz-fuchsia-rgb: 192, 38, 211;
 }
 
 [data-theme='cream'] {
-  --background: #EAE0D5; /* Vintage Parchment - much easier on eyes */
-  --foreground: #3E3028; /* Deep Coffee Brown */
-  --grid-color: rgba(62, 48, 40, 0.08);
-  --card-bg: rgba(62, 48, 40, 0.05);
-  --card-border: rgba(62, 48, 40, 0.12);
-  --accent-gradient-from: #3E3028;
-  --accent-gradient-to: #8A6A4B;
+  --background: #FDFCF0;
+  --foreground: #443B34;
+  
+  --card: #FFFDF5;
+  --card-foreground: #443B34;
+  --popover: #FFFDF5;
+  --popover-foreground: #443B34;
+  
+  --primary: #8A6A4B;
+  --primary-foreground: #FDFCF0;
+  
+  --muted: #F5F2E1;
+  --muted-foreground: #7D746C;
+  
+  --accent: #F5F2E1;
+  --accent-foreground: #443B34;
+  
+  --border: rgba(68, 59, 52, 0.08);
+  --border-strong: rgba(68, 59, 52, 0.15);
+  --input: rgba(68, 59, 52, 0.08);
+  --ring: #8A6A4B;
 
-  --board-bg: #F5EBE0;
-  --board-border: #D5C7B7;
-  --cell-light: #F5EBE0;
-  --cell-dark: #E3D5C8;
+  --grid-color: rgba(68, 59, 52, 0.04);
+
+  /* Cream Theme Specific Aero-Palette */
+  --viz-blue: #7FB3D5;
+  --viz-blue-rgb: 127, 179, 213;
+  --viz-green: #94ad4e;
+  --viz-green-rgb: 148, 173, 78;
+  --viz-gold: #F7DC6F;
+  --viz-gold-rgb: 247, 220, 111;
+  --viz-red: #E6B0AA;
+  --viz-red-rgb: 230, 176, 170;
+  --viz-purple: #D7BDE2;
+  --viz-purple-rgb: 215, 189, 226;
+
+  --viz-lime: #a2b378;
+  --viz-lavender: #b394ad;
+  --viz-cyan: #82c4c3;
+  --viz-rose: #d9a5a5;
+  --viz-amber: #c27844;
+  --viz-deep-purple: #9482b3;
+
+  --viz-emerald: #78a38a;
+  --viz-emerald-rgb: 120, 163, 138;
+  --viz-slate: #7d7d7d;
+  --viz-slate-rgb: 125, 125, 125;
+  --viz-fuchsia: #ad94ad;
+  --viz-fuchsia-rgb: 173, 148, 173;
 }
+
+/* Base Styles */
 
 html {
   scroll-behavior: smooth;
@@ -62,6 +181,26 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  position: relative;
+}
+
+/* Atmospheric Background Glows */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 30%, rgba(var(--viz-blue-rgb), 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 80% 70%, rgba(var(--viz-purple-rgb), 0.03) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme='cream'] body::before {
+  background: radial-gradient(circle at 20% 30%, rgba(var(--viz-gold-rgb), 0.05) 0%, transparent 40%),
+              radial-gradient(circle at 80% 70%, rgba(var(--viz-green-rgb), 0.05) 0%, transparent 40%);
 }
 
 /* Custom Grid Background Utility */

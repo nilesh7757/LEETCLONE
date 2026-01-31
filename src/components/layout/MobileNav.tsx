@@ -51,20 +51,20 @@ export default function MobileNav() {
   }, []);
 
   const navItems = [
-    { label: "Problems", href: "/problems", icon: Code2 },
-    { label: "Study Plans", href: "/study-plans", icon: BookOpen },
-    { label: "Interview", href: "/interview", icon: MonitorPlay },
-    { label: "Contest", href: "/contest", icon: Trophy },
-    { label: "Visualize", href: "/dsa", icon: PenTool },
-    { label: "Leaderboard", href: "/leaderboard", icon: LineChart },
-    { label: "Blog", href: "/blog", icon: Globe },
-    { label: "Chat", href: "/chat", icon: MessageSquare },
+    { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
+    { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)", rgb: "var(--viz-purple-rgb)" },
+    { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)", rgb: "var(--viz-red-rgb)" },
+    { label: "Contest", href: "/contest", icon: Trophy, color: "var(--viz-gold)", rgb: "var(--viz-gold-rgb)" },
+    { label: "Visualize", href: "/dsa", icon: PenTool, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
+    { label: "Leaderboard", href: "/leaderboard", icon: LineChart, color: "var(--viz-green)", rgb: "var(--viz-green-rgb)" },
+    { label: "Blog", href: "/blog", icon: Globe, color: "var(--viz-green)", rgb: "var(--viz-green-rgb)" },
+    { label: "Chat", href: "/chat", icon: MessageSquare, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
   ];
 
   return (
     <>
       {/* Top Bar for Mobile */}
-      <nav className="md:hidden fixed top-0 w-full z-50 border-b border-[var(--card-border)] bg-[var(--background)]/80 backdrop-blur-md px-4 h-16 flex items-center justify-between">
+      <nav className="md:hidden fixed top-0 w-full z-50 bg-[var(--background)]/80 backdrop-blur-md px-4 h-16 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
             <button 
                 onClick={() => setIsOpen(true)}
@@ -84,13 +84,13 @@ export default function MobileNav() {
                     href={dailySlug ? `/problems/${dailySlug}` : "/problems"}
                     className={`flex items-center gap-1.5 px-1.5 py-1 transition-all duration-300 ${
                         solvedToday
-                        ? "text-orange-600 dark:text-orange-400"
-                        : "text-[var(--foreground)]/60"
+                        ? "text-[var(--viz-gold)]"
+                        : "text-[var(--muted-foreground)]"
                     }`}
                 >
                     <Flame
                         className={`w-5 h-5 ${
-                        solvedToday ? "fill-orange-500 text-orange-500" : ""
+                        solvedToday ? "fill-[var(--viz-gold)] text-[var(--viz-gold)]" : ""
                         }`}
                     />
                     <span className="text-xs font-bold">{streak}</span>
@@ -121,10 +121,10 @@ export default function MobileNav() {
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-                className="fixed inset-y-0 left-0 z-[70] w-4/5 max-w-xs bg-[var(--background)] border-r border-[var(--card-border)] md:hidden flex flex-col shadow-2xl"
+                className="fixed inset-y-0 left-0 z-[70] w-4/5 max-w-xs bg-[var(--background)] md:hidden flex flex-col shadow-2xl"
             >
                 {/* Header of Drawer */}
-                <div className="flex items-center justify-between px-4 h-16 border-b border-[var(--card-border)]">
+                <div className="flex items-center justify-between px-4 h-16">
                     <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
                         <Logo className="w-7 h-7" />
                         <span className="font-bold text-lg text-[var(--foreground)]">LeetClone</span>
@@ -154,12 +154,21 @@ export default function MobileNav() {
                                 onClick={() => setIsOpen(false)}
                                 className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
                                     pathname.startsWith(item.href)
-                                    ? "bg-[var(--foreground)]/10 text-[var(--foreground)]"
+                                    ? "text-[var(--foreground)]"
                                     : "text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
                                 }`}
+                                style={pathname.startsWith(item.href) ? {
+                                    backgroundColor: `rgba(${item.rgb}, 0.1)`,
+                                    boxShadow: `0 0 20px rgba(${item.rgb}, 0.05)`
+                                } : {}}
                             >
-                                <item.icon className="w-5 h-5" />
-                                {item.label}
+                                <item.icon 
+                                    className="w-5 h-5" 
+                                    style={{ color: pathname.startsWith(item.href) ? item.color : undefined }}
+                                />
+                                <span style={{ color: pathname.startsWith(item.href) ? item.color : undefined }}>
+                                    {item.label}
+                                </span>
                             </Link>
                         ))}
                         {session?.user?.role === "ADMIN" && (
@@ -174,7 +183,7 @@ export default function MobileNav() {
                         )}
                     </div>
 
-                    <div className="h-px bg-[var(--card-border)]" />
+                    <div className="h-px bg-[var(--primary)]/10 mx-2" />
 
                     {/* User Section */}
                     {status === "authenticated" && session.user ? (
