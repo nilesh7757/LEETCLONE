@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { CheckCircle, Circle, ChevronLeft, Calendar } from "lucide-react";
+import { CheckCircle, Circle, ChevronLeft, Calendar, Info, ChevronRight } from "lucide-react";
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import StudyPlanControls from "@/features/study-plans/components/StudyPlanControls";
+import { motion } from "framer-motion";
 
 interface StudyPlanDetailPageProps {
   params: Promise<{ slug: string }>;
