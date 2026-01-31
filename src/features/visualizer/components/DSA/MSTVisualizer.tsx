@@ -6,7 +6,7 @@ import {
   Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
   Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
   Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, RefreshCw, Plus, Trash2, Edit3, Move, X
+  TrendingUp, Activity, Layout, RefreshCw, Plus, Trash2, Edit3, Move, X, Check
 } from "lucide-react";
 
 // Professional Palette
