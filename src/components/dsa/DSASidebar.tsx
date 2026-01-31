@@ -48,7 +48,7 @@ export const DSASidebar = ({ filteredCategories, selectedCategory, setSelectedCa
                 }`}
                 style={isActive ? { backgroundColor: themeColor, boxShadow: `0 0 20px rgba(${themeRGB}, 0.2)` } : {}}
                 >
-                  {React.cloneElement(cat.icon as React.ReactElement, { size: 20 })}
+                  {React.cloneElement(cat.icon as React.ReactElement<any>, { size: 20 })}
                 </div>
                 
                 <div className="flex-1 min-w-0 relative z-10">
