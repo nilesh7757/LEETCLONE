@@ -502,7 +502,7 @@ export default function ProfilePage() {
                                             more: 'More',
                                         },
                                     }}
-                                    renderBlock={(block, activity) => (
+                                    renderBlock={(block: any, activity: any) => (
                                         React.cloneElement(block, {
                                             onMouseEnter: () => setHoveredDay(activity),
                                             onMouseLeave: () => setHoveredDay(null),
