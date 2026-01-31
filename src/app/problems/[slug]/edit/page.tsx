@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import axios from "axios";
-import ProblemForm, { ProblemFormData } from "@/components/ProblemForm";
+import ProblemForm, { ProblemFormData } from "@/features/problems/components/ProblemForm";
 import { motion } from "framer-motion";
 import { use } from "react";
 

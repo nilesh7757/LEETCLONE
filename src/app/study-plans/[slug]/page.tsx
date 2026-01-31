@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CheckCircle, Circle, ChevronLeft, Calendar } from "lucide-react";
 import { auth } from "@/auth";
-import AIWeaknessAnalysis from "@/components/AIWeaknessAnalysis";
-import StudyPlanControls from "@/components/StudyPlanControls";
+import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
+import StudyPlanControls from "@/features/study-plans/components/StudyPlanControls";
 
 interface StudyPlanDetailPageProps {
   params: Promise<{ slug: string }>;

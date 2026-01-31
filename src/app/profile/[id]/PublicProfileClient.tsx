@@ -1,15 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserCircle, Globe, Calendar, TrendingUp, Mail, ShieldCheck, AlertTriangle, Ban, Star, MessageSquare } from "lucide-react";
-import { useState, useEffect } from "react";
+import { UserCircle, Globe, Calendar, TrendingUp, Mail, ShieldCheck, AlertTriangle, Ban, Star, MessageSquare, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import dynamic from 'next/dynamic';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import FollowsModal from "@/components/Profile/FollowsModal";
+import FollowsModal from "@/features/profile/components/Profile/FollowsModal";
 import { io, Socket } from "socket.io-client";
 import Link from "next/link";
 
@@ -34,6 +34,7 @@ interface PublicProfileClientProps {
 export default function PublicProfileClient({ user }: PublicProfileClientProps) {
   const [stats, setStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [hoveredDay, setHoveredDay] = useState<{ date: string, count: number } | null>(null);
   const { theme } = useTheme();
   const { data: session } = useSession();
   const router = useRouter();
@@ -51,11 +52,12 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!user.id) return;
       try {
-        const { data } = await axios.get(`/api/users/${user.id}/stats`);
+        const { data } = await axios.get(`/api/users/${user.id}/performance`);
         setStats(data);
       } catch (error) {
-        console.error("Failed to load stats:", error);
+        console.error("Failed to load performance stats:", error);
       } finally {
         setLoadingStats(false);
       }
@@ -134,12 +136,12 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
   }
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[var(--background)]">
+    <div className="w-full">
       {/* Background Gradients */}
       <div className="fixed inset-0 bg-[var(--background)] -z-20 transition-colors duration-300" />
       <div className="fixed inset-0 bg-grid-pattern opacity-10 -z-10" />
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Panel: Profile Info */}
         <motion.div
@@ -367,39 +369,77 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
             </div>
 
             {/* Contribution Calendar Card */}
-            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md">
-                <div className="flex items-center gap-3 mb-6">
+            <div className="p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md overflow-hidden">
+                <div className="flex items-center gap-3 mb-8">
                     <div className="p-2 rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)]">
                         <Calendar className="w-6 h-6" />
                     </div>
                     <div>
                         <h3 className="text-xl font-bold text-[var(--foreground)]">Submission Heatmap</h3>
-                        <p className="text-sm text-[var(--foreground)]/60">Coding activity over the last year</p>
+                        <p className="text-sm text-[var(--foreground)]/60">Activity in {new Date().getFullYear()}</p>
                     </div>
                 </div>
 
-                <div className="flex justify-center overflow-x-auto pb-2">
-                    {loadingStats ? (
-                         <div className="py-12 flex items-center justify-center text-[var(--foreground)]/40">
-                            <Loader2 className="w-8 h-8 animate-spin" />
-                        </div>
-                    ) : stats?.calendarData?.length > 0 ? (
-                        <ActivityCalendar 
-                            data={stats.calendarData}
-                            theme={{
-                                light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-                                dark: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
-                            }}
-                            colorScheme={theme === 'dark' ? 'dark' : 'light'}
-                            blockSize={12}
-                            blockMargin={4}
-                            fontSize={12}
-                            style={{ color: 'var(--foreground)' }}
-                        />
-                    ) : (
-                        <div className="py-12 flex flex-col items-center justify-center text-[var(--foreground)]/40 border-2 border-dashed border-[var(--card-border)] rounded-xl">
-                            <Calendar className="w-10 h-10 mb-2 opacity-50" />
-                            <p>No activity yet.</p>
+                <div className="flex flex-col items-center">
+                    <div className="w-full overflow-x-auto pb-4 custom-scrollbar flex justify-center">
+                        {loadingStats ? (
+                            <div className="py-12 flex items-center justify-center text-[var(--foreground)]/40">
+                                <Loader2 className="w-8 h-8 animate-spin" />
+                            </div>
+                        ) : stats?.calendarData?.length > 0 ? (
+                            <div className="p-4 bg-[var(--background)]/30 rounded-xl border border-[var(--card-border)] w-fit">
+                                <ActivityCalendar 
+                                    data={stats.calendarData}
+                                    theme={{
+                                        light: ['#f0f0f0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
+                                        dark: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
+                                    }}
+                                    colorScheme={theme === 'dark' ? 'dark' : 'light'}
+                                    blockSize={13}
+                                    blockMargin={4}
+                                    fontSize={12}
+                                    showWeekdayLabels={true}
+                                    labels={{
+                                        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                                        weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                                        totalCount: '{{count}} submissions in {{year}}',
+                                        legend: {
+                                            less: 'Less',
+                                            more: 'More',
+                                        },
+                                    }}
+                                    renderBlock={(block, activity) => (
+                                        React.cloneElement(block, {
+                                            onMouseEnter: () => setHoveredDay(activity),
+                                            onMouseLeave: () => setHoveredDay(null),
+                                        })
+                                    )}
+                                />
+                            </div>
+                        ) : (
+                            <div className="py-12 flex flex-col items-center justify-center text-[var(--foreground)]/40 border-2 border-dashed border-[var(--card-border)] rounded-xl w-full">
+                                <Calendar className="w-10 h-10 mb-2 opacity-50" />
+                                <p>No activity yet.</p>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {!loadingStats && stats?.calendarData?.length > 0 && (
+                        <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-[var(--foreground)] uppercase tracking-widest min-h-[16px]">
+                            {hoveredDay ? (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-center gap-2 text-purple-500"
+                                >
+                                    <Sparkles className="w-3 h-3" />
+                                    {new Date(hoveredDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}: {hoveredDay.count} {hoveredDay.count === 1 ? 'submission' : 'submissions'}
+                                </motion.div>
+                            ) : (
+                                <div className="opacity-40 flex items-center gap-2">
+                                    <Sparkles className="w-3 h-3" /> Hover over squares to see daily activity
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -414,7 +454,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
             onClose={() => setActiveModal(null)} 
         />
       )}
-    </main>
+    </div>
       );
   }
   

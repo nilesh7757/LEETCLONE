@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
-import ProblemSearch from "@/components/ProblemSearch";
+import ProblemSearch from "@/features/problems/components/ProblemSearch";
 
 interface SelectedProblem {
   id: string;

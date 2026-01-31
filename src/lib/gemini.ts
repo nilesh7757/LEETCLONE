@@ -1,10 +1,12 @@
 import axios from "axios";
 import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 const groq = GROQ_API_KEY ? new Groq({ apiKey: GROQ_API_KEY }) : null;
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 export class AIError extends Error {
   status: number;
@@ -267,3 +269,82 @@ export async function chatWithAI(
 
   return await runAI(userPrompt, systemPrompt);
 }
+
+export async function chatWithAIStream(
+  messages: { role: "user" | "model"; parts: { text: string }[] }[],
+  context: { 
+    problemTitle: string; 
+    problemDescription: string; 
+    code: string; 
+    language: string;
+    isInterviewMode?: boolean;
+    isPeriodicQuestion?: boolean;
+    testCases?: any[];
+  }
+) {
+  if (!genAI) {
+    throw new Error("Gemini AI is not configured.");
+  }
+
+  const desc = context.problemDescription.substring(0, 1500);
+  const code = context.code.substring(0, 3000);
+  const testCasesStr = context.testCases && context.testCases.length > 0 
+    ? JSON.stringify(context.testCases.map(tc => ({ input: tc.input, expected: tc.expectedOutput })), null, 2)
+    : "No test cases provided.";
+
+  let systemPrompt = "";
+
+  if (context.isInterviewMode) {
+    systemPrompt = `
+      You are a Senior Technical Interviewer at a top tech company (like Google or Meta).
+      You are conducting a live technical interview for the problem: "${context.problemTitle}".
+      
+      Problem Description: ${desc}
+      Example Test Cases: ${testCasesStr}
+
+      User's Current Code:
+      \`\`\`\${context.language}
+      ${code}
+      \`\`\`
+
+      INTERVIEWER RULES:
+      1. Be professional, slightly formal, but fair.
+      2. If "isPeriodicQuestion" is true, ask a pointed question about their current code or approach.
+      3. If they are stuck, give a MINIMAL hint. Do NOT solve it for them.
+      4. Observe their code. If you see a major bug or inefficiency, ask them a question that might lead them to find it themselves.
+      5. Keep responses concise (max 3 sentences).
+    `;
+  } else {
+    systemPrompt = `
+      You are a strict but encouraging Socratic AI Coding Tutor. 
+      Problem: "${context.problemTitle}"
+      Description: ${desc}
+      Example Test Cases: ${testCasesStr}
+      User's Code: ${code}
+
+      RULES:
+      1. NEVER provide the full code solution at once.
+      2. Guide the user using hints and conceptual questions.
+      3. If they ask for help, point out logical errors in their code.
+      4. Only provide small code snippets (max 5 lines).
+      5. Be concise and professional.
+    `;
+  }
+
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: systemPrompt
+  });
+
+  const chat = model.startChat({
+    history: messages.slice(0, -1).map(m => ({
+      role: m.role === "model" ? "model" : "user",
+      parts: m.parts,
+    })),
+  });
+
+  const userMessage = messages[messages.length - 1]?.parts[0]?.text || "";
+  const result = await chat.sendMessageStream(userMessage);
+  return result.stream;
+}
+

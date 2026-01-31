@@ -10,14 +10,15 @@ import { io, Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import DiscussionSection from "@/components/Discussion/DiscussionSection";
+import DiscussionSection from "@/features/problems/components/Discussion/DiscussionSection";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { languages, getStarterCode } from "@/lib/starterCode";
-import TiptapEditor from "@/components/TiptapEditor";
-import Whiteboard from "@/components/Whiteboard";
-import GeminiChat from "@/components/GeminiChat";
-import BlueprintModal from "@/components/Blueprint/BlueprintModal";
+import TiptapEditor from "@/features/editor/components/TiptapEditor";
+import Whiteboard from "@/features/editor/components/Whiteboard";
+import GeminiChat from "@/features/ai/components/GeminiChat";
+import BlueprintModal from "@/features/problems/components/Blueprint/BlueprintModal";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 interface Problem {
   id: string;
@@ -1099,19 +1100,23 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
               </div>
             ) : activeLeftTab === 'discussion' ? (
                <div className="p-4">
-                  <DiscussionSection problemId={problem.id} />
+                  <ErrorBoundary name="Discussion">
+                    <DiscussionSection problemId={problem.id} />
+                  </ErrorBoundary>
                </div>
             ) : (
               /* AI Tutor Tab */
-            <GeminiChat
-              problemId={problem.id}
-              problemTitle={problem.title}
-              problemDescription={problem.description}
-              code={code}
-              language={language}
-              isInterviewMode={showBlueprint}
-              testCases={examples}
-            />
+            <ErrorBoundary name="AI Tutor">
+              <GeminiChat
+                problemId={problem.id}
+                problemTitle={problem.title}
+                problemDescription={problem.description}
+                code={code}
+                language={language}
+                isInterviewMode={showBlueprint}
+                testCases={examples}
+              />
+            </ErrorBoundary>
             )}
           </div>
         </div>
@@ -1181,10 +1186,12 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
                </div>
                
                <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-                  <TiptapEditor 
-                     description={code}
-                     onChange={(html) => setCode(html)}
-                  />
+                  <ErrorBoundary name="Design Editor">
+                    <TiptapEditor 
+                       description={code}
+                       onChange={(html) => setCode(html)}
+                    />
+                  </ErrorBoundary>
                </div>
             </div>
           ) : (

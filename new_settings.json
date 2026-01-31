@@ -1,0 +1,71 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "D:\\LEETCLONE",
+        "C:\\Users\\akash",
+        "C:\\Users\\akash\\Desktop"
+      ]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ]
+    },
+    "sqlite": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-sqlite",
+        "--db-path",
+        "C:\\Users\\akash\\memory.db"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    },
+    "mermaid": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@peng-shawn/mermaid-mcp-server"
+      ]
+    },
+    "puppeteer-real-browser": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "puppeteer-real-browser-mcp-server@latest",
+        "--browser-path=C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "--user-data-dir=C:\\Users\\akash\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data",
+        "--profile-directory=Profile 2",
+        "--headless=false"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+      }
+    }
+  },
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  },
+  "general": {
+    "previewFeatures": true
+  }
+}

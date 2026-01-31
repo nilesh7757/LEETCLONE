@@ -259,74 +259,77 @@ export async function POST(req: Request) {
     });
     console.log("[DEBUG] Submission Saved:", submission.id);
 
+    // --- SOLVED COUNT LOGIC (Performance Optimization) ---
+    if (overallStatus === "Accepted") {
+       // Check if this is the FIRST time the user solved this specific problem
+       const previousAccepted = await prisma.submission.count({
+          where: {
+             userId: session.user.id,
+             problemId,
+             status: "Accepted",
+             id: { not: submission.id }
+          }
+       });
+
+       if (previousAccepted === 0) {
+          await prisma.user.update({
+             where: { id: session.user.id },
+             data: { solvedCount: { increment: 1 } }
+          });
+          console.log("[DEBUG] Incremented solvedCount for user:", session.user.id);
+       }
+    }
+
     let updatedStreak = 0;
 
-    // --- STREAK LOGIC (Only for Daily Problem) ---
+    // --- GLOBAL STREAK LOGIC (Any Accepted Problem) ---
     if (overallStatus === "Accepted") {
-      // Check if this is the Daily Problem
-      const allProblems = await prisma.problem.findMany({
-        where: { isPublic: true },
-        select: { id: true },
-        orderBy: { createdAt: 'asc' },
+      console.log("[DEBUG] Updating Global Streak...");
+      
+      const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { streak: true, lastSolvedDate: true }
       });
 
-      if (allProblems.length > 0) {
-        const now = new Date();
-        const startOfEpoch = new Date(0);
-        const diffTime = now.getTime() - startOfEpoch.getTime();
-        const daysSinceEpoch = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        const dailyIndex = daysSinceEpoch % allProblems.length;
-        const dailyProblemId = allProblems[dailyIndex].id;
+      if (user) {
+          const today = new Date();
+          today.setUTCHours(0, 0, 0, 0);
+          
+          const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+          if (lastSolved) lastSolved.setUTCHours(0, 0, 0, 0);
 
-        if (problemId === dailyProblemId) {
-            console.log("[DEBUG] Updating Streak (Daily Problem Solved)...");
+          let newStreak = user.streak;
+
+          if (!lastSolved) {
+            // First ever solve
+            newStreak = 1;
+          } else if (lastSolved.getTime() === today.getTime()) {
+            // Already solved today, keep streak as is
+          } else {
+            const yesterday = new Date(today);
+            yesterday.setUTCDate(yesterday.getUTCDate() - 1);
             
-            // Update Streak
-            const user = await prisma.user.findUnique({
-                where: { id: session.user.id },
-                select: { streak: true, lastSolvedDate: true }
-            });
-
-            if (user) {
-                const today = new Date();
-                today.setUTCHours(0, 0, 0, 0);
-                
-                const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
-                if (lastSolved) lastSolved.setUTCHours(0, 0, 0, 0);
-
-                let newStreak = user.streak;
-
-                if (!lastSolved) {
-                // First ever solve
+            if (lastSolved.getTime() === yesterday.getTime()) {
+                // Solved yesterday, increment streak
+                newStreak++;
+            } else {
+                // Missed a day (or more), reset streak to 1 (because they solved one today)
                 newStreak = 1;
-                } else if (lastSolved.getTime() === today.getTime()) {
-                // Already solved today, keep streak
-                } else {
-                const yesterday = new Date(today);
-                yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-                
-                if (lastSolved.getTime() === yesterday.getTime()) {
-                    // Solved yesterday, increment streak
-                    newStreak++;
-                } else {
-                    // Missed a day, reset streak
-                    newStreak = 1;
-                }
-                }
-
-                updatedStreak = newStreak;
-
-                if (newStreak !== user.streak || !lastSolved || lastSolved.getTime() !== today.getTime()) {
-                    await prisma.user.update({
-                        where: { id: session.user.id },
-                        data: {
-                            streak: newStreak,
-                            lastSolvedDate: new Date()
-                        }
-                    });
-                }
             }
-        }
+          }
+
+          updatedStreak = newStreak;
+
+          // Update user record if streak changed or this is the first solve of the day
+          if (newStreak !== user.streak || !lastSolved || lastSolved.getTime() !== today.getTime()) {
+              await prisma.user.update({
+                  where: { id: session.user.id },
+                  data: {
+                      streak: newStreak,
+                      lastSolvedDate: new Date()
+                  }
+              });
+          }
       }
     }
 

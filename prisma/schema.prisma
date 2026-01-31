@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,129 +7,114 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ProblemType {
-  CODING
-  SHELL
-  INTERACTIVE
-  SYSTEM_DESIGN
-  SQL
-  READING
-}
-
 model Problem {
-  id          String      @id @default(uuid())
-  title       String
-  slug        String      @unique
-  difficulty  String      // "Easy", "Medium", "Hard"
-  category    String
-  description String
-  timeLimit   Int         @default(2) // Time limit in seconds
-  memoryLimit Int         @default(256) // Memory limit in MB
-  testSets    Json        @default("[]") // New field to store structured test cases
-  hints       String[]    @default([]) // Progressive hints for the user
-  pattern     String?     // e.g. "Sliding Window", "DP - Knapsack", "Graph - BFS"
-  blueprint   Json?       // Structured Q&A for the "Pre-Code" phase
-  referenceSolution String? // Added field for reference solution code
-  initialSchema     String? // SQL Schema creation script
-  initialData       String? // SQL Data insertion script
-  editorial   String?     @db.Text // Explanation and multi-language solutions
-  isPublic    Boolean     @default(true) // Determines if the problem is visible in the public library
-  isVerified  Boolean     @default(true) // Admin approval flag
-  source      String      @default("SYSTEM") // "SYSTEM", "USER", or "AI_GENERATED"
-  lastAiFeedback String?   @db.Text // Store user feedback for AI improvement
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                String             @id @default(uuid())
+  title             String
+  slug              String             @unique
+  difficulty        String
+  category          String
+  description       String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  referenceSolution String?
+  testSets          Json               @default("[]")
+  memoryLimit       Int                @default(256)
+  timeLimit         Int                @default(2)
+  isPublic          Boolean            @default(true)
+  creatorId         String?
+  editorial         String?
+  type              ProblemType        @default(CODING)
+  initialData       String?
+  initialSchema     String?
+  hints             String[]           @default([])
+  blueprint         Json?
+  pattern           String?
+  isVerified        Boolean            @default(true)
+  source            String             @default("SYSTEM")
+  lastAiFeedback    String?
+  blogPosts         BlogPost[]
+  comments          Comment[]
+  Draft             Draft[]
+  creator           User?              @relation("CreatedProblems", fields: [creatorId], references: [id])
+  studyPlans        StudyPlanProblem[]
+  submissions       Submission[]
+  contests          Contest[]          @relation("ContestToProblem")
 
-  // Problem Type Fields
-  type          ProblemType @default(CODING) // New field for problem type
-
-  creatorId   String?     // Optional for existing problems
-  creator     User?       @relation("CreatedProblems", fields: [creatorId], references: [id])
-
-  submissions Submission[]
-  contests    Contest[]   // Implicit many-to-many
-  studyPlans  StudyPlanProblem[]
-  comments    Comment[]
-  blogPosts   BlogPost[]
+  @@index([difficulty, category, isPublic])
+  @@index([type])
 }
 
 model StudyPlan {
-  id            String    @id @default(uuid())
-  title         String
-  slug          String    @unique
-  description   String
-  coverImage    String?
-  durationDays  Int?      // e.g. 7 for a 7-day plan, 30 for monthly
-  isPublic      Boolean   @default(false) // Default to false until published
-  isOfficial    Boolean   @default(false)
-  status        String    @default("DRAFT") // "DRAFT", "PENDING_PUBLISH", "PUBLISHED", "PENDING_UPDATE"
-  pendingData   Json?     // Stores proposed changes for admin review
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  creatorId     String?
-  creator       User?     @relation("CreatedStudyPlans", fields: [creatorId], references: [id])
-  
-  problems      StudyPlanProblem[]
-  enrollments   StudyPlanEnrollment[]
+  id           String                @id @default(uuid())
+  title        String
+  slug         String                @unique
+  description  String
+  coverImage   String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  durationDays Int?
+  creatorId    String?
+  isPublic     Boolean               @default(false)
+  isOfficial   Boolean               @default(false)
+  pendingData  Json?
+  status       String                @default("DRAFT")
+  creator      User?                 @relation("CreatedStudyPlans", fields: [creatorId], references: [id])
+  enrollments  StudyPlanEnrollment[]
+  problems     StudyPlanProblem[]
 }
 
 model StudyPlanProblem {
   id          String    @id @default(uuid())
   studyPlanId String
-  studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
   problemId   String
+  order       Int       @default(0)
   problem     Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  order       Int       @default(0) // Order within the plan (e.g., Day 1, Day 2)
+  studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
 
   @@unique([studyPlanId, problemId])
 }
 
 model StudyPlanEnrollment {
-  id            String    @id @default(uuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  studyPlanId   String
-  studyPlan     StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
-  enrolledAt    DateTime  @default(now())
-  
-  reminderTime  String?   // HH:mm format, e.g., "09:00"
-  isActive      Boolean   @default(true)
+  id           String    @id @default(uuid())
+  userId       String
+  studyPlanId  String
+  enrolledAt   DateTime  @default(now())
+  reminderTime String?
+  isActive     Boolean   @default(true)
+  studyPlan    StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, studyPlanId])
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  problemId String?  // Made optional
-  problem   Problem? @relation(fields: [problemId], references: [id], onDelete: Cascade) // Made optional
-  
-  blogPostId String? // New field for Blog Post
-  blogPost   BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: Cascade) // New relation
-  
-  userId    String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  parentId  String?
-  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Comment[] @relation("CommentReplies")
-  
-  votes     CommentVote[]
+  id         String        @id @default(uuid())
+  content    String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  problemId  String?
+  userId     String
+  parentId   String?
+  blogPostId String?
+  blogPost   BlogPost?     @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  parent     Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  children   Comment[]     @relation("CommentReplies")
+  problem    Problem?      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes      CommentVote[]
+
+  @@index([problemId])
+  @@index([blogPostId])
+  @@index([parentId])
 }
 
 model CommentVote {
-  id        String   @id @default(uuid())
-  type      String   // "UP" or "DOWN"
-  
+  id        String  @id @default(uuid())
+  type      String
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   commentId String
-  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
 }
@@ -140,143 +122,129 @@ model CommentVote {
 model UserRatingHistory {
   id           String   @id @default(uuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id])
   contestId    String
-  contest      Contest  @relation(fields: [contestId], references: [id])
   ratingBefore Int
   ratingAfter  Int
   rank         Int
   date         DateTime @default(now())
+  contest      Contest  @relation(fields: [contestId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model Submission {
-  id        String   @id @default(uuid())
-  code      String
-  language  String
-  status    String   // "Accepted", "Wrong Answer", "Time Limit Exceeded"
-  score     Int?     // For SYSTEM_DESIGN problems
-  runtime   Float?   // in ms
-  timeComplexity String?
+  id              String   @id @default(uuid())
+  code            String
+  language        String
+  status          String
+  runtime         Float?
+  createdAt       DateTime @default(now())
+  problemId       String
+  userId          String?
   spaceComplexity String?
-  testCaseResults Json? // Store detailed test case results
-  auditPassed  Boolean?  @default(true) // Whether the AI audit approved the method
-  auditFeedback String?  @db.Text // AI explanation for audit failure/success
-  createdAt DateTime @default(now())
-  
-  problemId String
-  problem   Problem @relation(fields: [problemId], references: [id])
-  
-  userId    String?
-  user      User?   @relation(fields: [userId], references: [id])
-  reports   Report[]
+  timeComplexity  String?
+  testCaseResults Json?
+  score           Int?
+  auditFeedback   String?
+  auditPassed     Boolean? @default(true)
+  reports         Report[]
+  problem         Problem  @relation(fields: [problemId], references: [id])
+  user            User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+  @@index([problemId, status])
+  @@index([createdAt(sort: Desc)])
 }
 
-// NextAuth.js models
 model User {
-  id            String    @id @default(uuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?    // Added for Credentials Provider
-  bio           String?
-  website       String?
-  description   String?
-  skills        String[]   @default([]) // User's technical skills (React, Java, etc.)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime? @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  submissions   Submission[] // Link existing submissions to User
-  createdProblems Problem[] @relation("CreatedProblems") // Added relation
-  createdContests Contest[] @relation("CreatedContests")
-  registrations   ContestRegistration[]
-  comments        Comment[]
-  commentVotes    CommentVote[]
-  blogPosts       BlogPost[]
-  rating          Int           @default(1500)
-  ratingHistory   UserRatingHistory[]
-  role            String        @default("USER") // "USER" or "ADMIN"
-  warnings        Int           @default(0)
-  isBanned        Boolean       @default(false)
-  reportsMade     Report[]      @relation("Reporter")
-
-  // Mock Interviews
-  mockInterviews  MockInterview[]
-
-  // Streak System
-  streak          Int           @default(0)
-  lastSolvedDate  DateTime?
-  lastActive      DateTime?     @default(now())
-
-  // Verification
-  otp             String?
-  otpExpires      DateTime?
-  isVerified      Boolean       @default(false)
-
-  // Password Reset
-  resetToken      String?
-  resetTokenExpires DateTime?
-
-  // Friend/Follow System (Codeforces style: unilateral)
-  following       User[]        @relation("UserFollows")
-  followedBy      User[]        @relation("UserFollows")
-
-  // Study Plans
-  createdStudyPlans    StudyPlan[] @relation("CreatedStudyPlans")
+  id                   String                    @id @default(uuid())
+  name                 String?
+  email                String?                   @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  bio                  String?
+  website              String?
+  description          String?
+  rating               Int                       @default(1500)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime?                 @updatedAt
+  role                 String                    @default("USER")
+  isBanned             Boolean                   @default(false)
+  warnings             Int                       @default(0)
+  isVerified           Boolean                   @default(false)
+  otp                  String?
+  otpExpires           DateTime?
+  resetToken           String?
+  resetTokenExpires    DateTime?
+  lastSolvedDate       DateTime?
+  streak               Int                       @default(0)
+  solvedCount          Int                       @default(0)
+  lastActive           DateTime?                 @default(now())
+  skills               String[]                  @default([])
+  accounts             Account[]
+  blogPosts            BlogPost[]
+  comments             Comment[]
+  commentVotes         CommentVote[]
+  createdContests      Contest[]                 @relation("CreatedContests")
+  registrations        ContestRegistration[]
+  conversations        ConversationParticipant[]
+  Draft                Draft[]
+  messages             Message[]
+  mockInterviews       MockInterview[]
+  sentNotifications    Notification[]            @relation("UserSentNotifications")
+  notifications        Notification[]            @relation("UserNotifications")
+  createdProblems      Problem[]                 @relation("CreatedProblems")
+  reportsMade          Report[]                  @relation("Reporter")
+  sessions             Session[]
+  snippets             Snippet[]
+  createdStudyPlans    StudyPlan[]               @relation("CreatedStudyPlans")
   studyPlanEnrollments StudyPlanEnrollment[]
+  submissions          Submission[]
+  UserBadge            UserBadge[]
+  ratingHistory        UserRatingHistory[]
+  following            User[]                    @relation("UserFollows")
+  followedBy           User[]                    @relation("UserFollows")
 
-  // Chat System
-  conversations   ConversationParticipant[]
-  messages        Message[]
-
-  // Snippets
-  snippets        Snippet[]
-
-  // Notifications
-  notifications     Notification[] @relation("UserNotifications")
-  sentNotifications Notification[] @relation("UserSentNotifications")
+  @@index([rating(sort: Desc)])
+  @@index([streak(sort: Desc)])
+  @@index([solvedCount(sort: Desc)])
 }
 
 model MockInterview {
-  id            String    @id @default(uuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  topic         String    // e.g. "Fullstack Developer", "Backend with Python"
-  difficulty    String    // "Entry", "Senior", "Staff"
-  status        String    @default("ONGOING") // "ONGOING", "COMPLETED"
-  
-  questions     Json      // Array of objects { id: string, question: string, type: "CONCEPTUAL" | "CODING" }
-  answers       Json      @default("[]") // Array of { questionId: string, answer: string, score: number, feedback: string }
-  
-  score         Int?      // 0-100 (Overall)
-  feedback      String?   @db.Text // Overall feedback
-  roadmap       Json?     // Array of { topic: string, reason: string, priority: string }
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id         String   @id @default(uuid())
+  userId     String
+  topic      String
+  difficulty String
+  status     String   @default("ONGOING")
+  questions  Json
+  answers    Json     @default("[]")
+  score      Int?
+  feedback   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  roadmap    Json?
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
   id        String   @id @default(uuid())
-  type      String   // COMMENT_REPLY, FOLLOW, CONTEST_START, SYSTEM
+  type      String
   message   String
   link      String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-
   userId    String
-  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-
   senderId  String?
   sender    User?    @relation("UserSentNotifications", fields: [senderId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
 }
 
 model Conversation {
-  id           String   @id @default(uuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String                    @id @default(uuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
   participants ConversationParticipant[]
   messages     Message[]
 }
@@ -284,96 +252,89 @@ model Conversation {
 model ConversationParticipant {
   id             String       @id @default(uuid())
   userId         String
-  user           User         @relation(fields: [userId], references: [id])
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
   lastReadAt     DateTime?    @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, conversationId])
 }
 
 model Message {
   id             String       @id @default(uuid())
-  content        String?      // Optional if it's just a file
-  type           String       @default("TEXT") // TEXT, IMAGE, VIDEO, AUDIO, FILE
+  content        String?
+  type           String       @default("TEXT")
   fileUrl        String?
   createdAt      DateTime     @default(now())
-  
   senderId       String
-  sender         User         @relation(fields: [senderId], references: [id])
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt(sort: Desc)])
 }
 
 model Report {
   id           String     @id @default(uuid())
   reason       String
   createdAt    DateTime   @default(now())
-  status       String     @default("PENDING") // PENDING, RESOLVED, DISMISSED
-  
+  status       String     @default("PENDING")
   submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id])
-  
   reporterId   String
   reporter     User       @relation("Reporter", fields: [reporterId], references: [id])
+  submission   Submission @relation(fields: [submissionId], references: [id])
 }
 
 model Contest {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  startTime   DateTime
-  endTime     DateTime
-  publishProblems Boolean @default(false) // Whether to make problems public after contest ends
-  isOfficial      Boolean @default(false) // Official contests are managed by admins
-  visibility  String   @default("PUBLIC") // "PUBLIC" or "PRIVATE"
-  accessCode  String?  // Code required to join if private
-  createdAt   DateTime @default(now())
-  
-  creatorId   String
-  creator     User     @relation("CreatedContests", fields: [creatorId], references: [id])
-  
-  problems    Problem[] // Implicit many-to-many
-  registrations ContestRegistration[]
-  ratingUpdates UserRatingHistory[]
-  blogPosts   BlogPost[]
+  id              String                @id @default(uuid())
+  title           String
+  description     String
+  startTime       DateTime
+  endTime         DateTime
+  createdAt       DateTime              @default(now())
+  creatorId       String
+  publishProblems Boolean               @default(false)
+  accessCode      String?
+  visibility      String                @default("PUBLIC")
+  isOfficial      Boolean               @default(false)
+  blogPosts       BlogPost[]
+  creator         User                  @relation("CreatedContests", fields: [creatorId], references: [id])
+  registrations   ContestRegistration[]
+  ratingUpdates   UserRatingHistory[]
+  problems        Problem[]             @relation("ContestToProblem")
 }
 
 model ContestRegistration {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  contestId String
-  contest   Contest  @relation(fields: [contestId], references: [id])
-  score     Int      @default(0)
-  rank      Int?
+  id           String   @id @default(uuid())
+  userId       String
+  contestId    String
+  score        Int      @default(0)
+  rank         Int?
   registeredAt DateTime @default(now())
+  contest      Contest  @relation(fields: [contestId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, contestId])
 }
 
 model BlogPost {
-  id          String   @id @default(uuid())
-  title       String
-  slug        String   @unique
-  content     String
-  excerpt     String?
-  coverImage  String?
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-
-  contestId   String?
-  contest     Contest? @relation(fields: [contestId], references: [id])
-  
-  problemId   String?
-  problem     Problem? @relation(fields: [problemId], references: [id])
-  
-  tags        String[]
-  comments    Comment[] // New inverse relation for comments
+  id         String    @id @default(uuid())
+  title      String
+  slug       String    @unique
+  content    String
+  excerpt    String?
+  coverImage String?
+  published  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  authorId   String
+  contestId  String?
+  problemId  String?
+  tags       String[]
+  author     User      @relation(fields: [authorId], references: [id])
+  contest    Contest?  @relation(fields: [contestId], references: [id])
+  problem    Problem?  @relation(fields: [problemId], references: [id])
+  comments   Comment[]
 }
 
 model Account {
@@ -382,15 +343,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -418,7 +378,57 @@ model Snippet {
   language  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String      @id
+  name        String      @unique
+  description String
+  icon        String
+  category    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  UserBadge   UserBadge[]
+}
+
+model CodeCache {
+  id        String   @id
+  hash      String   @unique
+  result    Json
+  createdAt DateTime @default(now())
+}
+
+model Draft {
+  id        String   @id
+  userId    String
+  problemId String
+  code      String
+  language  String
+  updatedAt DateTime
+  Problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId, language])
+}
+
+model UserBadge {
+  id        String   @id
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+  Badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+enum ProblemType {
+  CODING
+  SHELL
+  INTERACTIVE
+  SYSTEM_DESIGN
+  SQL
+  READING
 }

@@ -46,12 +46,12 @@ export default function LeaderboardPage() {
   };
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[var(--background)]">
+    <div className="w-full">
       {/* Background Gradients */}
       <div className="fixed inset-0 bg-[var(--background)] -z-20 transition-colors duration-300" />
       <div className="fixed inset-0 bg-grid-pattern opacity-10 -z-10" />
 
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -159,6 +159,6 @@ export default function LeaderboardPage() {
           </div>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }

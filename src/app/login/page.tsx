@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Loader2, Eye, EyeOff, Globe } from "lucide-react";
 import { toast } from "sonner";
-import LoginWall from "@/components/Login/Wall";
+import LoginWall from "@/features/auth/components/Login/Wall";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

@@ -129,7 +129,7 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
   }) : null;
 
   return (
-    <main className="h-screen flex flex-col pt-16 overflow-hidden bg-[var(--background)]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[var(--background)]">
       {/* Main Workspace - Client Component for Interactive Elements */}
       <WorkspaceClient 
         problem={{
@@ -142,6 +142,6 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
         showBlueprint={!!studyPlanId}
         alreadySolved={!!userSubmission}
       />
-    </main>
+    </div>
   );
 }

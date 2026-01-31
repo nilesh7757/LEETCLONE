@@ -14,16 +14,33 @@ export async function GET() {
       select: { streak: true, lastSolvedDate: true }
     });
 
+    if (!user) return NextResponse.json({ streak: 0, solvedToday: false });
+
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     
-    const lastSolved = user?.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
     if (lastSolved) lastSolved.setUTCHours(0, 0, 0, 0);
 
+    let currentStreak = user.streak;
     const solvedToday = lastSolved ? lastSolved.getTime() === today.getTime() : false;
 
+    // Auto-reset logic: If not solved today AND not solved yesterday, streak is broken
+    if (!solvedToday && (!lastSolved || lastSolved.getTime() < yesterday.getTime())) {
+      if (currentStreak > 0) {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { streak: 0 }
+        });
+        currentStreak = 0;
+      }
+    }
+
     return NextResponse.json({ 
-      streak: user?.streak || 0,
+      streak: currentStreak,
       solvedToday
     });
   } catch (error) {

@@ -20,18 +20,11 @@ export async function GET(req: Request) {
           name: true,
           image: true,
           rating: true,
-          _count: {
-            select: {
-              submissions: {
-                where: {
-                  status: "Accepted"
-                }
-              }
-            }
-          }
+          solvedCount: true,
         },
         orderBy: [
           { rating: "desc" },
+          { solvedCount: "desc" },
           { name: "asc" } // Tie-breaker
         ],
         take: limit,
@@ -51,7 +44,7 @@ export async function GET(req: Request) {
       name: user.name || "Anonymous",
       image: user.image,
       rating: user.rating,
-      solvedCount: user._count.submissions,
+      solvedCount: user.solvedCount,
     }));
 
     return NextResponse.json({ 

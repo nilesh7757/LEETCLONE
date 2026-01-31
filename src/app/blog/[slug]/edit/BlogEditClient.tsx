@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Edit2, Book, Hash, Image, Zap, FileText, Upload, X, Loader2 } from "lucide-react"; 
 import { toast } from "sonner";
 import axios from "axios";
-import TiptapEditor from "@/components/TiptapEditor";
+import TiptapEditor from "@/features/editor/components/TiptapEditor";
 
 interface BlogFormData {
   title: string;

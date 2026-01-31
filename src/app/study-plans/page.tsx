@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { BookOpen, Trophy, ArrowRight, Layers, Plus, Lock, Globe } from "lucide-react";
 import { auth } from "@/auth";
-import AIWeaknessAnalysis from "@/components/AIWeaknessAnalysis";
+import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import { Mic } from "lucide-react";
 
 export default async function StudyPlansPage() {
@@ -30,7 +30,7 @@ export default async function StudyPlansPage() {
   const myPlans = plans.filter(p => p.creatorId === userId);
 
   return (
-    <main className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="w-full">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
         <div className="text-left">
           <h1 className="text-4xl font-bold text-[var(--foreground)] mb-4">
@@ -121,7 +121,7 @@ export default async function StudyPlansPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
 

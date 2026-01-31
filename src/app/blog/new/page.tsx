@@ -7,7 +7,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
-import TiptapEditor from "@/components/TiptapEditor";
+import TiptapEditor from "@/features/editor/components/TiptapEditor";
 
 export default function NewBlogPostPage() {
   const { data: session, status } = useSession();

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import ProblemTable from "@/components/ProblemTable";
-import ProblemFilters from "@/components/ProblemFilters";
+import ProblemTable from "@/features/problems/components/ProblemTable";
+import ProblemFilters from "@/features/problems/components/ProblemFilters";
 import { auth } from "@/auth"; 
 import Link from "next/link"; 
 
@@ -99,12 +99,12 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="w-full">
       {/* Background Gradients */}
       <div className="fixed inset-0 bg-[var(--background)] -z-20 transition-colors duration-300" />
       <div className="fixed inset-0 bg-grid-pattern opacity-10 -z-10" />
       
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-[var(--foreground)] mb-4">
             Problems
@@ -156,6 +156,6 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
           currentPage={currentPage} 
         />
       </div>
-    </main>
+    </div>
   );
 }

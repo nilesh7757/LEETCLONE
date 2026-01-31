@@ -14,6 +14,12 @@
   --card-border: rgba(255, 255, 255, 0.1);
   --accent-gradient-from: #e4e4e7;
   --accent-gradient-to: #71717a;
+
+  /* Visualization Colors */
+  --board-bg: #0a0a0a;
+  --board-border: rgba(255, 255, 255, 0.1);
+  --cell-light: rgba(255, 255, 255, 0.02);
+  --cell-dark: rgba(255, 255, 255, 0.05);
 }
 
 [data-theme='light'] {
@@ -24,6 +30,11 @@
   --card-border: rgba(0, 0, 0, 0.1);
   --accent-gradient-from: #09090b;
   --accent-gradient-to: #52525b;
+
+  --board-bg: #ffffff;
+  --board-border: #e2e8f0;
+  --cell-light: #ffffff;
+  --cell-dark: #f1f5f9;
 }
 
 [data-theme='cream'] {
@@ -34,6 +45,11 @@
   --card-border: rgba(62, 48, 40, 0.12);
   --accent-gradient-from: #3E3028;
   --accent-gradient-to: #8A6A4B;
+
+  --board-bg: #F5EBE0;
+  --board-border: #D5C7B7;
+  --cell-light: #F5EBE0;
+  --cell-dark: #E3D5C8;
 }
 
 html {

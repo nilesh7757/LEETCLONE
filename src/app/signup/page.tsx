@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import LoginWall from "@/components/Login/Wall";
+import LoginWall from "@/features/auth/components/Login/Wall";
 
 export default function SignupPage() {
   const [name, setName] = useState("");

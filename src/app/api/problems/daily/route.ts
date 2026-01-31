@@ -16,14 +16,20 @@ export async function GET() {
       return NextResponse.json({ message: "No problems available" }, { status: 404 });
     }
 
-    // 2. Calculate "Daily" Index
-    // Use days since epoch to pick an index
+    // 2. Stable "Daily" Selection
     const now = new Date();
-    const startOfEpoch = new Date(0); // 1970-01-01
-    const diffTime = now.getTime() - startOfEpoch.getTime();
-    const daysSinceEpoch = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    const dailyIndex = daysSinceEpoch % problems.length;
+    // Use a string like "2026-01-30" as a seed
+    const dateString = now.toISOString().split('T')[0];
+    
+    // Simple hash function for the date string
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+      hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    
+    // Use the absolute hash to pick an index
+    const dailyIndex = Math.abs(hash) % problems.length;
     const dailyProblem = problems[dailyIndex];
 
     return NextResponse.json({ problem: dailyProblem });
