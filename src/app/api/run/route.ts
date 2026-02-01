@@ -37,18 +37,20 @@ export async function POST(req: Request) {
       });
     }
 
-    // Filter for example test cases
-    let exampleTestCases: TestInputOutput[] = [];
-    
-    if (problem) {
+    // Determine test cases to run
+    let finalTestCases: TestInputOutput[] = [];
+
+    if (testCases && Array.isArray(testCases) && testCases.length > 0) {
+      // Prioritize custom test cases sent from the client
+      finalTestCases = testCases;
+    } else if (problem) {
+      // Fallback to stored example test cases
       let allTestSets: TestInputOutput[] = [];
       if (Array.isArray(problem.testSets)) {
         allTestSets = problem.testSets as unknown as TestInputOutput[];
       }
-      exampleTestCases = allTestSets.filter(tc => tc.isExample === true);
-    } else if (testCases) {
-      exampleTestCases = testCases;
-    }
+      finalTestCases = allTestSets.filter(tc => tc.isExample === true);
+    } 
 
     try {
       let results;
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
         problemId: problemId || "new-problem",
         type: finalType,
         code,
-        testCases: exampleTestCases,
+        testCases: finalTestCases,
         timeLimit: problem?.timeLimit || timeLimit || 2,
         memoryLimit: problem?.memoryLimit || memoryLimit || 256,
         initialSchema: (problem?.initialSchema || initialSchema) ?? undefined,

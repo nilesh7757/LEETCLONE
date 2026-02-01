@@ -29,9 +29,11 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       <MobileNav />
 
       {/* Desktop Top Utilities */}
-      <div className="hidden md:block fixed top-0 right-0 z-40">
-        <UserTopNav />
-      </div>
+      {!isWorkspace && (
+        <div className="hidden md:block fixed top-0 right-0 z-40">
+          <UserTopNav />
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 md:pl-64 pt-16 md:pt-0 min-h-screen relative flex flex-col transition-all duration-200 ease-in-out overflow-hidden">

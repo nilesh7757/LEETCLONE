@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun, Coffee, Check } from "lucide-react";
+import { Moon, Sun, Coffee, Check, Palette } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -14,7 +14,6 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
   React.useEffect(() => {
     setMounted(true);
     
-    // Close dropdown when clicking outside
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -26,14 +25,14 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
 
   if (!mounted) {
     return (
-      <div className="w-9 h-9 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] animate-pulse" />
+      <div className="w-10 h-10 rounded-full bg-[var(--muted)] animate-pulse" />
     );
   }
 
   const themes = [
-    { id: "dark", label: "Dark", icon: Moon },
-    { id: "light", label: "Light", icon: Sun },
-    { id: "cream", label: "Cream", icon: Coffee },
+    { id: "dark", label: "Dark", icon: Moon, color: "text-blue-400" },
+    { id: "light", label: "Light", icon: Sun, color: "text-amber-400" },
+    { id: "cream", label: "Cream", icon: Coffee, color: "text-orange-400" },
   ];
 
   const currentTheme = themes.find((t) => t.id === theme) || themes[0];
@@ -42,10 +41,11 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-9 h-9 flex items-center justify-center rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] hover:bg-[var(--foreground)]/5 transition-colors text-[var(--foreground)]"
+        className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)]/50 border border-[var(--border)] hover:bg-[var(--muted)] hover:border-[var(--foreground)]/20 transition-all duration-300"
         aria-label="Toggle theme"
       >
-        <currentTheme.icon className="w-4 h-4" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-purple)]/0 to-[var(--viz-cyan)]/0 group-hover:from-[var(--viz-purple)]/10 group-hover:to-[var(--viz-cyan)]/10 transition-all duration-500" />
+        <currentTheme.icon className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors" />
       </button>
 
       <AnimatePresence>
@@ -54,9 +54,12 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
             initial={{ opacity: 0, y: direction === "up" ? 10 : -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: direction === "up" ? 10 : -10, scale: 0.95 }}
-            transition={{ duration: 0.1 }}
-            className={`absolute right-0 ${direction === "up" ? "bottom-full mb-2" : "top-full mt-2"} w-36 py-1 rounded-xl border border-[var(--card-border)] bg-[var(--background)] shadow-xl z-50 backdrop-blur-xl`}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className={`absolute right-0 ${direction === "up" ? "bottom-full mb-3" : "top-full mt-3"} w-48 p-2 rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-xl shadow-2xl shadow-black/20 z-50`}
           >
+            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] border-b border-[var(--border)] mb-1 opacity-50">
+                Interface Mode
+            </div>
             {themes.map((t) => (
               <button
                 key={t.id}
@@ -64,13 +67,21 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
                   setTheme(t.id);
                   setIsOpen(false);
                 }}
-                className="w-full px-3 py-2 flex items-center justify-between text-sm text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors"
+                className={`w-full px-3 py-2.5 flex items-center justify-between text-sm rounded-xl transition-all duration-200 group ${
+                    theme === t.id 
+                    ? "bg-[var(--foreground)]/5 text-[var(--foreground)] font-medium" 
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--foreground)]/5 hover:text-[var(--foreground)]"
+                }`}
               >
-                <div className="flex items-center gap-2">
-                  <t.icon className="w-4 h-4 opacity-70" />
+                <div className="flex items-center gap-3">
+                  <t.icon className={`w-4 h-4 ${theme === t.id ? t.color : "opacity-50 group-hover:opacity-100"}`} />
                   <span>{t.label}</span>
                 </div>
-                {theme === t.id && <Check className="w-3 h-3 text-green-500" />}
+                {theme === t.id && (
+                    <motion.div layoutId="activeTheme" transition={{ duration: 0.2 }}>
+                        <Check className="w-3.5 h-3.5 text-[var(--viz-green)]" />
+                    </motion.div>
+                )}
               </button>
             ))}
           </motion.div>

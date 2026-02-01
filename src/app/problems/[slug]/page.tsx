@@ -1,7 +1,3 @@
-import Split from "react-split";
-import { Editor } from "@monaco-editor/react";
-import { Play, Send, ChevronLeft, Settings, RotateCcw } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import WorkspaceClient from "./WorkspaceClient";
@@ -115,7 +111,7 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
     (rawTestSets.examples as TestInputOutput[]).forEach(tc => allTestCases.push({ ...tc, isExample: true }));
     (rawTestSets.hidden as TestInputOutput[]).forEach(tc => allTestCases.push({ ...tc, isExample: false }));
   } else {
-    console.error("page.tsx: Unexpected format for problem.testSets:", rawTestSets);
+    // console.error("page.tsx: Unexpected format for problem.testSets:", rawTestSets);
     allTestCases = [];
   }
 
@@ -129,7 +125,10 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
   }) : null;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[var(--background)]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[var(--background)] relative">
+      {/* Background Ambience */}
+      <div className="absolute inset-0 pointer-events-none -z-10 bg-grid-pattern opacity-[0.02]" />
+      
       {/* Main Workspace - Client Component for Interactive Elements */}
       <WorkspaceClient 
         problem={{

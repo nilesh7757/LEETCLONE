@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Check, ChevronLeft, ChevronRight, ArrowRight, Code2, Sparkles, Lock, Flame } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Problem {
   id: string;
@@ -21,115 +21,135 @@ interface ProblemTableProps {
   currentPage: number;
 }
 
+const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
+  const config = {
+    Easy: { color: "var(--viz-green)", bg: "var(--viz-green-rgb)" },
+    Medium: { color: "var(--viz-amber)", bg: "var(--viz-amber-rgb)" },
+    Hard: { color: "var(--viz-red)", bg: "var(--viz-red-rgb)" },
+  }[difficulty] || { color: "var(--muted-foreground)", bg: "100, 100, 100" };
+
+  return (
+    <span 
+        className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border border-transparent backdrop-blur-md"
+        style={{ 
+            color: config.color,
+            backgroundColor: `rgba(${config.bg}, 0.1)`,
+            borderColor: `rgba(${config.bg}, 0.15)`
+        }}
+    >
+      {difficulty}
+    </span>
+  );
+};
+
 export default function ProblemTable({ problems, totalPages, currentPage }: ProblemTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
-    
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", newPage.toString());
     router.push(`?${params.toString()}`);
   };
 
-  return (
-    <div className="w-full space-y-4">
-      <div className="w-full overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-[var(--card-border)] text-[var(--foreground)]/60">
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Title</th>
-                <th className="px-6 py-4 font-medium">Difficulty</th>
-                <th className="px-6 py-4 font-medium">Category</th>
-                <th className="px-6 py-4 font-medium text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--card-border)]">
-              {problems.map((problem, index) => (
-                <motion.tr
-                  key={problem.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="group hover:bg-[var(--foreground)]/5 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    {problem.isSolved ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-500" aria-label="Solved" />
-                    ) : problem.isAttempted ? (
-                      <Clock className="w-5 h-5 text-yellow-500" aria-label="Attempted" />
-                    ) : (
-                      <span className="inline-block w-3 h-3 rounded-full bg-[var(--foreground)]/20" aria-label="Not attempted"></span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-[var(--foreground)]">
-                    <Link href={`/problems/${problem.slug}`} className="hover:underline">
-                      {problem.title}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link href={`/?difficulty=${problem.difficulty}`}>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity ${
-                          problem.difficulty === "Easy"
-                            ? "bg-green-500/10 text-green-500 border-green-500/20"
-                            : problem.difficulty === "Medium"
-                            ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                            : "bg-red-500/10 text-red-500 border-red-500/20"
-                        }`}
-                      >
-                        {problem.difficulty}
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 text-[var(--foreground)]/60">
-                    <Link href={`/?category=${problem.category}`} className="hover:text-[var(--foreground)] hover:underline transition-colors">
-                      {problem.category}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/problems/${problem.slug}`}
-                      className="inline-flex items-center gap-1 text-[var(--foreground)] hover:text-[var(--accent-gradient-to)] transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      Solve <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
+  if (problems.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center rounded-[3rem] bg-[var(--card)]/30 backdrop-blur-sm border-2 border-dashed border-[var(--border)]">
+        <div className="w-20 h-20 bg-[var(--muted)]/50 rounded-full flex items-center justify-center mb-6">
+          <Code2 className="w-10 h-10 text-[var(--muted-foreground)]/50" />
         </div>
-        {problems.length === 0 && (
-          <div className="p-12 text-center text-[var(--foreground)]/40">
-            No problems found. Try adjusting your filters.
-          </div>
-        )}
+        <h3 className="text-2xl font-light text-[var(--foreground)]">No signals found</h3>
+        <p className="text-sm text-[var(--muted-foreground)] mt-2 font-mono uppercase tracking-widest">Adjust filters to calibrate search.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 gap-5">
+        {problems.map((problem, idx) => (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            key={problem.id}
+            className="group relative bg-[var(--card)] rounded-2xl p-1 transition-all duration-300 hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/5 hover:-translate-y-1"
+          >
+            {/* Hover Glow Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--viz-cyan)]/0 via-[var(--viz-cyan)]/5 to-[var(--viz-purple)]/5 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500 pointer-events-none" />
+
+            <div className="relative bg-[var(--card)] rounded-xl p-6 h-full flex flex-col md:flex-row md:items-center gap-6 z-10 overflow-hidden">
+                {/* Status Indicator Bar */}
+                {problem.isSolved && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--viz-green)]" />
+                )}
+                
+                <div className="flex-1 space-y-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <Link href={`/problems/${problem.slug}`} className="text-xl font-bold text-[var(--foreground)] group-hover:text-[var(--viz-cyan)] transition-colors line-clamp-1">
+                            {problem.title}
+                        </Link>
+                        
+                        {problem.isSolved && (
+                            <div className="flex items-center gap-1 text-[var(--viz-green)] text-[10px] font-black uppercase tracking-widest bg-[var(--viz-green)]/10 px-2 py-0.5 rounded-full">
+                                <Check size={10} /> Complete
+                            </div>
+                        )}
+                        {!problem.isSolved && Math.random() > 0.8 && (
+                            <div className="flex items-center gap-1 text-[var(--viz-amber)] text-[10px] font-black uppercase tracking-widest bg-[var(--viz-amber)]/10 px-2 py-0.5 rounded-full animate-pulse">
+                                <Flame size={10} /> Trending
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm text-[var(--muted-foreground)]">
+                        <DifficultyBadge difficulty={problem.difficulty} />
+                        <div className="w-1 h-1 rounded-full bg-[var(--muted-foreground)]/30" />
+                        <span className="font-mono text-xs uppercase tracking-wider opacity-60">{problem.category}</span>
+                    </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="flex-shrink-0">
+                    <Link 
+                       href={`/problems/${problem.slug}`}
+                       className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
+                           problem.isSolved 
+                             ? "bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]/80"
+                             : "bg-[var(--foreground)] text-[var(--background)] hover:bg-[var(--viz-cyan)] hover:text-black hover:shadow-lg hover:shadow-[var(--viz-cyan)]/25"
+                       }`}
+                    >
+                       {problem.isSolved ? "Review" : "Solve"} <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination - Minimalist */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 pt-4">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] disabled:opacity-50 hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-sm text-[var(--foreground)]/60">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] disabled:opacity-50 hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        <div className="flex justify-center items-center gap-6 pt-10">
+           <button
+             onClick={() => handlePageChange(currentPage - 1)}
+             disabled={currentPage === 1}
+             className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--card)] hover:bg-[var(--muted)] disabled:opacity-30 disabled:hover:bg-[var(--card)] text-[var(--foreground)] transition-all shadow-lg"
+           >
+             <ChevronLeft className="w-5 h-5" />
+           </button>
+           
+           <span className="text-xs font-mono font-black tracking-widest text-[var(--muted-foreground)]">
+             PAGE <span className="text-[var(--foreground)] text-base mx-1">{currentPage}</span> / {totalPages}
+           </span>
+           
+           <button
+             onClick={() => handlePageChange(currentPage + 1)}
+             disabled={currentPage === totalPages}
+             className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--card)] hover:bg-[var(--muted)] disabled:opacity-30 disabled:hover:bg-[var(--card)] text-[var(--foreground)] transition-all shadow-lg"
+           >
+             <ChevronRight className="w-5 h-5" />
+           </button>
         </div>
       )}
     </div>

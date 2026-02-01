@@ -4,9 +4,10 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import { Flame, Zap } from "lucide-react";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import NotificationBell from "../ui/NotificationBell";
+import { motion } from "framer-motion";
 
 export default function UserTopNav() {
   const { data: session, status } = useSession();
@@ -44,26 +45,24 @@ export default function UserTopNav() {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 sm:gap-4 p-4">
+    <div className="flex items-center gap-3 sm:gap-6 p-4 md:p-6 bg-gradient-to-b from-[var(--background)] to-transparent pointer-events-auto">
       {status === "authenticated" && (
         <Link
           href={dailySlug ? `/problems/${dailySlug}` : "/problems"}
-          className={`flex items-center gap-2 px-2 py-1.5 transition-all duration-300 rounded-lg hover:bg-[var(--foreground)]/5 ${
-            solvedToday
-              ? "text-[var(--viz-gold)]"
-              : "text-[var(--muted-foreground)]"
-          }`}
+          className="group relative flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-[var(--foreground)]/5"
         >
-          <Flame
-            className={`w-5 h-5 ${
-              solvedToday ? "fill-[var(--viz-gold)] text-[var(--viz-gold)]" : ""
-            }`}
-          />
-          <span className="text-sm font-bold">{streak}</span>
+          <div className={`relative flex items-center justify-center transition-all duration-500 ${solvedToday ? "text-[var(--viz-gold)]" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"}`}>
+             <Flame className={`w-5 h-5 ${solvedToday ? "fill-[var(--viz-gold)] drop-shadow-[0_0_10px_rgba(245,158,11,0.6)] animate-pulse" : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100"}`} />
+          </div>
+          <span className={`text-sm font-bold font-mono transition-colors ${solvedToday ? "text-[var(--viz-gold)]" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"}`}>
+            {streak}
+          </span>
         </Link>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="h-8 w-[1px] bg-[var(--border)] hidden sm:block" />
+
+      <div className="flex items-center gap-3">
         {status === "authenticated" && <NotificationBell />}
         <ThemeToggle direction="down" />
       </div>

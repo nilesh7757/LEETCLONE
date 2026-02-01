@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import ProblemTable from "@/features/problems/components/ProblemTable";
 import ProblemFilters from "@/features/problems/components/ProblemFilters";
+import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
 import { auth } from "@/auth"; 
-import Link from "next/link"; 
+import { Trophy, Target, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -16,42 +17,57 @@ interface PageProps {
   }>;
 }
 
+async function getStats(userId?: string) {
+  const totalProblems = await prisma.problem.count();
+  
+  let solvedCount = 0;
+  let attemptCount = 0;
+
+  if (userId) {
+    const submissions = await prisma.submission.findMany({
+      where: { userId },
+      select: { status: true, problemId: true }
+    });
+    
+    const uniqueSolved = new Set(submissions.filter(s => s.status === "Accepted").map(s => s.problemId));
+    solvedCount = uniqueSolved.size;
+    attemptCount = new Set(submissions.map(s => s.problemId)).size;
+  }
+
+  return { totalProblems, solvedCount, attemptCount };
+}
+
 export default async function ProblemsPage({ searchParams }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id;
+  const stats = await getStats(userId);
   
   const resolvedSearchParams = await searchParams;
   const currentTab = resolvedSearchParams.tab === "mine" ? "mine" : "public";
   const currentPage = parseInt(resolvedSearchParams.page || "1");
-  const pageSize = 20;
+  const pageSize = 12; 
   const skip = (currentPage - 1) * pageSize;
 
-  // Build Filter Query
   const whereClause: any = {};
-
-  // Tab Logic
   if (currentTab === "mine" && userId) {
     whereClause.creatorId = userId;
   } else {
-    // Default Public Tab Logic
     whereClause.OR = [
       { isPublic: true },
       { contests: { some: { endTime: { lte: new Date() }, publishProblems: true } } }
     ];
   }
 
-  // Search & Filters
   if (resolvedSearchParams.search) {
     whereClause.title = { contains: resolvedSearchParams.search, mode: 'insensitive' };
   }
-  if (resolvedSearchParams.difficulty) {
+  if (resolvedSearchParams.difficulty && resolvedSearchParams.difficulty !== "All") {
     whereClause.difficulty = resolvedSearchParams.difficulty;
   }
-  if (resolvedSearchParams.category) {
+  if (resolvedSearchParams.category && resolvedSearchParams.category !== "All") {
     whereClause.category = resolvedSearchParams.category;
   }
 
-  // Fetch Data
   const [problems, totalCount] = await prisma.$transaction([
     prisma.problem.findMany({
       where: whereClause,
@@ -62,7 +78,6 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
     prisma.problem.count({ where: whereClause })
   ]);
 
-  // Determine Solved Status
   let solvedProblemIds: Set<string> = new Set();
   let attemptedProblemIds: Set<string> = new Set();
 
@@ -70,16 +85,9 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
     const allSubmissions = await prisma.submission.findMany({
       where: {
         userId: userId,
-        problemId: { in: problems.map(p => p.id) } // Optimization: only fetch for current page problems? 
-        // No, to be accurate about "Attempted" globally we might need more, but checking against *these* 20 is efficient.
-        // Actually, if I solved it 2 years ago, I want it marked solved even if I didn't submit *recently*.
-        // The previous code fetched ALL submissions. For 2000 problems and 10k submissions, that's heavy.
-        // Better: Fetch submissions ONLY for the problems displayed on this page.
+        problemId: { in: problems.map(p => p.id) }
       },
-      select: {
-        problemId: true,
-        status: true,
-      },
+      select: { problemId: true, status: true },
     });
 
     allSubmissions.forEach(sub => {
@@ -99,62 +107,83 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="w-full">
-      {/* Background Gradients */}
-      <div className="fixed inset-0 bg-[var(--background)] -z-20 transition-colors duration-300" />
-      <div className="fixed inset-0 bg-grid-pattern opacity-10 -z-10" />
+    <div className="min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--viz-cyan)]/30">
       
-      <div className="w-full">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-[var(--foreground)] mb-4">
-            Problems
-          </h1>
-          <p className="text-[var(--foreground)]/60 max-w-2xl">
-            Browse our collection of coding challenges. Filter by difficulty, category, 
-            or search for specific topics to practice.
-          </p>
+      {/* Cinematic Background Glows */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[var(--viz-purple)]/5 blur-[150px] rounded-full mix-blend-screen" />
+          <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-[var(--viz-cyan)]/5 blur-[150px] rounded-full mix-blend-screen" />
+          <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] bg-[var(--viz-blue)]/5 blur-[150px] rounded-full mix-blend-screen" />
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                <Sparkles size={20} />
+              </div>
+              <span className="text-[10px] font-black tracking-[0.3em] text-[var(--muted-foreground)] uppercase">
+                Engineering Challenges
+              </span>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl font-light tracking-tight text-[var(--foreground)]">
+              Problem <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] font-medium">Matrix</span>
+            </h1>
+            <p className="text-lg text-[var(--muted-foreground)] max-w-2xl font-light leading-relaxed">
+              Explore a vast collection of algorithmic challenges designed to refine your cognitive stack.
+            </p>
+          </div>
+
+          {/* Stats Pills */}
+          <div className="flex gap-4">
+             <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/10">
+                <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] group-hover:scale-110 transition-transform">
+                  <Target className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[var(--foreground)]">{stats.totalProblems}</div>
+                  <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Available</div>
+                </div>
+             </div>
+             
+             {userId && (
+                <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-green)]/10">
+                    <div className="p-3 bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] group-hover:scale-110 transition-transform">
+                      <Trophy className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-[var(--foreground)]">{stats.solvedCount}</div>
+                      <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Solved</div>
+                    </div>
+                </div>
+             )}
+          </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-6 mb-8 border-b border-[var(--card-border)]">
-          <Link
-            href="/problems?tab=public"
-            className={`pb-3 text-sm font-medium transition-colors relative ${
-              currentTab === "public"
-                ? "text-[var(--foreground)]"
-                : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
-            }`}
-          >
-            Public Problems
-            {currentTab === "public" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-gradient-to)] rounded-t-full" />
-            )}
-          </Link>
+        {/* Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
-          {userId && (
-            <Link
-              href="/problems?tab=mine"
-              className={`pb-3 text-sm font-medium transition-colors relative ${
-                currentTab === "mine"
-                  ? "text-[var(--foreground)]"
-                  : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
-              }`}
-            >
-              My Problems
-              {currentTab === "mine" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-gradient-to)] rounded-t-full" />
-              )}
-            </Link>
-          )}
+          {/* Sidebar Filters (Left) */}
+          <div className="lg:col-span-3 space-y-8">
+            <DailyProblemCard />
+            <div className="sticky top-8">
+              <ProblemFilters />
+            </div>
+          </div>
+
+          {/* Main Content (Right) */}
+          <div className="lg:col-span-9 space-y-8">
+             <ProblemTable 
+                problems={problemsWithStatus} 
+                totalPages={totalPages} 
+                currentPage={currentPage} 
+             />
+          </div>
         </div>
-
-        <ProblemFilters />
-
-        <ProblemTable 
-          problems={problemsWithStatus} 
-          totalPages={totalPages} 
-          currentPage={currentPage} 
-        />
       </div>
     </div>
   );

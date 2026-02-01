@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Calendar, ArrowRight, Loader2, Code2, Database, LayoutTemplate } from "lucide-react";
+import { ArrowRight, Loader2, Code2, Database, LayoutTemplate, Zap, Clock } from "lucide-react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
@@ -35,8 +35,8 @@ export default function DailyProblemCard() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-md mx-auto p-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)]/50 backdrop-blur-md flex justify-center items-center h-32">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--foreground)]/40" />
+      <div className="w-full h-32 rounded-3xl bg-[var(--card)]/30 backdrop-blur-md animate-pulse flex items-center justify-center">
+         <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" />
       </div>
     );
   }
@@ -45,49 +45,57 @@ export default function DailyProblemCard() {
 
   const getIcon = () => {
       switch(problem.type) {
-          case 'SQL': return <Database className="w-5 h-5 text-blue-500" />;
-          case 'SYSTEM_DESIGN': return <LayoutTemplate className="w-5 h-5 text-purple-500" />;
-          default: return <Code2 className="w-5 h-5 text-green-500" />;
+          case 'SQL': return <Database className="w-5 h-5 text-[var(--viz-blue)]" />;
+          case 'SYSTEM_DESIGN': return <LayoutTemplate className="w-5 h-5 text-[var(--viz-purple)]" />;
+          default: return <Code2 className="w-5 h-5 text-[var(--viz-green)]" />;
       }
   };
 
+  const difficultyColor = 
+      problem.difficulty === "Easy" ? "var(--viz-green)" : 
+      problem.difficulty === "Medium" ? "var(--viz-amber)" : 
+      "var(--viz-red)";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
-      className="w-full max-w-md mx-auto mt-10 relative group"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative group"
     >
-      <Link href={`/problems/${problem.slug}`} className="block">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500" />
-        <div className="relative p-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-xl hover:border-[var(--foreground)]/20 transition-colors">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-[var(--foreground)]/80">
-              <Calendar className="w-5 h-5" />
-              <span className="text-sm font-semibold uppercase tracking-wider">Problem of the Day</span>
-            </div>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-               problem.difficulty === "Easy" ? "bg-green-500/10 text-green-500 border-green-500/20" :
-               problem.difficulty === "Medium" ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
-               "bg-red-500/10 text-red-500 border-red-500/20"
-            }`}>
-              {problem.difficulty}
-            </span>
-          </div>
-
-          <h3 className="text-xl font-bold text-[var(--foreground)] mb-2 flex items-center gap-2">
-              {getIcon()}
-              {problem.title}
-          </h3>
+      <Link href={`/problems/${problem.slug}`} className="block h-full">
+        <div className="relative p-8 rounded-[2rem] bg-[var(--card)] overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/10 group-hover:-translate-y-1">
           
-          <p className="text-sm text-[var(--foreground)]/60 mb-6">
-             {problem.category}
-          </p>
+          {/* Background Decor */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[var(--viz-cyan)]/10 to-transparent rounded-bl-[10rem] opacity-50 group-hover:opacity-100 transition-opacity" />
+          
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                 <div className="p-2 bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] rounded-lg">
+                    <Zap size={18} fill="currentColor" />
+                 </div>
+                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Daily Context</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--background)] border border-[var(--border)]">
+                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: difficultyColor }} />
+                 <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: difficultyColor }}>{problem.difficulty}</span>
+              </div>
+            </div>
 
-          <div
-            className="w-full py-3 bg-[var(--foreground)] text-[var(--background)] font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-          >
-            Solve Now <ArrowRight className="w-4 h-4" />
+            <h3 className="text-2xl font-bold text-[var(--foreground)] mb-2 flex items-center gap-3 group-hover:text-[var(--viz-cyan)] transition-colors">
+                {getIcon()}
+                {problem.title}
+            </h3>
+            
+            <p className="text-sm font-light text-[var(--muted-foreground)] mb-8 line-clamp-2">
+               Mastering {problem.category} patterns for optimal performance.
+            </p>
+
+            <div className="mt-auto flex items-center text-[var(--viz-cyan)] font-bold text-xs uppercase tracking-widest gap-2 opacity-80 group-hover:opacity-100 group-hover:gap-4 transition-all">
+               Initialize Sequence <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </div>
       </Link>
