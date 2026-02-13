@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { AlertTriangle, Ban, CheckCircle, XCircle, ShieldAlert, Users, FileText, Lock, Unlock, Eye, EyeOff, Plus, Pencil, Sparkles, Check, X, Calendar } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle, ShieldAlert, Users, FileText, Lock, Unlock, Eye, EyeOff, Plus, Pencil, Sparkles, Check, X, Calendar } from "lucide-react";
 import Link from "next/link";
 
 interface Report {
@@ -53,10 +53,47 @@ interface Problem {
   isVerified: boolean;
   source: string;
   createdAt: string;
+  creatorId: string | null;
   creator: {
     name: string;
     email: string;
   } | null;
+}
+
+interface StudyPlan {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  status: string;
+  updatedAt: string;
+  creator: {
+    name: string;
+    email: string;
+  } | null;
+  pendingData?: {
+    title?: string;
+    description?: string;
+  };
+}
+
+interface TestCase {
+  input: any;
+  output: any;
+}
+
+interface GeneratedProblem {
+  title: string;
+  slug: string;
+  difficulty: string;
+  category: string;
+  description: string;
+  testCases: TestCase[];
+  referenceSolution: string;
+  timeLimit: number;
+  memoryLimit: number;
+  problemType: string;
+  hints: string[];
 }
 
 export default function AdminDashboard() {
@@ -65,12 +102,12 @@ export default function AdminDashboard() {
   const [reports, setReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [pendingStudyPlans, setPendingStudyPlans] = useState<any[]>([]);
+  const [pendingStudyPlans, setPendingStudyPlans] = useState<StudyPlan[]>([]);
   
   // Architect State
   const [architectTopic, setArchitectTopic] = useState("");
   const [architectDifficulty, setArchitectDifficulty] = useState("MEDIUM");
-  const [generatedProblem, setGeneratedProblem] = useState<any>(null);
+  const [generatedProblem, setGeneratedProblem] = useState<GeneratedProblem | null>(null);
   const [isArchitectLoading, setIsArchitectLoading] = useState(false);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -139,8 +176,12 @@ export default function AdminDashboard() {
       toast.success(response.data.message);
       fetchReports(); 
       fetchUsers(); // Refresh users too as ban status might change
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Action failed");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Action failed");
+      } else {
+        toast.error("Action failed");
+      }
     }
   };
 
@@ -149,7 +190,7 @@ export default function AdminDashboard() {
       await axios.post("/api/admin/users/ban", { userId, isBanned: !currentStatus });
       toast.success(currentStatus ? "User unbanned" : "User banned");
       fetchUsers();
-    } catch (error: any) {
+    } catch (_error) {
       toast.error("Failed to update user status");
     }
   };
@@ -159,7 +200,7 @@ export default function AdminDashboard() {
       await axios.post("/api/admin/problems/toggle", { problemId, isPublic: !currentStatus });
       toast.success(currentStatus ? "Problem hidden" : "Problem published");
       fetchProblems();
-    } catch (error: any) {
+    } catch (_error) {
       toast.error("Failed to update problem visibility");
     }
   };
@@ -169,7 +210,7 @@ export default function AdminDashboard() {
       await axios.post("/api/admin/problems/verify", { problemId, isVerified });
       toast.success(isVerified ? "Problem verified & published!" : "Problem rejected");
       fetchProblems();
-    } catch (error: any) {
+    } catch (_error) {
       toast.error("Failed to verify problem");
     }
   };
@@ -182,8 +223,12 @@ export default function AdminDashboard() {
       await axios.post(`/api/admin/study-plans/${id}/review`, { action });
       toast.success(`Study plan ${action === "APPROVE" ? "approved" : "rejected"}.`);
       fetchPendingStudyPlans();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Review failed.");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Review failed.");
+      } else {
+        toast.error("Review failed.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -199,8 +244,12 @@ export default function AdminDashboard() {
       });
       setGeneratedProblem(data.data);
       toast.success("Problem generated successfully!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Generation failed");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Generation failed");
+      } else {
+        toast.error("Generation failed");
+      }
     } finally {
       setIsArchitectLoading(false);
     }
@@ -218,11 +267,11 @@ export default function AdminDashboard() {
         category: generatedProblem.category,
         description: generatedProblem.description,
         // First 2 cases as examples, rest as hidden
-        examplesInput: generatedProblem.testCases.slice(0, 2).map((tc: any) => ({
+        examplesInput: generatedProblem.testCases.slice(0, 2).map((tc: TestCase) => ({
           input: tc.input,
           output: tc.output
         })),
-        testCasesInput: generatedProblem.testCases.slice(2).map((tc: any) => ({
+        testCasesInput: generatedProblem.testCases.slice(2).map((tc: TestCase) => ({
           input: tc.input
         })),
         referenceSolution: generatedProblem.referenceSolution,
@@ -239,9 +288,14 @@ export default function AdminDashboard() {
       setGeneratedProblem(null);
       fetchProblems();
       setActiveTab("ai_verification");
-    } catch (error: any) {
-      console.error("Save Error:", error.response?.data || error);
-      toast.error(error.response?.data?.error || "Failed to save problem");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Save Error:", error.response?.data || error);
+        toast.error(error.response?.data?.error || "Failed to save problem");
+      } else {
+        console.error("Save Error:", error);
+        toast.error("Failed to save problem");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -438,7 +492,7 @@ export default function AdminDashboard() {
                       <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)]/40 mb-3">Verified Test Cases</h4>
                       <div className="space-y-3">
                         {Array.isArray(generatedProblem.testCases) ? (
-                          generatedProblem.testCases.map((tc: any, i: number) => (
+                          generatedProblem.testCases.map((tc: TestCase, i: number) => (
                             <div key={i} className="bg-[var(--background)] p-4 rounded-lg border border-[var(--card-border)] text-xs">
                               <div className="text-indigo-400 font-bold mb-1 whitespace-pre-wrap">
                                 Input: {typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input)}
@@ -619,7 +673,7 @@ export default function AdminDashboard() {
                                         <div className="text-xs text-[var(--foreground)]/50">
                                             By{" "}
                                             {problem.creator ? (
-                                                <Link href={`/profile/${(problem as any).creatorId}`} className="hover:underline">
+                                                <Link href={`/profile/${problem.creatorId}`} className="hover:underline">
                                                     {problem.creator.name}
                                                 </Link>
                                             ) : (

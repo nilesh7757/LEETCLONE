@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, problem });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: "Failed to verify problem" }, { status: 500 });
   }
 }
