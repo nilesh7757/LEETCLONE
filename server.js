@@ -1,10 +1,12 @@
 const { Server } = require("socket.io");
 const { createServer } = require("http");
 
+const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
+
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // Allow all origins for now (adjust for production)
+    origin: allowedOrigin,
     methods: ["GET", "POST"]
   }
 });
@@ -12,14 +14,19 @@ const io = new Server(httpServer, {
 const onlineUsers = new Map(); // userId -> Set(socketIds)
 const collabRooms = new Map(); // roomId -> { code: string, language: string, users: Map<socketId, { username, image }> }
 
+const log = (level, msg, data = "") => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] [${level.toUpperCase()}] ${msg}`, data);
+};
+
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+  log("info", "Client connected:", socket.id);
   let currentUserId = null;
 
   // --- Collaborative Coding ---
   socket.on("join_collab", ({ roomId, username, image, dbUserId }) => {
     socket.join(roomId);
-    console.log(`Socket ${socket.id} joined collab room: ${roomId}`);
+    log("info", `Socket ${socket.id} joined collab room: ${roomId}`);
     
     // Initialize room if needed
     if (!collabRooms.has(roomId)) {
@@ -91,13 +98,13 @@ io.on("connection", (socket) => {
   // Join a room based on the problem ID
   socket.on("join_problem", (problemId) => {
     socket.join(problemId);
-    console.log(`Socket ${socket.id} joined problem room: ${problemId}`);
+    log("info", `Socket ${socket.id} joined problem room: ${problemId}`);
   });
 
   // Join a room based on the contest ID
   socket.on("join_contest", (contestId) => {
     socket.join(contestId);
-    console.log(`Socket ${socket.id} joined contest room: ${contestId}`);
+    log("info", `Socket ${socket.id} joined contest room: ${contestId}`);
   });
 
 
@@ -117,7 +124,7 @@ io.on("connection", (socket) => {
   // --- Chat System ---
   socket.on("join_conversation", (conversationId) => {
     socket.join(conversationId);
-    console.log(`Socket ${socket.id} joined conversation: ${conversationId}`);
+    log("info", `Socket ${socket.id} joined conversation: ${conversationId}`);
   });
 
   socket.on("send_message", (data) => {
@@ -144,7 +151,7 @@ io.on("connection", (socket) => {
     }
     onlineUsers.get(userId).add(socket.id);
     
-    console.log(`Socket ${socket.id} joined user room: ${userId}`);
+    log("info", `Socket ${socket.id} joined user room: ${userId}`);
   });
 
   socket.on("get_online_users", (callback) => {
@@ -163,7 +170,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
+    log("info", "Client disconnected:", socket.id);
     handleLeaveRoom(socket.id); // Clean up collab rooms
 
     if (currentUserId && onlineUsers.has(currentUserId)) {
@@ -179,5 +186,5 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
-  console.log(`Socket.io server running on port ${PORT}`);
+  log("info", `Socket.io server running on port ${PORT}`);
 });

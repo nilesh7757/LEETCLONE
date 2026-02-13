@@ -41,10 +41,10 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)]/50 border border-[var(--border)] hover:bg-[var(--muted)] hover:border-[var(--foreground)]/20 transition-all duration-300"
+        className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)] border-none hover:bg-[var(--muted)] transition-all duration-300 shadow-sm"
         aria-label="Toggle theme"
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-purple)]/0 to-[var(--viz-cyan)]/0 group-hover:from-[var(--viz-purple)]/10 group-hover:to-[var(--viz-cyan)]/10 transition-all duration-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-purple)]/0 to-[var(--viz-cyan)]/0 group-hover:from-[var(--viz-purple)]/5 group-hover:to-[var(--viz-cyan)]/5 transition-all duration-500" />
         <currentTheme.icon className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors" />
       </button>
 
@@ -55,9 +55,9 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: direction === "up" ? 10 : -10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className={`absolute right-0 ${direction === "up" ? "bottom-full mb-3" : "top-full mt-3"} w-48 p-2 rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-xl shadow-2xl shadow-black/20 z-50`}
+            className={`absolute right-0 ${direction === "up" ? "bottom-full mb-3" : "top-full mt-3"} w-48 p-2 rounded-2xl bg-[var(--card)] shadow-2xl z-50`}
           >
-            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] border-b border-[var(--border)] mb-1 opacity-50">
+            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] border-b border-[var(--border)] mb-1 opacity-70">
                 Interface Mode
             </div>
             {themes.map((t) => (

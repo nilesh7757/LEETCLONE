@@ -100,6 +100,12 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
   useEffect(() => {
     const draftKey = `draft_${problem.id}_${language}`;
     const saved = localStorage.getItem(draftKey);
+    
+    // Clear Markers when language changes
+    if (monacoRef.current && editorRef.current) {
+       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+    }
+
     if (saved) {
       setCode(saved);
     } else {
@@ -140,22 +146,25 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
      const lines = errorMsg.split('\n');
      
      // Smarter Regex: Captures Line and Column
-     // Pattern: "filename:line:col: error: message"
+     // GCC/Clang: "filename:line:col: error: message"
+     // Python: "File \"...\", line 5"
+     // Java: "Main.java:5: error: message"
      const gccRegex = /:(\d+):(\d+):/i;
      const pythonRegex = /line\s+(\d+)/i;
+     const javaRegex = /:(\d+):/i;
 
      lines.forEach(line => {
         const gccMatch = line.match(gccRegex);
         const pyMatch = line.match(pythonRegex);
+        const javaMatch = line.match(javaRegex);
         
-        if (gccMatch || pyMatch) {
-           let lineNumber = parseInt(gccMatch ? gccMatch[1] : pyMatch![1]);
+        if (gccMatch || pyMatch || javaMatch) {
+           let lineNumber = parseInt(gccMatch ? gccMatch[1] : (pyMatch ? pyMatch[1] : javaMatch![1]));
            const column = gccMatch ? parseInt(gccMatch[2]) : 1;
 
            // GCC Semicolon Logic: Often reports error on the NEXT line
            if (line.toLowerCase().includes("expected ';'") && lineNumber > 1) {
               const prevLineContent = model.getLineContent(lineNumber - 1).trim();
-              // If the reported line is the start of a new statement and prev line has no semicolon
               if (prevLineContent && !prevLineContent.endsWith(';') && !prevLineContent.endsWith('{') && !prevLineContent.endsWith('}')) {
                  lineNumber = lineNumber - 1; 
               }
@@ -228,35 +237,30 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
     const timer = setTimeout(async () => {
       if (!monacoRef.current || !editorRef.current || !code.trim()) return;
 
+      // JavaScript built-in validation is handled by Monaco automatically,
+      // so we only need to handle other languages here.
       if (language === "javascript") {
-        try {
-          new Function(code);
-          setSyntaxError(null);
-          monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "live-js", []);
-        } catch (e: any) {
-          if (e.name === "SyntaxError") {
-            const lineNo = e.lineNumber || 1;
-            monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "live-js", [{
-              startLineNumber: lineNo, startColumn: 1, endLineNumber: lineNo, endColumn: 1000,
-              message: e.message, severity: monacoRef.current.MarkerSeverity.Error
-            }]);
-          }
-        }
+          // We can still do a quick check to update our own state if needed,
+          // but Monaco handles the underlines.
+          return;
       } 
-      // Background check for Compiled Languages (only if code length is reasonable)
-      else if (["cpp", "python", "java"].includes(language) && code.length < 5000) {
+      
+      // Background check for Compiled/Interpreted Languages (only if code length is reasonable)
+      if (["cpp", "python", "java", "csharp", "go", "rust"].includes(language) && code.length < 5000) {
          try {
-            // Trigger a 'silent' run with just 1 test case to check for compilation errors
             const { data } = await axios.post("/api/run", {
                problemId: problem.id, code, type: problem.type, language,
                testCases: examples.slice(0, 1) 
             });
-            const compError = data.results.find((r: any) => r.status === "Compilation Error");
-            if (compError) parseAndSetMarkers(compError.error);
-            else monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+            const compError = data.results.find((r: any) => r.status === "Compilation Error" || r.status === "Runtime Error");
+            if (compError && compError.error) {
+                parseAndSetMarkers(compError.error);
+            } else {
+                monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+            }
          } catch (e) { /* ignore silent background failures */ }
       }
-    }, 2500); // 2.5s debounce to avoid API spam
+    }, 1200); // 1.2s debounce
 
     return () => clearTimeout(timer);
   }, [code, language]);
@@ -319,14 +323,14 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
     <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden font-sans selection:bg-[var(--viz-cyan)]/20">
       
       {/* --- Header (LeetCode Style) --- */}
-      <header className="h-12 border-b border-[var(--border)] bg-[var(--card)]/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 z-50">
-        <div className="flex items-center gap-4">
+      <header className="h-12 border-b border-[var(--border)] bg-[var(--card)]/50 backdrop-blur-md flex items-center px-4 shrink-0 z-50 relative">
+        <div className="flex items-center gap-4 z-10">
           <Link href="/problems" className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg transition-colors">
             <ChevronLeft size={18} className="text-[var(--muted-foreground)]" />
           </Link>
           <div className="h-4 w-px bg-[var(--border)]" />
           <div className="flex items-center gap-3">
-             <h1 className="font-semibold text-sm truncate max-w-[200px] md:max-w-md">{problem.title}</h1>
+             <h1 className="font-semibold text-sm truncate max-w-[150px] md:max-w-xs">{problem.title}</h1>
              <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
                 problem.difficulty === "Easy" ? "text-[var(--viz-green)] bg-[var(--viz-green)]/10" :
                 problem.difficulty === "Medium" ? "text-[var(--viz-amber)] bg-[var(--viz-amber)]/10" :
@@ -337,28 +341,32 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-           <div className="flex items-center gap-1 bg-[var(--background)] rounded-lg p-1 border border-[var(--border)]">
+        {/* Centered Buttons */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <div className="flex items-center gap-1 bg-[var(--background)] rounded-lg p-1 border border-[var(--border)] pointer-events-auto shadow-sm">
               <button 
                 onClick={handleRun}
                 disabled={isRunning}
-                className="px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-all flex items-center gap-2 disabled:opacity-50"
               >
-                 <Play size={12} /> Run
+                 <Play size={12} fill="currentColor" /> Run
               </button>
               <div className="w-px h-4 bg-[var(--border)]" />
               <button 
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider text-[var(--viz-green)] hover:bg-[var(--viz-green)]/10 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider text-[var(--viz-green)] hover:bg-[var(--viz-green)]/10 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                  {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} Submit
               </button>
            </div>
-           
+        </div>
+
+        <div className="flex items-center gap-3 ml-auto z-10">
            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg hover:bg-[var(--foreground)]/5 text-[var(--muted-foreground)]">
-                 <Settings size={16} />
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--viz-amber)]/10 text-[var(--viz-amber)] border border-[var(--viz-amber)]/20 transition-all hover:bg-[var(--viz-amber)]/20 group cursor-default">
+                 <Flame size={16} className="fill-current group-hover:scale-110 transition-transform" />
+                 <span className="text-xs font-black">{(session?.user as any)?.streak || 0}</span>
               </div>
               <NotificationBell />
               <ThemeToggle direction="down" />
@@ -398,7 +406,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
               ))}
            </div>
 
-           <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+           <div className={`flex-1 overflow-y-auto custom-scrollbar ${activeTab === 'ai' ? 'p-0' : 'p-6'}`}>
               {activeTab === 'description' && (
                  <div className="prose prose-invert prose-sm max-w-none 
                     [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-4
@@ -554,11 +562,27 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
                           padding: { top: 12 },
                           fontFamily: "'JetBrains Mono', monospace",
                           cursorBlinking: "smooth",
-                          cursorSmoothCaretAnimation: "on"
+                          cursorSmoothCaretAnimation: "on",
+                          glyphMargin: true,
+                          folding: true,
+                          lineDecorationsWidth: 10,
+                          lineNumbersMinChars: 3,
                        }}
                        onMount={(editor, monaco) => {
                           editorRef.current = editor;
                           monacoRef.current = monaco;
+
+                          // VS Code like diagnostics for JS/TS
+                          monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+                             noSemanticValidation: false,
+                             noSyntaxValidation: false,
+                          });
+                          
+                          // Optional: Set some compiler options to be more lenient if needed
+                          monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+                             target: monaco.languages.typescript.ScriptTarget.ESNext,
+                             allowNonTsExtensions: true,
+                          });
                        }}
                     />
                  </div>

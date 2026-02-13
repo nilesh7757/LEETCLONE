@@ -126,9 +126,9 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)]/50 border border-[var(--border)] hover:bg-[var(--muted)] hover:border-[var(--foreground)]/20 transition-all duration-300"
+        className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)] border-none hover:bg-[var(--muted)] transition-all duration-300 shadow-sm"
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-red)]/0 to-[var(--viz-amber)]/0 group-hover:from-[var(--viz-red)]/10 group-hover:to-[var(--viz-amber)]/10 transition-all duration-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-red)]/0 to-[var(--viz-amber)]/0 group-hover:from-[var(--viz-red)]/5 group-hover:to-[var(--viz-amber)]/5 transition-all duration-500" />
         
         <div className="relative">
             <Bell className={`w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors ${unreadCount > 0 ? "animate-swing" : ""}`} />
@@ -149,10 +149,10 @@ export default function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
             exit={{ opacity: 0, y: 10, scale: 0.95, rotateX: -10 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="absolute right-0 top-full mt-3 w-96 max-h-[500px] flex flex-col rounded-3xl border border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-xl shadow-2xl shadow-black/20 z-50 origin-top-right overflow-hidden"
+            className="absolute right-0 top-full mt-3 w-[500px] max-h-[600px] flex flex-col rounded-3xl bg-[var(--card)] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] origin-top-right overflow-hidden"
           >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--background)]/30 backdrop-blur-md flex items-center justify-between sticky top-0 z-10">
+            <div className="px-6 py-5 border-b border-[var(--border)] bg-[var(--background)]/30 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-2">
                  <div className="p-1.5 bg-[var(--viz-blue)]/10 rounded-lg text-[var(--viz-blue)]">
                     <AlertCircle size={16} />

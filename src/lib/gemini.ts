@@ -1,6 +1,7 @@
 import axios from "axios";
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { logger } from "./logger";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -33,7 +34,7 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
   // 1. Try Groq Primary (Extremely Fast & Generous Quota)
   if (groq) {
     try {
-      console.log("[AI] Attempting Groq (llama-3.3-70b-versatile)...");
+      logger.info("Attempting Groq (llama-3.3-70b-versatile)...");
       
       // Groq JSON mode often requires "JSON" to be in the prompt
       const finalPrompt = jsonMode && !prompt.toLowerCase().includes("json") 
@@ -54,11 +55,11 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
       const response = chatCompletion.choices[0]?.message?.content;
       if (response) return response;
     } catch (error: any) {
-      console.error("[AI] Groq Error:", error.message || error);
+      logger.error("Groq Error:", error.message || error);
       if (error.status === 413) {
-        console.warn("[AI] Groq context too large, falling back...");
+        logger.warn("Groq context too large, falling back...");
       }
-      console.warn("[AI] Groq failed, falling back to Gemini...");
+      logger.warn("Groq failed, falling back to Gemini...");
     }
   }
 
@@ -66,7 +67,7 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
   let hitQuota = false;
   for (const model of MODELS) {
     try {
-      console.log(`[AI] Attempting Gemini (${model})...`);
+      logger.info(`Attempting Gemini (${model})...`);
       const response = await axios.post(
         `${BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
@@ -86,12 +87,12 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
       if (text) return text;
     } catch (error: any) {
       if (error.response?.status === 429) {
-        console.warn(`[AI] Quota hit for Gemini (${model}). Skipping...`);
+        logger.warn(`Quota hit for Gemini (${model}). Skipping...`);
         hitQuota = true;
         await new Promise(r => setTimeout(r, 1000));
         continue;
       }
-      console.error(`[AI] Gemini (${model}) Error:`, error.response?.data?.error?.message || error.message);
+      logger.error(`Gemini (${model}) Error:`, error.response?.data?.error?.message || error.message);
     }
   }
 
@@ -336,14 +337,30 @@ export async function chatWithAIStream(
     systemInstruction: systemPrompt
   });
 
-  const chat = model.startChat({
-    history: messages.slice(0, -1).map(m => ({
-      role: m.role === "model" ? "model" : "user",
+  // Gemini history MUST start with 'user' and alternate roles.
+  // We filter out any leading 'model' messages and ensure strict alternation.
+  const history: any[] = [];
+  let lastRole = "";
+
+  for (const m of messages.slice(0, -1)) {
+    const role = m.role === "model" ? "model" : "user";
+    
+    // Skip if it doesn't alternate or if we haven't started with a user message yet
+    if (role === lastRole) continue;
+    if (history.length === 0 && role !== "user") continue;
+
+    history.push({
+      role: role,
       parts: m.parts,
-    })),
+    });
+    lastRole = role;
+  }
+
+  const chat = model.startChat({
+    history: history,
   });
 
-  const userMessage = messages[messages.length - 1]?.parts[0]?.text || "";
+  const userMessage = messages[messages.length - 1]?.parts[0]?.text || "Hello";
   const result = await chat.sendMessageStream(userMessage);
   return result.stream;
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ProblemType } from "@prisma/client"; // Import ProblemType enum
+import { logger } from "./logger";
 
 const PISTON_API = "https://emkc.org/api/v2/piston/execute";
 
@@ -13,7 +14,7 @@ export interface ExecutionResult {
   input: string;
   expected: string;
   actual: string;
-  status: "Accepted" | "Wrong Answer" | "Runtime Error" | "Time Limit Exceeded" | "Memory Limit Exceeded" | "API Error" | "Service Unreachable";
+  status: "Accepted" | "Wrong Answer" | "Runtime Error" | "Compilation Error" | "Time Limit Exceeded" | "Memory Limit Exceeded" | "API Error" | "Service Unreachable";
   error?: string;
   runtime?: number; // in milliseconds
   memory?: number; // in kilobytes
@@ -36,12 +37,12 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
   const { problemId, type, code, testCases, timeLimit, memoryLimit, language, isOutputGeneration = false, initialSchema, initialData } = params;
   const results: ExecutionResult[] = [];
 
-  console.log(`[EXECUTE_CODE] Entering executeCode for problemId: ${problemId}, type: ${type}`);
-  console.log(`[EXECUTE_CODE] Number of test cases: ${testCases.length}`);
+  logger.info(`[EXECUTE_CODE] Entering executeCode for problemId: ${problemId}, type: ${type}`);
+  logger.info(`[EXECUTE_CODE] Number of test cases: ${testCases.length}`);
 
   if (type === ProblemType.CODING) {
     if (!language || timeLimit === undefined || memoryLimit === undefined) {
-      console.error("[EXECUTE_CODE] Missing required parameters for CODING problem");
+      logger.error("[EXECUTE_CODE] Missing required parameters for CODING problem");
       throw new Error("Missing language, time limit, or memory limit for CODING problem");
     }
 
@@ -66,7 +67,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
 
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
-      console.log(`[EXECUTE_CODE] Processing CODING test case ${i + 1}/${testCases.length}`);
+      logger.info(`[EXECUTE_CODE] Processing CODING test case ${i + 1}/${testCases.length}`);
       // Introduce a delay to respect Piston API rate limits (1 request per 200ms)
       await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
       try {
@@ -80,20 +81,25 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
           run_timeout: timeLimit * 1000,
           memory_limit: memoryLimit * 1024,
         };
-        console.log(`[EXECUTE_CODE] Test Case ${i + 1}: Sending request to Piston API. Payload (stripped code): ${JSON.stringify({...requestPayload, files: [{content: code.substring(0, 50) + '...'}]})}`);
+        logger.debug(`[EXECUTE_CODE] Test Case ${i + 1}: Sending request to Piston API. Payload (stripped code): ${JSON.stringify({...requestPayload, files: [{content: code.substring(0, 50) + '...'}]})}`);
         
         const response = await axios.post(PISTON_API, requestPayload, { timeout: 15000 }); // Add a 15-second network timeout
         const endTime = performance.now();
         const networkTime = Math.ceil(endTime - startTime);
-        console.log(`[EXECUTE_CODE] Test Case ${i + 1}: Piston API responded in ${networkTime}ms. Status: ${response.status}`);
-        console.log(`[EXECUTE_CODE] Test Case ${i + 1}: Raw response data: ${JSON.stringify(response.data)}`);
+        logger.info(`[EXECUTE_CODE] Test Case ${i + 1}: Piston API responded in ${networkTime}ms. Status: ${response.status}`);
+        logger.debug(`[EXECUTE_CODE] Test Case ${i + 1}: Raw response data: ${JSON.stringify(response.data)}`);
 
-        const { run } = response.data;
+        const { run, compile } = response.data;
         let status: ExecutionResult['status'] = "Accepted";
         let error: string | undefined;
         const runtime = run.time !== undefined ? Math.max(1, Math.ceil(run.time * 1000)) : networkTime;
 
-        if (run.code !== 0) {
+        // Check for Compilation Error first
+        if (compile && compile.code !== 0) {
+          status = "Compilation Error" as any; // Using any because status enum might not have it yet
+          error = compile.stderr || compile.output || `Compilation failed with code ${compile.code}`;
+          console.log(`[EXECUTE_CODE] Test Case ${i + 1}: Compilation Error. Error: ${error}`);
+        } else if (run.code !== 0) {
           status = "Runtime Error";
           error = run.stderr || `Exited with code ${run.code}`;
           console.log(`[EXECUTE_CODE] Test Case ${i + 1}: Runtime Error. Error: ${error}`);
@@ -206,7 +212,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
       ".headers on",
       code
     ].join("\n");
-    console.log(`[EXECUTE_CODE] Processing SQL problem. Full script (stripped): ${fullScript.substring(0, 100)}...`);
+    logger.info(`[EXECUTE_CODE] Processing SQL problem. Full script (stripped): ${fullScript.substring(0, 100)}...`);
 
     try {
       const startTime = performance.now();
@@ -217,13 +223,13 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
         compile_timeout: 10000,
         run_timeout: 5000,
       };
-      console.log(`[EXECUTE_CODE] Sending SQL request to Piston API. Payload (stripped content): ${JSON.stringify({...requestPayload, files: [{content: fullScript.substring(0, 50) + '...'}]})}`);
+      logger.debug(`[EXECUTE_CODE] Sending SQL request to Piston API. Payload (stripped content): ${JSON.stringify({...requestPayload, files: [{content: fullScript.substring(0, 50) + '...'}]})}`);
 
       const response = await axios.post(PISTON_API, requestPayload, { timeout: 15000 }); // Add a 15-second network timeout
       const endTime = performance.now();
       const runtime = Math.ceil(endTime - startTime);
-      console.log(`[EXECUTE_CODE] SQL Piston API responded in ${runtime}ms. Status: ${response.status}`);
-      console.log(`[EXECUTE_CODE] SQL Raw response data: ${JSON.stringify(response.data)}`);
+      logger.info(`[EXECUTE_CODE] SQL Piston API responded in ${runtime}ms. Status: ${response.status}`);
+      logger.debug(`[EXECUTE_CODE] SQL Raw response data: ${JSON.stringify(response.data)}`);
 
       const { run } = response.data;
       

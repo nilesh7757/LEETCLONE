@@ -10,7 +10,7 @@ import Split from "react-split";
 import Editor from "@monaco-editor/react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, AlertCircle, RotateCcw, Settings, Play } from "lucide-react";
+import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, AlertCircle, RotateCcw, Settings, Play, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
 
@@ -217,26 +217,27 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="h-14 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--card-bg)] shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full bg-[var(--background)]">
+      <div className="h-14 border-b border-[var(--border)] flex items-center justify-between px-6 bg-[var(--card)]/50 backdrop-blur-md shrink-0 z-50">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+            className="p-2 hover:bg-[var(--foreground)]/5 rounded-xl transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
             title="Back"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="font-semibold text-[var(--foreground)]">{isEditing ? "Edit Problem" : "Create New Problem"}</span>
+          <div className="h-4 w-px bg-[var(--border)]" />
+          <h1 className="font-bold text-sm tracking-tight text-[var(--foreground)] uppercase tracking-widest">{isEditing ? "Modify Module" : "New Problem Protocol"}</h1>
         </div>
         <button
           type="button"
           onClick={handleSubmit(handleFormSubmit)}
           disabled={isSubmitting}
-          className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50 cursor-pointer"
+          className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-white bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-[var(--viz-cyan)]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 cursor-pointer"
         >
-          {isSubmitting ? <Loader /> : isEditing ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
-          {isEditing ? "Save Changes" : "Create Problem"}
+          {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isEditing ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+          {isEditing ? "Push Changes" : "Establish Module"}
         </button>
       </div>
 
@@ -244,26 +245,26 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
         className="flex-1 flex overflow-hidden"
         sizes={[50, 50]}
         minSize={400}
-        gutterSize={8}
+        gutterSize={6}
         gutterAlign="center"
         snapOffset={30}
         dragInterval={1}
       >
         {/* Left Panel: Details & Editorial Tabs */}
-        <div className="h-full flex flex-col bg-[var(--background)] overflow-hidden">
+        <div className="h-full flex flex-col bg-[var(--card)]/20 overflow-hidden border-r border-[var(--border)]">
           {/* Tabs */}
-          <div className="h-10 border-b border-[var(--card-border)] flex items-center gap-1 px-2 bg-[var(--card-bg)] shrink-0">
+          <div className="h-11 border-b border-[var(--border)] flex items-center gap-1 px-3 bg-[var(--card)]/30 shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('details')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'details' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+              className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'details' ? "bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}
             >
-              <FileText className="w-3.5 h-3.5" /> Problem Details
+              <FileText className="w-3.5 h-3.5" /> Details
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('editorial')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'editorial' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+              className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'editorial' ? "bg-[var(--viz-purple)]/10 text-[var(--viz-purple)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}
             >
               <BookOpen className="w-3.5 h-3.5" /> Editorial
             </button>
@@ -271,129 +272,132 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
               <button
                 type="button"
                 onClick={() => setActiveTab('sql_setup')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'sql_setup' ? "bg-[var(--foreground)]/10 text-[var(--foreground)]" : "text-[var(--foreground)]/60 hover:text-[var(--foreground)]"}`}
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'sql_setup' ? "bg-[var(--viz-amber)]/10 text-[var(--viz-amber)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}
               >
-                <HardDrive className="w-3.5 h-3.5" /> SQL Setup
+                <HardDrive className="w-3.5 h-3.5" /> SQL Config
               </button>
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar relative">
             {activeTab === 'details' ? (
-              <form className="space-y-6">
+              <form className="space-y-10">
                 {/* Problem Title */}
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Problem Title
+                <div className="space-y-2">
+                  <label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                    Identification Title
                   </label>
-                  <div className="relative">
-                    <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                  <div className="relative group">
+                    <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
                     <input
                       id="title"
                       type="text"
                       {...register("title", { required: "Problem title is required" })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/40 focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
                       placeholder="e.g., Two Sum"
                     />
                     {errors.title && (
-                      <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+                      <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.title.message}</p>
                     )}
                   </div>
                 </div>
 
-                {/* Problem Slug */}
-                <div>
-                  <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Problem Slug
-                  </label>
-                  <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                    <input
-                      id="slug"
-                      type="text"
-                      readOnly={isEditing}
-                      {...register("slug", { required: "Problem slug is required" })}
-                      className={`w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)]/80 focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none ${isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
-                      placeholder="e.g., two-sum (auto-generated)"
-                    />
-                    {errors.slug && (
-                      <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>
-                    )}
+                {/* Problem Slug and Type */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label htmlFor="slug" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Resource URI Slug
+                    </label>
+                    <div className="relative group">
+                      <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
+                      <input
+                        id="slug"
+                        type="text"
+                        readOnly={isEditing}
+                        {...register("slug", { required: "Problem slug is required" })}
+                        className={`w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)]/80 focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner ${isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
+                        placeholder="e.g., two-sum (auto-generated)"
+                      />
+                      {errors.slug && (
+                        <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.slug.message}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Problem Type */}
-                <div>
-                  <label htmlFor="problemType" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Problem Type
-                  </label>
-                  <div className="relative">
-                    <LayoutTemplate className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                    <select
-                      id="problemType"
-                      {...register("problemType", { required: "Problem type is required" })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
-                    >
-                      <option value="CODING">Coding</option>
-                      <option value="SQL">SQL</option>
-                      <option value="SYSTEM_DESIGN">System Design</option>
-                      {/* Add other types as they are implemented */}
-                    </select>
-                    {errors.problemType && (
-                      <p className="text-red-500 text-xs mt-1">{errors.problemType.message}</p>
-                    )}
+                  <div className="space-y-2">
+                    <label htmlFor="problemType" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Computational Logic Type
+                    </label>
+                    <div className="relative group">
+                      <LayoutTemplate className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
+                      <select
+                        id="problemType"
+                        {...register("problemType", { required: "Problem type is required" })}
+                        className="w-full pl-12 pr-10 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner appearance-none"
+                      >
+                        <option value="CODING">Coding Core</option>
+                        <option value="SQL">Structured Query (SQL)</option>
+                        <option value="SYSTEM_DESIGN">Architecture (System Design)</option>
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] pointer-events-none" />
+                      {errors.problemType && (
+                        <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.problemType.message}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Difficulty and Category */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="difficulty" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                      Difficulty
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label htmlFor="difficulty" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Complexity Grade
                     </label>
-                    <div className="relative">
-                      <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <div className="relative group">
+                      <SlidersHorizontal className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
                       <select
                         id="difficulty"
                         {...register("difficulty", { required: "Difficulty is required" })}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
+                        className="w-full pl-12 pr-10 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner appearance-none"
                       >
                         {difficulties.map(d => (
                           <option key={d} value={d}>{d}</option>
                         ))}
                       </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] pointer-events-none" />
                       {errors.difficulty && (
-                        <p className="text-red-500 text-xs mt-1">{errors.difficulty.message}</p>
+                        <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.difficulty.message}</p>
                       )}
                     </div>
                   </div>
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                      Category
+                  <div className="space-y-2">
+                    <label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Logical Taxonomy
                     </label>
-                    <div className="relative">
-                      <ListChecks className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <div className="relative group">
+                      <ListChecks className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
                       <select
                         id="category"
                         {...register("category", { required: "Category is required" })}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none appearance-none"
+                        className="w-full pl-12 pr-10 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner appearance-none"
                       >
                         {categories.map(c => (
                           <option key={c} value={c}>{c}</option>
                         ))}
                       </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] pointer-events-none" />
                       {errors.category && (
-                        <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
+                        <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.category.message}</p>
                       )}
                     </div>
                     {selectedCategory === "Other" && (
-                      <div className="mt-2">
+                      <div className="mt-3">
                         <input
                           type="text"
                           value={customCategory}
                           onChange={(e) => setCustomCategory(e.target.value)}
-                          placeholder="Enter custom category"
-                          className="w-full px-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                          placeholder="Specify Taxonomy..."
+                          className="w-full px-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
                         />
                       </div>
                     )}
@@ -402,24 +406,29 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
                 {/* Visibility - Conditional Render */}
                 {!contestId && (
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                      Visibility
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Privacy Protocol
                     </label>
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50">
-                      <input
-                        id="isPublic"
-                        type="checkbox"
-                        {...register("isPublic")}
-                        className="w-5 h-5 rounded border-gray-300 text-[var(--accent-gradient-to)] focus:ring-[var(--accent-gradient-to)]"
-                      />
-                      <label htmlFor="isPublic" className="text-sm text-[var(--foreground)] cursor-pointer select-none">
-                        Make this problem <span className="font-bold">Public</span>?
-                        <p className="text-xs text-[var(--foreground)]/50 font-normal">
-                          Uncheck to keep it Private.
+                    <label className="flex items-center gap-4 p-6 rounded-[2rem] bg-[var(--card)]/30 cursor-pointer hover:bg-[var(--card)]/50 transition-all group">
+                      <div className="relative flex items-center">
+                        <input
+                          id="isPublic"
+                          type="checkbox"
+                          {...register("isPublic")}
+                          className="w-6 h-6 rounded-lg appearance-none bg-[var(--card)] border-none checked:bg-[var(--viz-green)] transition-all cursor-pointer shadow-inner"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white font-bold opacity-0 check-icon">
+                          ✓
+                        </div>
+                      </div>
+                      <div>
+                        <span className="block text-sm font-bold text-[var(--foreground)]">Broadcast Publicly</span>
+                        <p className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight">
+                          Authorize full indexation and global visibility
                         </p>
-                      </label>
-                    </div>
+                      </div>
+                    </label>
                   </div>
                 )}
                 {contestId && (
@@ -427,41 +436,41 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                 )}
 
                 {/* Time Limit and Memory Limit */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="timeLimit" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                      Time Limit (seconds)
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label htmlFor="timeLimit" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Execution Timeout (Sec)
                     </label>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <div className="relative group">
+                      <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
                       <input
                         id="timeLimit"
                         type="number"
                         {...register("timeLimit", { required: "Time limit is required", valueAsNumber: true, min: 0.1 })}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
                         placeholder="e.g., 2"
                         step="0.1"
                       />
                       {errors.timeLimit && (
-                        <p className="text-red-500 text-xs mt-1">{errors.timeLimit.message}</p>
+                        <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.timeLimit.message}</p>
                       )}
                     </div>
                   </div>
-                  <div>
-                    <label htmlFor="memoryLimit" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                      Memory Limit (MB)
+                  <div className="space-y-2">
+                    <label htmlFor="memoryLimit" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Buffer Capacity (MB)
                     </label>
-                    <div className="relative">
-                      <HardDrive className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
+                    <div className="relative group">
+                      <HardDrive className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
                       <input
                         id="memoryLimit"
                         type="number"
                         {...register("memoryLimit", { required: "Memory limit is required", valueAsNumber: true, min: 1 })}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
                         placeholder="e.g., 256"
                       />
                       {errors.memoryLimit && (
-                        <p className="text-red-500 text-xs mt-1">{errors.memoryLimit.message}</p>
+                        <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.memoryLimit.message}</p>
                       )}
                     </div>
                   </div>
@@ -469,31 +478,33 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
 
                 {/* Problem Description (Rich Text Editor) */}
-                <div>
-                  <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                    Problem Description (Rich Text Editor)
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                    Contextual Specification
                   </label>
-                  <Controller
-                    name="description"
-                    control={control}
-                    rules={{ required: "Problem description is required" }}
-                    render={({ field }) => (
-                      <TiptapEditor
-                        description={field.value || ''}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
+                  <div className="rounded-[2rem] overflow-hidden bg-[var(--card)]/30 border border-[var(--border)] p-1">
+                    <Controller
+                      name="description"
+                      control={control}
+                      rules={{ required: "Problem description is required" }}
+                      render={({ field }) => (
+                        <TiptapEditor
+                          description={field.value || ''}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </div>
                   {errors.description && (
-                    <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
+                    <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.description.message}</p>
                   )}
                 </div>
 
                 {/* Hints Section */}
-                <div className="space-y-4 pt-4 border-t border-[var(--card-border)]">
+                <div className="space-y-6 pt-10 border-t border-[var(--border)]">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-[var(--foreground)]/70">
-                      Progressive Hints
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                      Progressive Heuristics (Hints)
                     </label>
                     <button
                       type="button"
@@ -501,17 +512,17 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                         const currentHints = getValues("hints") || [];
                         setValue("hints", [...currentHints, ""]);
                       }}
-                      className="text-xs px-2 py-1 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500/20 transition-colors flex items-center gap-1"
+                      className="text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 bg-[var(--viz-blue)]/10 text-[var(--viz-blue)] rounded-xl hover:bg-[var(--viz-blue)]/20 transition-all flex items-center gap-2"
                     >
-                      <PlusCircle className="w-3 h-3" /> Add Hint
+                      <PlusCircle className="w-3.5 h-3.5" /> Inject Hint
                     </button>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {(watch("hints") || []).map((hint, idx) => (
-                      <div key={idx} className="flex gap-2">
-                        <div className="flex-1 relative">
-                          <span className="absolute left-3 top-3 text-[10px] font-bold text-[var(--foreground)]/30">{idx + 1}</span>
+                      <div key={idx} className="flex gap-4">
+                        <div className="flex-1 relative group">
+                          <span className="absolute left-4 top-5 text-[10px] font-black text-[var(--muted-foreground)]/30 group-focus-within:text-[var(--viz-blue)] transition-colors">{idx + 1}</span>
                           <textarea
                             value={hint}
                             onChange={(e) => {
@@ -519,8 +530,8 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                               newHints[idx] = e.target.value;
                               setValue("hints", newHints);
                             }}
-                            placeholder={`Hint ${idx + 1}...`}
-                            className="w-full pl-8 pr-4 py-2 bg-[var(--background)]/50 border border-[var(--card-border)] rounded-lg text-sm text-[var(--foreground)] focus:border-blue-500 outline-none min-h-[60px] resize-y"
+                            placeholder={`Define hint ${idx + 1}...`}
+                            className="w-full pl-10 pr-4 py-4 bg-[var(--card)]/30 border border-transparent focus:border-[var(--viz-blue)]/20 rounded-2xl text-sm text-[var(--foreground)] outline-none min-h-[80px] resize-none transition-all shadow-inner"
                           />
                         </div>
                         <button
@@ -529,75 +540,79 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                             const newHints = getValues("hints").filter((_, i) => i !== idx);
                             setValue("hints", newHints);
                           }}
-                          className="p-2 text-red-500/50 hover:text-red-500 transition-colors"
+                          className="p-3 bg-red-500/5 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all self-start"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
                     {(!watch("hints") || watch("hints").length === 0) && (
-                      <p className="text-xs text-[var(--foreground)]/40 italic">No hints added yet.</p>
+                      <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest text-center py-6 opacity-30">No heuristics defined for this module.</p>
                     )}
                   </div>
                 </div>
               </form>
             ) : activeTab === 'sql_setup' ? (
               // SQL Setup Tab
-              <div className="space-y-6 h-full flex flex-col">
-                 <div className="flex flex-col h-1/2">
-                   <h3 className="text-sm font-medium text-[var(--foreground)]/70 mb-2">Initial Schema (CREATE TABLE)</h3>
-                   <div className="flex-1 rounded-lg overflow-hidden border border-[var(--card-border)]">
+              <div className="space-y-10 h-full flex flex-col">
+                 <div className="flex flex-col h-1/2 space-y-3">
+                   <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Initial Schema Configuration (DDL)</h3>
+                   <div className="flex-1 rounded-3xl overflow-hidden bg-[var(--card)]/20 border border-[var(--border)] relative">
+                      <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
                       <Editor
                         language="sql"
                         theme={mounted && resolvedTheme === "dark" ? "vs-dark" : "light"}
                         value={initialSchema}
                         onChange={(val) => setValue("initialSchema", val || "")}
-                        options={{ minimap: { enabled: false }, fontSize: 13 }}
+                        options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 16 } }}
                       />
                    </div>
                  </div>
-                 <div className="flex flex-col h-1/2">
-                   <h3 className="text-sm font-medium text-[var(--foreground)]/70 mb-2">Initial Data (INSERT INTO)</h3>
-                   <div className="flex-1 rounded-lg overflow-hidden border border-[var(--card-border)]">
+                 <div className="flex flex-col h-1/2 space-y-3">
+                   <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Baseline Data Ingestion (DML)</h3>
+                   <div className="flex-1 rounded-3xl overflow-hidden bg-[var(--card)]/20 border border-[var(--border)] relative">
+                      <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
                       <Editor
                         language="sql"
                         theme={mounted && resolvedTheme === "dark" ? "vs-dark" : "light"}
                         value={initialDataVal}
                         onChange={(val) => setValue("initialData", val || "")}
-                        options={{ minimap: { enabled: false }, fontSize: 13 }}
+                        options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 16 } }}
                       />
                    </div>
                  </div>
               </div>
             ) : (
               // Editorial Tab
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h3 className="text-sm font-medium text-[var(--foreground)]/70">Problem Editorial</h3>
-                    <p className="text-xs text-[var(--foreground)]/50">Explain the solution and provide code in multiple languages.</p>
+              <div className="space-y-8">
+                <div className="flex items-center justify-between mb-4 bg-[var(--viz-purple)]/5 p-6 rounded-3xl border border-[var(--viz-purple)]/10">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-black text-[var(--foreground)] uppercase tracking-tight">Technical Editorial</h3>
+                    <p className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-widest">Synthesize solution patterns with Groq Intelligence</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleGenerateEditorial}
                     disabled={isGeneratingEditorial || !isEditing}
-                    className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+                    className="px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] bg-purple-600 text-white rounded-[1.5rem] hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 transition-all shadow-xl shadow-purple-600/20 active:scale-95"
                   >
-                    {isGeneratingEditorial ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
-                    Generate with AI
+                    {isGeneratingEditorial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    Generate Synthesis
                   </button>
                 </div>
 
-                <Controller
-                  name="editorial"
-                  control={control}
-                  render={({ field }) => (
-                    <TiptapEditor
-                      description={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
+                <div className="rounded-[2.5rem] overflow-hidden bg-[var(--card)]/30 border border-[var(--border)] p-1">
+                  <Controller
+                    name="editorial"
+                    control={control}
+                    render={({ field }) => (
+                      <TiptapEditor
+                        description={field.value || ''}
+                        onChange={field.onChange}
+                      />
+                    )}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -606,28 +621,27 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
         {/* Right Panel: Reference Solution Editor and Test Cases */}
         <Split
           direction="vertical"
-          sizes={[70, 30]} // Example split: 70% for editor, 30% for test cases
+          sizes={[70, 30]}
           minSize={0}
-          gutterSize={8}
+          gutterSize={6}
           gutterAlign="center"
           snapOffset={30}
           dragInterval={1}
           className="flex flex-col bg-[var(--background)] h-full"
         >
           {problemType === "CODING" || problemType === "SQL" ? (
-            <div className="flex flex-col h-full min-h-0">
-              {/* ... (existing code for CODING/SQL editor) ... */}
-              <div className="h-10 border-b border-[var(--card-border)] flex items-center justify-between px-4 bg-[var(--background)] shrink-0 z-20">
+            <div className="flex flex-col h-full min-h-0 bg-[var(--card)]/10">
+              <div className="h-11 border-b border-[var(--border)] flex items-center justify-between px-4 bg-[var(--card)]/30 shrink-0 z-20">
                 {problemType === "CODING" && (
                   <div className="relative" ref={langDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setIsLangOpen(!isLangOpen)}
-                      className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-colors px-2 py-1.5 rounded-md hover:bg-[var(--foreground)]/5 cursor-pointer"
+                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--foreground)] hover:text-[var(--foreground)]/80 transition-all px-3 py-1.5 rounded-lg hover:bg-[var(--foreground)]/5 cursor-pointer"
                     >
-                      <Code2 className="w-4 h-4 text-green-500" />
+                      <Code2 className="w-4 h-4 text-[var(--viz-cyan)]" />
                       {languages.find(l => l.value === language)?.label}
-                      <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`w-3 h-3 opacity-50 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     <AnimatePresence>
@@ -637,7 +651,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 5, scale: 0.95 }}
                           transition={{ duration: 0.1 }}
-                          className="absolute top-full left-0 mt-1 w-48 bg-[var(--background)] border border-[var(--card-border)] rounded-lg shadow-xl overflow-hidden py-1 z-50"
+                          className="absolute top-full left-0 mt-2 w-52 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden py-2 z-50 backdrop-blur-xl"
                         >
                           {languages.map((lang) => (
                             <button
@@ -648,7 +662,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                 setValue("referenceSolution", getStarterCode(lang.value));
                                 setIsLangOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${language === lang.value ? "text-green-500 bg-[var(--foreground)]/5" : "text-[var(--foreground)]"
+                              className={`w-full text-left px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer ${language === lang.value ? "text-[var(--viz-cyan)] bg-[var(--viz-cyan)]/5" : "text-[var(--foreground)]"
                                 }`}
                             >
                               {lang.label}
@@ -661,21 +675,20 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                   </div>
                 )}
                 {problemType === "SQL" && (
-                   <div className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)] px-2 py-1.5">
-                      <HardDrive className="w-4 h-4 text-blue-500" /> SQL Query
+                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--foreground)] px-3 py-1.5">
+                      <HardDrive className="w-4 h-4 text-[var(--viz-amber)]" /> Query Buffer
                    </div>
                 )}
-                <div className="flex items-center gap-3">
-
+                <div className="flex items-center gap-2">
                   <button
-                    className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                    className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
                     title="Reset Code"
-                    onClick={() => setValue("referenceSolution", getStarterCode(problemType === "SQL" ? "sql" : language) || "")} // Use setValue
+                    onClick={() => setValue("referenceSolution", getStarterCode(problemType === "SQL" ? "sql" : language) || "")}
                   >
                     <RotateCcw className="w-4 h-4" />
                   </button>
                   <button
-                    className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                    className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
                     title="Settings"
                   >
                     <Settings className="w-4 h-4" />
@@ -683,7 +696,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                 </div>
               </div>
 
-              <div className="flex-1 relative min-h-0">
+              <div className="flex-1 relative min-h-0 bg-[var(--background)]">
                 <Editor
                   height="100%"
                   language={problemType === "SQL" ? "sql" : language}
@@ -693,62 +706,73 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                   onChange={(value) => setValue("referenceSolution", value || "")}
                   options={{
                     minimap: { enabled: false },
-                    fontSize: 14,
+                    fontSize: 13,
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
-                    padding: { top: 16, bottom: 16 },
+                    padding: { top: 20, bottom: 20 },
                     renderValidationDecorations: "on",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    cursorBlinking: "smooth",
+                    cursorSmoothCaretAnimation: "on",
                   }}
                 />
               </div>
             </div>
           ) : problemType === "SYSTEM_DESIGN" ? (
-             <div className="flex flex-col h-full min-h-0 bg-[var(--background)] p-6 overflow-y-auto custom-scrollbar">
+             <div className="flex flex-col h-full min-h-0 bg-[var(--background)] p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex items-center justify-between mb-4">
-                   <h3 className="text-sm font-medium text-[var(--foreground)]/70">Reference Solution (Ideal Answer)</h3>
+                   <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Blueprint Specification (Ideal Answer)</h3>
                    <button
                       type="button"
-                      className="p-1.5 hover:bg-[var(--foreground)]/10 rounded-md transition-colors text-[var(--foreground)]/60 hover:text-[var(--foreground)] cursor-pointer"
+                      className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
                       title="Reset"
                       onClick={() => setValue("referenceSolution", "")}
                    >
                       <RotateCcw className="w-4 h-4" />
                    </button>
                 </div>
-                <Controller
-                   name="referenceSolution"
-                   control={control}
-                   render={({ field }) => (
-                      <TiptapEditor
-                         description={field.value || ''}
-                         onChange={field.onChange}
-                      />
-                   )}
-                />
+                <div className="rounded-[2.5rem] overflow-hidden bg-[var(--card)]/30 border border-[var(--border)] p-1">
+                  <Controller
+                    name="referenceSolution"
+                    control={control}
+                    render={({ field }) => (
+                        <TiptapEditor
+                          description={field.value || ''}
+                          onChange={field.onChange}
+                        />
+                    )}
+                  />
+                </div>
              </div>
           ) : (
-            <div className="flex flex-col h-full min-h-0 justify-center items-center text-[var(--foreground)]/60 text-lg">
-              <p>Editor not available for this problem type.</p>
-              <p>Please select a different problem type.</p>
+            <div className="flex flex-col h-full min-h-0 justify-center items-center text-[var(--muted-foreground)] p-12 text-center">
+              <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
+              <p className="text-sm font-bold uppercase tracking-widest">Interface Unavailable</p>
+              <p className="text-[10px] uppercase tracking-tighter mt-1">Select a valid logic type to initialize editor.</p>
             </div>
           )}
 
           {/* Bottom section of right panel: Test Case Editors */}
-          <div className="flex flex-col h-full bg-[var(--background)] min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+          <div className="flex flex-col h-full bg-[var(--card)]/5 min-h-0 overflow-y-auto p-8 space-y-8 custom-scrollbar relative">
             {(problemType as any) === "SYSTEM_DESIGN" ? (
-               <div className="flex flex-col items-center justify-center h-full text-[var(--foreground)]/40 text-center p-8">
-                  <LayoutTemplate className="w-12 h-12 mb-4 opacity-20" />
-                  <p className="font-medium">System Design Mode</p>
-                  <p className="text-xs max-w-[200px] mt-1">Test cases are not required for system design problems. AI will evaluate the textual answer.</p>
+               <div className="flex flex-col items-center justify-center h-full text-[var(--muted-foreground)] text-center p-8 opacity-40">
+                  <LayoutTemplate className="w-12 h-12 mb-4 stroke-1" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em]">Architecture Assessment Mode</p>
+                  <p className="text-[9px] font-bold uppercase tracking-tighter mt-2 max-w-[250px]">
+                    Inputs/Outputs are non-applicable. Neural analysis will evaluate textual specifications.
+                  </p>
                </div>
             ) : problemType === "SQL" ? (
-               <div className="text-sm text-[var(--foreground)]/60">
-                  <div className="flex justify-between items-center mb-2">
-                     <p>For SQL problems, provide the expected output table below.</p>
+               <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-4 bg-[var(--viz-cyan)]/5 p-4 rounded-2xl border border-[var(--viz-cyan)]/10">
+                     <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--foreground)]">Oracle Validation</p>
+                        <p className="text-[9px] text-[var(--muted-foreground)] font-bold uppercase tracking-tighter">Define the target dataset schema</p>
+                     </div>
                      <button
                         type="button"
                         onClick={async () => {
-                           const loadingToast = toast.loading("Running SQL...");
+                           const loadingToast = toast.loading("Executing SQL...");
                            try {
                               const res = await axios.post("/api/run", {
                                  type: "SQL",
@@ -764,18 +788,18 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                     toast.error("Execution Error: " + (res.data.results[0].error || "Unknown"));
                                  } else {
                                     setValue("examplesInput", [{ input: "", output: output }]);
-                                    toast.success("Output generated!");
+                                    toast.success("Oracle signal received!");
                                  }
                               }
                            } catch (e: any) {
-                              toast.error("Failed to run SQL: " + e.message);
+                              toast.error("Oracle Failure: " + e.message);
                            } finally {
                               toast.dismiss(loadingToast);
                            }
                         }}
-                        className="text-xs px-2 py-1 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500/20 transition-colors flex items-center gap-1"
+                        className="text-[10px] font-black uppercase tracking-widest px-4 py-2 bg-[var(--viz-cyan)] text-white rounded-xl hover:bg-[var(--viz-cyan)]/90 transition-all shadow-lg shadow-[var(--viz-cyan)]/20 flex items-center gap-2"
                      >
-                        <Play className="w-3 h-3" /> Run & Generate Output
+                        <Play className="w-3.5 h-3.5 fill-current" /> Synchronize
                      </button>
                   </div>
                   <Controller
@@ -783,28 +807,25 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                     control={control}
                     rules={{
                        validate: (value) => {
-                          if (value.length === 0) return "At least one expected result is required for SQL problems.";
-                          if (value.some(tc => !tc.output?.trim())) return "Expected Output cannot be blank.";
+                          if (value.length === 0) return "Oracle requires at least one target result.";
+                          if (value.some(tc => !tc.output?.trim())) return "Output buffer cannot be empty.";
                           return true;
                        }
                     }}
                     render={({ field }) => (
                       <TestCaseEditor
                         name={field.name}
-                        label="Expected Result (One Case Recommended)"
+                        label="Target Dataset (Oracle Result)"
                         showOutputs={true}
                         control={control}
                         register={register}
-                        hideInput={true} // Hide Input field for SQL
+                        hideInput={true}
                       />
                     )}
                   />
-                  {errors.examplesInput && (
-                    <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
-                  )}
                </div>
             ) : (
-              <>
+              <div className="space-y-8">
                                 <Controller
                                   name="examplesInput"
                                   control={control}
@@ -819,15 +840,15 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                   render={({ field }) => (
                                     <TestCaseEditor
                                       name={field.name}
-                                      label="Example Test Cases"
+                                      label="Public Test Vectors (Examples)"
                                       showOutputs={true}
-                                      control={control} // Pass control
-                                      register={register} // Pass register
+                                      control={control}
+                                      register={register}
                                     />
                                   )}
                                 />
                                 {errors.examplesInput && (
-                                  <p className="text-red-500 text-xs mt-1">{errors.examplesInput.message}</p>
+                                  <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.examplesInput.message}</p>
                                 )}
                 
                                             {(
@@ -843,24 +864,24 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                                 render={({ field }) => (
                                                   <TestCaseEditor
                                                     name={field.name}
-                                                    label="Hidden Test Cases (Inputs Only)"
+                                                    label="Encrypted Validation Vectors (Hidden)"
                                                     showOutputs={false}
-                                                    control={control} // Pass control
-                                                    register={register} // Pass register
+                                                    control={control}
+                                                    register={register}
                                                   />
                                                 )}
                                               />
                                             )}
                                             {errors.testCasesInput && (
-                                              <p className="text-red-500 text-xs mt-1">{errors.testCasesInput.message}</p>
+                                              <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.testCasesInput.message}</p>
                                             )}
-                              </>
+                              </div>
             )}
             
             {syntaxError && (
-              <div className="flex items-center gap-1.5 text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded animate-pulse">
-                <AlertCircle className="w-3 h-3" />
-                <span className="truncate max-w-[150px]">{syntaxError}</span>
+              <div className="flex items-center gap-2 text-[var(--viz-red)] text-[10px] font-black uppercase tracking-widest px-4 py-2 bg-[var(--viz-red)]/10 rounded-xl animate-pulse">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span className="truncate">Syntax Anomaly Detected</span>
               </div>
             )}
           </div>

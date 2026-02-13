@@ -114,68 +114,75 @@ const BulkImportModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">Bulk Import Test Cases</h3>
-          <button onClick={onClose} className="text-[var(--foreground)]/50 hover:text-[var(--foreground)] cursor-pointer">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.5)] w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--border)] bg-[var(--background)]/30">
+          <h3 className="text-sm font-black uppercase tracking-[0.2em] text-[var(--foreground)]">Bulk Vector Import</h3>
+          <button onClick={onClose} className="p-2 hover:bg-[var(--foreground)]/10 rounded-xl transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-4 flex-1 overflow-y-auto">
-          <div className="flex space-x-4 mb-4">
+        <div className="p-8 flex-1 overflow-y-auto custom-scrollbar space-y-8">
+          <div className="flex p-1.5 bg-[var(--background)] rounded-2xl w-fit">
             <button
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${activeTab === "text"
-                ? "bg-[var(--accent-gradient-to)] text-white"
-                : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
+              className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer ${activeTab === "text"
+                ? "bg-[var(--viz-cyan)] text-white shadow-lg shadow-[var(--viz-cyan)]/20"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
               }`}
               onClick={() => setActiveTab("text")}
             >
-              Paste Text / JSON
+              Raw Buffer / JSON
             </button>
             <button
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${activeTab === "file"
-                ? "bg-[var(--accent-gradient-to)] text-white"
-                : "bg-[var(--background)] text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10"
+              className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer ${activeTab === "file"
+                ? "bg-[var(--viz-cyan)] text-white shadow-lg shadow-[var(--viz-cyan)]/20"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
               }`}
               onClick={() => setActiveTab("file")}
             >
-              Upload File
+              Binary File
             </button>
           </div>
 
           {activeTab === "text" ? (
-            <div className="space-y-2">
-              <label className="block text-sm text-[var(--foreground)]/70">
-                Paste your test cases below.
-                <span className="block text-xs text-[var(--foreground)]/50 mt-1">
-                  Supported formats:
-                  <ul className="list-disc pl-4 mt-1 space-y-1">
-                    <li>JSON Array: <code>{`[{ "input": "...", "output": "..." }, ...]`}</code></li>
-                    {showOutputs ? (
-                      <li>Newline Separated: Line 1 = Input, Line 2 = Output, etc.</li>
-                    ) : (
-                      <li>Newline Separated: One input per line.</li>
-                    )}
-                  </ul>
-                </span>
-              </label>
+            <div className="space-y-4">
+              <div className="bg-[var(--viz-cyan)]/5 p-4 rounded-2xl border border-[var(--viz-cyan)]/10">
+                <p className="text-[10px] font-bold text-[var(--viz-cyan)] uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" /> Protocol Specifications:
+                </p>
+                <ul className="space-y-1.5">
+                  <li className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-[var(--viz-cyan)]" /> JSON Schema: <code className="lowercase opacity-80 bg-[var(--background)] px-1.5 py-0.5 rounded ml-1">{`[{ "input": "...", "output": "..." }]`}</code>
+                  </li>
+                  {showOutputs ? (
+                    <li className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-[var(--viz-cyan)]" /> Stream: Line 1 = Input, Line 2 = Output
+                    </li>
+                  ) : (
+                    <li className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-[var(--viz-cyan)]" /> Sequence: One Input sequence per line
+                    </li>
+                  )}
+                </ul>
+              </div>
               <textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                className="w-full h-64 p-3 font-mono text-sm rounded-lg border border-[var(--card-border)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-none"
+                className="w-full h-64 p-5 font-mono text-xs rounded-3xl bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none resize-none transition-all shadow-inner"
                 placeholder={
                   showOutputs
-                    ? 'Example (Text):\n[1, 2]\n3\n\nExample (JSON):\n[{"input": "2", "output": "4"}]'
-                    : 'Example:\ninput1\ninput2\ninput3'
+                    ? 'Transmission Format:\n[1, 2]\n3\n\nJSON Protocol:\n[{"input": "2", "output": "4"}]'
+                    : 'Input Sequence:\n0x4A... \n0xBF... \n0xEE...'
                 }
               />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-[var(--card-border)] rounded-lg bg-[var(--background)]/30 hover:bg-[var(--background)]/50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-              <FileText className="h-10 w-10 text-[var(--foreground)]/30 mb-2" />
-              <p className="text-sm text-[var(--foreground)]/60">Click to upload .txt or .json</p>
+            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-[var(--border)] rounded-[2rem] bg-[var(--background)]/30 hover:bg-[var(--background)]/50 transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+              <div className="w-16 h-16 rounded-full bg-[var(--viz-cyan)]/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Upload className="h-8 w-8 text-[var(--viz-cyan)] opacity-50" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">Select System File (.txt / .json)</p>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -187,27 +194,27 @@ const BulkImportModal = ({
           )}
 
           {error && (
-            <div className="flex items-center gap-2 mt-4 text-sm text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20">
+            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-[var(--viz-red)] bg-[var(--viz-red)]/5 p-4 rounded-2xl border border-[var(--viz-red)]/10">
               <AlertCircle className="h-4 w-4" />
               {error}
             </div>
           )}
         </div>
 
-        <div className="p-4 border-t border-[var(--card-border)] flex justify-end gap-3">
+        <div className="px-8 py-6 border-t border-[var(--border)] bg-[var(--background)]/30 flex justify-end gap-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-[var(--foreground)]/70 hover:bg-[var(--foreground)]/10 rounded-md transition-colors cursor-pointer"
+            className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 rounded-xl transition-all cursor-pointer"
           >
-            Cancel
+            Abort
           </button>
           <button
             onClick={handleImport}
             disabled={!textContent.trim()}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] rounded-md shadow-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            className="flex items-center px-8 py-2.5 text-[10px] font-black uppercase tracking-widest text-white bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] rounded-xl shadow-lg shadow-[var(--viz-cyan)]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all cursor-pointer"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Import Test Cases
+            Commit Buffer
           </button>
         </div>
       </div>
@@ -238,27 +245,27 @@ const TestCaseEditor = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-[var(--foreground)]/70">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
           {label}
         </label>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setIsBulkImportOpen(true)}
-            className="inline-flex items-center px-3 py-1.5 border border-[var(--card-border)] rounded-md shadow-sm text-sm font-medium text-[var(--foreground)]/70 bg-[var(--background)] hover:bg-[var(--foreground)]/10 transition-colors"
+            className="inline-flex items-center px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] bg-[var(--card)]/30 hover:bg-[var(--card)]/50 hover:text-[var(--foreground)] rounded-xl transition-all"
           >
-            <Upload className="-ml-0.5 mr-2 h-4 w-4" />
+            <Upload className="mr-2 h-3.5 w-3.5" />
             Bulk Import
           </button>
           <button
             type="button"
             onClick={handleAddTestCase}
-            className="inline-flex items-center px-3 py-1.5 border border-[var(--card-border)] rounded-md shadow-sm text-sm font-medium text-[var(--foreground)]/70 bg-[var(--background)] hover:bg-[var(--foreground)]/10 transition-colors cursor-pointer"
+            className="inline-flex items-center px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--viz-cyan)] bg-[var(--viz-cyan)]/5 hover:bg-[var(--viz-cyan)]/10 rounded-xl transition-all cursor-pointer"
           >
-            <PlusCircle className="-ml-0.5 mr-2 h-4 w-4" />
-            Add Test Case
+            <PlusCircle className="mr-2 h-3.5 w-3.5" />
+            Initialize Vector
           </button>
         </div>
       </div>
@@ -271,46 +278,48 @@ const TestCaseEditor = ({
       />
 
       {fields.length === 0 && (
-        <p className="text-sm text-[var(--foreground)]/50">No test cases added yet.</p>
+        <div className="text-center py-10 rounded-3xl bg-[var(--card)]/10 border border-dashed border-[var(--border)]">
+           <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] opacity-30">No active test vectors found in this registry.</p>
+        </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {fields.map((field, index) => (
-          <div key={field.id} className="p-4 border border-[var(--card-border)] rounded-lg bg-[var(--background)]/50 relative">
+          <div key={field.id} className="p-6 rounded-[2rem] bg-[var(--card)]/20 border border-[var(--border)] relative group transition-all hover:bg-[var(--card)]/30">
             <button
               type="button"
               onClick={() => remove(index)}
-              className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-              title="Remove Test Case"
+              className="absolute top-4 right-4 p-2 bg-red-500/5 text-red-500/30 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+              title="Remove Vector"
             >
               <Trash2 className="h-4 w-4" />
             </button>
-            <div className={`grid grid-cols-1 ${showOutputs && !hideInput ? "md:grid-cols-2" : ""} gap-4 mt-2`}>
+            <div className={`grid grid-cols-1 ${showOutputs && !hideInput ? "md:grid-cols-2" : ""} gap-6`}>
               {!hideInput && (
-                <div>
-                  <label htmlFor={`${name}.${index}.input`} className="block text-xs font-medium text-[var(--foreground)]/60 mb-1">
-                    Input {index + 1}
+                <div className="space-y-2">
+                  <label htmlFor={`${name}.${index}.input`} className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                    Input Buffer {index + 1}
                   </label>
                   <textarea
                     id={`${name}.${index}.input`}
                     {...register(`${name}.${index}.input`, { required: true })}
                     rows={3}
-                    className="w-full p-2 font-mono text-sm rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-y"
-                    placeholder="e.g., nums = [2,7,11,15], target = 9"
+                    className="w-full p-4 font-mono text-xs rounded-2xl bg-[var(--background)] border border-transparent focus:border-[var(--viz-cyan)]/20 text-[var(--foreground)] outline-none resize-none transition-all shadow-inner"
+                    placeholder="nums = [2,7,11,15], target = 9"
                   />
                 </div>
               )}
               {showOutputs && (
-                <div>
-                  <label htmlFor={`${name}.${index}.output`} className="block text-xs font-medium text-[var(--foreground)]/60 mb-1">
-                    Output {index + 1}
+                <div className="space-y-2">
+                  <label htmlFor={`${name}.${index}.output`} className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                    Target Output {index + 1}
                   </label>
                   <textarea
                     id={`${name}.${index}.output`}
                     {...register(`${name}.${index}.output`, { required: true })}
                     rows={3}
-                    className="w-full p-2 font-mono text-sm rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-y"
-                    placeholder="e.g., [0,1]"
+                    className="w-full p-4 font-mono text-xs rounded-2xl bg-[var(--background)] border border-transparent focus:border-[var(--viz-cyan)]/20 text-[var(--foreground)] outline-none resize-none transition-all shadow-inner"
+                    placeholder="[0,1]"
                   />
                 </div>
               )}

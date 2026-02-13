@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import axios from "axios";
+import { Zap } from "lucide-react";
 import ProblemForm, { ProblemFormData } from "@/features/problems/components/ProblemForm";
 import { motion } from "framer-motion";
 
@@ -58,13 +59,16 @@ export default function CreateProblemPage() {
   }
   
   return (
-    <main className="flex flex-col h-screen pt-16">
+    <main className="flex flex-col h-screen bg-[var(--background)]">
       {contestId && (
-        <div className="bg-blue-500/10 border-b border-blue-500/20 px-4 py-2 flex items-center justify-center text-sm text-blue-400">
-           <span className="font-semibold mr-2">Contest Mode:</span> Creating a private problem for contest.
+        <div className="bg-[var(--viz-cyan)]/10 border-b border-[var(--viz-cyan)]/20 px-4 py-2.5 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.2em] text-[var(--viz-cyan)] z-50">
+           <Zap className="w-3 h-3 mr-2 fill-current" /> Contest Transmission: Private Problem Protocol Active
         </div>
       )}
-      <ProblemForm onSubmit={handleSubmit} contestId={contestId} />
+      <div className="flex-1 overflow-hidden relative">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5 -z-10" />
+        <ProblemForm onSubmit={handleSubmit} contestId={contestId} />
+      </div>
     </main>
   );
 }

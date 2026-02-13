@@ -205,10 +205,16 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
       });
 
       if (!response.ok) {
-        if (response.status === 429) {
+        let errorMessage = "API_ERROR";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) { /* ignore parse error */ }
+
+        if (response.status === 429 || errorMessage === "RATE_LIMIT") {
           throw new Error("RATE_LIMIT");
         }
-        throw new Error("API_ERROR");
+        throw new Error(errorMessage);
       }
 
       const reader = response.body?.getReader();
@@ -278,19 +284,19 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--background)]">
+    <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <div className={`p-3 border-b border-[var(--card-border)] flex items-center justify-between shadow-sm z-10 ${isInterviewMode ? 'bg-purple-600/5' : 'bg-[var(--card-bg)]'}`}>
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg ${isInterviewMode ? 'bg-purple-500/20' : 'bg-purple-500/10'}`}>
+      <div className={`p-4 flex items-center justify-between z-10 ${isInterviewMode ? 'bg-purple-600/5' : 'bg-transparent'}`}>
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-xl ${isInterviewMode ? 'bg-purple-500/20' : 'bg-purple-500/10'}`}>
             {isInterviewMode ? <ShieldAlert className="w-4 h-4 text-purple-500" /> : <Sparkles className="w-4 h-4 text-purple-500" />}
           </div>
           <div>
-            <h3 className="font-bold text-sm text-[var(--foreground)]">
+            <h3 className="font-bold text-sm text-[var(--foreground)] tracking-tight">
               {isInterviewMode ? "Interview Mode" : "AI Tutor"}
             </h3>
-            <p className="text-[10px] text-[var(--foreground)]/60">
-              {isInterviewMode ? "Real-time assessment" : "Powered by Groq Llama 3.3"}
+            <p className="text-[10px] text-[var(--foreground)]/40 font-bold uppercase tracking-widest">
+              {isInterviewMode ? "Real-time assessment" : "Groq Neural Engine"}
             </p>
           </div>
         </div>
@@ -302,7 +308,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
                 setIsVoiceOn(!isVoiceOn);
                 if (!isVoiceOn) toast.success("AI Voice Enabled");
               }}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${isVoiceOn ? 'bg-purple-500/20 text-purple-500' : 'text-[var(--foreground)]/40 hover:bg-[var(--foreground)]/5'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${isVoiceOn ? 'bg-purple-500/20 text-purple-500' : 'text-[var(--foreground)]/30 hover:bg-[var(--foreground)]/5'}`}
               title="Toggle AI Voice"
             >
               {isVoiceOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -311,7 +317,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
           {messages.length > 1 && (
             <button 
               onClick={handleClearHistory}
-              className="p-2 text-[var(--foreground)]/40 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all cursor-pointer"
+              className="p-2 text-[var(--foreground)]/30 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all cursor-pointer"
               title="Clear History"
             >
               <Trash2 className="w-4 h-4" />
@@ -321,26 +327,26 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
         {messages.map((msg) => (
           <motion.div
             key={msg.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`flex items-start gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+            className={`flex items-start gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
           >
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user"
+              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${msg.role === "user"
                 ? "bg-[var(--foreground)]/10 text-[var(--foreground)]"
-                : "bg-purple-600 text-white"
+                : "bg-purple-600/10 text-purple-500"
               }`}
             >
-              {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+              {msg.role === "user" ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
             </div>
             <div
-              className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user"
-                ? "bg-[var(--foreground)]/10 text-[var(--foreground)] rounded-tr-none"
-                : "bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--foreground)]/90 rounded-tl-none shadow-sm"
+              className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user"
+                ? "bg-[var(--foreground)]/5 text-[var(--foreground)] rounded-tr-none"
+                : "bg-[var(--card)]/40 text-[var(--foreground)]/90 rounded-tl-none"
               }`}
             >
               {msg.text}
@@ -351,13 +357,13 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-start gap-3"
+            className="flex items-start gap-4"
           >
-            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
-              <Bot className="w-4 h-4 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-purple-600/10 flex items-center justify-center shrink-0">
+              <Bot className="w-5 h-5 text-purple-500" />
             </div>
-            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] p-3 rounded-2xl rounded-tl-none shadow-sm">
-              <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
+            <div className="bg-[var(--card)]/40 p-4 rounded-3xl rounded-tl-none">
+              <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
             </div>
           </motion.div>
         )}
@@ -365,26 +371,26 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-[var(--card-border)] bg-[var(--card-bg)]">
-        <div className="relative">
+      <div className="p-6 bg-transparent">
+        <div className="relative group">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={cooldown > 0}
-            placeholder={cooldown > 0 ? `Cooling down (${cooldown}s)...` : "Ask a question..."}
-            className={`w-full pl-4 pr-12 py-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl text-sm text-[var(--foreground)] outline-none focus:ring-2 focus:ring-purple-500/50 resize-none h-[50px] custom-scrollbar ${cooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            placeholder={cooldown > 0 ? `Neural Cooldown (${cooldown}s)...` : "Signal your question..."}
+            className={`w-full pl-5 pr-14 py-4 bg-[var(--card)]/20 border border-transparent focus:border-purple-500/20 rounded-3xl text-sm text-[var(--foreground)] outline-none transition-all resize-none h-[64px] custom-scrollbar shadow-inner ${cooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading || cooldown > 0}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:hover:bg-purple-600 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 disabled:opacity-50 disabled:hover:bg-purple-600 transition-all shadow-xl shadow-purple-600/30"
           >
-            {cooldown > 0 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {cooldown > 0 ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </button>
         </div>
-        <p className="text-[10px] text-[var(--foreground)]/40 text-center mt-2">
-          {cooldown > 0 ? "Quota hit. Waiting for reset..." : "AI can make mistakes. Review generated code."}
+        <p className="text-[9px] text-[var(--foreground)]/20 text-center mt-4 font-black uppercase tracking-tighter">
+          {cooldown > 0 ? "Neural buffer overflow. Please standby." : "AI responses may be non-deterministic. Verify critical logic."}
         </p>
       </div>
     </div>

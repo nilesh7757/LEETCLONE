@@ -37,11 +37,20 @@ export async function POST(req: NextRequest) {
 
     const responseText = await chatWithAI(messages, context);
     return NextResponse.json({ response: responseText });
-  } catch (error) {
-    console.error("Gemini Chat Error:", error);
+  } catch (error: any) {
+    console.error("Gemini Chat Error Details:", {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
+    
     if (error instanceof AIError && error.status === 429) {
       return NextResponse.json({ error: error.message }, { status: 429 });
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    
+    const status = error.status || error.response?.status || 500;
+    const message = error.response?.data?.error?.message || error.message || "Internal Server Error";
+    
+    return NextResponse.json({ error: message }, { status });
   }
 }

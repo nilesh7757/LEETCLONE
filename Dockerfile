@@ -16,9 +16,6 @@ RUN npm ci
 # Copy the rest of the application code
 COPY . .
 
-# Copy environment variables for build time (and runtime if baking in)
-COPY .env .env
-
 # Generate Prisma Client
 RUN npx prisma generate
 

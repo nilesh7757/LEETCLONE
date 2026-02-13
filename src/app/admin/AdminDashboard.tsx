@@ -60,12 +60,18 @@ interface Problem {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"reports" | "users" | "problems" | "ai_verification" | "verifications">("reports");
+  const [activeTab, setActiveTab] = useState<"reports" | "users" | "problems" | "ai_verification" | "verifications" | "architect">("reports");
   
   const [reports, setReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [problems, setProblems] = useState<Problem[]>([]);
   const [pendingStudyPlans, setPendingStudyPlans] = useState<any[]>([]);
+  
+  // Architect State
+  const [architectTopic, setArchitectTopic] = useState("");
+  const [architectDifficulty, setArchitectDifficulty] = useState("MEDIUM");
+  const [generatedProblem, setGeneratedProblem] = useState<any>(null);
+  const [isArchitectLoading, setIsArchitectLoading] = useState(false);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -183,6 +189,64 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleGenerateProblem = async () => {
+    if (!architectTopic) return toast.error("Please enter a topic");
+    setIsArchitectLoading(true);
+    try {
+      const { data } = await axios.post("/api/admin/generate-problem", {
+        topic: architectTopic,
+        difficulty: architectDifficulty
+      });
+      setGeneratedProblem(data.data);
+      toast.success("Problem generated successfully!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Generation failed");
+    } finally {
+      setIsArchitectLoading(false);
+    }
+  };
+
+  const handleSaveGeneratedProblem = async () => {
+    if (!generatedProblem) return;
+    setIsSubmitting(true);
+    try {
+      // Mapping Architect output to /api/problems/create schema
+      const payload = {
+        title: generatedProblem.title,
+        slug: generatedProblem.slug,
+        difficulty: generatedProblem.difficulty === "EASY" ? "Easy" : generatedProblem.difficulty === "MEDIUM" ? "Medium" : "Hard",
+        category: generatedProblem.category,
+        description: generatedProblem.description,
+        // First 2 cases as examples, rest as hidden
+        examplesInput: generatedProblem.testCases.slice(0, 2).map((tc: any) => ({
+          input: tc.input,
+          output: tc.output
+        })),
+        testCasesInput: generatedProblem.testCases.slice(2).map((tc: any) => ({
+          input: tc.input
+        })),
+        referenceSolution: generatedProblem.referenceSolution,
+        language: "javascript", // Architect currently generates JS/TS
+        timeLimit: generatedProblem.timeLimit,
+        memoryLimit: generatedProblem.memoryLimit,
+        problemType: generatedProblem.problemType,
+        isPublic: false, // Save as draft
+        editorial: "AI Generated Editorial"
+      };
+
+      await axios.post("/api/problems/create", payload);
+      toast.success("Problem saved as draft!");
+      setGeneratedProblem(null);
+      fetchProblems();
+      setActiveTab("ai_verification");
+    } catch (error: any) {
+      console.error("Save Error:", error.response?.data || error);
+      toast.error(error.response?.data?.error || "Failed to save problem");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--foreground)]"></div>
@@ -258,10 +322,155 @@ export default function AdminDashboard() {
             </span>
           )}
         </button>
+        <button
+          onClick={() => setActiveTab("architect")}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 ${
+            activeTab === "architect" 
+              ? "bg-[var(--card-bg)] text-[var(--foreground)] border-b-2 border-indigo-500" 
+              : "text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--card-bg)]/50"
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-indigo-500" /> Architect
+        </button>
       </div>
 
       {/* Content */}
       <div className="space-y-6">
+        {activeTab === "architect" && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-indigo-500/10 rounded-xl">
+                  <Sparkles className="w-6 h-6 text-indigo-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-[var(--foreground)]">Agentic Problem Architect</h2>
+                  <p className="text-sm text-[var(--foreground)]/60">Generate high-quality problems using AI-driven verification loops.</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 items-end">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[var(--foreground)]/70">Topic / Core Concept</label>
+                  <input
+                    type="text"
+                    value={architectTopic}
+                    onChange={(e) => setArchitectTopic(e.target.value)}
+                    placeholder="e.g. Dynamic Programming, Graph Theory..."
+                    className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-lg px-4 py-2.5 text-[var(--foreground)] focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[var(--foreground)]/70">Target Difficulty</label>
+                  <select
+                    value={architectDifficulty}
+                    onChange={(e) => setArchitectDifficulty(e.target.value)}
+                    className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-lg px-4 py-2.5 text-[var(--foreground)] focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  >
+                    <option value="EASY">Easy</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HARD">Hard</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                onClick={handleGenerateProblem}
+                disabled={isArchitectLoading || !architectTopic}
+                className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/50 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-900/20"
+              >
+                {isArchitectLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Agent is Thinking & Verifying...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" /> Generate Problem
+                  </>
+                )}
+              </button>
+            </div>
+
+            {generatedProblem && (
+              <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-4 duration-500">
+                <div className="p-6 border-b border-[var(--card-border)] bg-indigo-500/5 flex justify-between items-center">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    Preview: {generatedProblem.title}
+                  </h3>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setGeneratedProblem(null)}
+                      className="px-4 py-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--foreground)] transition-colors"
+                    >
+                      Discard
+                    </button>
+                    <button 
+                      onClick={handleSaveGeneratedProblem}
+                      disabled={isSubmitting}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-all"
+                    >
+                      {isSubmitting ? "Saving..." : "Save as Draft"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-8 grid md:grid-cols-3 gap-8">
+                  <div className="md:col-span-2 space-y-6">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)]/40 mb-3">Description</h4>
+                      <div className="prose prose-invert max-w-none bg-[var(--background)] p-6 rounded-xl border border-[var(--card-border)] text-sm leading-relaxed">
+                        {generatedProblem.description}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)]/40 mb-3">Reference Solution</h4>
+                      <div className="bg-black/40 p-6 rounded-xl font-mono text-xs overflow-x-auto border border-[var(--card-border)]">
+                        <pre className="text-indigo-300">{generatedProblem.referenceSolution}</pre>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)]/40 mb-3">Verified Test Cases</h4>
+                      <div className="space-y-3">
+                        {Array.isArray(generatedProblem.testCases) ? (
+                          generatedProblem.testCases.map((tc: any, i: number) => (
+                            <div key={i} className="bg-[var(--background)] p-4 rounded-lg border border-[var(--card-border)] text-xs">
+                              <div className="text-indigo-400 font-bold mb-1 whitespace-pre-wrap">
+                                Input: {typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input)}
+                              </div>
+                              <div className="text-green-400 font-bold whitespace-pre-wrap">
+                                Output: {typeof tc.output === 'object' ? JSON.stringify(tc.output) : String(tc.output)}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-red-400 italic">No test cases generated or invalid format.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)]/40 mb-3">Hints</h4>
+                      <ul className="space-y-2">
+                        {generatedProblem.hints.map((hint: string, i: number) => (
+                          <li key={i} className="text-sm text-[var(--foreground)]/70 flex gap-2">
+                            <span className="text-indigo-500">•</span> {hint}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === "reports" && (
             <>
                 <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">Pending Reports</h2>

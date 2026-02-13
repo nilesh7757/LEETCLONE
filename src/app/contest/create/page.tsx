@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { motion } from "framer-motion";
-import { Calendar, Edit2, Clock, Hash, Zap, Lock } from "lucide-react"; // Removed Plus, X, Link
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar, Edit2, Clock, Hash, Zap, Lock, Plus } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -116,172 +116,227 @@ export default function CreateContestPage() {
   }
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex justify-center">
-      {/* Background Gradients */}
-      <div className="fixed inset-0 bg-[var(--background)] -z-20 transition-colors duration-300" />
-      <div className="fixed inset-0 bg-grid-pattern opacity-10 -z-10" />
+    <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex justify-center bg-[var(--background)]">
+      {/* Atmospheric Backgrounds */}
+      <div className="fixed inset-0 bg-grid-pattern opacity-5 -z-10" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-3xl p-8 space-y-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl backdrop-blur-md"
+        className="w-full max-w-4xl p-10 space-y-10 rounded-[2.5rem] bg-[var(--card)]/40 shadow-2xl backdrop-blur-3xl relative overflow-hidden"
       >
-        <h2 className="text-3xl font-bold text-center text-[var(--foreground)]">
-          Create New Contest
-        </h2>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--viz-cyan)]/10 rounded-full blur-3xl -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[var(--viz-purple)]/10 rounded-full blur-3xl -ml-32 -mb-32" />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-              Contest Title
-            </label>
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-              <input
-                id="title"
-                type="text"
-                {...register("title", { required: "Contest title is required" })}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
-                placeholder="e.g., Weekly LeetClone Challenge"
-              />
-              {errors.title && (
-                <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
-              )}
-            </div>
-          </div>
+        <div className="text-center relative">
+          <h2 className="text-4xl font-black text-[var(--foreground)] tracking-tight mb-2">
+            Initiate Contest
+          </h2>
+          <p className="text-[var(--muted-foreground)] text-sm font-medium uppercase tracking-[0.2em]">
+            Configure your neural competitive arena
+          </p>
+        </div>
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-              Description
-            </label>
-            <div className="relative">
-              <Edit2 className="absolute left-3 top-3 w-4 h-4 text-[var(--foreground)]/60" />
-              <textarea
-                id="description"
-                {...register("description")}
-                rows={4}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none resize-y"
-                placeholder="Brief description of the contest rules and theme."
-              ></textarea>
-            </div>
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 relative">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  Contest Title
+                </label>
+                <div className="relative group">
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
+                  <input
+                    id="title"
+                    type="text"
+                    {...register("title", { required: "Contest title is required" })}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/40 focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
+                    placeholder="e.g., Weekly LeetClone Challenge"
+                  />
+                  {errors.title && (
+                    <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.title.message}</p>
+                  )}
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="startTime" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                Start Time
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                <input
-                  id="startTime"
-                  type="datetime-local"
-                  {...register("startTime", { required: "Start time is required" })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
-                />
-                {errors.startTime && (
-                  <p className="text-red-500 text-xs mt-1">{errors.startTime.message}</p>
-                )}
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  Contextual Description
+                </label>
+                <div className="relative group">
+                  <Edit2 className="absolute left-4 top-5 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
+                  <textarea
+                    id="description"
+                    {...register("description")}
+                    rows={4}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/40 focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner resize-none"
+                    placeholder="Define the arena parameters..."
+                  ></textarea>
+                </div>
               </div>
             </div>
-            <div>
-              <label htmlFor="endTime" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                End Time
-              </label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground)]/60" />
-                <input
-                  id="endTime"
-                  type="datetime-local"
-                  {...register("endTime", {
-                    required: "End time is required",
-                    validate: (value, formValues) =>
-                      new Date(value) > new Date(formValues.startTime) ||
-                      "End time must be after start time",
-                  })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 text-[var(--foreground)] focus:border-[var(--accent-gradient-to)] focus:ring-1 focus:ring-[var(--accent-gradient-to)] outline-none"
-                />
-                {errors.endTime && (
-                  <p className="text-red-500 text-xs mt-1">{errors.endTime.message}</p>
-                )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label htmlFor="startTime" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  Start Sequence
+                </label>
+                <div className="relative group">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
+                  <input
+                    id="startTime"
+                    type="datetime-local"
+                    {...register("startTime", { required: "Start time is required" })}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
+                  />
+                  {errors.startTime && (
+                    <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.startTime.message}</p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="endTime" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  End Sequence
+                </label>
+                <div className="relative group">
+                  <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-cyan)] transition-colors" />
+                  <input
+                    id="endTime"
+                    type="datetime-local"
+                    {...register("endTime", {
+                      required: "End time is required",
+                      validate: (value, formValues) =>
+                        new Date(value) > new Date(formValues.startTime) ||
+                        "Sequence must end after it starts",
+                    })}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-cyan)]/20 outline-none transition-all shadow-inner"
+                  />
+                  {errors.endTime && (
+                    <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.endTime.message}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Visibility Selection */}
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-2">
-              Contest Visibility
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+              Arena Visibility
             </label>
-            <div className="grid grid-cols-2 gap-4">
-              <label className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <label className={`group relative flex items-center gap-4 p-6 rounded-3xl border-none cursor-pointer transition-all ${
                 visibility === "PUBLIC" 
-                  ? "border-[var(--accent-gradient-to)] bg-[var(--accent-gradient-to)]/10" 
-                  : "border-[var(--card-border)] bg-[var(--background)]/50 hover:bg-[var(--foreground)]/5"
+                  ? "bg-[var(--viz-cyan)]/10 ring-2 ring-[var(--viz-cyan)]/30" 
+                  : "bg-[var(--card)]/30 hover:bg-[var(--card)]/50"
               }`}>
                 <input
                   type="radio"
                   value="PUBLIC"
                   {...register("visibility")}
-                  className="w-4 h-4 text-[var(--accent-gradient-to)] focus:ring-[var(--accent-gradient-to)]"
+                  className="hidden"
                 />
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${visibility === "PUBLIC" ? "border-[var(--viz-cyan)] bg-[var(--viz-cyan)]" : "border-[var(--muted-foreground)]/30"}`}>
+                  {visibility === "PUBLIC" && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
                 <div>
-                  <span className="block text-sm font-medium text-[var(--foreground)]">Public Contest</span>
-                  <span className="block text-xs text-[var(--foreground)]/50">Visible to everyone on the contest list.</span>
+                  <span className="block text-sm font-bold text-[var(--foreground)]">Public Arena</span>
+                  <span className="block text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight">Open for all combatants</span>
                 </div>
               </label>
 
-              <label className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+              <label className={`group relative flex items-center gap-4 p-6 rounded-3xl border-none cursor-pointer transition-all ${
                 visibility === "PRIVATE" 
-                  ? "border-[var(--accent-gradient-to)] bg-[var(--accent-gradient-to)]/10" 
-                  : "border-[var(--card-border)] bg-[var(--background)]/50 hover:bg-[var(--foreground)]/5"
+                  ? "bg-[var(--viz-purple)]/10 ring-2 ring-[var(--viz-purple)]/30" 
+                  : "bg-[var(--card)]/30 hover:bg-[var(--card)]/50"
               }`}>
                 <input
                   type="radio"
                   value="PRIVATE"
                   {...register("visibility")}
-                  className="w-4 h-4 text-[var(--accent-gradient-to)] focus:ring-[var(--accent-gradient-to)]"
+                  className="hidden"
                 />
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${visibility === "PRIVATE" ? "border-[var(--viz-purple)] bg-[var(--viz-purple)]" : "border-[var(--muted-foreground)]/30"}`}>
+                  {visibility === "PRIVATE" && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
                 <div>
-                  <span className="block text-sm font-medium text-[var(--foreground)]">Private Contest</span>
-                  <span className="block text-xs text-[var(--foreground)]/50">Only accessible via link and access code.</span>
+                  <span className="block text-sm font-bold text-[var(--foreground)]">Encrypted Private</span>
+                  <span className="block text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight">Invite-only transmission</span>
                 </div>
               </label>
             </div>
           </div>
 
-          {/* Access Code Input (Removed as per user request) */}
-
-          {/* Publish Problems Checkbox */}
-          <div>
-              <label className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-                Post-Contest Visibility
-              </label>
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50">
-                <input
-                  id="publishProblems"
-                  type="checkbox"
-                  {...register("publishProblems")}
-                  className="w-5 h-5 rounded border-gray-300 text-[var(--accent-gradient-to)] focus:ring-[var(--accent-gradient-to)]"
-                />
-                <label htmlFor="publishProblems" className="text-sm text-[var(--foreground)] cursor-pointer select-none">
-                  Make problems <span className="font-bold">Public</span> after contest ends?
-                  <p className="text-xs text-[var(--foreground)]/50 font-normal">
-                    If checked, private problems will become visible to everyone once the contest is over.
-                  </p>
+          <AnimatePresence>
+            {visibility === "PRIVATE" && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: -10, height: 0 }}
+                className="space-y-2 overflow-hidden"
+              >
+                <label htmlFor="accessCode" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  Security Access Code
                 </label>
-              </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] group-focus-within:text-[var(--viz-purple)] transition-colors" />
+                  <input
+                    id="accessCode"
+                    type="text"
+                    {...register("accessCode", { required: visibility === "PRIVATE" ? "Access code is required" : false })}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[var(--card)]/50 border-none text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/40 focus:ring-2 focus:ring-[var(--viz-purple)]/20 outline-none transition-all shadow-inner"
+                    placeholder="Enter entry passkey..."
+                  />
+                </div>
+                {errors.accessCode && (
+                  <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.accessCode.message}</p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                Post-Operation Protocol
+              </label>
+              <label className="flex items-center gap-4 p-6 rounded-3xl bg-[var(--card)]/30 cursor-pointer hover:bg-[var(--card)]/40 transition-all">
+                <div className="relative flex items-center">
+                  <input
+                    id="publishProblems"
+                    type="checkbox"
+                    {...register("publishProblems")}
+                    className="w-6 h-6 rounded-lg appearance-none bg-[var(--card)] border-none checked:bg-[var(--viz-green)] transition-all cursor-pointer shadow-inner"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white font-bold opacity-0 check-icon">
+                    ✓
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-sm font-bold text-[var(--foreground)]">Declassify Problems</span>
+                  <p className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-tight">
+                    Merge arena challenges into public database after completion
+                  </p>
+                </div>
+              </label>
           </div>
 
-          {/* Problem Selector */}
-          <div>
-            <label htmlFor="problems" className="block text-sm font-medium text-[var(--foreground)]/70 mb-1">
-              Select Problems
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-1 px-1">
+               <label htmlFor="problems" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+                 Select Combat Modules (Problems)
+               </label>
+               <button 
+                  type="button"
+                  onClick={() => router.push('/problems/new')}
+                  className="text-[10px] font-black uppercase tracking-widest text-[var(--viz-cyan)] hover:opacity-80 transition-opacity flex items-center gap-1.5"
+               >
+                  <Plus className="w-3 h-3" /> Create New Module
+               </button>
+            </div>
             <Select
               id="problems"
-              instanceId="problems-select" // Added for SSR hydration
+              instanceId="problems-select"
               options={availableProblems}
               isMulti
               isLoading={isProblemsLoading}
@@ -292,86 +347,88 @@ export default function CreateContestPage() {
                   selectedOptions.map((option) => option.value)
                 );
               }}
-              // Custom styles for dark theme
               styles={{
                 control: (baseStyles) => ({
                   ...baseStyles,
-                  backgroundColor: "var(--background)",
-                  borderColor: "var(--card-border)",
+                  backgroundColor: "var(--card)/30",
+                  border: "none",
+                  borderRadius: "1.25rem",
+                  padding: "0.5rem",
                   color: "var(--foreground)",
-                  "&:hover": {
-                    borderColor: "var(--accent-gradient-to)",
-                  },
+                  boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
                 }),
                 menu: (baseStyles) => ({
                   ...baseStyles,
-                  backgroundColor: "var(--background)",
-                  borderColor: "var(--card-border)",
+                  backgroundColor: "var(--card)",
+                  borderRadius: "1.25rem",
+                  border: "none",
+                  padding: "0.5rem",
+                  overflow: "hidden",
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
                 }),
                 option: (baseStyles, state) => ({
                   ...baseStyles,
                   backgroundColor: state.isFocused
                     ? "var(--foreground)/5"
                     : state.isSelected
-                    ? "var(--accent-gradient-to)"
-                    : "var(--background)",
+                    ? "var(--viz-cyan)/20"
+                    : "transparent",
                   color: state.isSelected
-                    ? "var(--background)"
+                    ? "var(--viz-cyan)"
                     : "var(--foreground)",
-                  "&:active": {
-                    backgroundColor: "var(--accent-gradient-to)",
-                  },
+                  borderRadius: "0.75rem",
+                  margin: "0.25rem 0",
+                  cursor: "pointer",
                 }),
                 multiValue: (baseStyles) => ({
                   ...baseStyles,
-                  backgroundColor: "var(--card-border)",
-                  color: "var(--foreground)",
+                  backgroundColor: "var(--viz-cyan)/10",
+                  borderRadius: "0.5rem",
+                  padding: "0.125rem",
                 }),
                 multiValueLabel: (baseStyles) => ({
                   ...baseStyles,
-                  color: "var(--foreground)",
+                  color: "var(--viz-cyan)",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
                 }),
                 multiValueRemove: (baseStyles) => ({
                   ...baseStyles,
-                  color: "var(--foreground)",
+                  color: "var(--viz-cyan)",
                   "&:hover": {
-                    backgroundColor: "var(--foreground)",
-                    color: "var(--background)",
+                    backgroundColor: "transparent",
+                    color: "var(--viz-red)",
                   },
-                }),
-                input: (baseStyles) => ({
-                  ...baseStyles,
-                  color: "var(--foreground)",
-                }),
-                placeholder: (baseStyles) => ({
-                  ...baseStyles,
-                  color: "var(--foreground)/60",
-                }),
-                singleValue: (baseStyles) => ({
-                  ...baseStyles,
-                  color: "var(--foreground)",
                 }),
               }}
             />
              {errors.selectedProblemIds && (
-              <p className="text-red-500 text-xs mt-1">{errors.selectedProblemIds.message}</p>
+              <p className="text-[var(--viz-red)] text-[10px] font-bold mt-1 ml-1 uppercase">{errors.selectedProblemIds.message}</p>
             )}
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting || isProblemsLoading} // Disable if problems are still loading
-            className="w-full px-6 py-3 text-sm font-medium text-[var(--background)] bg-[var(--foreground)] rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+            disabled={isSubmitting || isProblemsLoading}
+            className="w-full py-5 rounded-[2rem] bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-[var(--viz-cyan)]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3"
           >
             {isSubmitting ? (
               <Loader />
             ) : (
-              <Zap className="w-4 h-4" />
+              <>
+                <Zap className="w-5 h-5 fill-current" />
+                Establish Contest
+              </>
             )}
-            Create Contest
           </button>
         </form>
       </motion.div>
+
+      <style jsx global>{`
+        input:checked ~ .check-icon {
+          opacity: 1;
+        }
+      `}</style>
     </main>
   );
 }
