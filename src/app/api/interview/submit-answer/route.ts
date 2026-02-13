@@ -2,65 +2,75 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { runAI } from "@/lib/gemini";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
+import { Prisma } from "@prisma/client";
 
-export async function POST(req: Request) {
+interface InterviewQuestion {
+  id: string;
+  question: string;
+}
+
+interface InterviewAnswer {
+  questionId: string;
+  answer: string;
+  score: number;
+  feedback: string;
+}
+
+export const POST = apiHandler(async (req: Request) => {
+  const session = await auth();
+  if (!session?.user?.id) throw new ApiError("Unauthorized", 401);
+
+  const { interviewId, questionId, answer } = await req.json();
+
+  const interview = await prisma.mockInterview.findUnique({
+    where: { id: interviewId }
+  });
+
+  if (!interview || interview.userId !== session.user.id) {
+    throw new ApiError("Forbidden", 403);
+  }
+
+  const questions = interview.questions as unknown as InterviewQuestion[];
+  const question = questions.find(q => String(q.id) === String(questionId));
+
+  if (!question) {
+    throw new ApiError("Question not found in this session", 404);
+  }
+
+  // 1. AI Score this specific answer
+  const systemPrompt = `You are a Technical Interviewer. Evaluate the candidate's answer to this question.
+  Question: ${question.question}
+  Answer: ${answer}
+
+  Return ONLY JSON: { "score": 0-100, "feedback": "Brief critique" }`;
+
   try {
-    const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const responseText = await runAI("Evaluate this interview answer.", systemPrompt, true);
+    const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    const evaluation = JSON.parse(cleanJson);
 
-    const { interviewId, questionId, answer } = await req.json();
+    // 2. Append to answers array
+    const currentAnswers = (interview.answers as unknown as InterviewAnswer[]) || [];
+    const newAnswer: InterviewAnswer = {
+      questionId,
+      answer,
+      score: evaluation.score ?? 50,
+      feedback: evaluation.feedback ?? "Good effort."
+    };
 
-    const interview = await prisma.mockInterview.findUnique({
-      where: { id: interviewId }
+    const updatedAnswers = [...currentAnswers, newAnswer];
+
+    await prisma.mockInterview.update({
+      where: { id: interviewId },
+      data: { answers: updatedAnswers as unknown as Prisma.InputJsonValue } // Cast to Prisma.InputJsonValue for JSON storage
     });
 
-    if (!interview || interview.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const questions = interview.questions as any[];
-    const question = questions.find(q => String(q.id) === String(questionId));
-
-    if (!question) {
-      return NextResponse.json({ error: "Question not found in this session" }, { status: 404 });
-    }
-
-    // 1. AI Score this specific answer
-    const systemPrompt = `You are a Technical Interviewer. Evaluate the candidate's answer to this question.
-    Question: ${question.question}
-    Answer: ${answer}
-
-    Return ONLY JSON: { "score": 0-100, "feedback": "Brief critique" }`;
-
-    try {
-      const responseText = await runAI("Evaluate this interview answer.", systemPrompt, true);
-      const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const evaluation = JSON.parse(cleanJson);
-
-      // 2. Append to answers array
-      const currentAnswers = (interview.answers as any[]) || [];
-      const newAnswer = {
-        questionId,
-        answer,
-        score: evaluation.score ?? 50, // Fallback score
-        feedback: evaluation.feedback ?? "Good effort."
-      };
-
-      const updatedAnswers = [...currentAnswers, newAnswer];
-
-      const updatedInterview = await prisma.mockInterview.update({
-        where: { id: interviewId },
-        data: { answers: updatedAnswers }
-      });
-
-      return NextResponse.json({ evaluation, isFinished: updatedAnswers.length === questions.length });
-    } catch (aiError) {
-      console.error("AI Evaluation failed:", aiError);
-      return NextResponse.json({ error: "AI failed to evaluate your answer. Please try again." }, { status: 500 });
-    }
-
-  } catch (error: any) {
-    console.error("Answer Submit Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ evaluation, isFinished: updatedAnswers.length === questions.length });
+  } catch (aiError: unknown) {
+    logger.error("AI Evaluation failed:", aiError instanceof Error ? aiError.message : String(aiError));
+    throw new ApiError("AI failed to evaluate your answer. Please try again.", 500);
   }
-}
+});

@@ -103,17 +103,17 @@ export const POST = apiHandler(async (req: Request) => {
     try {
       rawTestSets = JSON.parse(rawTestSets);
     } catch (e) {
-      logger.error("Failed to parse testSets string", e);
+      logger.error("Failed to parse testSets string", e instanceof Error ? e.message : String(e));
     }
   }
 
   if (Array.isArray(rawTestSets)) {
-    combinedTestCases = rawTestSets as any[];
-  } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in (rawTestSets as any) && 'hidden' in (rawTestSets as any)) {
-    const sets = rawTestSets as any;
+    combinedTestCases = rawTestSets as unknown as TestInputOutput[];
+  } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in (rawTestSets as Record<string, unknown>) && 'hidden' in (rawTestSets as Record<string, unknown>)) {
+    const sets = rawTestSets as unknown as { examples: TestInputOutput[]; hidden: TestInputOutput[] };
     combinedTestCases = [
-      ...(sets.examples as TestInputOutput[]),
-      ...(sets.hidden as TestInputOutput[])
+      ...sets.examples,
+      ...sets.hidden
     ];
   }
 
@@ -158,14 +158,14 @@ export const POST = apiHandler(async (req: Request) => {
       expected: "N/A",
       actual: evalResult.feedback,
       status: "Accepted"
-    }] as any;
+    }] as unknown as ExecutionResult[];
   } else if (problem.type === "READING") {
     results = [{
       input: "Reading Completed",
       expected: "N/A",
       actual: "The user has completed the study guide.",
       status: "Accepted"
-    }] as any;
+    }] as unknown as ExecutionResult[];
   } else {
     throw new ApiError(`Unsupported problem type for submission: ${problem.type}`, 400);
   }
@@ -201,7 +201,7 @@ export const POST = apiHandler(async (req: Request) => {
       geminiTimeComplexity = analysis.timeComplexity;
       geminiSpaceComplexity = analysis.spaceComplexity;
     } catch (e) {
-      logger.error("AI Analysis failed", e);
+      logger.error("AI Analysis failed", e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -219,7 +219,7 @@ export const POST = apiHandler(async (req: Request) => {
       auditFeedback, 
       problemId,
       userId: session.user.id,
-      testCaseResults: results ? (results as any) : [],
+      testCaseResults: results ? (results as unknown as Prisma.InputJsonValue) : [],
     },
   });
 

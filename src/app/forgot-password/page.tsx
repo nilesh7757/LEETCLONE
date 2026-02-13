@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="text-center text-[var(--foreground)]/80">
             <p className="mb-4">Check your email for a reset link.</p>
-            <p className="text-sm">Didn't receive it? Check spam or try again later.</p>
+            <p className="text-sm">Didn&apos;t receive it? Check spam or try again later.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

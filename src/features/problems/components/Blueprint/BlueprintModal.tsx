@@ -88,7 +88,7 @@ export default function BlueprintModal({ problemTitle, problemDescription, onCom
                   How would you solve this?
                 </h3>
                 <p className="text-sm text-[var(--foreground)]/60 mb-4">
-                  Describe your algorithm, data structures, and how you'll handle edge cases.
+                  Describe your algorithm, data structures, and how you&apos;ll handle edge cases.
                 </p>
               </div>
 
@@ -140,7 +140,7 @@ export default function BlueprintModal({ problemTitle, problemDescription, onCom
               <div>
                 <h3 className="text-2xl font-bold text-[var(--foreground)]">Excellent Logic!</h3>
                 <p className="text-[var(--foreground)]/60 max-w-sm mt-2">
-                  Your approach is sound. You've correctly identified the core logic and handled the constraints.
+                  Your approach is sound. You&apos;ve correctly identified the core logic and handled the constraints.
                 </p>
               </div>
               

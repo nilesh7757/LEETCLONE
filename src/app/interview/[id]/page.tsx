@@ -371,7 +371,7 @@ function InterviewResults({ results, interview }: { results: any, interview: any
                       <Send className="w-3 h-3 text-[var(--viz-blue)]" /> Transmission
                     </label>
                     <div className="p-6 bg-[var(--muted)] rounded-2xl shadow-inner">
-                      <p className="text-sm text-[var(--foreground)] font-light italic leading-relaxed">"{ans.answer}"</p>
+                      <p className="text-sm text-[var(--foreground)] font-light italic leading-relaxed">&quot;{ans.answer}&quot;</p>
                     </div>
                   </div>
 

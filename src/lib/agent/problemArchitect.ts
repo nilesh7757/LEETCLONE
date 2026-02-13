@@ -12,6 +12,12 @@ interface GeneratedProblem {
   hints: string[];
 }
 
+interface Blueprint {
+  title: string;
+  description: string;
+  hints: string[];
+}
+
 export class ProblemArchitect {
   private topic: string;
   private difficulty: string;
@@ -21,17 +27,17 @@ export class ProblemArchitect {
     this.difficulty = difficulty;
   }
 
-  async generate(): Promise<any> {
-    console.log(`[Architect] Planning problem for: ${this.topic} (${this.difficulty})`);
+  async generate(): Promise<GeneratedProblem | null> {
+    logger.info(`[Architect] Planning problem for: ${this.topic} (${this.difficulty})`);
 
     // Step 1: Blueprint & Description
-    const blueprint = await this.createBlueprint();
+    const blueprint = await this.createBlueprint() as Blueprint;
     
     // Step 2: Reference Solution
     const solution = await this.createReferenceSolution(blueprint);
 
     // Step 3: Test Cases (Initial Inputs Only)
-    let testInputs = await this.createTestInputs(blueprint);
+    const testInputs = await this.createTestInputs(blueprint);
 
     // Step 4: Execution & Verification Loop (Agentic Workflow)
     // We run the AI's solution against the AI's inputs to get the GROUND TRUTH outputs.
@@ -39,7 +45,7 @@ export class ProblemArchitect {
 
     // If execution failed (Runtime Error, TLE, etc.), we ask the AI to fix the solution or inputs.
     if (!verifiedTestCases.success) {
-      console.log("[Architect] Execution failed. Attempting to fix...");
+      logger.info("[Architect] Execution failed. Attempting to fix...");
       // For simplicity in V1, we try to regenerate the solution once.
       // In a full agent, this would be a loop.
       const fixedSolution = await this.fixSolution(blueprint, solution, verifiedTestCases.error || "Unknown Error");
@@ -47,7 +53,7 @@ export class ProblemArchitect {
       
       // If it still fails, we might just return what we have with a warning flag, or throw.
       if (!verifiedTestCases.success) {
-         console.warn("[Architect] Final verification failed.");
+         logger.warn("[Architect] Final verification failed.");
       } else {
          // Update to the fixed solution
          return this.formatResult(blueprint, fixedSolution, verifiedTestCases.data);
@@ -57,23 +63,19 @@ export class ProblemArchitect {
     return this.formatResult(blueprint, solution, verifiedTestCases.data);
   }
 
-  private formatResult(blueprint: any, solution: string, testCases: any[]) {
+  private formatResult(blueprint: Blueprint, solution: string, testCases: { input: string; output: string }[]): GeneratedProblem {
       return {
         title: blueprint.title,
-        slug: blueprint.title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]/g, ""),
         description: blueprint.description,
-        difficulty: this.difficulty,
+        difficulty: this.difficulty as any,
         category: this.topic,
         referenceSolution: solution,
         testCases: testCases,
         hints: blueprint.hints,
-        timeLimit: 2,
-        memoryLimit: 256,
-        problemType: "CODING"
       };
   }
 
-  private async createBlueprint() {
+  private async createBlueprint(): Promise<unknown> {
     const prompt = `
       Plan a competitive programming problem about "${this.topic}" with difficulty "${this.difficulty}".
       
@@ -93,7 +95,7 @@ export class ProblemArchitect {
     return JSON.parse(res.replace(/```json/g, "").replace(/```/g, "").trim());
   }
 
-  private async createReferenceSolution(blueprint: any) {
+  private async createReferenceSolution(blueprint: Blueprint) {
     const prompt = `
       Write a complete JavaScript (Node.js) solution for this problem:
       Title: ${blueprint.title}
@@ -117,7 +119,7 @@ export class ProblemArchitect {
     return code.trim();
   }
 
-  private async createTestInputs(blueprint: any) {
+  private async createTestInputs(blueprint: Blueprint): Promise<string[]> {
     const prompt = `
       Generate 5 test case INPUTS for this problem based on the following description:
       
@@ -132,24 +134,24 @@ export class ProblemArchitect {
       Example: ["5\\n1 0 1 1 0", "3\\n1 1 1"]
     `;
     const res = await runAI(prompt, "You are a QA Engineer.", true);
-    console.log("[Architect] Raw Test Inputs Response:", res);
+    logger.debug("[Architect] Raw Test Inputs Response:", res);
     
     try {
         const parsed = JSON.parse(res.replace(/```json/g, "").replace(/```/g, "").trim());
         if (Array.isArray(parsed)) return parsed;
         if (parsed.inputs && Array.isArray(parsed.inputs)) return parsed.inputs;
         if (parsed.test_cases && Array.isArray(parsed.test_cases)) return parsed.test_cases;
-        if (parsed.testCases && Array.isArray(parsed.testCases)) return parsed.testCases.map((tc: any) => typeof tc === 'string' ? tc : tc.input);
+        if (parsed.testCases && Array.isArray(parsed.testCases)) return parsed.testCases.map((tc: { input: string } | string) => typeof tc === 'string' ? tc : tc.input);
         return [];
     } catch (e) {
-        console.error("[Architect] Failed to parse test inputs:", e);
+        logger.error("[Architect] Failed to parse test inputs:", e instanceof Error ? e.message : String(e));
         return [];
     }
   }
 
   private async verifyAndExecute(solution: string, inputs: string[]) {
       try {
-          console.log("[Architect] Executing solution against", inputs.length, "inputs...");
+          logger.info("[Architect] Executing solution against", inputs.length, "inputs...");
           const results = await executeCode({
               problemId: "architect-verify",
               type: ProblemType.CODING,
@@ -172,20 +174,20 @@ export class ProblemArchitect {
           const validCount = results.filter(r => r.status === "Accepted" && r.actual).length;
           const success = validCount === results.length;
 
-          console.log(`[Architect] Execution finished. Valid: ${validCount}/${results.length}`);
+          logger.info(`[Architect] Execution finished. Valid: ${validCount}/${results.length}`);
 
           return {
               success: success,
               data: processedData,
               error: !success ? results.find(r => r.error)?.error : undefined
           };
-      } catch (e: any) {
-          console.error("[Architect] Execution System Error:", e);
-          return { success: false, error: e.message, data: inputs.map(i => ({ input: i, output: "System Error" })) };
+      } catch (e: unknown) {
+          logger.error("[Architect] Execution System Error:", e instanceof Error ? e.message : String(e));
+          return { success: false, error: e instanceof Error ? e.message : "Unknown Error", data: inputs.map(i => ({ input: i, output: "System Error" })) };
       }
   }
 
-  private async fixSolution(blueprint: any, brokenSolution: string, error: string) {
+  private async fixSolution(blueprint: Blueprint, brokenSolution: string, error: string) {
       const prompt = `
         The previous solution failed execution.
         Error: ${error}

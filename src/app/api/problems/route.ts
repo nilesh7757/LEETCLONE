@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { apiHandler } from "@/lib/api-handler";
+import { Prisma } from "@prisma/client";
 
 export const GET = apiHandler(async (req: Request) => {
   const session = await auth();
@@ -13,7 +14,7 @@ export const GET = apiHandler(async (req: Request) => {
   const limit = parseInt(searchParams.get("limit") || "20");
   const skip = (page - 1) * limit;
 
-  const whereClause: any = {
+  const whereClause: Prisma.ProblemWhereInput = {
     AND: [
       {
         OR: [
@@ -25,11 +26,11 @@ export const GET = apiHandler(async (req: Request) => {
   };
 
   if (userId) {
-    whereClause.AND[0].OR.push({ creatorId: userId });
+    (whereClause.AND as Prisma.ProblemWhereInput[])[0].OR?.push({ creatorId: userId });
   }
 
   if (query) {
-    whereClause.AND.push({
+    (whereClause.AND as Prisma.ProblemWhereInput[]).push({
       OR: [
         { title: { contains: query, mode: 'insensitive' } },
         { category: { contains: query, mode: 'insensitive' } },

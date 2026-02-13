@@ -363,7 +363,7 @@ export const dsaCategories = [
           <div className="space-y-8">
             <ComplexityCard time="O(V * E)" space="O(V)" />
             <DocSection title="Cycle Detection" icon={AlertTriangle} color="var(--viz-rose)">
-              <p>A unique capability of Bellman-Ford is the detection of <strong>Negative Weight Cycles</strong>. If an edge can still be relaxed after $V-1$ iterations, a negative cycle is present, making the "shortest" path undefined.</p>
+              <p>A unique capability of Bellman-Ford is the detection of <strong>Negative Weight Cycles</strong>. If an edge can still be relaxed after $V-1$ iterations, a negative cycle is present, making the &quot;shortest&quot; path undefined.</p>
             </DocSection>
           </div>
         </div>
@@ -402,8 +402,8 @@ export const dsaCategories = [
           <DocSection title="Greedy Optimization" icon={Network}>
             <p>A Minimum Spanning Tree (MST) connects all vertices with the minimum possible total edge weight, without cycles.</p>
             <ul className="mt-4 space-y-3">
-                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-deep-purple)]">Prim's Algorithm:</strong> Grows a single tree from a starting node, always adding the cheapest connection to the unvisited frontier. Ideal for dense graphs.</li>
-                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-amber)]">Kruskal's Algorithm:</strong> Sorts all edges by weight and iteratively adds them if they don't form a cycle (using Disjoint Set Union). Better for sparse graphs.</li>
+                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-deep-purple)]">Prim&apos;s Algorithm:</strong> Grows a single tree from a starting node, always adding the cheapest connection to the unvisited frontier. Ideal for dense graphs.</li>
+                <li className="flex gap-3 text-xs text-muted-foreground"><strong className="text-[var(--viz-amber)]">Kruskal&apos;s Algorithm:</strong> Sorts all edges by weight and iteratively adds them if they don&apos;t form a cycle (using Disjoint Set Union). Better for sparse graphs.</li>
             </ul>
           </DocSection>
           <div className="space-y-8">
@@ -590,7 +590,7 @@ q.pop(); // Removes 10`} />
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Lomuto Partition Logic</h4>
                     <ul className="space-y-4 text-xs text-muted-foreground leading-relaxed font-mono">
                         <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">01.</span> <strong className="text-foreground">Pivot Selection:</strong> Choose the last element (or random) as the pivot.</li>
-                        <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">02.</span> <strong className="text-foreground">Boundary Tracking:</strong> Maintain index `i` (initially `low - 1`) to mark the end of the "smaller than pivot" region.</li>
+                        <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">02.</span> <strong className="text-foreground">Boundary Tracking:</strong> Maintain index `i` (initially `low - 1`) to mark the end of the &quot;smaller than pivot&quot; region.</li>
                         <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">03.</span> <strong className="text-foreground">Scanning:</strong> Iterate `j` from `low` to `high - 1`. If `arr[j] {"<"} pivot`, increment `i` and swap `arr[i]` with `arr[j]`.</li>
                         <li className="flex gap-3"><span className="text-[var(--viz-rose)] font-bold">04.</span> <strong className="text-foreground">Placement:</strong> Finally, swap the pivot (`arr[high]`) with `arr[i + 1]` to place it in its correct sorted position.</li>
                     </ul>
@@ -1063,7 +1063,7 @@ q.pop(); // Removes 10`} />
                             Your Expectations
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            Watch the "Dependency Arrows". When calculating a cell, the visualizer will highlight two previous states: the cell directly above (Exclude) and the cell shifted left by the item's weight (Include).
+                            Watch the &quot;Dependency Arrows&quot;. When calculating a cell, the visualizer will highlight two previous states: the cell directly above (Exclude) and the cell shifted left by the item&apos;s weight (Include).
                         </p>
                     </div>
                 </div>
@@ -1145,7 +1145,7 @@ q.pop(); // Removes 10`} />
                             Operational Logic
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            The algorithm operates on a <strong>State-Space Transformation</strong>. It starts with direct edge weights and iteratively relaxes the entire manifold by considering every node as a mandatory "waypoint" (Intermediate Node $k$).
+                            The algorithm operates on a <strong>State-Space Transformation</strong>. It starts with direct edge weights and iteratively relaxes the entire manifold by considering every node as a mandatory &quot;waypoint&quot; (Intermediate Node $k$).
                         </p>
                         <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
                             <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">01.</span> Map direct connections</li>
@@ -1173,7 +1173,7 @@ q.pop(); // Removes 10`} />
                             Your Expectations
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            As you execute the visualizer, expect to see the "Relational Wave". When a cell flashes <strong>Green</strong>, it means a "shortcut" has been discovered through the current intermediate node $k$. The graph edges will thicken to represent the newly optimized path.
+                            As you execute the visualizer, expect to see the &quot;Relational Wave&quot;. When a cell flashes <strong>Green</strong>, it means a &quot;shortcut&quot; has been discovered through the current intermediate node $k$. The graph edges will thicken to represent the newly optimized path.
                         </p>
                     </div>
                 </div>
@@ -1212,7 +1212,7 @@ q.pop(); // Removes 10`} />
                     </p>
                     <h4 className="text-sm font-bold text-white flex items-center gap-2 mt-8"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> 2. The K-Loop (Crucial)</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        The outermost loop (indexed by $k$) represents the <strong>Intermediate Node</strong>. We are asking: "Can node $k$ improve the path between any $i$ and $j$?" 
+                        The outermost loop (indexed by $k$) represents the <strong>Intermediate Node</strong>. We are asking: &quot;Can node $k$ improve the path between any $i$ and $j$?&quot; 
                     </p>
                     <p className="text-xs text-white/40 leading-relaxed font-mono mt-2 italic">
                         Note: You must iterate $k$ first. Iterating $i$ or $j$ first will result in an incorrect local optimum.

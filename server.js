@@ -1,5 +1,5 @@
-const { Server } = require("socket.io");
-const { createServer } = require("http");
+import { Server } from "socket.io";
+import { createServer } from "http";
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 

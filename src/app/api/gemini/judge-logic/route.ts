@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import { runAI, AIError } from "@/lib/gemini";
+import { apiHandler } from "@/lib/api-handler";
+import { logger } from "@/lib/logger";
 
-export async function POST(req: Request) {
-  try {
-    const { title, description, logic } = await req.json();
+export const POST = apiHandler(async (req: Request) => {
+  const { title, description, logic } = await req.json();
 
-    if (!title || !description || !logic) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+  if (!title || !description || !logic) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
 
-    console.log("[Judge Logic API] Judging for:", title);
+  logger.info(`[Judge Logic API] Judging for: ${title}`);
 
-    const systemPrompt = `You are an expert coding interviewer. Your task is to judge a candidate's logic for a specific coding problem.
+  const systemPrompt = `You are an expert coding interviewer. Your task is to judge a candidate's logic for a specific coding problem.
 Analyze the provided problem and the candidate's explanation.
 
 Guidelines:
@@ -27,31 +28,26 @@ Guidelines:
 
 IMPORTANT: Return ONLY the JSON object.`;
 
-    const userPrompt = `Problem Title: ${title}
+  const userPrompt = `Problem Title: ${title}
 Problem Description: ${description.substring(0, 1000)}
 
 Candidate's Logic:
 ${logic}`;
 
-    try {
-      const responseText = await runAI(userPrompt, systemPrompt, true);
-      const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsed = JSON.parse(cleanJson);
+  try {
+    const responseText = await runAI(userPrompt, systemPrompt, true);
+    const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(cleanJson);
 
-      return NextResponse.json(parsed);
-    } catch (e) {
-      console.error(`[Judge Logic API] Parse failed:`, e);
-      return NextResponse.json({ 
-        passed: false, 
-        explanation: "The AI failed to analyze your logic. Please try rephrasing it slightly." 
-      }, { status: 500 });
-    }
-
-  } catch (error: any) {
-    console.error("[Judge Logic API] Error:", error);
+    return NextResponse.json(parsed);
+  } catch (error: unknown) {
     if (error instanceof AIError && error.status === 429) {
-      return NextResponse.json({ error: error.message }, { status: 429 });
+      throw error;
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    logger.error(`[Judge Logic API] AI analysis failed:`, error instanceof Error ? error.message : String(error));
+    return NextResponse.json({ 
+      passed: false, 
+      explanation: "The AI failed to analyze your logic. Please try rephrasing it slightly." 
+    }, { status: 500 });
   }
-}
+});

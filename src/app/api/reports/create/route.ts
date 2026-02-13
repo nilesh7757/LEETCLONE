@@ -1,31 +1,29 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
 
-export async function POST(req: Request) {
+export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (!session || !session.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw new ApiError("Unauthorized", 401);
   }
 
-  try {
-    const { submissionId, reason } = await req.json();
+  const { submissionId, reason } = await req.json();
 
-    if (!submissionId || !reason) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  if (!submissionId || !reason) {
+    throw new ApiError("Missing required fields", 400);
+  }
+
+  const report = await prisma.report.create({
+    data: {
+      submissionId,
+      reporterId: session.user.id,
+      reason,
+      status: "PENDING"
     }
+  });
 
-    const report = await prisma.report.create({
-      data: {
-        submissionId,
-        reporterId: session.user.id,
-        reason,
-        status: "PENDING"
-      }
-    });
-
-    return NextResponse.json({ report });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+  return NextResponse.json({ report });
+});

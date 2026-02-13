@@ -96,9 +96,9 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
 
         // Check for Compilation Error first
         if (compile && compile.code !== 0) {
-          status = "Compilation Error" as any; // Using any because status enum might not have it yet
+          status = "Compilation Error" as ExecutionResult['status'];
           error = compile.stderr || compile.output || `Compilation failed with code ${compile.code}`;
-          console.log(`[EXECUTE_CODE] Test Case ${i + 1}: Compilation Error. Error: ${error}`);
+          logger.info(`[EXECUTE_CODE] Test Case ${i + 1}: Compilation Error. Error: ${error}`);
         } else if (run.code !== 0) {
           status = "Runtime Error";
           error = run.stderr || `Exited with code ${run.code}`;

@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { ApiError } from "./api-error";
 import { logger } from "./logger";
 
-type Handler = (req: Request, ...args: any[]) => Promise<NextResponse | Response>;
+type Handler = (req: Request, ...args: unknown[]) => Promise<NextResponse | Response>;
 
 export function apiHandler(handler: Handler): Handler {
-  return async (req: Request, ...args: any[]) => {
+  return async (req: Request, ...args: unknown[]) => {
     try {
       return await handler(req, ...args);
-    } catch (error: any) {
-      logger.error("API Error:", error);
+    } catch (error: unknown) {
+      logger.error("API Error:", error instanceof Error ? error.message : String(error));
 
       if (error instanceof ApiError) {
         return NextResponse.json({ error: error.message }, { status: error.statusCode });

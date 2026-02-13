@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import axios from "axios";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
 
 // Helper function to interact with Gemini API
 async function generateEditorialWithGemini(description: string, referenceSolution: string, language: string) {
@@ -51,20 +54,20 @@ ${referenceSolution}
       if (candidate?.content?.parts?.[0]?.text) {
         return candidate.content.parts[0].text;
       }
-    } catch (error: any) {
-      console.warn(`Model ${model} failed for editorial generation:`, error.message);
+    } catch (error: unknown) {
+      logger.warn(`Model ${model} failed for editorial generation:`, error instanceof Error ? error.message : String(error));
       // Continue to next model
     }
   }
   throw new Error("All AI models failed to generate editorial.");
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
+export const POST = apiHandler(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
   const session = await auth();
 
   if (!session || !session.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw new ApiError("Unauthorized", 401);
   }
 
   // Fetch problem to verify ownership and get details
@@ -73,40 +76,35 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   });
 
   if (!problem) {
-    return NextResponse.json({ error: "Problem not found" }, { status: 404 });
+    throw new ApiError("Problem not found", 404);
   }
 
   if (problem.creatorId !== session.user.id && session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    throw new ApiError("Forbidden", 403);
   }
 
   if (!problem.referenceSolution) {
-      return NextResponse.json({ error: "Reference solution is required to generate an editorial." }, { status: 400 });
+      throw new ApiError("Reference solution is required to generate an editorial.", 400);
   }
 
-  try {
-    // Defaulting language to javascript if not detectable (though in our app we usually know it contextually, 
-    // but the DB only stores the string. We can try to infer or pass it in body if we wanted to be precise, 
-    // but the AI usually detects it fine).
-    // Actually, let's allow passing language in body, or default to "code".
-    const { language = "code" } = await req.json().catch(() => ({})); 
+  // Defaulting language to javascript if not detectable (though in our app we usually know it contextually, 
+  // but the DB only stores the string. We can try to infer or pass it in body if we wanted to be precise, 
+  // but the AI usually detects it fine).
+  // Actually, let's allow passing language in body, or default to "code".
+  const body = await req.json().catch(() => ({})); 
+  const { language = "code" } = body;
 
-    const editorialContent = await generateEditorialWithGemini(
-      problem.description,
-      problem.referenceSolution,
-      language
-    );
+  const editorialContent = await generateEditorialWithGemini(
+    problem.description,
+    problem.referenceSolution,
+    language
+  );
 
-    // Update the problem with the generated editorial
-    const updatedProblem = await prisma.problem.update({
-      where: { id: problem.id },
-      data: { editorial: editorialContent },
-    });
+  // Update the problem with the generated editorial
+  const updatedProblem = await prisma.problem.update({
+    where: { id: problem.id },
+    data: { editorial: editorialContent },
+  });
 
-    return NextResponse.json({ editorial: updatedProblem.editorial });
-
-  } catch (error: any) {
-    console.error("Editorial generation failed:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate editorial" }, { status: 500 });
-  }
-}
+  return NextResponse.json({ editorial: updatedProblem.editorial });
+});

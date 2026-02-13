@@ -96,11 +96,6 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                                 <Check size={10} /> Complete
                             </div>
                         )}
-                        {!problem.isSolved && Math.random() > 0.8 && (
-                            <div className="flex items-center gap-1 text-[var(--viz-amber)] text-[10px] font-black uppercase tracking-widest bg-[var(--viz-amber)]/10 px-2 py-0.5 rounded-full animate-pulse">
-                                <Flame size={10} /> Trending
-                            </div>
-                        )}
                     </div>
 
                     <div className="flex items-center gap-4 text-sm text-[var(--muted-foreground)]">

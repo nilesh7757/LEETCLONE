@@ -45,7 +45,7 @@ async function updateSqlExpectedOutputs() {
                 expectedOutput: actualOutput,
                 isExample: true
               }
-            ] as any
+            ]
           }
         });
         console.log(`  Successfully updated expected output for ${problem.title}.`);

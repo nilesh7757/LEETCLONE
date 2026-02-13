@@ -44,7 +44,7 @@ class ErrorBoundary extends Component<Props, State> {
             Something went wrong
           </h2>
           <p className="text-sm text-[var(--foreground)]/60 mb-6 max-w-xs">
-            The component "{this.props.name || 'Unknown'}" crashed. This might be a temporary issue.
+            The component &quot;{this.props.name || 'Unknown'}&quot; crashed. This might be a temporary issue.
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}

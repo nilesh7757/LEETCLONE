@@ -154,7 +154,7 @@ export default function ProblemSearch({ onSelect, onGenerateAI, excludeIds = [] 
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold text-purple-500 transition-colors">
-                        Generate "{query}" with AI
+                        Generate &quot;{query}&quot; with AI
                       </div>
                       <div className="text-[10px] text-purple-500/60 uppercase tracking-wider mt-0.5">
                         Create a unique problem for this topic
@@ -182,7 +182,7 @@ export default function ProblemSearch({ onSelect, onGenerateAI, excludeIds = [] 
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold text-purple-500 transition-colors">
-                        Generate "{query}" with AI
+                        Generate &quot;{query}&quot; with AI
                       </div>
                       <div className="text-[10px] text-purple-500/60 uppercase tracking-wider mt-0.5">
                         Create a unique problem for this topic

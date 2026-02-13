@@ -14,7 +14,7 @@ export const GET = apiHandler(async (req: Request) => {
   const statusFilter = searchParams.get("status"); // Upcoming, Active, Ended
 
   const now = new Date();
-  let where: any = { visibility: "PUBLIC" };
+  const where: Record<string, unknown> = { visibility: "PUBLIC" };
 
   if (statusFilter === "Upcoming") {
     where.startTime = { gt: now };

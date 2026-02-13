@@ -1,57 +1,56 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
+import { Prisma } from "@prisma/client";
 
-export async function POST(req: Request) {
+export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (!session || !session.user || !session.user.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw new ApiError("Unauthorized", 401);
   }
 
-  try {
-    const { title, description, startTime, endTime, problemIds, publishProblems, visibility, accessCode } = await req.json();
-    
-    console.log("Creating contest. User:", session.user.id, "Data:", { title, description, startTime, endTime, problemIds, publishProblems, visibility });
+  const { title, description, startTime, endTime, problemIds, publishProblems, visibility, accessCode } = await req.json();
+  
+  logger.info(`Creating contest. User: ${session.user.id}, Data:`, { title, description, startTime, endTime, problemIds, publishProblems, visibility });
 
-    if (!title || !startTime || !endTime) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+  if (!title || !startTime || !endTime) {
+    throw new ApiError("Missing required fields", 400);
+  }
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (!user) {
-      return NextResponse.json({ error: "User not found in database. Please re-login." }, { status: 404 });
-    }
+  // Verify user exists
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) {
+    throw new ApiError("User not found in database. Please re-login.", 404);
+  }
 
-    // Restriction: Only Admins can create PUBLIC contests
-    if (visibility === "PUBLIC" && user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Only admins can create public contests. Please select Private." }, { status: 403 });
-    }
+  // Restriction: Only Admins can create PUBLIC contests
+  if (visibility === "PUBLIC" && user.role !== "ADMIN") {
+    throw new ApiError("Only admins can create public contests. Please select Private.", 403);
+  }
 
-    const contestData: any = {
-      title,
-      description,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-      publishProblems: publishProblems ?? false,
-      visibility: visibility || "PUBLIC",
-      accessCode: visibility === "PRIVATE" ? null : accessCode, // Set to null if private
-      creatorId: session.user.id,
+  const contestData: Prisma.ContestCreateInput = {
+    title,
+    description,
+    startTime: new Date(startTime),
+    endTime: new Date(endTime),
+    publishProblems: publishProblems ?? false,
+    visibility: visibility || "PUBLIC",
+    accessCode: visibility === "PRIVATE" ? null : accessCode,
+    creator: { connect: { id: session.user.id } },
+  };
+
+  if (problemIds && problemIds.length > 0) {
+    contestData.problems = {
+      connect: problemIds.map((id: string) => ({ id })),
     };
-
-    if (problemIds && problemIds.length > 0) {
-      contestData.problems = {
-        connect: problemIds.map((id: string) => ({ id })),
-      };
-    }
-
-    const contest = await prisma.contest.create({
-      data: contestData,
-    });
-
-    return NextResponse.json({ contest });
-  } catch (error: any) {
-    console.error("Create contest error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
-}
+
+  const contest = await prisma.contest.create({
+    data: contestData,
+  });
+
+  return NextResponse.json({ contest });
+});

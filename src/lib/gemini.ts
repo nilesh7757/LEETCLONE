@@ -54,9 +54,11 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
 
       const response = chatCompletion.choices[0]?.message?.content;
       if (response) return response;
-    } catch (error: any) {
-      logger.error("Groq Error:", error.message || error);
-      if (error.status === 413) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStatus = (error as { status?: number })?.status;
+      logger.error("Groq Error:", errorMessage);
+      if (errorStatus === 413) {
         logger.warn("Groq context too large, falling back...");
       }
       logger.warn("Groq failed, falling back to Gemini...");
@@ -85,8 +87,8 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
 
       const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text) return text;
-    } catch (error: any) {
-      if (error.response?.status === 429) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
         logger.warn(`Quota hit for Gemini (${model}). Skipping...`);
         hitQuota = true;
         await new Promise(r => setTimeout(r, 1000));

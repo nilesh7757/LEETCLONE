@@ -180,7 +180,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
             </h2>
             <div className="flex items-center gap-3">
                <div className="h-1 w-12 bg-[var(--viz-rose)] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Kahn's Manifold Synthesis</p>
+               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Kahn&apos;s Manifold Synthesis</p>
             </div>
           </div>
 

@@ -355,8 +355,8 @@ export default function MSTVisualizer({ speed = 800 }: { speed?: number }) {
             <div className="flex items-center gap-3">
                <div className="h-1 w-12 bg-[var(--viz-rose)] rounded-full" />
                <div className="flex bg-muted p-1 rounded-lg ">
-                  <button onClick={() => { setMode("PRIM"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "PRIM" ? "bg-[var(--viz-rose)] text-black" : "text-muted-foreground/40"}`}>Prim's</button>
-                  <button onClick={() => { setMode("KRUSKAL"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "KRUSKAL" ? "bg-[var(--viz-amber)] text-black" : "text-muted-foreground/40"}`}>Kruskal's</button>
+                  <button onClick={() => { setMode("PRIM"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "PRIM" ? "bg-[var(--viz-rose)] text-black" : "text-muted-foreground/40"}`}>Prim&apos;s</button>
+                  <button onClick={() => { setMode("KRUSKAL"); setIsPlaying(false); setCurrentIndex(0); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "KRUSKAL" ? "bg-[var(--viz-amber)] text-black" : "text-muted-foreground/40"}`}>Kruskal&apos;s</button>
                </div>
             </div>
           </div>

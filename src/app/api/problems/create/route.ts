@@ -1,150 +1,141 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { executeCode, TestInputOutput } from "@/lib/codeExecution"; // Import TestInputOutput
+import { executeCode, TestInputOutput } from "@/lib/codeExecution";
 import { ProblemType } from "@prisma/client";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
 
-export async function POST(req: Request) {
+interface InputCase {
+  input: string;
+  output: string;
+}
+
+export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
-  console.log("Session in /api/problems/create:", JSON.stringify(session, null, 2));
+  logger.debug("Session in /api/problems/create:", JSON.stringify(session, null, 2));
 
   if (!session || !session.user || !session.user.id) {
-    console.error("Unauthorized access attempt: No session or user ID.");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    logger.error("Unauthorized access attempt: No session or user ID.");
+    throw new ApiError("Unauthorized", 401);
   }
 
-  try {
-    const {
+  const {
+    title,
+    slug,
+    difficulty,
+    category,
+    description,
+    examplesInput,
+    testCasesInput,
+    referenceSolution,
+    language,
+    timeLimit,
+    memoryLimit,
+    isPublic,
+    contestId,
+    editorial,
+    problemType,
+    initialSchema,
+    initialData,
+  } = await req.json();
+
+  if (
+    !title ||
+    !slug ||
+    !difficulty ||
+    !category ||
+    !description ||
+    !referenceSolution ||
+    !problemType ||
+    (problemType === "CODING" && (!language || !examplesInput || !testCasesInput)) ||
+    timeLimit === undefined || 
+    memoryLimit === undefined
+  ) {
+    throw new ApiError("Missing required problem fields", 400);
+  }
+
+  // Check if problem with same slug already exists
+  const existingProblem = await prisma.problem.findUnique({
+    where: { slug },
+  });
+  if (existingProblem) {
+    throw new ApiError(`Problem with slug '${slug}' already exists`, 409);
+  }
+
+  // Verify contest ownership if contestId is provided
+  if (contestId) {
+    const contest = await prisma.contest.findUnique({
+      where: { id: contestId },
+      select: { creatorId: true },
+    });
+
+    if (!contest) {
+      throw new ApiError("Contest not found", 404);
+    }
+
+    if (contest.creatorId !== session.user.id) {
+        const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+        if (user?.role !== "ADMIN") {
+           throw new ApiError("You are not authorized to add problems to this contest", 403);
+        }
+    }
+  }
+
+  // 1. Examples
+  const processedExamples: TestInputOutput[] = examplesInput ? examplesInput.map((ex: InputCase) => ({ input: ex.input, expectedOutput: ex.output })) : [];
+
+  // 2. Generate outputs for hidden test cases (Only for CODING)
+  const processedTestCases: TestInputOutput[] = [];
+  
+  if (problemType === "CODING" && testCasesInput && testCasesInput.length > 0) {
+    const testCaseResults = await executeCode({
+      problemId: "temp-create",
+      type: "CODING",
+      language,
+      code: referenceSolution,
+      testCases: testCasesInput.map((tc: { input: string }) => ({ input: tc.input, expectedOutput: "" })),
+      timeLimit,
+      memoryLimit,
+      isOutputGeneration: true
+    });
+
+    for (const res of testCaseResults) {
+      if (res.status !== "Runtime Error" && res.status !== "Time Limit Exceeded" && res.status !== "Memory Limit Exceeded") {
+        processedTestCases.push({ input: res.input, expectedOutput: res.actual });
+      } else {
+        logger.error(`Reference solution failed to execute on hidden test input: ${res.input}, Error: ${res.error}`);
+        throw new ApiError(`Reference solution failed on hidden test case. Input: ${res.input}. Error: ${res.error || res.status}`, 400);
+      }
+    }
+  }
+
+  const newProblem = await prisma.problem.create({
+    data: {
       title,
       slug,
       difficulty,
       category,
       description,
-      examplesInput, // Array of {input: string, output: string} for examples
-      testCasesInput, // Array of {input: string} for hidden test cases
-      referenceSolution,
-      language,
       timeLimit,
       memoryLimit,
-      isPublic, // New field
-      contestId, // Optional contest ID
-      editorial, // Added editorial
-      problemType, // New: Problem Type
-      initialSchema, // New: SQL Schema
-      initialData, // New: SQL Data
-    } = await req.json();
+      isPublic: isPublic !== undefined ? isPublic : false,
+      testSets: JSON.stringify({
+        examples: processedExamples,
+        hidden: processedTestCases, 
+      }),
+      referenceSolution,
+      editorial,
+      initialSchema,
+      initialData,
+      type: problemType as ProblemType,
+      creatorId: session.user.id,
+      contests: contestId ? {
+        connect: { id: contestId }
+      } : undefined,
+    },
+  });
 
-    if (
-      !title ||
-      !slug ||
-      !difficulty ||
-      !category ||
-      !description ||
-      !referenceSolution ||
-      !problemType || // Validate problemType
-      (problemType === "CODING" && (!language || !examplesInput || !testCasesInput)) ||
-      timeLimit === undefined || 
-      memoryLimit === undefined
-    ) {
-      return NextResponse.json({ error: "Missing required problem fields" }, { status: 400 });
-    }
-
-    // Check if problem with same slug already exists
-    const existingProblem = await prisma.problem.findUnique({
-      where: { slug },
-    });
-    if (existingProblem) {
-      return NextResponse.json({ error: `Problem with slug '${slug}' already exists` }, { status: 409 });
-    }
-
-    // Verify contest ownership if contestId is provided
-    if (contestId) {
-      const contest = await prisma.contest.findUnique({
-        where: { id: contestId },
-        select: { creatorId: true },
-      });
-
-      if (!contest) {
-        return NextResponse.json({ error: "Contest not found" }, { status: 404 });
-      }
-
-      if (contest.creatorId !== session.user.id) {
-          // Check for ADMIN role if implemented
-          const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-          if (user?.role !== "ADMIN") {
-             return NextResponse.json({ error: "You are not authorized to add problems to this contest" }, { status: 403 });
-          }
-      }
-    }
-
-    // 1. Examples are now sent with both input and expectedOutput from the frontend
-    const processedExamples: TestInputOutput[] = examplesInput ? examplesInput.map((ex: any) => ({ input: ex.input, expectedOutput: ex.output })) : [];
-
-    // 2. Generate outputs for hidden test cases (Only for CODING)
-    const processedTestCases: TestInputOutput[] = [];
-    
-    if (problemType === "CODING" && testCasesInput && testCasesInput.length > 0) {
-      let testCaseResults;
-      try {
-        testCaseResults = await executeCode({
-          problemId: "temp-create", // Dummy ID
-          type: "CODING",
-          language,
-          code: referenceSolution,
-          testCases: testCasesInput.map((tc: { input: string }) => ({ input: tc.input, expectedOutput: "" })),
-          timeLimit,
-          memoryLimit,
-          isOutputGeneration: true
-        });
-      } catch (execError: any) {
-        console.error("Execution failed completely:", execError);
-        return NextResponse.json({ error: `Execution service failed: ${execError.message}` }, { status: 500 });
-      }
-
-      for (const res of testCaseResults) {
-        if (res.status !== "Runtime Error" && res.status !== "Time Limit Exceeded" && res.status !== "Memory Limit Exceeded") {
-          processedTestCases.push({ input: res.input, expectedOutput: res.actual });
-        } else {
-          console.error("Reference solution failed to execute on hidden test input:", res.input, "Error:", res.error);
-          return NextResponse.json({ 
-            error: `Reference solution failed on hidden test case. Input: ${res.input}. Error: ${res.error || res.status}` 
-          }, { status: 400 });
-        }
-      }
-    }
-
-    const newProblem = await prisma.problem.create({
-      data: {
-        title,
-        slug,
-        difficulty,
-        category,
-        description,
-        timeLimit,
-        memoryLimit,
-        isPublic: isPublic !== undefined ? isPublic : false,
-        testSets: JSON.stringify({
-          examples: processedExamples,
-          hidden: processedTestCases, 
-        }),
-        referenceSolution,
-        editorial,
-        initialSchema,
-        initialData,
-        type: problemType as ProblemType, // Save problem type
-        creatorId: session.user.id,
-        contests: contestId ? {
-          connect: { id: contestId }
-        } : undefined,
-      },
-    });
-
-    return NextResponse.json({ problem: newProblem }, { status: 201 });
-  } catch (error: any) {
-    console.error("Error creating problem:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create problem" },
-      { status: 500 }
-    );
-  }
-}
+  return NextResponse.json({ problem: newProblem }, { status: 201 });
+});
