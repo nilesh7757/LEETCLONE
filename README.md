@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LEETCLONE - A High-Performance LeetCode Clone
+
+LEETCLONE is a full-stack platform for competitive programming, featuring real-time collaborative coding, AI-powered code analysis, and competitive contests.
+
+## Key Features
+
+- **Real-time Collaboration**: Code together using Socket.IO integration.
+- **AI-Powered Insights**: Get feedback on code complexity and audit your solutions using Gemini and Groq.
+- **Contest System**: Participate in official and community contests with real-time leaderboards.
+- **DSA Visualizer**: Visualize data structures and algorithms in action.
+- **Study Plans**: Curated paths for mastering specific topics.
+- **Mock Interviews**: Practice technical interviews with AI-driven feedback.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Real-time**: Socket.IO
+- **AI**: Google Gemini & Groq (Llama-3.3-70b)
+- **Styling**: Tailwind CSS & Framer Motion
+- **Testing**: Jest & React Testing Library
+- **CI/CD**: GitHub Actions
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 20+
+- PostgreSQL
+- Docker (optional)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/nilesh7757/LEETCLONE.git
+   cd LEETCLONE
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Environment Setup:
+   Copy `.env.example` to `.env` and fill in your credentials.
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Database Setup:
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
+
+5. Run the development servers:
+   ```bash
+   # Terminal 1: Next.js App
+   npm run dev
+
+   # Terminal 2: Socket.IO Server
+   npm run socket
+   ```
+
+## Testing
+
+Run the test suite:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Security & Best Practices
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Rate Limiting**: API routes are protected by IP-based rate limiting.
+- **Security Headers**: Production-ready headers configured in `next.config.ts`.
+- **Structured Logging**: Centralized logging utility for consistent observability.
+- **Error Handling**: Unified error handling using `apiHandler` and `ApiError` patterns.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Contributing
 
-## Learn More
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,76 +1,94 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
 
-export async function GET(req: Request) {
-    const session = await auth();
-    const userId = session?.user?.id;
-    // Contests can be public, so no auth check needed for listing them.
-    // However, joining or creating will require auth.
+export const GET = apiHandler(async (req: Request) => {
+  const session = await auth();
+  const userId = session?.user?.id;
+  
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "10");
+  const skip = (page - 1) * limit;
+  const statusFilter = searchParams.get("status"); // Upcoming, Active, Ended
 
-    try {
-      const contests = await prisma.contest.findMany({
-        where: {
-          visibility: "PUBLIC",
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-          problems: {
-            select: {
-              id: true,
-              title: true,
-              difficulty: true,
-            },
-          },
-          _count: {
-            select: {
-              registrations: true,
-            },
-          },
-        },
-        orderBy: {
-          startTime: "desc", // Show newest/upcoming first
-        },
-      });
-  
-      // Determine status for each contest (Upcoming, Active, Ended)
-      const now = new Date();
-      const contestsWithStatus = contests.map((contest) => {
-        let status: string;
-        if (contest.startTime > now) {
-          status = "Upcoming";
-        } else if (contest.endTime < now) {
-          status = "Ended";
-        } else {
-          status = "Active";
-        }
-  
-        // Hide problems if contest is upcoming and user is not creator
-        let problems = contest.problems;
-        if (status === "Upcoming" && (!userId || contest.creatorId !== userId)) {
-          problems = [];
-        }
-  
-        return {
-          ...contest,
-          status,
-          problems, // Use the potentially filtered list
-          participantsCount: contest._count.registrations,
-        };
-      });
-  
-      return NextResponse.json({ contests: contestsWithStatus });
-  } catch (error) {
-    console.error("Failed to fetch contests:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  const now = new Date();
+  let where: any = { visibility: "PUBLIC" };
+
+  if (statusFilter === "Upcoming") {
+    where.startTime = { gt: now };
+  } else if (statusFilter === "Ended") {
+    where.endTime = { lt: now };
+  } else if (statusFilter === "Active") {
+    where.startTime = { lte: now };
+    where.endTime = { gte: now };
   }
-}
+
+  const [contests, total] = await Promise.all([
+    prisma.contest.findMany({
+      where,
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        problems: {
+          select: {
+            id: true,
+            title: true,
+            difficulty: true,
+          },
+        },
+        _count: {
+          select: {
+            registrations: true,
+          },
+        },
+      },
+      orderBy: {
+        startTime: "desc",
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.contest.count({ where })
+  ]);
+
+  const contestsWithStatus = contests.map((contest) => {
+    let status: string;
+    if (contest.startTime > now) {
+      status = "Upcoming";
+    } else if (contest.endTime < now) {
+      status = "Ended";
+    } else {
+      status = "Active";
+    }
+
+    // Hide problems if contest is upcoming and user is not creator
+    let problems = contest.problems;
+    if (status === "Upcoming" && (!userId || contest.creatorId !== userId)) {
+      problems = [];
+    }
+
+    return {
+      ...contest,
+      status,
+      problems,
+      participantsCount: contest._count.registrations,
+    };
+  });
+
+  return NextResponse.json({ 
+    contests: contestsWithStatus,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  });
+});

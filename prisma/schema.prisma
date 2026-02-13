@@ -42,6 +42,8 @@ model Problem {
 
   @@index([difficulty, category, isPublic])
   @@index([type])
+  @@index([title])
+  @@index([slug])
 }
 
 model StudyPlan {
@@ -208,6 +210,9 @@ model User {
   @@index([rating(sort: Desc)])
   @@index([streak(sort: Desc)])
   @@index([solvedCount(sort: Desc)])
+  @@index([role])
+  @@index([isBanned])
+  @@index([isVerified])
 }
 
 model MockInterview {
@@ -302,6 +307,10 @@ model Contest {
   registrations   ContestRegistration[]
   ratingUpdates   UserRatingHistory[]
   problems        Problem[]             @relation("ContestToProblem")
+
+  @@index([startTime, endTime])
+  @@index([visibility])
+  @@index([isOfficial])
 }
 
 model ContestRegistration {
