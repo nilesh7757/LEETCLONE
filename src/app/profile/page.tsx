@@ -15,7 +15,46 @@ import dynamic from 'next/dynamic';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useTheme } from "next-themes";
 
+import Image from "next/image";
+
 const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false });
+
+interface RatingHistory {
+  date: string;
+  rating: number;
+}
+
+interface CalendarData {
+  date: string;
+  count: number;
+  level: number;
+}
+
+interface UserStats {
+  warnings: number;
+  isBanned: boolean;
+  rating: number;
+  solvedEasy: number;
+  solvedMedium: number;
+  solvedHard: number;
+}
+
+interface PerformanceStats {
+  user: UserStats;
+  ratingHistory: RatingHistory[];
+  calendarData: CalendarData[];
+}
+
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  bio?: string | null;
+  website?: string | null;
+  description?: string | null;
+  skills?: string[];
+}
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -26,9 +65,9 @@ export default function ProfilePage() {
   const { theme } = useTheme();
 
   // Stats Data
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<PerformanceStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
-  const [hoveredDay, setHoveredDay] = useState<{ date: string, count: number } | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<CalendarData | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -44,15 +83,16 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
+      const user = session.user as SessionUser;
       setFormData({
-        name: session.user.name || "",
-        bio: (session.user as any).bio || "",
-        website: (session.user as any).website || "",
-        description: (session.user as any).description || "",
-        image: session.user.image || "",
-        skills: (session.user as any).skills || [],
+        name: user.name || "",
+        bio: user.bio || "",
+        website: user.website || "",
+        description: user.description || "",
+        image: user.image || "",
+        skills: user.skills || [],
       });
-      fetchStats(session.user.id);
+      fetchStats(user.id);
     }
   }, [session]);
 
@@ -89,9 +129,13 @@ export default function ProfilePage() {
       await axios.put("/api/profile/update", formData);
       await update(formData); // Update local session
       toast.success("Profile updated successfully");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error(error.response?.data?.error || "Failed to update profile");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to update profile");
+      } else {
+        toast.error("Failed to update profile");
+      }
     } finally {
       setLoading(false);
     }
@@ -112,9 +156,13 @@ export default function ProfilePage() {
 
       setFormData((prev) => ({ ...prev, image: res.data.url }));
       toast.success("Image uploaded successfully");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error);
-      toast.error(error.response?.data?.error || "Error uploading image");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Error uploading image");
+      } else {
+        toast.error("Error uploading image");
+      }
     } finally {
       setUploading(false);
     }
@@ -176,7 +224,12 @@ export default function ProfilePage() {
                         <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-[var(--viz-cyan)] to-[var(--viz-purple)] relative z-10 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                             <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--card)] bg-[var(--card)] relative">
                                 {formData.image ? (
-                                    <img src={formData.image} alt="Profile" className="w-full h-full object-cover transition-opacity group-hover:opacity-50" />
+                                    <Image 
+                                        src={formData.image} 
+                                        alt="Profile" 
+                                        fill
+                                        className="object-cover transition-opacity group-hover:opacity-50" 
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-[var(--muted)] group-hover:opacity-50 transition-opacity">
                                         <UserCircle className="w-16 h-16 text-[var(--muted-foreground)]" />
@@ -467,7 +520,7 @@ export default function ProfilePage() {
                             blockMargin={4}
                             fontSize={10}
                             blockRadius={4}
-                            renderBlock={(block: any, activity: any) => (
+                            renderBlock={(block: React.ReactElement, activity: CalendarData) => (
                                 React.cloneElement(block, {
                                     onMouseEnter: () => setHoveredDay(activity),
                                     onMouseLeave: () => setHoveredDay(null),
@@ -476,7 +529,7 @@ export default function ProfilePage() {
                                         stroke: activity.count > 0 ? `rgba(var(--viz-purple-rgb), 0.5)` : 'transparent',
                                         strokeWidth: 1
                                     }
-                                })
+                                } as any)
                             )}
                         />
                     ) : (

@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ArrowRight, 
   Send, 
   Loader2, 
-  CheckCircle, 
   CheckCircle2,
   Lightbulb,
   Bot, 
-  ChevronRight,
   TrendingUp,
   Award,
   BrainCircuit
@@ -25,16 +23,45 @@ interface Question {
   question: string;
 }
 
+interface Answer {
+  questionId: string;
+  answer: string;
+  score: number;
+  feedback: string;
+  idealAnswer?: string;
+  improvement?: string;
+}
+
+interface RoadmapStep {
+  topic: string;
+  reason: string;
+  priority: 'High' | 'Medium' | 'Low';
+}
+
+interface InterviewResultsData {
+  score: number;
+  feedback: string;
+  roadmap: RoadmapStep[];
+}
+
+interface Interview {
+  id: string;
+  topic: string;
+  difficulty: string;
+  status: string;
+  questions: Question[];
+  answers: Answer[];
+}
+
 export default function InterviewSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [interview, setInterview] = useState<any>(null);
+  const [interview, setInterview] = useState<Interview | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [localAnswers, setLocalAnswers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [results, setResults] = useState<any>(null);
-  const [cooldown, setCooldown] = useState(0);
+  const [results, setResults] = useState<InterviewResultsData | null>(null);
 
   useEffect(() => {
     const fetchInterview = async () => {
@@ -56,6 +83,35 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
     fetchInterview();
   }, [id, router]);
 
+  const submitAll = useCallback(async (answers: string[]) => {
+    setIsSubmitting(true);
+    try {
+      const { data } = await axios.post("/api/interview/submit-all", {
+        interviewId: id,
+        answers
+      });
+
+      if (data.success) {
+        setResults({
+          score: data.score,
+          feedback: data.feedback,
+          roadmap: data.roadmap
+        });
+        toast.success("Interview submitted for review!");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
+        toast.error("AI Busy. Retrying in 10s...");
+        setTimeout(() => submitAll(answers), 10000);
+      } else {
+        toast.error("Failed to evaluate interview. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [id]);
+
   const handleNext = () => {
     if (!currentAnswer.trim()) return toast.error("Please provide an answer.");
     
@@ -63,7 +119,7 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
     updatedAnswers[currentIndex] = currentAnswer.trim();
     setLocalAnswers(updatedAnswers);
 
-    if (currentIndex < interview.questions.length - 1) {
+    if (interview && currentIndex < interview.questions.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setCurrentAnswer(localAnswers[currentIndex + 1] || "");
     } else {
@@ -257,7 +313,7 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
   );
 }
 
-function InterviewResults({ results, interview }: { results: any, interview: any }) {
+function InterviewResults({ results, interview }: { results: InterviewResultsData, interview: Interview }) {
   return (
     <main className="min-h-screen pt-12 pb-16 px-4 max-w-5xl mx-auto space-y-12">
       <div className="text-center space-y-4">
@@ -328,12 +384,12 @@ function InterviewResults({ results, interview }: { results: any, interview: any
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {results.roadmap.map((step: any, i: number) => (
+            {results.roadmap.map((step: RoadmapStep, i: number) => (
               <div key={i} className="bg-[var(--card)] rounded-[2rem] p-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
                 <div className={`absolute top-0 right-0 px-4 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-bl-2xl ${
-                  step.priority === 'High' ? 'bg-[var(--viz-red)]/10 text-[var(--viz-red)]' : 
-                  step.priority === 'Medium' ? 'bg-[var(--viz-gold)]/10 text-[var(--viz-gold)]' : 
-                  'bg-[var(--viz-blue)]/10 text-[var(--viz-blue)]'
+                  step.priority === 'High' ? "bg-[var(--viz-red)]/10 text-[var(--viz-red)]" : 
+                  step.priority === 'Medium' ? "bg-[var(--viz-gold)]/10 text-[var(--viz-gold)]" : 
+                  "bg-[var(--viz-blue)]/10 text-[var(--viz-blue)]"
                 }`}>
                   {step.priority} Priority
                 </div>
@@ -352,8 +408,9 @@ function InterviewResults({ results, interview }: { results: any, interview: any
             <div className="h-[1px] flex-1 bg-[var(--border)]" />
         </div>
 
-        {interview.answers.map((ans: any, i: number) => {
-          const q = interview.questions.find((q: any) => q.id === ans.questionId);
+        {interview.answers.map((ans: Answer, i: number) => {
+          const q = interview.questions.find((q: Question) => q.id === ans.questionId);
+          if (!q) return null;
           return (
             <div key={i} className="bg-[var(--card)] rounded-[3rem] p-10 space-y-10 relative overflow-hidden shadow-xl">
               <div className="flex justify-between items-start gap-8 pb-8 border-b border-[var(--border)]">

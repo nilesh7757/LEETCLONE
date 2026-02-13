@@ -1,17 +1,44 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Trophy, User, AlertTriangle, CheckCircle, Lock, Link as LinkIcon } from "lucide-react"; // Added LinkIcon
 import Link from "next/link";
 import { toast } from "sonner";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { io } from "socket.io-client"; // Import socket.io-client
+import { io, Socket } from "socket.io-client"; // Import socket.io-client
+import Image from "next/image";
 
+interface Problem {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+}
+
+interface Contest {
+  id: string;
+  title: string;
+  description: string;
+  startTime: string | Date;
+  endTime: string | Date;
+  registrations?: any[];
+  problems: Problem[];
+}
+
+interface LeaderboardEntry {
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+  rank: number;
+  score: number;
+}
 
 interface ContestClientProps {
-  contest: any;
+  contest: Contest;
   isRegistered: boolean;
   userId?: string;
 }
@@ -22,17 +49,14 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
   const [timeLeft, setTimeLeft] = useState("");
   const [status, setStatus] = useState<"Upcoming" | "Active" | "Ended">("Upcoming");
   const [activeTab, setActiveTab] = useState<"problems" | "leaderboard">("problems");
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  // Removed accessCode state
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  
+  // Socket.io for real-time leaderboard
+  const [socketClient, setSocketClient] = useState<Socket | null>(null);
+
   const router = useRouter();
 
-  useEffect(() => {
-    if (activeTab === "leaderboard") {
-      fetchLeaderboard();
-    }
-  }, [activeTab]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       // Only fetch if not connected via socket, or for initial load
       if (!socketClient || !socketClient.connected) {
@@ -42,10 +66,13 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
     } catch (error) {
       console.error("Failed to fetch leaderboard", error);
     }
-  };
+  }, [contest.id, socketClient]);
 
-  // Socket.io for real-time leaderboard
-  const [socketClient, setSocketClient] = useState<any>(null);
+  useEffect(() => {
+    if (activeTab === "leaderboard") {
+      fetchLeaderboard();
+    }
+  }, [activeTab, fetchLeaderboard]);
 
   useEffect(() => {
     const socket = io("http://localhost:3001"); // Connect to your socket.io server
@@ -134,9 +161,13 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
       await axios.post("/api/contest/register", { contestId: contest.id }); // Removed accessCode from payload
       setIsRegistered(true);
       toast.success("Successfully registered for the contest!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Registration Error:", error);
-      toast.error(error.response?.data?.error || "Failed to register");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to register");
+      } else {
+        toast.error("Failed to register");
+      }
     } finally {
       setIsRegistering(false);
     }
@@ -277,7 +308,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
         </div>
 
         <div className="divide-y divide-[var(--card-border)]">
-          {contest.problems.map((problem: any, index: number) => {
+          {contest.problems.map((problem: Problem, index: number) => {
             const isClickable = isRegistered || status === "Ended";
             const rowContent = (
               <div className="p-6 flex items-center justify-between hover:bg-[var(--foreground)]/5 transition-colors group">
@@ -360,9 +391,14 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                       </td>
                       <td className="px-6 py-4">
                          <Link href={`/profile/${entry.user.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                            <div className="w-8 h-8 rounded-full bg-[var(--foreground)]/10 overflow-hidden flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-[var(--foreground)]/10 overflow-hidden flex items-center justify-center relative">
                                {entry.user.image ? (
-                                   <img src={entry.user.image} alt={entry.user.name} className="w-full h-full object-cover" />
+                                   <Image 
+                                       src={entry.user.image} 
+                                       alt={entry.user.name || "User profile"} 
+                                       fill
+                                       className="object-cover" 
+                                   />
                                ) : (
                                    <User className="w-4 h-4 text-[var(--foreground)]/40" />
                                )}

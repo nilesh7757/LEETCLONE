@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -9,49 +9,28 @@ import ProblemForm, { ProblemFormData } from "@/features/problems/components/Pro
 import { motion } from "framer-motion";
 import { use } from "react";
 
+interface TestSetItem {
+  input: string;
+  output: string;
+  isExample?: boolean;
+  expectedOutput?: string;
+}
+
 export default function EditProblemPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [initialData, setInitialData] = useState<ProblemFormData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    } else if (status === "authenticated") {
-      fetchProblem();
-    }
-  }, [status, router, slug]);
-
-  const fetchProblem = async () => {
+  const fetchProblem = useCallback(async () => {
     try {
-      // We can fetch via the public API or a specific admin API.
-      // Ideally we need the FULL data including hidden test cases input (but not output necessarily, or raw input).
-      // The public /api/problems/[slug] might not return hidden test inputs or reference solution.
-      // We might need a new endpoint or update existing one to check ownership.
-      
-      // Let's assume /api/problems/[slug] returns full details if creator or admin.
-      // We'll check `src/app/api/problems/[slug]/route.ts`. 
-      // Checking `src/app/problems/[slug]/page.tsx`, it uses `prisma` directly.
-      // So we need to call an API. Let's try the existing one or create a GET in update route.
-      
-      // Since we don't have a direct "fetch full problem details for edit" API, let's use the update route as a getter too? 
-      // No, usually GET /api/problems/[slug] should handle this.
-      // Let's try to fetch from /api/problems/slug first.
-      
-      // Wait, there is no /api/problems/[slug] GET route exposed for *client* use that returns everything. 
-      // The workspace uses a server component.
-      
-      // I'll create a quick fetch in the update route or a new one. 
-      // Actually, I can just use the GET handler in `src/app/api/problems/[slug]/update/route.ts` if I add it.
-      
       const { data } = await axios.get(`/api/problems/${slug}/details`); // I will create this.
       
       const p = data.problem;
-      let parsedTestSets: { examples: any[], hidden: any[] } = { examples: [], hidden: [] };
+      const parsedTestSets: { examples: TestSetItem[], hidden: TestSetItem[] } = { examples: [], hidden: [] };
       
       try {
           let rawData = p.testSets;
@@ -61,7 +40,7 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
 
           if (Array.isArray(rawData)) {
             // Handle legacy flat array format
-            rawData.forEach((ts: any) => {
+            rawData.forEach((ts: TestSetItem) => {
               const item = {
                 input: ts.input || "",
                 output: ts.expectedOutput || ts.output || ""
@@ -79,11 +58,11 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
             }
           } else if (rawData && typeof rawData === "object") {
             // Handle standard { examples: [], hidden: [] } format
-            parsedTestSets.examples = (rawData.examples || []).map((t: any) => ({
+            parsedTestSets.examples = (rawData.examples || []).map((t: TestSetItem) => ({
               input: t.input || "",
               output: t.expectedOutput || t.output || ""
             }));
-            parsedTestSets.hidden = (rawData.hidden || []).map((t: any) => ({
+            parsedTestSets.hidden = (rawData.hidden || []).map((t: TestSetItem) => ({
               input: t.input || "",
               output: t.expectedOutput || t.output || ""
             }));
@@ -118,7 +97,15 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, router]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    } else if (status === "authenticated") {
+      fetchProblem();
+    }
+  }, [status, router, fetchProblem]);
 
   const handleSubmit = async (data: ProblemFormData) => {
     toast.info("Updating problem...");
@@ -134,9 +121,13 @@ export default function EditProblemPage({ params }: { params: Promise<{ slug: st
       } else {
         router.push(`/problems/${newSlug}`); // Redirect to new slug
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.error || "Failed to update problem.");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to update problem.");
+      } else {
+        toast.error("Failed to update problem.");
+      }
     }
   };
 

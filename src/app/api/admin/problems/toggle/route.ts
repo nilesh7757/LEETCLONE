@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ problem: updatedProblem });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update problem visibility" }, { status: 500 });
   }
 }

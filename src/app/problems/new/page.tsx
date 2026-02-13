@@ -10,7 +10,7 @@ import ProblemForm, { ProblemFormData } from "@/features/problems/components/Pro
 import { motion } from "framer-motion";
 
 export default function CreateProblemPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const contestId = searchParams.get("contestId");
@@ -40,9 +40,13 @@ export default function CreateProblemPage() {
       } else {
           router.push(`/problems/${response.data.problem.slug}`);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating problem:", error);
-      toast.error(error.response?.data?.error || "Failed to create problem.");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to create problem.");
+      } else {
+        toast.error("Failed to create problem.");
+      }
     }
   };
 

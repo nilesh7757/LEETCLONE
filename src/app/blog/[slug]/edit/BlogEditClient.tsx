@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Edit2, Book, Hash, Image, Zap, FileText, Upload, X, Loader2 } from "lucide-react"; 
+import { Book, Hash, Image, Zap, FileText, Upload, X, Loader2 } from "lucide-react"; 
 import { toast } from "sonner";
 import axios from "axios";
 import TiptapEditor from "@/features/editor/components/TiptapEditor";
@@ -69,9 +69,13 @@ export default function BlogEditClient({ initialPost }: BlogEditClientProps) {
       });
       toast.success("Blog post updated successfully!");
       router.push(`/blog/${initialPost.slug}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to update blog post:", error);
-      toast.error(error.response?.data?.error || "Failed to update blog post.");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to update blog post.");
+      } else {
+        toast.error("Failed to update blog post.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +95,7 @@ export default function BlogEditClient({ initialPost }: BlogEditClientProps) {
       });
       setValue("coverImage", res.data.url);
       toast.success("Cover image uploaded successfully");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload cover image");
     } finally {
@@ -176,7 +180,7 @@ export default function BlogEditClient({ initialPost }: BlogEditClientProps) {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                             src={coverImageUrl} 
-                            alt="Cover" 
+                            alt="Blog post cover image" 
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">

@@ -10,11 +10,16 @@ import Link from "next/link";
 import TiptapEditor from "@/features/editor/components/TiptapEditor";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface Contest {
+  id: string;
+  title: string;
+}
+
 export default function NewBlogPostPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [contests, setContests] = useState<any[]>([]);
+  const [contests, setContests] = useState<Contest[]>([]);
 
   // Cover Image State
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -37,7 +42,7 @@ export default function NewBlogPostPage() {
   useEffect(() => {
       axios.get("/api/contest").then(({ data }) => {
           setContests(data.contests || []);
-      }).catch(err => console.error(err));
+      }).catch(err => console.error("Failed to fetch contests:", err));
   }, []);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +59,7 @@ export default function NewBlogPostPage() {
       });
       setFormData(prev => ({ ...prev, coverImage: res.data.url }));
       toast.success("Cover image uploaded successfully");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload cover image");
     } finally {
@@ -175,7 +180,7 @@ export default function NewBlogPostPage() {
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img 
                                         src={formData.coverImage} 
-                                        alt="Cover" 
+                                        alt="Blog post cover image" 
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">

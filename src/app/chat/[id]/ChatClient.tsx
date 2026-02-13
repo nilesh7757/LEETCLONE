@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 import axios from "axios";
 import { Send, UserCircle, Paperclip, Loader2, MoreVertical, Phone, Video, ChevronLeft, Check, CheckCheck } from "lucide-react";
@@ -8,15 +8,32 @@ import { format, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
+import Image from "next/image";
+
+interface User {
+  id: string;
+  name: string;
+  image?: string;
+  lastActive?: string | Date;
+}
+
+interface Message {
+  id: string;
+  content: string;
+  senderId: string;
+  createdAt: string | Date;
+  type: string;
+}
+
 interface ChatClientProps {
   conversationId: string;
-  currentUser: any;
-  otherUser: any;
+  currentUser: User;
+  otherUser: User;
   recipientIds: string[];
 }
 
 export default function ChatClient({ conversationId, currentUser, otherUser, recipientIds }: ChatClientProps) {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isOnline, setIsOnline] = useState(false);
@@ -24,6 +41,24 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
   const scrollRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }, []);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`/api/chat/${conversationId}`);
+      setMessages(data.messages);
+      scrollToBottom();
+    } catch (error) {
+      console.error("Failed to load messages", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [conversationId, scrollToBottom]);
 
   // Initialize Socket
   useEffect(() => {
@@ -42,18 +77,18 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
       });
     });
 
-    newSocket.on("new_message", (message) => {
+    newSocket.on("new_message", (message: Message) => {
       setMessages((prev) => [...prev, message]);
       scrollToBottom();
     });
 
-    newSocket.on("user_online", ({ userId }) => {
+    newSocket.on("user_online", ({ userId }: { userId: string }) => {
       if (userId === otherUser?.id) {
         setIsOnline(true);
       }
     });
 
-    newSocket.on("user_offline", ({ userId, lastActive }) => {
+    newSocket.on("user_offline", ({ userId, lastActive }: { userId: string, lastActive: string }) => {
       if (userId === otherUser?.id) {
         setIsOnline(false);
         setLastActive(new Date(lastActive));
@@ -63,12 +98,12 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     return () => {
       newSocket.disconnect();
     };
-  }, [conversationId, otherUser?.id, currentUser.id]);
+  }, [conversationId, otherUser?.id, currentUser.id, otherUser, scrollToBottom]);
 
   // Fetch initial messages
   useEffect(() => {
     fetchMessages();
-  }, [conversationId]);
+  }, [fetchMessages]);
 
   const fetchMessages = async () => {
     try {
@@ -138,9 +173,14 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
                     {/* Ring Pulse for Online */}
                     {isOnline && <div className="absolute inset-[-4px] rounded-full border border-[var(--viz-emerald)]/30 animate-ping opacity-50" />}
                     
-                    <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${isOnline ? "border-[var(--viz-emerald)]" : "border-white/10 group-hover:border-[var(--viz-cyan)]"}`}>
+                    <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all relative ${isOnline ? "border-[var(--viz-emerald)]" : "border-white/10 group-hover:border-[var(--viz-cyan)]"}`}>
                         {otherUser?.image ? (
-                            <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
+                            <Image 
+                                src={otherUser.image} 
+                                alt={otherUser.name || "User profile"} 
+                                fill
+                                className="object-cover" 
+                            />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
                                 <UserCircle className="w-6 h-6 text-[var(--muted-foreground)]" />

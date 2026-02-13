@@ -9,6 +9,12 @@ interface WorkspaceProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+interface Blueprint {
+  id: string;
+  type: string;
+  data: any;
+}
+
 interface ProblemData {
   id: string;
   title: string;
@@ -18,7 +24,7 @@ interface ProblemData {
   description: string;
   timeLimit: number;
   memoryLimit: number;
-  testSets: any;
+  testSets: string | { examples: TestInputOutput[], hidden: TestInputOutput[] } | TestInputOutput[];
   hints: string[];
   referenceSolution: string | null;
   createdAt: Date;
@@ -33,7 +39,7 @@ interface ProblemData {
   initialSchema: string | null;
   initialData: string | null;
   pattern: string | null;
-  blueprint: any;
+  blueprint: Blueprint[] | null;
 }
 
 export default async function Workspace({ params, searchParams }: WorkspaceProps) {

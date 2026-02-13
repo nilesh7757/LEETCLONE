@@ -17,9 +17,39 @@ import FollowsModal from "@/features/profile/components/Profile/FollowsModal";
 import { io, Socket } from "socket.io-client";
 import Link from "next/link";
 
+import Image from 'next/image';
+import { useCallback } from "react";
+
 const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false });
 
 let socket: Socket;
+
+interface RatingHistory {
+  date: string;
+  rating: number;
+}
+
+interface CalendarData {
+  date: string;
+  count: number;
+  level: number;
+}
+
+interface UserStats {
+  warnings: number;
+  isBanned: boolean;
+  followersCount: number;
+  followingCount: number;
+  solvedEasy: number;
+  solvedMedium: number;
+  solvedHard: number;
+}
+
+interface PerformanceStats {
+  user: UserStats;
+  ratingHistory: RatingHistory[];
+  calendarData: CalendarData[];
+}
 
 interface PublicProfileClientProps {
   user: {
@@ -36,9 +66,9 @@ interface PublicProfileClientProps {
 }
 
 export default function PublicProfileClient({ user }: PublicProfileClientProps) {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<PerformanceStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
-  const [hoveredDay, setHoveredDay] = useState<{ date: string, count: number } | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<CalendarData | null>(null);
   const { theme } = useTheme();
   const { data: session } = useSession();
   const router = useRouter();
@@ -69,22 +99,22 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
     fetchStats();
   }, [user.id]);
 
-  useEffect(() => {
-    if (session?.user && user.id !== session.user.id) {
-        checkFriendStatus();
-    } else if (session?.user?.id === user.id) {
-        setFriendStatus("SELF");
-    }
-  }, [session, user.id]);
-
-  const checkFriendStatus = async () => {
+  const checkFriendStatus = useCallback(async () => {
     try {
         const { data } = await axios.get(`/api/friends/status/${user.id}`);
         setFriendStatus(data.status);
     } catch (error) {
         console.error("Check status failed", error);
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    if (session?.user && user.id !== session.user.id) {
+        checkFriendStatus();
+    } else if (session?.user?.id === user.id) {
+        setFriendStatus("SELF");
+    }
+  }, [session, user.id, checkFriendStatus]);
 
   const handleFollow = async () => {
     try {
@@ -157,10 +187,15 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
                     {/* Avatar Ring */}
                     <div className="relative mb-6 group-hover:scale-105 transition-transform duration-500">
                         <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-cyan)] to-[var(--viz-purple)] opacity-20 blur-xl animate-pulse" />
-                        <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-[var(--viz-cyan)] to-[var(--viz-purple)]">
-                            <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--card)] bg-[var(--card)]">
+                        <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-[var(--viz-cyan)] to-[var(--viz-purple)] relative">
+                            <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--card)] bg-[var(--card)] relative">
                                 {user.image ? (
-                                    <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                                    <Image 
+                                        src={user.image} 
+                                        alt={user.name || "User profile"} 
+                                        fill
+                                        className="object-cover" 
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-[var(--muted)]">
                                         <UserCircle className="w-16 h-16 text-[var(--muted-foreground)]" />
@@ -280,7 +315,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
                     <div className="text-right">
                         <div className="text-xs font-bold text-[var(--muted-foreground)] mb-1">Max Rating</div>
                         <div className="text-xl font-bold text-[var(--foreground)] font-mono">
-                            {stats?.ratingHistory?.reduce((max: number, curr: any) => Math.max(max, curr.rating), user.rating) || user.rating}
+                            {stats?.ratingHistory?.reduce((max: number, curr: RatingHistory) => Math.max(max, curr.rating), user.rating) || user.rating}
                         </div>
                     </div>
                 </div>
@@ -405,7 +440,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
                             blockMargin={4}
                             fontSize={10}
                             blockRadius={4}
-                            renderBlock={(block: any, activity: any) => (
+                            renderBlock={(block: React.ReactElement, activity: CalendarData) => (
                                 React.cloneElement(block, {
                                     onMouseEnter: () => setHoveredDay(activity),
                                     onMouseLeave: () => setHoveredDay(null),
@@ -414,7 +449,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
                                         stroke: activity.count > 0 ? `rgba(var(--viz-purple-rgb), 0.5)` : 'transparent',
                                         strokeWidth: 1
                                     }
-                                })
+                                } as any)
                             )}
                         />
                     ) : (

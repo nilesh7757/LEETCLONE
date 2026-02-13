@@ -14,20 +14,28 @@ import {
   Calendar, 
   CheckCircle, 
   Clock,
-  Zap,
-  BrainCircuit
+  Zap
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
+
+interface InterviewSession {
+  id: string;
+  topic: string;
+  difficulty: string;
+  status: string;
+  score?: number;
+  createdAt: string;
+}
 
 export default function InterviewConfigPage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("Entry");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<InterviewSession[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   useEffect(() => {
@@ -35,8 +43,8 @@ export default function InterviewConfigPage() {
       try {
         const { data } = await axios.get("/api/interview/history");
         setHistory(data.history);
-      } catch (error) {
-        console.error("Failed to load history", error);
+      } catch (_error) {
+        console.error("Failed to load history");
       } finally {
         setIsLoadingHistory(false);
       }

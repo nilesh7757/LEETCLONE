@@ -78,8 +78,8 @@ interface StudyPlan {
 }
 
 interface TestCase {
-  input: any;
-  output: any;
+  input: string | number | object | any[];
+  output: string | number | object | any[];
 }
 
 interface GeneratedProblem {
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
       await axios.post("/api/admin/users/ban", { userId, isBanned: !currentStatus });
       toast.success(currentStatus ? "User unbanned" : "User banned");
       fetchUsers();
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update user status");
     }
   };
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
       await axios.post("/api/admin/problems/toggle", { problemId, isPublic: !currentStatus });
       toast.success(currentStatus ? "Problem hidden" : "Problem published");
       fetchProblems();
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update problem visibility");
     }
   };
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
       await axios.post("/api/admin/problems/verify", { problemId, isVerified });
       toast.success(isVerified ? "Problem verified & published!" : "Problem rejected");
       fetchProblems();
-    } catch (_error) {
+    } catch {
       toast.error("Failed to verify problem");
     }
   };

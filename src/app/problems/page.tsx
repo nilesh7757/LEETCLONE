@@ -37,6 +37,14 @@ async function getStats(userId?: string) {
   return { totalProblems, solvedCount, attemptCount };
 }
 
+interface WhereClause {
+  creatorId?: string;
+  OR?: any[];
+  title?: { contains: string; mode: 'insensitive' };
+  difficulty?: string;
+  category?: string;
+}
+
 export default async function ProblemsPage({ searchParams }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -48,7 +56,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const pageSize = 12; 
   const skip = (currentPage - 1) * pageSize;
 
-  const whereClause: any = {};
+  const whereClause: WhereClause = {};
   if (currentTab === "mine" && userId) {
     whereClause.creatorId = userId;
   } else {
@@ -70,16 +78,16 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
 
   const [problems, totalCount] = await prisma.$transaction([
     prisma.problem.findMany({
-      where: whereClause,
+      where: whereClause as any,
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
     }),
-    prisma.problem.count({ where: whereClause })
+    prisma.problem.count({ where: whereClause as any })
   ]);
 
-  let solvedProblemIds: Set<string> = new Set();
-  let attemptedProblemIds: Set<string> = new Set();
+  const solvedProblemIds: Set<string> = new Set();
+  const attemptedProblemIds: Set<string> = new Set();
 
   if (userId) {
     const allSubmissions = await prisma.submission.findMany({

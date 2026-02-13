@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ user: updatedUser });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update ban status" }, { status: 500 });
   }
 }

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 
-export const GET = apiHandler(async (_req: Request) => {
+export const GET = apiHandler(async () => {
   const session = await auth();
   if (!session || session.user?.role !== "ADMIN") {
     throw new ApiError("Unauthorized", 403);

@@ -24,6 +24,28 @@ import { languages, getStarterCode } from "@/lib/starterCode";
 import GeminiChat from "@/features/ai/components/GeminiChat";
 import BlueprintModal from "@/features/problems/components/Blueprint/BlueprintModal";
 
+interface TestCase {
+  input: string | object;
+  expectedOutput?: string | object;
+}
+
+interface Result {
+  status: string;
+  error?: string;
+  actual?: string | object;
+  input?: string | object;
+  expected?: string | object;
+}
+
+interface Submission {
+  id: string;
+  status: string;
+  createdAt: string | Date;
+  runtime?: number;
+  language: string;
+  code: string;
+}
+
 interface Problem {
   id: string;
   title: string;
@@ -45,12 +67,16 @@ interface Problem {
 
 interface WorkspaceClientProps {
   problem: Problem;
-  examples: any[];
+  examples: TestCase[];
   showBlueprint?: boolean;
   alreadySolved?: boolean;
 }
 
-export default function WorkspaceClient({ problem, examples, showBlueprint = false, alreadySolved = false }: WorkspaceClientProps) {
+interface SessionUser {
+  streak?: number;
+}
+
+export default function WorkspaceClient({ problem, examples }: WorkspaceClientProps) {
   // --- Initialization ---
   const initialCode = problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode("javascript"); 
   const initialLanguage = problem.type === "SQL" ? "sql" : "javascript";
@@ -62,20 +88,19 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [consoleTab, setConsoleTab] = useState<'testcase' | 'result'>('testcase');
   const [activeTestCaseId, setActiveTestCaseId] = useState(0);
-  const [localTestCases, setLocalTestCases] = useState<any[]>(examples);
-  const [results, setResults] = useState<any[] | null>(null);
+  const [localTestCases, setLocalTestCases] = useState<TestCase[]>(examples);
+  const [results, setResults] = useState<Result[] | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [syntaxError, setSyntaxError] = useState<string | null>(null);
   
   // Layout State
-  const [editorConsoleSizes, setEditorConsoleSizes] = useState<number[]>([60, 40]);
+  const [_editorConsoleSizes, setEditorConsoleSizes] = useState<number[]>([60, 40]);
 
   // Collab & Socket
-  const [collabRoomId, setCollabRoomId] = useState<string | null>(null);
+  const [collabRoomId] = useState<string | null>(null);
   const collabSocketRef = useRef<Socket | null>(null);
   const isRemoteUpdate = useRef(false);
   const editorRef = useRef<any>(null);
@@ -87,7 +112,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
   const { update } = useSession();
   const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
-  const contestId = searchParams.get("contestId");
+  const _contestId = searchParams.get("contestId");
 
   // --- Effects ---
   useEffect(() => { setMounted(true); }, []);
@@ -110,10 +135,8 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
       setCode(saved);
     } else {
       // Set starter code if no draft exists
-      if (problem.type === "CODING") {
-         setCode(getStarterCode(language));
-      } else if (problem.type === "SQL") {
-         setCode("SELECT * FROM Users;");
+      if (problem.type === "CODING" || problem.type === "SQL") {
+         setCode(problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language));
       }
     }
   }, [language, problem.id, problem.type]);
@@ -122,7 +145,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
     const draftKey = `draft_${problem.id}_${language}`;
     const defaultCode = problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language);
     if (code !== defaultCode) localStorage.setItem(draftKey, code);
-  }, [code, language, problem.id]);
+  }, [code, language, problem.id, problem.type]);
 
   // Click outside listener for Language Dropdown
   useEffect(() => {
@@ -138,7 +161,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
   // --- Handlers ---
 
   // --- Helper: Parse Error Lines ---
-  const parseAndSetMarkers = (errorMsg: string) => {
+  const parseAndSetMarkers = useCallback((errorMsg: string) => {
      if (!monacoRef.current || !editorRef.current) return;
      
      const model = editorRef.current.getModel();
@@ -146,9 +169,6 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
      const lines = errorMsg.split('\n');
      
      // Smarter Regex: Captures Line and Column
-     // GCC/Clang: "filename:line:col: error: message"
-     // Python: "File \"...\", line 5"
-     // Java: "Main.java:5: error: message"
      const gccRegex = /:(\d+):(\d+):/i;
      const pythonRegex = /line\s+(\d+)/i;
      const javaRegex = /:(\d+):/i;
@@ -184,14 +204,13 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
      });
 
      monacoRef.current.editor.setModelMarkers(model, "api-feedback", markers);
-  };
+  }, []);
 
   const handleRun = async () => {
     setIsRunning(true);
     setConsoleOpen(true);
     setConsoleTab('result');
     setResults(null);
-    setSyntaxError(null);
     
     // Clear previous markers
     if (monacoRef.current && editorRef.current) {
@@ -215,18 +234,22 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
       setResults(data.results);
       
       // Check for errors to highlight
-      const errorResult = data.results.find((r: any) => r.status === "Compilation Error" || r.status === "Runtime Error" || r.error);
+      const errorResult = data.results.find((r: Result) => r.status === "Compilation Error" || r.status === "Runtime Error" || r.error);
       if (errorResult && errorResult.error) {
          parseAndSetMarkers(errorResult.error);
       }
 
-      if (data.results.some((r: any) => r.status !== "Accepted")) {
+      if (data.results.some((r: Result) => r.status !== "Accepted")) {
         toast.error("Execution failed.");
       } else {
         toast.success("Finished");
       }
-    } catch (e: any) {
-      toast.error("Execution Error: " + (e.response?.data?.error || e.message));
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        toast.error("Execution Error: " + (e.response?.data?.error || e.message));
+      } else {
+        toast.error("Execution Error");
+      }
     } finally {
       setIsRunning(false);
     }
@@ -240,8 +263,6 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
       // JavaScript built-in validation is handled by Monaco automatically,
       // so we only need to handle other languages here.
       if (language === "javascript") {
-          // We can still do a quick check to update our own state if needed,
-          // but Monaco handles the underlines.
           return;
       } 
       
@@ -252,7 +273,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
                problemId: problem.id, code, type: problem.type, language,
                testCases: examples.slice(0, 1) 
             });
-            const compError = data.results.find((r: any) => r.status === "Compilation Error" || r.status === "Runtime Error");
+            const compError = data.results.find((r: Result) => r.status === "Compilation Error" || r.status === "Runtime Error");
             if (compError && compError.error) {
                 parseAndSetMarkers(compError.error);
             } else {
@@ -263,55 +284,53 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
     }, 1200); // 1.2s debounce
 
     return () => clearTimeout(timer);
-  }, [code, language]);
+  }, [code, language, problem.id, problem.type, examples, parseAndSetMarkers]);
 
-  // ... (rest of the file)
-  
-    const handleSubmit = async () => {
-      setIsSubmitting(true);
-      try {
-        const { data } = await axios.post("/api/submission", {
-          problemId: problem.id,
-          code,
-          type: problem.type,
-          language
-        });
-        
-        if (data.submission.status === "Accepted") {
-          toast.success("Accepted! 🎉");
-          if (data.newStreak) update({ streak: data.newStreak });
-          setActiveTab('submissions');
-          fetchSubmissions();
-        } else {
-          toast.error("Wrong Answer");
-          setConsoleOpen(true);
-          setConsoleTab('result');
-          if (data.failedTestCase) {
-             setResults([{
-                status: "Wrong Answer",
-                input: data.failedTestCase.input,
-                actual: data.failedTestCase.output,
-                expected: data.failedTestCase.expected
-             }]);
-          }
+  const fetchSubmissions = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`/api/submission?problemId=${problem.id}`);
+      setSubmissions(data.submissions);
+    } catch (e) { console.error(e); }
+  }, [problem.id]);
+
+  useEffect(() => {
+    if (activeTab === 'submissions') fetchSubmissions();
+  }, [activeTab, fetchSubmissions]);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const { data } = await axios.post("/api/submission", {
+        problemId: problem.id,
+        code,
+        type: problem.type,
+        language
+      });
+      
+      if (data.submission.status === "Accepted") {
+        toast.success("Accepted! 🎉");
+        if (data.newStreak) update({ streak: data.newStreak });
+        setActiveTab('submissions');
+        fetchSubmissions();
+      } else {
+        toast.error("Wrong Answer");
+        setConsoleOpen(true);
+        setConsoleTab('result');
+        if (data.failedTestCase) {
+           setResults([{
+              status: "Wrong Answer",
+              input: data.failedTestCase.input,
+              actual: data.failedTestCase.output,
+              expected: data.failedTestCase.expected
+           }]);
         }
-      } catch (e) {
-        toast.error("Submission failed");
-      } finally {
-        setIsSubmitting(false);
       }
-    };
-  
-    const fetchSubmissions = async () => {
-      try {
-        const { data } = await axios.get(`/api/submission?problemId=${problem.id}`);
-        setSubmissions(data.submissions);
-      } catch (e) { console.error(e); }
-    };
-  
-    useEffect(() => {
-      if (activeTab === 'submissions') fetchSubmissions();
-    }, [activeTab]);
+    } catch (e) {
+      toast.error("Submission failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
     const handleAddTestCase = () => {
        const newCases = [...localTestCases, { input: "", expectedOutput: "" }];
@@ -366,7 +385,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint = fal
            <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--viz-amber)]/10 text-[var(--viz-amber)] border border-[var(--viz-amber)]/20 transition-all hover:bg-[var(--viz-amber)]/20 group cursor-default">
                  <Flame size={16} className="fill-current group-hover:scale-110 transition-transform" />
-                 <span className="text-xs font-black">{(session?.user as any)?.streak || 0}</span>
+                 <span className="text-xs font-black">{(session?.user as SessionUser)?.streak || 0}</span>
               </div>
               <NotificationBell />
               <ThemeToggle direction="down" />

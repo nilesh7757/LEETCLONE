@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_req: Request) {
+export async function GET() {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -29,7 +29,7 @@ export async function GET(_req: Request) {
     });
 
     return NextResponse.json({ problems });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch problems" }, { status: 500 });
   }
 }
