@@ -7,10 +7,7 @@ import {
   Save, 
   Trash2, 
   GripVertical, 
-  Calendar, 
   Info, 
-  Lock, 
-  Globe,
   Loader2,
   Clock,
   AlertCircle
@@ -30,6 +27,16 @@ interface SelectedProblem {
 
 interface EditStudyPlanPageProps {
   params: Promise<{ slug: string }>;
+}
+
+interface PlanProblemRelation {
+  problem: {
+    id: string;
+    title: string;
+    difficulty: string;
+    category: string;
+  };
+  order: number;
 }
 
 export default function EditStudyPlanPage({ params }: EditStudyPlanPageProps) {
@@ -56,14 +63,14 @@ export default function EditStudyPlanPage({ params }: EditStudyPlanPageProps) {
         setDescription(plan.description);
         setStatus(plan.status);
         setDurationDays(plan.durationDays || 7);
-        setSelectedProblems(plan.problems.map((p: any) => ({
+        setSelectedProblems(plan.problems.map((p: PlanProblemRelation) => ({
           id: p.problem.id,
           title: p.problem.title,
           difficulty: p.problem.difficulty,
           category: p.problem.category,
           day: p.order
         })));
-      } catch (error) {
+      } catch {
         toast.error("Failed to fetch study plan.");
         router.push("/study-plans");
       } finally {
@@ -73,7 +80,7 @@ export default function EditStudyPlanPage({ params }: EditStudyPlanPageProps) {
     fetchPlan();
   }, [slug, router]);
 
-  const handleAddProblem = (problem: any) => {
+  const handleAddProblem = (problem: { id: string; title: string; difficulty: string; category: string }) => {
     setSelectedProblems([
       ...selectedProblems,
       {
@@ -116,8 +123,12 @@ export default function EditStudyPlanPage({ params }: EditStudyPlanPageProps) {
         toast.success("Study plan updated successfully!");
       }
       router.push(`/study-plans/${slug}`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update study plan.");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to update study plan.");
+      } else {
+        toast.error("Failed to update study plan.");
+      }
     } finally {
       setIsSubmitting(false);
     }

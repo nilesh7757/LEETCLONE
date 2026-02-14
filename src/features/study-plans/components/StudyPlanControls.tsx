@@ -35,8 +35,12 @@ export default function StudyPlanControls({ planId, slug, status, isCreator, isA
       await axios.patch(`/api/study-plans/${planId}`, { action: "PUBLISH" });
       toast.success("Study plan submitted for review!");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to submit for review.");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to submit for review.");
+      } else {
+        toast.error("Failed to submit for review.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -49,8 +53,12 @@ export default function StudyPlanControls({ planId, slug, status, isCreator, isA
       await axios.delete(`/api/study-plans/${planId}`);
       toast.success("Study plan deleted.");
       router.push("/study-plans");
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete study plan.");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to delete study plan.");
+      } else {
+        toast.error("Failed to delete study plan.");
+      }
     }
   };
 

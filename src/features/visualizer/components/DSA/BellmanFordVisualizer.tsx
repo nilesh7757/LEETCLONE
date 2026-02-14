@@ -3,11 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, MapPin, Cpu, Target, RefreshCw,
-  Plus, Trash2, Edit3, Move, X, AlertTriangle, Check
+  Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, 
+  TrendingUp, Activity, MapPin, RefreshCw,
+  Plus, Trash2, Edit3, Move, AlertTriangle, Check
 } from "lucide-react";
 
 const INF = 99;
@@ -27,8 +25,41 @@ interface BellmanFordState {
 }
 
 export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number }) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [matrix, setMatrix] = useState<number[][]>([]);
+  const [nodes, setNodes] = useState<Node[]>(() => {
+    const numNodes = 5;
+    const width = 800; // Fallback initial width
+    const height = 500; // Fallback initial height
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 3.5;
+
+    const initialNodes: Node[] = [];
+    for (let i = 0; i < numNodes; i++) {
+      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
+      initialNodes.push({
+        id: i,
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle),
+      });
+    }
+    return initialNodes;
+  });
+  const [matrix, setMatrix] = useState<number[][]>(() => {
+    const numNodes = 5;
+    const newMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
+    for (let i = 0; i < numNodes; i++) {
+      for (let j = 0; j < numNodes; j++) {
+        if (i !== j && Math.random() < 0.35) {
+          const weight = Math.floor(Math.random() * 12) - 4;
+          newMatrix[i][j] = weight === 0 ? 1 : weight;
+        }
+      }
+    }
+    for (let i = 0; i < numNodes - 1; i++) {
+        if (newMatrix[i][i+1] === 0) newMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
+    }
+    return newMatrix;
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -52,9 +83,13 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
     return () => observer.disconnect();
   }, []);
 
-  const generateGraph = () => {
+  const resetSimulation = React.useCallback(() => {
     setIsPlaying(false);
     setCurrentIndex(0);
+  }, []);
+
+  const generateGraph = React.useCallback(() => {
+    resetSimulation();
     const numNodes = 5;
     const { width, height } = dimensions;
     const centerX = width / 2;
@@ -85,20 +120,18 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
         if (newMatrix[i][i+1] === 0) newMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
     }
     setMatrix(newMatrix);
-  };
+  }, [dimensions, resetSimulation]);
 
-  useEffect(() => {
-    if (dimensions.width > 0 && nodes.length === 0) generateGraph();
-  }, [dimensions.width]);
-
-  const addNode = () => {
+  const addNode = React.useCallback(() => {
     if (nodes.length >= 10) return;
     const newId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
     const { width, height } = dimensions;
+    const rx = Math.random();
+    const ry = Math.random();
     const newNode = {
       id: newId,
-      x: width / 2 + (Math.random() - 0.5) * 100,
-      y: height / 2 + (Math.random() - 0.5) * 100
+      x: width / 2 + (rx - 0.5) * 100,
+      y: height / 2 + (ry - 0.5) * 100
     };
     
     setNodes(prev => [...prev, newNode]);
@@ -113,15 +146,15 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
         return newMat;
     });
     resetSimulation();
-  };
+  }, [nodes, dimensions, resetSimulation]);
 
-  const clearGraph = () => {
+  const clearGraph = React.useCallback(() => {
     setNodes([]);
     setMatrix([]);
     resetSimulation();
-  };
+  }, [resetSimulation]);
 
-  const handleNodeClick = (id: number) => {
+  const handleNodeClick = React.useCallback((id: number) => {
     if (!isEditing) return;
     if (selectedNode === null) {
       setSelectedNode(id);
@@ -138,16 +171,11 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
       setSelectedNode(null);
       resetSimulation();
     }
-  };
+  }, [isEditing, selectedNode, resetSimulation]);
 
-  const updateNodePosition = (id: number, info: any) => {
+  const updateNodePosition = React.useCallback((id: number, info: { delta: { x: number, y: number } }) => {
     setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
-  };
-
-  const resetSimulation = () => {
-    setIsPlaying(false);
-    setCurrentIndex(0);
-  };
+  }, []);
 
   const history = useMemo(() => {
     if (nodes.length === 0) return [];
@@ -155,8 +183,8 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
     const V = nodes.length;
     const maxId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
     const steps: BellmanFordState[] = [];
-    let dist = Array(maxId).fill(INF);
-    let relaxedEdges = new Set<string>();
+    const dist = Array(maxId).fill(INF);
+    const relaxedEdges = new Set<string>();
     let currentLogs: string[] = [];
     
     const record = (msg: string, step: string, activeEdge: [number, number] | null = null, iteration: number = 0, phase: BellmanFordState["phase"] = "RELAX", hasNeg: boolean = false) => {
@@ -173,7 +201,7 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
       });
     };
 
-    const addLog = (l: string) => currentLogs = [l, ...currentLogs];
+    const addLog = (l: string) => { currentLogs = [l, ...currentLogs]; };
 
     const startNode = nodes[0]?.id ?? 0;
     dist[startNode] = 0;
@@ -253,8 +281,8 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
     const u = nodes.find(n => n.id === uIdx);
     const v = nodes.find(n => n.id === vIdx);
     if (!u || !v) return null;
-    const dx = v.x - u.x, dy = v.y - u.y, dist = Math.sqrt(dx*dx + dy*dy);
-    const ux = dx/dist, uy = dy/dist;
+    const dx = v.x - u.x, dy = v.y - u.y, distVal = Math.sqrt(dx*dx + dy*dy);
+    const ux = dx/distVal, uy = dy/distVal;
     const hasOpposite = matrix[vIdx]?.[uIdx] !== 0;
     const curve = hasOpposite ? 30 : 0;
     const cpX = (u.x + v.x)/2 - uy * curve;
@@ -303,7 +331,7 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
              {!isEditing && (
                 <>
                     <button onClick={generateGraph} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Randomize"><RefreshCw size={20}/></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Reset"><RotateCcw size={20}/></button>
+                    <button onClick={resetSimulation} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Reset"><RotateCcw size={20}/></button>
                     
                     {!isPlaying ? (
                         <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-rose)] text-white rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
@@ -390,12 +418,6 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
                         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                             <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
                         </marker>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
                     </defs>
 
                     {matrix.map((row, i) => 
@@ -421,7 +443,7 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
                                         animate={{ opacity: 1 }}
                                     />
                                     {isActive && (
-                                        <motion.circle r="4" fill={isFailure ? "var(--viz-rose)" : "var(--viz-cyan)"} filter="url(#glow)">
+                                        <motion.circle r="4" fill={isFailure ? "var(--viz-rose)" : "var(--viz-cyan)"}>
                                             <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
                                         </motion.circle>
                                     )}

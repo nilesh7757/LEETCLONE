@@ -4,13 +4,12 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { Flame, Zap } from "lucide-react";
+import { Flame } from "lucide-react";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import NotificationBell from "../ui/NotificationBell";
-import { motion } from "framer-motion";
 
 export default function UserTopNav() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [dailySlug, setDailySlug] = useState<string>("");
   const [streak, setStreak] = useState<number>(0);
   const [solvedToday, setSolvedToday] = useState<boolean>(false);

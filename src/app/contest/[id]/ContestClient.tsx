@@ -23,7 +23,7 @@ interface Contest {
   description: string;
   startTime: string | Date;
   endTime: string | Date;
-  registrations?: any[];
+  registrations?: unknown[];
   problems: Problem[];
 }
 

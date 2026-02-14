@@ -67,7 +67,7 @@ export class ProblemArchitect {
       return {
         title: blueprint.title,
         description: blueprint.description,
-        difficulty: this.difficulty as any,
+        difficulty: this.difficulty as "EASY" | "MEDIUM" | "HARD",
         category: this.topic,
         referenceSolution: solution,
         testCases: testCases,

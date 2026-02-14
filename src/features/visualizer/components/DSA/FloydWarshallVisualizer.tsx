@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, Zap, 
-  Activity, Grid, Network, Layout, Cpu, RefreshCw
+  Activity, Grid, Network, Cpu, RefreshCw
 } from "lucide-react";
 
 /**
@@ -46,28 +46,10 @@ interface FWStep {
  */
 export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: number }) {
   const [numNodes, setNumNodes] = useState(4);
-  const [history, setHistory] = useState<FWStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
-
-  // Coordinate Sync
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        setDimensions({
-          width: entries[0].contentRect.width,
-          height: entries[0].contentRect.height
-        });
-      }
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   // --- Graph Generation ---
   const initialGraph = useMemo(() => {
@@ -94,7 +76,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
   }, [numNodes]);
 
   // --- Algorithm Logic (Pre-computation) ---
-  useEffect(() => {
+  const history = useMemo(() => {
     const steps: FWStep[] = [];
     // Deep copy initial graph
     const dist = initialGraph.map(row => [...row]);
@@ -113,7 +95,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
       });
     };
 
-    const addLog = (l: string) => logs = [l, ...logs];
+    const addLog = (l: string) => { logs = [l, ...logs]; };
 
     addLog(`Initializing Adjacency Tensor (${n}x${n}).`);
     record("Initializing Distance Matrix. D[i][j] = Direct Edge Weight.", "INIT", -1, null, null, -1, "NONE");
@@ -144,9 +126,6 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
             dist[i][j] = sumPath;
             addLog(`Relaxed [${i}->${j}] via ${k}: New Cost ${sumPath}.`);
             record(`Path improved! Updating D[${i}][${j}] to ${sumPath}.`, "RELAX", k, i, j, 4, "RELAX");
-          } else {
-            // Optional: Record 'KEEP' state for educational clarity, but usually skipped to reduce noise
-            // record(`Existing path is optimal. Keeping ${d_ij}.`, "KEEP", k, i, j, 4, "KEEP");
           }
         }
       }
@@ -155,8 +134,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     addLog("All-Pairs Shortest Paths Resolved.");
     record("Algorithm Complete. Matrix contains optimal distances.", "COMPLETE", -1, null, null, -1, "NONE");
 
-    setHistory(steps);
-    setCurrentIndex(0);
+    return steps;
   }, [initialGraph, numNodes]);
 
   // --- Playback Engine ---

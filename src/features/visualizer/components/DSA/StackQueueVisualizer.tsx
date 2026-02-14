@@ -3,11 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database,
-  ArrowRight, ArrowDown, ChevronsRight, ChevronsDown
+  RotateCcw, Hash, 
+  Plus, Trash2, 
+  ChevronsRight, ChevronsDown,
+  Activity, Layout, ChevronLeft, ChevronRight
 } from "lucide-react";
 
 // Professional Palette
@@ -38,17 +37,16 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
   const [items, setItems] = useState<DataItem[]>([]);
   const [history, setHistory] = useState<HistoryStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [inputValue, setInputValue] = useState("");
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const recordOperation = (type: 'ADD' | 'REMOVE') => {
     setIsPlaying(false);
     const steps: HistoryStep[] = [];
     let currentLogs: string[] = [];
-    let currentItems = [...items];
+    const currentItems = [...items];
 
     const record = (msg: string, step: string) => {
       steps.push({
@@ -117,12 +115,14 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = history[currentIndex] || { 
-    items: items, 
-    message: "Buffer Ready.", 
-    step: "IDLE", 
-    logs: [] 
-  };
+  const currentStep = useMemo(() => {
+    return history[currentIndex] || { 
+      items: items, 
+      message: "Buffer Ready.", 
+      step: "IDLE", 
+      logs: [] 
+    };
+  }, [history, currentIndex, items]);
 
   const activeColor = mode === 'STACK' ? MANIM_COLORS.blue : MANIM_COLORS.green;
 
@@ -352,5 +352,13 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
   );
 }
 
-function ChevronsLeft(props: any) { return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg> }
-function ChevronsUp(props: any) { return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg> }
+interface LucideProps extends React.SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+function ChevronsLeft({ size = 12, ...props }: LucideProps) { 
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg> 
+}
+function ChevronsUp({ size = 12, ...props }: LucideProps) { 
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg> 
+}

@@ -7,7 +7,6 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image'; // Import the Image extension
 import { DrawingExtension } from './DrawingExtension';
 import Toolbar from './TiptapToolbar'; // Will create this next
-import { useState } from 'react';
 
 interface TiptapEditorProps {
   description: string;

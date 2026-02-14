@@ -75,7 +75,7 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
             roadmap: data.interview.roadmap
           });
         }
-      } catch (error) {
+      } catch {
         toast.error("Failed to load interview session.");
         router.push("/interview");
       }
@@ -139,35 +139,6 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
     }
   };
 
-  const submitAll = async (answers: string[]) => {
-    setIsSubmitting(true);
-    try {
-      const { data } = await axios.post("/api/interview/submit-all", {
-        interviewId: id,
-        answers
-      });
-
-      if (data.success) {
-        setResults({
-          score: data.score,
-          feedback: data.feedback,
-          roadmap: data.roadmap
-        });
-        toast.success("Interview submitted for review!");
-      }
-    } catch (error: any) {
-      console.error("Submission error:", error);
-      if (error.response?.status === 429) {
-        toast.error("AI Busy. Retrying in 10s...");
-        setTimeout(() => submitAll(answers), 10000);
-      } else {
-        toast.error("Failed to evaluate interview. Please try again.");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
 
   if (!interview || !interview.questions) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -207,7 +178,7 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
           </div>
         </div>
         <div className="flex gap-1.5 p-1 bg-[var(--muted)] rounded-full px-3 shadow-inner">
-          {interview.questions.map((_: any, i: number) => (
+          {interview.questions.map((_: Question, i: number) => (
             <div 
               key={i} 
               className={`h-1.5 w-10 rounded-full transition-all duration-500 ${

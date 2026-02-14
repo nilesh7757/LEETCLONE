@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Sparkles, Hash, Info, ChevronRight, 
-  ChevronLeft, Check
+  ChevronLeft
 } from "lucide-react";
 
 const ARRAY_SIZE = 10;
@@ -24,7 +24,14 @@ interface HistoryStep {
 }
 
 export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
-  const [initialData, setInitialData] = useState<VisualNode[]>([]);
+  const [initialData, setInitialData] = useState<VisualNode[]>(() => {
+    return Array.from({ length: ARRAY_SIZE }, (_, i) => ({
+      id: `bubble-node-${Math.random().toString(36).substr(2, 9)}`,
+      value: Math.floor(Math.random() * 60) + 20,
+      logicalIndex: i,
+      status: 'idle' as const
+    }));
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
@@ -47,7 +54,7 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
 
     record("Vector space initialized. Press Execute to begin monotonic transformation.", "INIT");
 
-    let arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
+    const arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
     const n = arr.length;
 
     for (let i = 0; i < n; i++) {
@@ -126,8 +133,6 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
     }));
     setInitialData(nodes);
   };
-
-  useEffect(() => { generateArray(); }, []);
 
   const currentStep = history[currentIndex] || { nodes: initialData, explanation: "Initializing...", activeStep: null, comparisonRange: null };
 

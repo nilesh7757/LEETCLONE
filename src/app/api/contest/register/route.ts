@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { contestId, accessCode } = await req.json();
+    const { contestId } = await req.json();
     console.log(`Register API: Registering user ${session.user.id} for contest ${contestId}`);
 
     // Verify contest existence and visibility

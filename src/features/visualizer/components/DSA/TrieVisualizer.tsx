@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Type
+  Play, RotateCcw, Pause, Hash, 
+  Search, ChevronLeft, ChevronRight, Zap, 
+  Plus, Type, Activity, Cpu
 } from "lucide-react";
 
 // Professional Palette
@@ -52,12 +51,11 @@ class TrieNode {
 }
 
 export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
-  const rootRef = useRef<TrieNode>(new TrieNode("*"));
+  const [treeRoot, setTreeRoot] = useState<TrieNode>(() => new TrieNode("*"));
   const [inputValue, setInputValue] = useState("");
   const [history, setHistory] = useState<HistoryStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -109,7 +107,18 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     setIsPlaying(false);
     const steps: HistoryStep[] = [];
     let currentLogs: string[] = [];
-    const root = rootRef.current; // Modifying ref directly for persistence in this simplistic model
+    
+    // Deep copy root for simulation/update
+    const cloneTrie = (node: TrieNode): TrieNode => {
+        const newNode = new TrieNode(node.char);
+        newNode.id = node.id;
+        newNode.isEndOfWord = node.isEndOfWord;
+        Object.keys(node.children).forEach(key => {
+            newNode.children[key] = cloneTrie(node.children[key]);
+        });
+        return newNode;
+    };
+    const root = cloneTrie(treeRoot);
 
     // Reconstruction helper
     const record = (msg: string, step: string, hId: string | null, statusOverride?: Record<string, VisualNode['status']>) => {
@@ -128,7 +137,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
       });
     };
 
-    const addLog = (l: string) => currentLogs = [l, ...currentLogs];
+    const addLog = (l: string) => { currentLogs = [l, ...currentLogs]; };
 
     if (type === 'INSERT') {
       addLog(`Initiating storage protocol for "${word}".`);
@@ -150,6 +159,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
       curr.isEndOfWord = true;
       addLog(`Word "${word}" successfully committed.`);
       record(`Terminal bit for "${word}" successfully committed.`, "TERMINAL", curr.id, { [curr.id]: 'success' });
+      setTreeRoot(root);
     } else {
         addLog(`Querying manifold for word "${word}".`);
         let curr = root;
@@ -200,7 +210,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const defaultNodes = useMemo(() => getLayout(rootRef.current), [rootRef.current, getLayout]);
+  const defaultNodes = useMemo(() => getLayout(treeRoot), [treeRoot, getLayout]);
 
   const currentStep = useMemo(() => {
     return history[currentIndex] || { 
@@ -214,10 +224,9 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
   }, [history, currentIndex, defaultNodes]);
 
   // --- Dynamic Fit-to-Screen Logic ---
-  useEffect(() => {
+  const viewTransform = useMemo(() => {
     if (currentStep.nodes.length === 0) {
-        setViewTransform({ x: 0, y: 0, scale: 1 });
-        return;
+        return { x: 0, y: 0, scale: 1 };
     }
 
     const PADDING = 80;
@@ -253,7 +262,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     const newX = containerCenterX - (treeCenterX * newScale);
     const newY = containerCenterY - (treeCenterY * newScale);
     
-    setViewTransform({ x: newX, y: newY, scale: newScale });
+    return { x: newX, y: newY, scale: newScale };
 
   }, [currentStep.nodes, dimensions]);
 

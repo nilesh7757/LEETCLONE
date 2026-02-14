@@ -56,7 +56,7 @@ export default function ProblemFilters() {
 
     params.set("page", "1");
     router.push(`?${params.toString()}`);
-  }, [debouncedSearch, difficulty, category, router]);
+  }, [debouncedSearch, difficulty, category, router, searchParams]);
 
   return (
     <div className="bg-[var(--card)]/50 backdrop-blur-xl rounded-[2rem] p-6 shadow-xl relative overflow-hidden">

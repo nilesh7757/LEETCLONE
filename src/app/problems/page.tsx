@@ -4,6 +4,7 @@ import ProblemFilters from "@/features/problems/components/ProblemFilters";
 import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
 import { auth } from "@/auth"; 
 import { Trophy, Target, Sparkles } from "lucide-react";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +40,8 @@ async function getStats(userId?: string) {
 
 interface WhereClause {
   creatorId?: string;
-  OR?: any[];
-  title?: { contains: string; mode: 'insensitive' };
+  OR?: Prisma.ProblemWhereInput[];
+  title?: { contains: string; mode: Prisma.QueryMode };
   difficulty?: string;
   category?: string;
 }
@@ -78,12 +79,12 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
 
   const [problems, totalCount] = await prisma.$transaction([
     prisma.problem.findMany({
-      where: whereClause as any,
+      where: whereClause as Prisma.ProblemWhereInput,
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
     }),
-    prisma.problem.count({ where: whereClause as any })
+    prisma.problem.count({ where: whereClause as Prisma.ProblemWhereInput })
   ]);
 
   const solvedProblemIds: Set<string> = new Set();

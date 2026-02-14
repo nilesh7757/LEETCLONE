@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, Zap, 
@@ -9,7 +9,6 @@ import {
 
 /**
  * --- Configuration ---
- * Visual constants and color palette inspired by Manim.
  */
 const MANIM_COLORS = { 
   text: "var(--foreground)", 
@@ -30,44 +29,32 @@ const ITEMS = [
 ];
 const CAPACITY = 6;
 
-// --- Types ---
-
 interface DPStep {
   dp: number[][];
-  itemIdx: number; // 1-based index of item currently being processed
-  weight: number;  // Current capacity being checked
+  itemIdx: number; 
+  weight: number;  
   message: string;
   step: string;
-  activeLine: number; // For highlighting logic flow
+  activeLine: number; 
   decision: "INCLUDE" | "EXCLUDE" | "NONE";
-  dependencies: [number, number][]; // [row, col] coords of cells contributing to current value
+  dependencies: [number, number][]; 
   logs: string[];
 }
 
-/**
- * 0/1 Knapsack Visualizer Component
- * 
- * Visualizes the Dynamic Programming approach to the 0/1 Knapsack problem.
- * Shows the DP table construction step-by-step.
- */
 export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) {
-  const [history, setHistory] = useState<DPStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- Algorithm Logic (Pre-computation) ---
-  useEffect(() => {
+  const history = useMemo(() => {
     const n = ITEMS.length;
     const W = CAPACITY;
     const steps: DPStep[] = [];
-    // Initialize DP table
-    let dp = Array.from({ length: n + 1 }, () => new Array(W + 1).fill(0));
+    const dp = Array.from({ length: n + 1 }, () => new Array(W + 1).fill(0));
     let logs: string[] = [];
 
     const record = (msg: string, step: string, i: number, w: number, line: number, dec: DPStep['decision'], deps: [number, number][]) => {
-      // Deep copy DP table to freeze state for this step
       steps.push({
         dp: dp.map(r => [...r]),
         itemIdx: i,
@@ -81,7 +68,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
       });
     };
 
-    const addLog = (l: string) => logs = [l, ...logs];
+    const addLog = (l: string) => { logs = [l, ...logs]; };
 
     addLog("Initializing DP Tensor (Capacity 0-6kg).");
     record("Initializing DP table. Row 0 represents 0 items.", "INIT", 0, 0, 0, "NONE", []);
@@ -89,14 +76,12 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
     for (let i = 1; i <= n; i++) {
       const item = ITEMS[i - 1];
       for (let w = 0; w <= W; w++) {
-        // Step 1: Evaluation
         addLog(`Evaluating Item ${i} (${item.name}) @ Capacity ${w}kg.`);
         record(`Checking if '${item.name}' (Weight: ${item.w}) fits in ${w}kg capacity...`, "EVALUATE", i, w, 1, "NONE", []);
 
         const excludeVal = dp[i - 1][w];
         
         if (item.w <= w) {
-          // Step 2: Comparison
           const includeVal = item.v + dp[i - 1][w - item.w];
           record(`Comparing: Exclude (${excludeVal}) vs Include (${includeVal}).`, "COMPARE", i, w, 3, "NONE", [[i-1, w], [i-1, w - item.w]]);
 
@@ -110,7 +95,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             record(`Skipping '${item.name}' is better/equal. Inheriting previous state.`, "COMMIT_EXCLUDE", i, w, 3, "EXCLUDE", [[i-1, w]]);
           }
         } else {
-          // Step 2: Overflow
           dp[i][w] = excludeVal;
           addLog(`Item too heavy (${item.w} > ${w}). Skipping.`);
           record(`Item weight ${item.w}kg exceeds current capacity ${w}kg. Cannot include.`, "WEIGHT_OVERFLOW", i, w, 2, "EXCLUDE", [[i-1, w]]);
@@ -121,8 +105,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
     addLog(`Optimal Value Found: ${dp[n][W]}.`);
     record(`DP Complete. Max value is ${dp[n][W]}.`, "COMPLETE", n, W, -1, "NONE", []);
 
-    setHistory(steps);
-    setCurrentIndex(0);
+    return steps;
   }, []);
 
   // --- Playback Engine ---
@@ -157,14 +140,10 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
 
   return (
     <div className="flex flex-col gap-6 font-sans select-none">
-      
-      {/* --- Main Dashboard --- */}
       <div className="p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
-        {/* Background Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
         
-        {/* Header UI */}
         <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
@@ -189,13 +168,8 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
           </div>
         </div>
 
-        {/* Visual Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            {/* DP Table Stage */}
             <div className="lg:col-span-8 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
-                
-                {/* Step Badge */}
                 <div className="absolute top-6 left-6 z-20">
                     <AnimatePresence mode="wait">
                         <motion.div 
@@ -211,13 +185,10 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                     </AnimatePresence>
                 </div>
 
-                {/* Table */}
                 <div className="relative z-10 w-full overflow-x-auto pb-2 custom-scrollbar">
                     <div className="min-w-fit flex flex-col items-start mx-auto">
-                        
-                        {/* Header Row */}
                         <div className="flex mb-2">
-                            <div className="w-20" /> {/* Spacer */}
+                            <div className="w-20" /> 
                             {Array.from({ length: CAPACITY + 1 }).map((_, c) => (
                                 <div key={`col-${c}`} className={`w-12 h-8 flex items-center justify-center font-mono text-[9px] font-black uppercase tracking-tight transition-colors ${currentStep.weight === c ? "text-[var(--viz-amber)]" : "text-muted-foreground/30"}`}>
                                     {c}kg
@@ -225,10 +196,8 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                             ))}
                         </div>
 
-                        {/* Rows */}
                         {currentStep.dp.map((row, r) => (
                             <div key={`row-${r}`} className="flex mb-1">
-                                {/* Row Label */}
                                 <div className={`w-32 h-10 flex items-center justify-start gap-2 font-mono text-[9px] font-bold uppercase tracking-tight transition-colors px-2 border-r border-border/50 ${currentStep.itemIdx === r ? "text-[var(--viz-cyan)] bg-[var(--viz-cyan)]/5" : "text-muted-foreground/30"}`}>
                                     {r === 0 ? "INIT (0, $0)" : (
                                         <div className="flex flex-col leading-none">
@@ -237,13 +206,8 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                         </div>
                                     )}
                                 </div>
-                                
-                                {/* Cells */}
                                 {row.map((val, c) => {
                                     const isCurrent = r === currentStep.itemIdx && c === currentStep.weight;
-                                    // Identify specific dependencies for specialized coloring
-                                    // Dependency 0: Exclude source (dp[i-1][w])
-                                    // Dependency 1: Include source (dp[i-1][w-wt])
                                     const depIndex = currentStep.dependencies.findIndex(([dr, dc]) => dr === r && dc === c);
                                     const isExcludeDep = depIndex === 0;
                                     const isIncludeDep = depIndex === 1;
@@ -267,7 +231,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                                                 <span className={isCurrent ? "text-[var(--viz-cyan)]" : isExcludeDep ? "text-[var(--viz-rose)]" : isIncludeDep ? "text-[var(--viz-deep-purple)]" : "text-muted-foreground"}>{val}</span>
                                             </motion.div>
                                             
-                                            {/* Flying Value Animation (Optional visual flair) */}
                                             {isCurrent && currentStep.decision !== 'NONE' && (
                                                 <motion.div 
                                                     initial={{ opacity: 0, scale: 0 }}
@@ -286,7 +249,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                     </div>
                 </div>
 
-                {/* Decision Panel */}
                 <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-[500px]">
                     <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "EXCLUDE" ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)]/40 shadow-[0_0_15px_var(--viz-rose)22]" : "bg-card/50 border-border opacity-40"}`}>
                         <div className="flex justify-between items-center mb-2">
@@ -330,10 +292,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                 </div>
             </div>
 
-            {/* Sidebar info */}
             <div className="lg:col-span-4 flex flex-col gap-6">
-                
-                {/* Active Item Card */}
                 <div className="p-6 bg-muted/20  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
                         <ShoppingBag size={14}/> Active Item
@@ -370,7 +329,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                     </AnimatePresence>
                 </div>
 
-                {/* Pseudocode Flow */}
                 <div className="p-6 bg-muted/20  rounded-[2rem] flex-1 min-h-[200px]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
                         <Cpu size={14}/> Logic Flow
@@ -390,7 +348,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             </div>
         </div>
 
-        {/* Footer: Timeline & Logs */}
         <div className="mt-4 p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
@@ -405,7 +362,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                 </div>
             </div>
 
-            {/* Scrubber */}
             <div className="relative flex items-center group/slider h-4">
                 <div className="absolute w-full h-1 bg-background/20 rounded-full" />
                 <motion.div 
@@ -420,7 +376,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                 />
             </div>
             
-            {/* Status Message */}
             <div className="flex justify-center">
                 <AnimatePresence mode="wait">
                     <motion.div 
@@ -435,7 +390,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             </div>
         </div>
 
-        {/* Legend */}
         <div className="px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-cyan)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Current Cell</span></div>
             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-amber)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Dependency</span></div>

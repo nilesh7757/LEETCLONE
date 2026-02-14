@@ -4,18 +4,34 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { UserCircle, Loader2 } from "lucide-react";
+import { UserCircle, Loader2, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 let socket: Socket;
 
+interface ChatUser {
+  id: string;
+  name: string | null;
+  image?: string;
+  lastActive?: string | Date;
+}
+
+interface Conversation {
+  id: string;
+  otherUser: ChatUser;
+  lastMessage?: {
+    content: string;
+    createdAt: string | Date;
+  };
+}
+
 export default function ChatSidebar() {
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const [lastActiveMap, setLastActiveMap] = useState<Map<string, Date>>(new Map());
   const { data: session } = useSession();
   const pathname = usePathname();
 
@@ -37,20 +53,15 @@ export default function ChatSidebar() {
         setOnlineUsers((prev) => new Set([...prev, userId]));
       });
 
-      socket.on("user_offline", ({ userId, lastActive }) => {
+      socket.on("user_offline", ({ userId }) => {
         setOnlineUsers((prev) => {
           const next = new Set(prev);
           next.delete(userId);
           return next;
         });
-        setLastActiveMap((prev) => {
-          const next = new Map(prev);
-          next.set(userId, new Date(lastActive));
-          return next;
-        });
       });
 
-      socket.on("new_message", (message) => {
+      socket.on("new_message", () => {
         // If the sidebar is open, refresh the conversations list to show the new message
         // or move the conversation to the top.
         fetchConversations();
@@ -67,24 +78,14 @@ export default function ChatSidebar() {
       const { data } = await axios.get("/api/chat");
       
       // Deduplicate by otherUser.id (keep most recent)
-      const uniqueConversationsMap = new Map();
+      const uniqueConversationsMap = new Map<string, Conversation>();
       
-      data.conversations.forEach((chat: any) => {
+      data.conversations.forEach((chat: Conversation) => {
         if (!chat.otherUser?.id) return; // Skip if no other user (e.g. self chat or deleted user)
         
         // Use otherUser.id as key to ensure one entry per person
         if (!uniqueConversationsMap.has(chat.otherUser.id)) {
             uniqueConversationsMap.set(chat.otherUser.id, chat);
-            if (chat.otherUser.lastActive) {
-              setLastActiveMap(prev => {
-                const next = new Map(prev);
-                next.set(chat.otherUser.id, new Date(chat.otherUser.lastActive));
-                return next;
-              });
-            }
-        } else {
-           // If we already have this user, but this chat object is newer (should be first in array due to API sorting)
-           // we don't need to do anything since the first one found is the newest
         }
       });
       
@@ -121,7 +122,6 @@ export default function ChatSidebar() {
             const isActive = pathname === `/chat/${chat.id}`;
             const otherUser = chat.otherUser;
             const isOnline = otherUser && onlineUsers.has(otherUser.id);
-            const lastActive = otherUser && lastActiveMap.get(otherUser.id);
 
             return (
               <Link
@@ -137,7 +137,7 @@ export default function ChatSidebar() {
                   <div className="relative shrink-0">
                     <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-colors ${isActive ? "border-[var(--viz-cyan)]" : "border-transparent group-hover:border-white/10"}`}>
                       {otherUser?.image ? (
-                        <img src={otherUser.image} alt={otherUser.name} className="w-full h-full object-cover" />
+                        <Image src={otherUser.image} alt={otherUser.name || "User"} width={48} height={48} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
                           <UserCircle className="w-6 h-6 text-[var(--muted-foreground)]" />
@@ -173,5 +173,3 @@ export default function ChatSidebar() {
     </div>
   );
 }
-
-import { MessageSquare } from "lucide-react";

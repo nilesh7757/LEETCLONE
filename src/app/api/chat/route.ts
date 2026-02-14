@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET: List all conversations for the user
-export async function GET(req: Request) {
+export async function GET() {
   const session = await auth();
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,8 +44,7 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ conversations: formatted });
-  } catch (error) {
-    console.error("Fetch chats error:", error);
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

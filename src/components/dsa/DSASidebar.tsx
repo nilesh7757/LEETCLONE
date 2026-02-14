@@ -4,10 +4,19 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Layers } from "lucide-react";
 
+interface DSACategory {
+  id: string;
+  title: string;
+  description: string;
+  themeColor: string;
+  themeRGB: string;
+  icon: React.ReactNode;
+}
+
 interface DSASidebarProps {
-  filteredCategories: any[];
-  selectedCategory: any;
-  setSelectedCategory: (cat: any) => void;
+  filteredCategories: DSACategory[];
+  selectedCategory: DSACategory;
+  setSelectedCategory: (cat: DSACategory) => void;
 }
 
 export const DSASidebar = ({ filteredCategories, selectedCategory, setSelectedCategory }: DSASidebarProps) => {
@@ -48,7 +57,7 @@ export const DSASidebar = ({ filteredCategories, selectedCategory, setSelectedCa
                 }`}
                 style={isActive ? { backgroundColor: themeColor, boxShadow: `0 0 20px rgba(${themeRGB}, 0.2)` } : {}}
                 >
-                  {React.cloneElement(cat.icon as React.ReactElement<any>, { size: 20 })}
+                  {React.isValidElement(cat.icon) && React.cloneElement(cat.icon as React.ReactElement<{ size: number }>, { size: 20 })}
                 </div>
                 
                 <div className="flex-1 min-w-0 relative z-10">

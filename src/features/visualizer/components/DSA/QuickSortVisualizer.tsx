@@ -3,11 +3,10 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database,
-  ArrowDown, GitCommit, Split, X, Edit3, Check
+  Play, RotateCcw, Pause, Hash, 
+  ChevronLeft, ChevronRight, 
+  Activity, Plus, 
+  Split, Edit3, Check, X
 } from "lucide-react";
 
 // Professional Palette
@@ -42,17 +41,22 @@ interface HistoryStep {
 }
 
 export default function QuickSortVisualizer({ speed = 800 }: { speed?: number }) {
-  const [initialData, setInitialData] = useState<VisualNode[]>([]);
+  const [initialData, setInitialData] = useState<VisualNode[]>(() => {
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: `node-${Math.random().toString(36).substr(2, 9)}`,
+      value: Math.floor(Math.random() * 50) + 10,
+      logicalIndex: i,
+    }));
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Initial Data Generation
-  const generateArray = () => {
+  const generateArray = React.useCallback(() => {
     setIsPlaying(false);
     setCurrentIndex(0);
     const nodes = Array.from({ length: 8 }, (_, i) => ({
@@ -61,9 +65,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
       logicalIndex: i,
     }));
     setInitialData(nodes);
-  };
-
-  useEffect(() => { generateArray(); }, []);
+  }, []);
 
   // --- Interactive Editing ---
   const addItem = () => {
@@ -93,7 +95,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
     if (initialData.length === 0) return [];
     
     const steps: HistoryStep[] = [];
-    let currentNodes = JSON.parse(JSON.stringify(initialData));
+    const currentNodes = JSON.parse(JSON.stringify(initialData));
     let logs: string[] = [];
     let sortedIndices: number[] = [];
 
@@ -118,17 +120,17 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
       });
     };
 
-    const addLog = (l: string) => logs = [l, ...logs];
+    const addLog = (l: string) => { logs = [l, ...logs]; };
 
     addLog("Vector manifold initialized.");
     record("Ready for recursive partition sequence.", "BOOT");
 
-    const swap = (i: number, j: number) => {
+    const performSwap = (i: number, j: number) => {
         const temp = currentNodes[i];
         currentNodes[i] = currentNodes[j];
         currentNodes[j] = temp;
         // Update logical indices
-        currentNodes.forEach((n: VisualNode, idx: number) => n.logicalIndex = idx);
+        currentNodes.forEach((n: VisualNode, idx: number) => { n.logicalIndex = idx; });
     };
 
     const partition = (low: number, high: number) => {
@@ -145,7 +147,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
           if (i !== j) {
               addLog(`Swapping ${currentNodes[i].value} and ${currentNodes[j].value}.`);
               record(`Swap: ${currentNodes[j].value} is smaller than pivot. Moving to left partition.`, "SWAP", [low, high], high, [i, j], [i, j]);
-              swap(i, j);
+              performSwap(i, j);
               record(`Swap complete.`, "POST_SWAP", [low, high], high, null, null);
           }
         }
@@ -155,7 +157,7 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
       if (pi !== high) {
           addLog(`Placing pivot ${pivotVal} at correct position ${pi}.`);
           record(`Moving pivot to sorted position ${pi}.`, "PIVOT_SWAP", [low, high], high, [pi, high], [pi, high]);
-          swap(pi, high);
+          performSwap(pi, high);
           record(`Pivot placed.`, "POST_PIVOT_SWAP", [low, high], pi, null, null);
       }
       return pi;

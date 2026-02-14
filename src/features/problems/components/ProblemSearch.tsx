@@ -38,7 +38,7 @@ export default function ProblemSearch({ onSelect, onGenerateAI, excludeIds = [] 
       // Assuming /api/problems can filter by q. If not, I'll need to update it or handle locally.
       // Based on existing code, /api/problems might return all. 
       // Let's check /api/problems first.
-      setResults(data.problems.filter((p: any) => 
+      setResults(data.problems.filter((p: ProblemSearchResult) => 
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
         !excludeIds.includes(p.id)
       ));

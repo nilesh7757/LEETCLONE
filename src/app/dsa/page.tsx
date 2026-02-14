@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDownNarrowWide, Search, Database, Network, 
   Infinity as InfinityIcon, Sparkles, Layers, 
-  X, Menu
+  Menu
 } from "lucide-react";
 
 import { dsaCategories } from "@/components/dsa/dsaCategories";
@@ -17,7 +16,7 @@ import { DSAMainContent } from "@/components/dsa/DSAMainContent";
 export default function DSAPage() {
   const [selectedCategory, setSelectedCategory] = useState(dsaCategories[0]);
   const [animationSpeed, setAnimationSpeed] = useState(800);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeGroup, setActiveGroup] = useState("all");
 

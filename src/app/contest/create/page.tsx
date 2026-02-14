@@ -28,8 +28,14 @@ interface ContestFormData {
   selectedProblemIds: string[]; // Added field for problems
 }
 
+interface Problem {
+  id: string;
+  title: string;
+  difficulty: string;
+}
+
 export default function CreateContestPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableProblems, setAvailableProblems] = useState<ProblemOption[]>([]);
@@ -40,7 +46,6 @@ export default function CreateContestPage() {
     handleSubmit,
     watch,
     setValue, // Added for react-select
-    control, // Added for react-select
     formState: { errors },
   } = useForm<ContestFormData>({
     defaultValues: {
@@ -51,14 +56,13 @@ export default function CreateContestPage() {
   });
 
   const visibility = watch("visibility");
-  const selectedProblems = watch("selectedProblemIds"); // To display selected problems
 
   // Fetch problems on component mount
   useEffect(() => {
     const fetchProblems = async () => {
       try {
         const { data } = await axios.get("/api/problems"); // Fetch all problems for now
-        const formattedProblems: ProblemOption[] = data.problems.map((p: any) => ({
+        const formattedProblems: ProblemOption[] = data.problems.map((p: Problem) => ({
           value: p.id,
           label: `${p.title} (${p.difficulty})`,
           difficulty: p.difficulty,
@@ -95,9 +99,13 @@ export default function CreateContestPage() {
       });
       toast.success("Contest created! Redirecting to dashboard...");
       router.push(`/contest/${response.data.contest.id}/manage`); // Redirect to manage page
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to create contest:", error);
-      toast.error(error.response?.data?.error || "Failed to create contest.");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to create contest.");
+      } else {
+        toast.error("Failed to create contest.");
+      }
     } finally {
       setIsSubmitting(false);
     }

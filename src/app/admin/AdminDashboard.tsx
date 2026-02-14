@@ -78,8 +78,8 @@ interface StudyPlan {
 }
 
 interface TestCase {
-  input: string | number | object | any[];
-  output: string | number | object | any[];
+  input: string | number | object | unknown[];
+  output: string | number | object | unknown[];
 }
 
 interface GeneratedProblem {

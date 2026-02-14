@@ -65,6 +65,7 @@ const PodiumCard = ({ user, delay }: { user: LeaderboardUser; delay: number }) =
             
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 shadow-2xl relative z-10 bg-[var(--background)]" style={{ borderColor: colorVar }}>
               {user.image ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-[var(--muted)] flex items-center justify-center">
@@ -197,6 +198,7 @@ export default function LeaderboardPage() {
                       <div className="relative flex-shrink-0">
                           <div className="w-14 h-14 md:w-16 md:h-14 rounded-full overflow-hidden bg-[var(--muted)]/50 ring-2 ring-transparent group-hover:ring-[var(--viz-cyan)]/50 transition-all duration-500">
                               {user.image ? (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
                                   <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
                               ) : (
                                   <div className="w-full h-full flex items-center justify-center">

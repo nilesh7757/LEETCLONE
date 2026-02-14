@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Sparkles, Loader2, Trash2, Mic, Volume2, VolumeX, ShieldAlert } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Send, Bot, User, Sparkles, Loader2, Trash2, Volume2, VolumeX, ShieldAlert } from "lucide-react";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 interface Message {
   id: string;
   role: "user" | "model";
   text: string;
+}
+
+interface TestCase {
+  input: string | object;
+  expectedOutput?: string | object;
 }
 
 interface GeminiChatProps {
@@ -19,7 +24,7 @@ interface GeminiChatProps {
   code: string;
   language: string;
   isInterviewMode?: boolean;
-  testCases?: any[];
+  testCases?: TestCase[];
 }
 
 export default function GeminiChat({ 
@@ -39,24 +44,22 @@ export default function GeminiChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Voice Output
-  const speak = (text: string) => {
+  const speak = useCallback((text: string) => {
     if (!isVoiceOn || !window.speechSynthesis) return;
     window.speechSynthesis.cancel(); // Stop any current speech
     const utterance = new SpeechSynthesisUtterance(text);
-    // Find a good professional voice if available
     const voices = window.speechSynthesis.getVoices();
     utterance.voice = voices.find(v => v.name.includes('Google') || v.name.includes('Female')) || voices[0];
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
-  };
+  }, [isVoiceOn]);
 
   // periodic interview questions
   useEffect(() => {
     if (!isInterviewMode) return;
 
     const interval = setInterval(async () => {
-      // Only ask if not already loading and hasn't just asked
       if (isLoading || messages.length === 0) return;
       
       const lastMsg = messages[messages.length - 1];
@@ -81,13 +84,13 @@ export default function GeminiChat({
           setMessages(prev => [...prev, aiMsg]);
           speak(data.response);
         }
-      } catch (e) {
-        console.error("Periodic question failed", e);
+      } catch (err) {
+        console.error("Periodic question failed", err);
       }
-    }, 45000); // Every 45 seconds
+    }, 45000); 
 
     return () => clearInterval(interval);
-  }, [isInterviewMode, code, messages, isLoading]);
+  }, [isInterviewMode, code, messages, isLoading, problemDescription, problemTitle, language, testCases, speak]);
 
   // Initialize cooldown from localStorage
   useEffect(() => {
@@ -136,7 +139,7 @@ export default function GeminiChat({
 
   // Load chat history from LocalStorage
   useEffect(() => {
-    const savedMessages = localStorage.getItem(`gemini_chat_${problemId}`);
+    const savedMessages = localStorage.getItem(`gemini_chat_\${problemId}`);
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
     } else {
@@ -144,9 +147,7 @@ export default function GeminiChat({
         {
           id: "1",
           role: "model",
-          text: `Hi! I'm your AI Tutor. I can help you with "${problemTitle}". 
-
-Feel free to ask for hints, explanation of the problem, or feedback on your code!`,
+          text: `Hi! I'm your AI Tutor. I can help you with "\${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
         },
       ]);
     }
@@ -155,7 +156,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
   // Save chat history to LocalStorage
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem(`gemini_chat_${problemId}`, JSON.stringify(messages));
+      localStorage.setItem(`gemini_chat_\${problemId}`, JSON.stringify(messages));
     }
     scrollToBottom();
   }, [messages, problemId]);
@@ -173,7 +174,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
     setInput("");
     setIsLoading(true);
 
-    let assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessageId = (Date.now() + 1).toString();
     const initialAssistantMessage: Message = {
       id: assistantMessageId,
       role: "model",
@@ -209,7 +210,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
-        } catch (e) { /* ignore parse error */ }
+        } catch { /* ignore */ }
 
         if (response.status === 429 || errorMessage === "RATE_LIMIT") {
           throw new Error("RATE_LIMIT");
@@ -236,9 +237,9 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
       }
 
       if (isVoiceOn) speak(fullText);
-    } catch (error: any) {
-      console.error("Chat error:", error);
-      const isRateLimit = error.message === "RATE_LIMIT";
+    } catch (err: unknown) {
+      console.error("Chat error:", err);
+      const isRateLimit = err instanceof Error && err.message === "RATE_LIMIT";
       
       if (isRateLimit) {
         setCooldownWithStorage(60);
@@ -271,12 +272,12 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
 
   const handleClearHistory = () => {
     if (window.confirm("Clear all chat history for this problem?")) {
-      localStorage.removeItem(`gemini_chat_${problemId}`);
+      localStorage.removeItem(`gemini_chat_\${problemId}`);
       setMessages([
         {
           id: "1",
           role: "model",
-          text: `Hi! I'm your AI Tutor. I can help you with "${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
+          text: `Hi! I'm your AI Tutor. I can help you with "\${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
         },
       ]);
       toast.success("History cleared");
@@ -286,9 +287,9 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
   return (
     <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <div className={`p-4 flex items-center justify-between z-10 ${isInterviewMode ? 'bg-purple-600/5' : 'bg-transparent'}`}>
+      <div className={`p-4 flex items-center justify-between z-10 \${isInterviewMode ? 'bg-purple-600/5' : 'bg-transparent'}`}>
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl ${isInterviewMode ? 'bg-purple-500/20' : 'bg-purple-500/10'}`}>
+          <div className={`p-2 rounded-xl \${isInterviewMode ? 'bg-purple-500/20' : 'bg-purple-500/10'}`}>
             {isInterviewMode ? <ShieldAlert className="w-4 h-4 text-purple-500" /> : <Sparkles className="w-4 h-4 text-purple-500" />}
           </div>
           <div>
@@ -308,7 +309,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
                 setIsVoiceOn(!isVoiceOn);
                 if (!isVoiceOn) toast.success("AI Voice Enabled");
               }}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${isVoiceOn ? 'bg-purple-500/20 text-purple-500' : 'text-[var(--foreground)]/30 hover:bg-[var(--foreground)]/5'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer \${isVoiceOn ? 'bg-purple-500/20 text-purple-500' : 'text-[var(--foreground)]/30 hover:bg-[var(--foreground)]/5'}`}
               title="Toggle AI Voice"
             >
               {isVoiceOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -326,17 +327,16 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
         {messages.map((msg) => (
           <motion.div
             key={msg.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`flex items-start gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+            className={`flex items-start gap-4 \${msg.role === "user" ? "flex-row-reverse" : ""}`}
           >
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${msg.role === "user"
+              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm \${msg.role === "user"
                 ? "bg-[var(--foreground)]/10 text-[var(--foreground)]"
                 : "bg-purple-600/10 text-purple-500"
               }`}
@@ -344,7 +344,7 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
               {msg.role === "user" ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
             </div>
             <div
-              className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user"
+              className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed whitespace-pre-wrap \${msg.role === "user"
                 ? "bg-[var(--foreground)]/5 text-[var(--foreground)] rounded-tr-none"
                 : "bg-[var(--card)]/40 text-[var(--foreground)]/90 rounded-tl-none"
               }`}
@@ -370,7 +370,6 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-6 bg-transparent">
         <div className="relative group">
           <textarea
@@ -378,8 +377,8 @@ Feel free to ask for hints, explanation of the problem, or feedback on your code
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={cooldown > 0}
-            placeholder={cooldown > 0 ? `Neural Cooldown (${cooldown}s)...` : "Signal your question..."}
-            className={`w-full pl-5 pr-14 py-4 bg-[var(--card)]/20 border border-transparent focus:border-purple-500/20 rounded-3xl text-sm text-[var(--foreground)] outline-none transition-all resize-none h-[64px] custom-scrollbar shadow-inner ${cooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            placeholder={cooldown > 0 ? `Neural Cooldown (\${cooldown}s)...` : "Signal your question..."}
+            className={`w-full pl-5 pr-14 py-4 bg-[var(--card)]/20 border border-transparent focus:border-purple-500/20 rounded-3xl text-sm text-[var(--foreground)] outline-none transition-all resize-none h-[64px] custom-scrollbar shadow-inner \${cooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           <button
             onClick={handleSend}

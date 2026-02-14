@@ -56,7 +56,7 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
 
     record("Manifold initialized. Press Execute to begin Selection Sort.", "INIT");
 
-    let arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
+    const arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
     const n = arr.length;
 
     for (let i = 0; i < n - 1; i++) {

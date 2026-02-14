@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 import axios from "axios";
-import { Send, UserCircle, Paperclip, Loader2, MoreVertical, Phone, Video, ChevronLeft, Check, CheckCheck } from "lucide-react";
+import { Send, UserCircle, Paperclip, Loader2, MoreVertical, Phone, Video, ChevronLeft, CheckCheck } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";

@@ -5,17 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Hash, 
   ChevronLeft, ChevronRight, Crown, X,
-  Zap, Activity, Cpu, Settings2, Sparkles
+  Zap, Activity, Cpu, Sparkles
 } from "lucide-react";
-
-// Professional Palette
-const MANIM_COLORS = { 
-  blue: "var(--viz-cyan)",
-  green: "var(--viz-deep-purple)",
-  gold: "var(--viz-deep-purple)",
-  red: "var(--viz-rose)",
-  purple: "var(--viz-purple)"
-};
 
 interface NQueensStep {
   board: number[][]; // 0: empty, 1: safe, 2: probing, 3: conflict
@@ -29,16 +20,15 @@ interface NQueensStep {
 
 export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
   const [n, setN] = useState(4);
-  const [history, setHistory] = useState<NQueensStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- Algorithm Simulation ---
-  useEffect(() => {
+  const history = useMemo(() => {
     const steps: NQueensStep[] = [];
-    let board = Array(n).fill(0).map(() => Array(n).fill(0));
+    const board = Array(n).fill(0).map(() => Array(n).fill(0));
     let currentLogs: string[] = [];
 
     const record = (msg: string, step: NQueensStep["step"], col: number, conf: {r:number,c:number}|null = null, path: {r:number,c:number}[] = []) => {
@@ -67,9 +57,17 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
             // Check row
             for (let i = 0; i < col; i++) if (board[row][i] === 1) { conflict = {r: row, c: i}; break; }
             // Check upper diagonal
-            if (!conflict) for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) if (board[i][j] === 1) { conflict = {r: i, c: j}; break; }
+            if (!conflict) {
+                for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
+                    if (board[i][j] === 1) { conflict = {r: i, c: j}; break; }
+                }
+            }
             // Check lower diagonal
-            if (!conflict) for (let i = row + 1, j = col - 1; i < n && j >= 0; i++, j--) if (board[i][j] === 1) { conflict = {r: i, c: j}; break; }
+            if (!conflict) {
+                for (let i = row + 1, j = col - 1; i < n && j >= 0; i++, j--) {
+                    if (board[i][j] === 1) { conflict = {r: i, c: j}; break; }
+                }
+            }
 
             if (!conflict) {
                 board[row][col] = 1;
@@ -88,9 +86,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
     };
 
     solve(0);
-    setHistory(steps);
-    setCurrentIndex(0);
-    setIsPlaying(false);
+    return steps;
   }, [n]);
 
   useEffect(() => {
@@ -105,17 +101,15 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = useMemo(() => {
-    return history[currentIndex] || { 
-      board: Array(n).fill(0).map(() => Array(n).fill(0)), 
-      message: "Initializing board...", 
-      step: "BOOT", 
-      col: 0, 
-      conflictSource: null, 
-      conflictPath: [],
-      logs: []
-    };
-  }, [history, currentIndex, n]);
+  const currentStep = history[currentIndex] || { 
+    board: Array(n).fill(0).map(() => Array(n).fill(0)), 
+    message: "Initializing board...", 
+    step: "BOOT", 
+    col: 0, 
+    conflictSource: null, 
+    conflictPath: [],
+    logs: []
+  };
 
   return (
     <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
@@ -333,4 +327,3 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
     </div>
   );
 }
-

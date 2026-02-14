@@ -13,109 +13,43 @@ interface DiscussionSectionProps {
   problemId: string;
 }
 
+interface Vote {
+  userId: string;
+  type: "UP" | "DOWN";
+}
+
+interface User {
+  id: string;
+  name: string | null;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: string | Date;
+  user: User | null;
+  votes: Vote[];
+  children?: Comment[];
+  parentId?: string | null;
+}
+
 let socket: Socket;
 
 export default function DiscussionSection({ problemId }: DiscussionSectionProps) {
   const { data: session } = useSession();
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newCommentContent, setNewCommentContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize Socket.io
-  useEffect(() => {
-    // Connect to the socket server
-    // Note: In production, this URL should be an env variable
-    // If you are running locally, make sure 'npm run socket' is running
-    const socketUrl = "http://localhost:3001"; 
-    
-    socket = io(socketUrl, {
-      transports: ["websocket"], // Force websocket to avoid polling issues sometimes
-    });
-
-    socket.on("connect", () => {
-      console.log("Connected to socket server");
-      socket.emit("join_problem", problemId);
-    });
-
-    socket.on("comment_added", (newComment) => {
-      console.log("New comment received:", newComment);
-      handleNewCommentReceived(newComment);
-    });
-
-    socket.on("vote_updated", ({ commentId, upvotes, downvotes }) => {
-      handleVoteUpdateReceived(commentId, upvotes, downvotes);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [problemId]);
-
-  // Fetch initial comments
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const { data } = await axios.get(`/api/comments?problemId=${problemId}`);
-        // Build the tree structure from flat list
-        const tree = buildCommentTree(data.comments);
-        setComments(tree);
-      } catch (error) {
-        console.error("Failed to load comments:", error);
-        toast.error("Failed to load discussion.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchComments();
-  }, [problemId]);
-
-  const buildCommentTree = (flatComments: any[]) => {
-    const commentMap: { [key: string]: any } = {};
-    const roots: any[] = [];
-
-    // Initialize map
-    flatComments.forEach(c => {
-      commentMap[c.id] = { ...c, children: [] };
-    });
-
-    // Build hierarchy
-    flatComments.forEach(c => {
-      if (c.parentId) {
-        if (commentMap[c.parentId]) {
-          commentMap[c.parentId].children.push(commentMap[c.id]);
-        }
-      } else {
-        roots.push(commentMap[c.id]);
-      }
-    });
-
-    // Sort by newest first (or by votes if desired)
-    // Roots: Newest first
-    roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return roots;
-  };
-
-  const handleNewCommentReceived = (newComment: any) => {
+  const handleNewCommentReceived = useCallback((newComment: Comment) => {
     setComments(prev => {
-      // We need to re-insert the new comment into the existing tree
-      // The simplest way (though not most efficient) is to flatten, add, rebuild.
-      // Or just handle root vs child case.
-      
-      // Let's assume we can just add it if we kept a flat list or deep update.
-      // Since we converted to tree, deep update is tricky.
-      // For now, let's just trigger a re-fetch or try to append.
-      // Appending to tree:
-      
-      const updatedList = [...prev]; // This is the root list
+      const updatedList = [...prev]; 
       
       if (!newComment.parentId) {
-         // Root comment
          return [newComment, ...updatedList];
       } else {
-         // It's a reply. We need to find the parent in the tree recursively.
-         // Helper function to find and append
-         const addReply = (nodes: any[]): any[] => {
+         const addReply = (nodes: Comment[]): Comment[] => {
             return nodes.map(node => {
                if (node.id === newComment.parentId) {
                   return { ...node, children: [...(node.children || []), newComment] };
@@ -128,28 +62,15 @@ export default function DiscussionSection({ problemId }: DiscussionSectionProps)
          return addReply(updatedList);
       }
     });
-  };
+  }, []);
 
-  const handleVoteUpdateReceived = (commentId: string, upvotes: number, downvotes: number) => {
+  const handleVoteUpdateReceived = useCallback((commentId: string, upvotes: number, downvotes: number) => {
     setComments(prev => {
-      const updateVote = (nodes: any[]): any[] => {
+      const updateVote = (nodes: Comment[]): Comment[] => {
         return nodes.map(node => {
           if (node.id === commentId) {
-            // We need to update the votes array structure to reflect the counts
-            // Since we don't have the full list of votes from the socket, we fake it or just store counts if we refactored CommentItem.
-            // But CommentItem calculates score from `node.votes`.
-            // We need to structurally update `node.votes` to match the count.
-            // This is tricky because `votes` is an array of objects { type, userId }.
-            // We don't know *who* voted, just the new counts.
-            
-            // Hack/Fix: We will just mock the votes array to have the correct length of UPs and DOWNs.
-            // We preserve the current user's vote if it exists in the old state.
-            const currentUserVote = node.votes.find((v: any) => v.userId === session?.user?.id);
-            
-            // Reconstruct array
+            const currentUserVote = node.votes.find((v: Vote) => v.userId === (session?.user as { id: string })?.id);
             const newVotes = [];
-            
-            // Add current user's vote first if it exists
             let remainingUp = upvotes;
             let remainingDown = downvotes;
             
@@ -159,9 +80,8 @@ export default function DiscussionSection({ problemId }: DiscussionSectionProps)
                else remainingDown--;
             }
             
-            // Fill the rest with anonymous placeholders
-            for (let i = 0; i < remainingUp; i++) newVotes.push({ type: "UP", userId: `anon_up_${i}` });
-            for (let i = 0; i < remainingDown; i++) newVotes.push({ type: "DOWN", userId: `anon_down_${i}` });
+            for (let i = 0; i < remainingUp; i++) newVotes.push({ type: "UP", userId: `anon_up_\${i}` } as Vote);
+            for (let i = 0; i < remainingDown; i++) newVotes.push({ type: "DOWN", userId: `anon_down_\${i}` } as Vote);
             
             return { ...node, votes: newVotes };
           }
@@ -173,7 +93,71 @@ export default function DiscussionSection({ problemId }: DiscussionSectionProps)
       };
       return updateVote(prev);
     });
-  };
+  }, [session]);
+
+  // Initialize Socket.io
+  useEffect(() => {
+    const socketUrl = "http://localhost:3001"; 
+    
+    socket = io(socketUrl, {
+      transports: ["websocket"], 
+    });
+
+    socket.on("connect", () => {
+      socket.emit("join_problem", problemId);
+    });
+
+    socket.on("comment_added", (newComment: Comment) => {
+      handleNewCommentReceived(newComment);
+    });
+
+    socket.on("vote_updated", ({ commentId, upvotes, downvotes }: { commentId: string, upvotes: number, downvotes: number }) => {
+      handleVoteUpdateReceived(commentId, upvotes, downvotes);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [problemId, handleNewCommentReceived, handleVoteUpdateReceived]);
+
+  // Fetch initial comments
+  useEffect(() => {
+    const buildCommentTree = (flatComments: Comment[]) => {
+      const commentMap: { [key: string]: Comment } = {};
+      const roots: Comment[] = [];
+
+      flatComments.forEach(c => {
+        commentMap[c.id] = { ...c, children: [] };
+      });
+
+      flatComments.forEach(c => {
+        if (c.parentId) {
+          if (commentMap[c.parentId]) {
+            commentMap[c.parentId].children!.push(commentMap[c.id]);
+          }
+        } else {
+          roots.push(commentMap[c.id]);
+        }
+      });
+
+      roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return roots;
+    };
+
+    const fetchComments = async () => {
+      try {
+        const { data } = await axios.get(`/api/comments?problemId=${problemId}`);
+        const tree = buildCommentTree(data.comments);
+        setComments(tree);
+      } catch (err) {
+        console.error("Failed to load comments:", err);
+        toast.error("Failed to load discussion.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchComments();
+  }, [problemId]);
 
   const handlePostComment = async () => {
     if (!newCommentContent.trim()) return;

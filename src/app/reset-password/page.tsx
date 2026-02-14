@@ -24,8 +24,12 @@ function ResetContent() {
         await axios.post("/api/auth/reset-password", { token, password });
         toast.success("Password reset successfully!");
         router.push("/login");
-    } catch (error: any) {
-        toast.error(error.response?.data?.error || "Reset failed. Link might be expired.");
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            toast.error(error.response?.data?.error || "Reset failed. Link might be expired.");
+        } else {
+            toast.error("Reset failed. Link might be expired.");
+        }
     } finally {
         setLoading(false);
     }

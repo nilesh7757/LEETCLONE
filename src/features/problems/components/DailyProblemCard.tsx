@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Loader2, Code2, Database, LayoutTemplate, Zap, Clock } from "lucide-react";
+import { ArrowRight, Loader2, Code2, Database, LayoutTemplate, Zap } from "lucide-react";
 import axios from "axios";
 import { motion } from "framer-motion";
 

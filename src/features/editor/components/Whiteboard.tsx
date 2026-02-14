@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Pencil, Square, Circle, Eraser, Trash2, Download, Undo, MousePointer2 } from 'lucide-react';
 
 interface Point {
@@ -26,8 +26,15 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
   const [isDrawing, setIsDrawing] = useState(false);
   const [tool, setTool] = useState<'pencil' | 'rectangle' | 'circle' | 'eraser' | 'select'>('pencil');
   const [color, setColor] = useState('#3b82f6'); // Blue 500
-  const [width, setWidth] = useState(2);
+  const [width] = useState(2);
   const [shapes, setShapes] = useState<Shape[]>(initialShapes);
+  const [prevInitialShapes, setPrevInitialShapes] = useState(initialShapes);
+
+  if (initialShapes !== prevInitialShapes) {
+    setShapes(initialShapes);
+    setPrevInitialShapes(initialShapes);
+  }
+
   const [currentShape, setCurrentShape] = useState<Shape | null>(null);
   
   // Selection and Moving state
@@ -63,100 +70,7 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
            pos.y >= handle.y - size && pos.y <= handle.y + size;
   };
 
-  useEffect(() => {
-    if (initialShapes.length > 0 && shapes.length === 0) {
-      setShapes(initialShapes);
-    }
-  }, [initialShapes]);
-
-  // Notify parent of updates
-  useEffect(() => {
-    if (onUpdate && !isDrawing) {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        onUpdate(shapes, canvas.toDataURL());
-      }
-    }
-  }, [shapes, isDrawing, onUpdate]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size to match display size
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      if (parent) {
-        canvas.width = parent.clientWidth;
-        canvas.height = parent.clientHeight;
-        redraw();
-      }
-    };
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
-  }, [shapes]);
-
-  const redraw = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < canvas.width; i += 20) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, canvas.height);
-      ctx.stroke();
-    }
-    for (let i = 0; i < canvas.height; i += 20) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(canvas.width, i);
-      ctx.stroke();
-    }
-
-    [...shapes, ...(currentShape ? [currentShape] : [])].forEach(drawShape);
-
-    // Draw selection highlight
-    if (selectedShapeIndex !== null && shapes[selectedShapeIndex]) {
-      const shape = shapes[selectedShapeIndex];
-      const points = shape.points;
-      const minX = Math.min(...points.map(p => p.x)) - 5;
-      const maxX = Math.max(...points.map(p => p.x)) + 5;
-      const minY = Math.min(...points.map(p => p.y)) - 5;
-      const maxY = Math.max(...points.map(p => p.y)) + 5;
-
-      ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-      ctx.setLineDash([]);
-
-      // Draw resize handles
-      if (!readOnly) {
-        const handles = getResizeHandles(shape);
-        ctx.fillStyle = '#3b82f6';
-        Object.values(handles).forEach((h: any) => {
-          ctx.fillRect(h.x - 4, h.y - 4, 8, 8);
-        });
-      }
-    }
-  };
-
-  const drawShape = (shape: Shape) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!ctx) return;
-
+  const drawShape = useCallback((ctx: CanvasRenderingContext2D, shape: Shape) => {
     ctx.strokeStyle = shape.color;
     ctx.lineWidth = shape.width;
     ctx.lineCap = 'round';
@@ -183,7 +97,88 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
       ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
       ctx.stroke();
     }
-  };
+  }, []);
+
+  const redraw = useCallback(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < canvas.width; i += 20) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, canvas.height);
+      ctx.stroke();
+    }
+    for (let i = 0; i < canvas.height; i += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, i);
+      ctx.lineTo(canvas.width, i);
+      ctx.stroke();
+    }
+
+    [...shapes, ...(currentShape ? [currentShape] : [])].forEach(s => drawShape(ctx, s));
+
+    // Draw selection highlight
+    if (selectedShapeIndex !== null && shapes[selectedShapeIndex]) {
+      const shape = shapes[selectedShapeIndex];
+      const points = shape.points;
+      const minX = Math.min(...points.map(p => p.x)) - 5;
+      const maxX = Math.max(...points.map(p => p.x)) + 5;
+      const minY = Math.min(...points.map(p => p.y)) - 5;
+      const maxY = Math.max(...points.map(p => p.y)) + 5;
+
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+      ctx.setLineDash([]);
+
+      // Draw resize handles
+      if (!readOnly) {
+        const handles = getResizeHandles(shape);
+        ctx.fillStyle = '#3b82f6';
+        Object.values(handles).forEach((h) => {
+          const point = h as Point;
+          ctx.fillRect(point.x - 4, point.y - 4, 8, 8);
+        });
+      }
+    }
+  }, [shapes, currentShape, drawShape, readOnly, selectedShapeIndex]);
+
+  // Notify parent of updates
+  useEffect(() => {
+    if (onUpdate && !isDrawing) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        onUpdate(shapes, canvas.toDataURL());
+      }
+    }
+  }, [shapes, isDrawing, onUpdate]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Set canvas size to match display size
+    const resizeCanvas = () => {
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        redraw();
+      }
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, [redraw]);
 
   const getMousePos = (e: React.MouseEvent | React.TouchEvent): Point => {
     const canvas = canvasRef.current;
@@ -229,7 +224,6 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
     const pos = getMousePos(e);
 
     if (tool === 'select') {
-      // 1. Check if clicking on a resize handle of the CURRENTLY selected shape
       if (selectedShapeIndex !== null) {
         const handles = getResizeHandles(shapes[selectedShapeIndex]);
         for (const [key, handlePos] of Object.entries(handles)) {
@@ -242,7 +236,6 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
         }
       }
 
-      // 2. Find if clicking on a NEW shape
       for (let i = shapes.length - 1; i >= 0; i--) {
         if (isPointInShape(pos, shapes[i])) {
           setSelectedShapeIndex(i);
@@ -260,7 +253,7 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
     }
 
     setIsDrawing(true);
-    const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#121212';
+    const bgColor = '#121212';
     setCurrentShape({
       type: tool === 'eraser' ? 'pencil' : tool,
       points: [pos],
@@ -289,7 +282,6 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
           
           newShapes[selectedShapeIndex] = { ...shape, points: [start, end] };
         } else if (shape.type === 'circle') {
-          // Move the edge point to resize radius
           newShapes[selectedShapeIndex] = { ...shape, points: [shape.points[0], pos] };
         }
         setShapes(newShapes);
@@ -297,7 +289,6 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
         return;
       }
 
-      // Moving logic
       const dx = pos.x - (shapes[selectedShapeIndex].points[0].x + dragOffset.x);
       const dy = pos.y - (shapes[selectedShapeIndex].points[0].y + dragOffset.y);
       
@@ -365,41 +356,40 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
   };
 
   return (
-    <div className={`flex flex-col w-full bg-[var(--background)] relative overflow-hidden rounded-lg border border-[var(--card-border)] ${readOnly ? 'h-[400px]' : 'h-[500px]'}`}>
-      {/* Toolbar */}
+    <div className={`flex flex-col w-full bg-[var(--background)] relative overflow-hidden rounded-lg border border-[var(--card-border)] \${readOnly ? 'h-[400px]' : 'h-[500px]'}`}>
       {!readOnly && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 p-2 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl backdrop-blur-md">
           <button 
             onClick={() => setTool('select')}
-            className={`p-2 rounded-lg transition-colors ${tool === 'select' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
+            className={`p-2 rounded-lg transition-colors \${tool === 'select' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
             title="Select & Move"
           >
             <MousePointer2 className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setTool('pencil')}
-            className={`p-2 rounded-lg transition-colors ${tool === 'pencil' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
+            className={`p-2 rounded-lg transition-colors \${tool === 'pencil' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
             title="Pencil"
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setTool('rectangle')}
-            className={`p-2 rounded-lg transition-colors ${tool === 'rectangle' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
+            className={`p-2 rounded-lg transition-colors \${tool === 'rectangle' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
             title="Rectangle"
           >
             <Square className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setTool('circle')}
-            className={`p-2 rounded-lg transition-colors ${tool === 'circle' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
+            className={`p-2 rounded-lg transition-colors \${tool === 'circle' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
             title="Circle"
           >
             <Circle className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setTool('eraser')}
-            className={`p-2 rounded-lg transition-colors ${tool === 'eraser' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
+            className={`p-2 rounded-lg transition-colors \${tool === 'eraser' ? 'bg-blue-600 text-white' : 'text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5'}`}
             title="Eraser"
           >
             <Eraser className="w-4 h-4" />
@@ -410,7 +400,7 @@ const Whiteboard = ({ initialShapes = [], onUpdate, readOnly = false }: Whiteboa
               <button
                 key={c}
                 onClick={() => setColor(c)}
-                className={`w-5 h-5 rounded-full border border-[var(--card-border)] transition-transform hover:scale-110 ${color === c ? 'ring-2 ring-blue-500' : ''}`}
+                className={`w-5 h-5 rounded-full border border-[var(--card-border)] transition-transform hover:scale-110 \${color === c ? 'ring-2 ring-blue-500' : ''}`}
                 style={{ backgroundColor: c }}
               />
             ))}

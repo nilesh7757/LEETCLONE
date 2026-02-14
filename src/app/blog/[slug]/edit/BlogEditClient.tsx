@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Book, Hash, Image, Zap, FileText, Upload, X, Loader2 } from "lucide-react"; 
+import { Book, Hash, Image as ImageIcon, Zap, FileText, Upload, X, Loader2 } from "lucide-react"; 
 import { toast } from "sonner";
 import axios from "axios";
 import TiptapEditor from "@/features/editor/components/TiptapEditor";
@@ -214,7 +214,7 @@ export default function BlogEditClient({ initialPost }: BlogEditClientProps) {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-2 text-[var(--foreground)]/40 group-hover:text-[var(--accent-gradient-to)]">
-                                <Image className="w-8 h-8" />
+                                <ImageIcon className="w-8 h-8" />
                                 <span className="text-sm font-medium">Click to upload cover image</span>
                             </div>
                         )}

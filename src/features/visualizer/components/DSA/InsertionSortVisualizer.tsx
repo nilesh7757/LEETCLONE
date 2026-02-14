@@ -56,7 +56,7 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
 
     record("Vector space ready. Press Execute to begin linear insertion protocol.", "INIT");
 
-    let arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
+    const arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
     const n = arr.length;
 
     // First element is technically sorted
@@ -64,7 +64,7 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
     record("Index 0 is considered a sorted sub-manifold of size 1.", "BASE", 0, 0);
 
     for (let i = 1; i < n; i++) {
-      let keyVal = arr[i].value;
+      const keyVal = arr[i].value;
       let j = i - 1;
       
       const keyNodeId = currentNodes.find(n => n.logicalIndex === i)!.id;

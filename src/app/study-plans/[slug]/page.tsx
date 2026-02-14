@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { CheckCircle, Circle, ChevronLeft, Calendar, Info, ChevronRight } from "lucide-react";
+import { CheckCircle, Circle, ChevronLeft, Info, ChevronRight } from "lucide-react";
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import StudyPlanControls from "@/features/study-plans/components/StudyPlanControls";
@@ -152,7 +152,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                           ) : (
                              dayProblems.map((spProblem) => {
                                 const { problem } = spProblem;
-                                const isSolved = problem.submissions && (problem.submissions as any).length > 0;
+                                const isSolved = !!(problem.submissions && problem.submissions.length > 0);
                                 return (
                                   <Link
                                     key={problem.id}

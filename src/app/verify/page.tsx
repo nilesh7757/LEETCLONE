@@ -24,8 +24,12 @@ function VerifyContent() {
         await axios.post("/api/verify", { email, otp });
         toast.success("Verified successfully!");
         router.push("/login?verified=true");
-    } catch (error: any) {
-        toast.error(error.response?.data?.error || "Verification failed");
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            toast.error(error.response?.data?.error || "Verification failed");
+        } else {
+            toast.error("Verification failed");
+        }
     } finally {
         setLoading(false);
     }

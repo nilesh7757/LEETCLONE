@@ -3,12 +3,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  RotateCcw, Play, Pause, ChevronLeft, ChevronRight, Zap, 
+  RotateCcw, ChevronLeft, ChevronRight, Zap, 
   ArrowRight, Plus, Trash2, Search, Hash, Link as LinkIcon
 } from "lucide-react";
 
 // --- Configuration ---
-const NODE_SIZE = 60;
 const GAP_SIZE = 60; // Space for the arrow
 
 // Manim-inspired Palette
@@ -57,10 +56,18 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         phase: "IDLE",
         message: "Linked List Ready."
     }]);
-  }, []); // Run once on mount
+  }, [list]); // Run when list changes
+
+  const updateHistory = (steps: ListStep[], finalState: LLNode[]) => {
+    setList(finalState);
+    setHistory(steps);
+    setCurrentIndex(0);
+    setIsPlaying(true);
+    setInputValue("");
+  };
 
   // --- Operations ---
-  const pushBack = () => {
+  const pushBack = React.useCallback(() => {
     const val = parseInt(inputValue) || Math.floor(Math.random() * 99);
     const steps: ListStep[] = [];
     const currentNodes = [...list]; // Snapshot of current state
@@ -97,9 +104,9 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     });
 
     updateHistory(steps, newNodes);
-  };
+  }, [inputValue, list]);
 
-  const popBack = () => {
+  const popBack = React.useCallback(() => {
     if (list.length === 0) return;
     const steps: ListStep[] = [];
     const currentNodes = [...list];
@@ -137,9 +144,9 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     });
 
     updateHistory(steps, newNodes);
-  };
+  }, [list]);
 
-  const search = () => {
+  const search = React.useCallback(() => {
     const val = parseInt(inputValue);
     if (isNaN(val)) return;
     const steps: ListStep[] = [];
@@ -180,15 +187,15 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     }
 
     updateHistory(steps, currentNodes);
-  };
+  }, [inputValue, list]);
 
-  const updateHistory = (steps: ListStep[], finalState: LLNode[]) => {
+  function updateHistory(steps: ListStep[], finalState: LLNode[]) {
     setList(finalState);
     setHistory(steps);
     setCurrentIndex(0);
     setIsPlaying(true);
     setInputValue("");
-  };
+  }
 
   // --- Playback Engine ---
   useEffect(() => {
@@ -285,7 +292,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             {/* List Container */}
             <div className="flex items-center justify-center flex-wrap max-w-[90%] gap-y-12">
                 <AnimatePresence mode="popLayout">
-                    {currentStep.nodes.map((node, index) => {
+                    {currentStep.nodes.map((node) => {
                         const isActive = node.id === currentStep.activeId;
                         const isVisited = currentStep.highlightIds.includes(node.id);
                         

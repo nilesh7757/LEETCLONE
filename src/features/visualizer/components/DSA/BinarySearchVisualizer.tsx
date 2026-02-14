@@ -3,150 +3,86 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, Zap, 
-  Activity, ArrowDown, ArrowUp, Search, Hash, Target
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight,
+  Search, Hash, Activity, ArrowDown
 } from "lucide-react";
 
 // --- Configuration ---
-const ARRAY_SIZE = 15;
-
-// Manim-inspired Palette
-const COLORS = { 
-  blue: "var(--viz-cyan)",
-  green: "var(--viz-green)",
-  gold: "var(--viz-cyan)",
-  red: "var(--viz-rose)",
-  purple: "var(--viz-purple)",
-  muted: "rgba(255,255,255,0.1)"
-};
-
-interface VisualNode {
-  id: string;
-  value: number;
-  index: number;
-}
+const UNIT_WIDTH = 60;
 
 interface SearchStep {
   low: number;
+  mid: number;
   high: number;
-  mid: number | null;
-  found: boolean;
-  phase: "BOOT" | "SCAN" | "CHECK" | "ELIMINATE_LEFT" | "ELIMINATE_RIGHT" | "FOUND" | "NOT_FOUND";
   message: string;
+  found: boolean;
+  activeRange: [number, number];
+  logs: string[];
 }
 
 export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number }) {
-  // --- State ---
-  const [initialData, setInitialData] = useState<VisualNode[]>([]);
-  const [target, setTarget] = useState<number>(0);
-  const [history, setHistory] = useState<SearchStep[]>([]);
+  const [data] = useState<number[]>(() => {
+    return Array.from({ length: 15 }, () => Math.floor(Math.random() * 90) + 10).sort((a, b) => a - b);
+  });
+  const [target, setTarget] = useState<number>(() => data[Math.floor(Math.random() * data.length)]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- Initialization ---
-  const generateScenario = () => {
-    setIsPlaying(false);
-    // Generate sorted unique numbers
-    const set = new Set<number>();
-    while(set.size < ARRAY_SIZE) {
-        set.add(Math.floor(Math.random() * 99) + 1);
-    }
-    const arr = Array.from(set).sort((a,b) => a-b);
-    
-    setInitialData(arr.map((val, i) => ({
-        id: `node-${i}-${val}`,
-        value: val,
-        index: i
-    })));
-    
-    // Pick a random target (or sometimes one not in array)
-    const pickIndex = Math.floor(Math.random() * ARRAY_SIZE);
-    setTarget(Math.random() > 0.2 ? arr[pickIndex] : 100);
-    setCurrentIndex(0);
-  };
-
-  useEffect(() => {
-    generateScenario();
-  }, []);
-
-  // --- Algorithm Logic ---
-  useEffect(() => {
-    if (initialData.length === 0) return;
-
+  // Pre-calculate History
+  const history = useMemo(() => {
     const steps: SearchStep[] = [];
     let l = 0;
-    let r = initialData.length - 1;
-    let found = false;
+    let r = data.length - 1;
+    let currentLogs: string[] = [];
 
-    // Initial State
-    steps.push({
-        low: l, high: r, mid: null, found: false,
-        phase: "BOOT", message: `Search Space: [${l} ... ${r}]`
-    });
+    const record = (msg: string, low: number, mid: number, high: number, found: boolean = false) => {
+      currentLogs = [msg, ...currentLogs].slice(0, 10);
+      steps.push({
+        low,
+        mid,
+        high,
+        message: msg,
+        found,
+        activeRange: [low, high],
+        logs: [...currentLogs]
+      });
+    };
+
+    record("Algorithm Booted. Target localized in vector manifold.", l, -1, r);
 
     while (l <= r) {
-        const m = Math.floor((l + r) / 2);
-        
-        // 1. Calculate Mid
-        steps.push({
-            low: l, high: r, mid: m, found: false,
-            phase: "SCAN", message: `Calculating Mid: (${l} + ${r}) / 2 = ${m}`
-        });
+      const mid = Math.floor((l + r) / 2);
+      
+      if (data[mid] === target) {
+        record(`CRITICAL MATCH: Target ${target} verified at index ${mid}.`, l, mid, r, true);
+        break;
+      }
 
-        // 2. Check Value
-        const midVal = initialData[m].value;
-        steps.push({
-            low: l, high: r, mid: m, found: false,
-            phase: "CHECK", message: `Comparing arr[${m}] (${midVal}) vs Target (${target})`
-        });
+      record(`Probing manifold at index ${mid} (Value: ${data[mid]}).`, l, mid, r);
 
-        if (midVal === target) {
-            found = true;
-            steps.push({
-                low: l, high: r, mid: m, found: true,
-                phase: "FOUND", message: `Target ${target} found at index ${m}!`
-            });
-            break;
-        } else if (midVal < target) {
-            steps.push({
-                low: l, high: r, mid: m, found: false,
-                phase: "ELIMINATE_LEFT", message: `${midVal} < ${target}. Discarding left half.`
-            });
-            l = m + 1;
-        } else {
-            steps.push({
-                low: l, high: r, mid: m, found: false,
-                phase: "ELIMINATE_RIGHT", message: `${midVal} > ${target}. Discarding right half.`
-            });
-            r = m - 1;
-        }
-        
-        // Boundary Update
-        if (l <= r) {
-            steps.push({
-                low: l, high: r, mid: null, found: false,
-                phase: "BOOT", message: `New Search Space: [${l} ... ${r}]`
-            });
-        }
+      if (data[mid] < target) {
+        l = mid + 1;
+        record(`Target ${target} > ${data[mid]}. Shifting lower boundary to ${l}.`, l, mid, r);
+      } else {
+        r = mid - 1;
+        record(`Target ${target} < ${data[mid]}. Shifting upper boundary to ${r}.`, l, mid, r);
+      }
     }
 
-    if (!found) {
-        steps.push({
-            low: l, high: r, mid: null, found: false,
-            phase: "NOT_FOUND", message: `Target ${target} not present in array.`
-        });
+    if (!steps.find(s => s.found)) {
+        record("Target not found in current manifold state.", l, -1, r);
     }
 
-    setHistory(steps);
-    setCurrentIndex(0);
-  }, [initialData, target]);
+    return steps;
+  }, [data, target]);
 
-  // --- Playback Engine ---
+  // Playback Control
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = setInterval(() => {
-        setCurrentIndex(prev => {
+        setCurrentIndex((prev) => {
           if (prev >= history.length - 1) {
             setIsPlaying(false);
             return prev;
@@ -154,187 +90,181 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
           return prev + 1;
         });
       }, speed);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
   const currentStep = history[currentIndex] || { 
-    low: 0, high: ARRAY_SIZE-1, mid: null, found: false, phase: "BOOT", message: "Initializing..."
+    low: 0, mid: -1, high: data.length - 1, message: "Ready.", found: false, activeRange: [0, data.length-1], logs: []
   };
 
-  // --- Visual Helpers ---
-  const getBarHeight = (val: number) => {
-    // Min height 20%, Max 80%
-    return 20 + (val / 100) * 60;
+  const resetSimulation = () => {
+    setIsPlaying(false);
+    setCurrentIndex(0);
+    setTarget(data[Math.floor(Math.random() * data.length)]);
   };
-
-  const activeColor = 
-    currentStep.phase === "FOUND" ? COLORS.green :
-    currentStep.phase === "CHECK" ? COLORS.gold :
-    currentStep.phase === "NOT_FOUND" ? COLORS.red :
-    COLORS.blue;
 
   return (
-    <div className="flex flex-col gap-6 select-none font-sans">
-      
-      {/* --- Main Dashboard --- */}
-      <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
-         {/* Background Grid */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+    <div className="flex flex-col gap-6 font-sans">
+      <div className="p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col border border-[var(--border)]">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-
-         {/* Header & Inputs */}
-         <div className="relative z-10 p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-                <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl text-[var(--viz-cyan)]">
+        
+        {/* Header UI */}
+        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)]">
                     <Search size={24} />
                 </div>
                 <div>
                     <h2 className="text-xl font-bold tracking-tight">Binary Search</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">O(log n) Interval Reduction</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Logarithmic Vector Scan</p>
                 </div>
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-2 bg-[var(--card)] p-1.5 rounded-2xl shadow-sm">
-                <div className="flex items-center gap-3 px-4">
-                    <Target size={16} className="text-[var(--viz-cyan)]" />
-                    <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-wider">Target</span>
-                    <input 
-                        type="number" value={target} 
-                        onChange={e => { setTarget(parseInt(e.target.value) || 0); setIsPlaying(false); }}
-                        className="w-12 bg-transparent font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none text-center"
-                    />
-                </div>
-                <button onClick={generateScenario} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all" title="New Array">
-                    <RotateCcw size={16} />
+          <div className="flex items-center gap-3 bg-muted p-1.5 rounded-2xl  shadow-inner">
+             <div className="flex items-center gap-2 px-3 border-r border-border/50">
+                <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Target</span>
+                <span className="text-sm font-black text-[var(--viz-cyan)] font-mono">{target}</span>
+             </div>
+             <button onClick={resetSimulation} className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-muted-foreground hover:text-foreground" title="Randomize Target"><RotateCcw size={18}/></button>
+             
+             {!isPlaying ? (
+                <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2.5 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
+                    <Play size={16} fill="currentColor"/> SCAN
                 </button>
-                <button 
-                    onClick={() => setIsPlaying(!isPlaying)} 
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-lg ${isPlaying ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-[var(--viz-cyan)] text-black hover:scale-105"}`}
-                >
-                    {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
-                    {isPlaying ? "Pause" : "Run"}
+             ) : (
+                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2.5 bg-white/10 text-foreground rounded-xl font-bold text-xs hover:bg-white/20 transition-all">
+                    <Pause size={16} fill="currentColor"/> HALT
                 </button>
-            </div>
-         </div>
+             )}
+          </div>
+        </div>
 
-         {/* --- The Visual Stage --- */}
-         <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center p-8 overflow-hidden">
+        {/* Visual Canvas */}
+        <div className="relative min-h-[450px] bg-muted/30 rounded-[3rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-12">
             
-            {/* Logic Badge */}
-            <div className="absolute top-6 left-6">
-                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${currentStep.phase === "FOUND" ? "bg-green-500/10 border-green-500/30 text-green-500" : "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)]/30 text-[var(--viz-cyan)]"}`}>
-                    <Zap size={12} fill="currentColor" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">{currentStep.phase}</span>
-                </div>
-            </div>
-
-            {/* Array Container */}
-            <div className="w-full max-w-[800px] h-[200px] flex items-end justify-center gap-1.5 md:gap-3 relative z-10">
+            <div className="relative flex items-center justify-center w-full h-full">
+                {/* Boundary Highlights */}
                 <AnimatePresence>
-                    {initialData.map((node) => {
-                        const isMid = node.index === currentStep.mid;
-                        const inRange = node.index >= currentStep.low && node.index <= currentStep.high;
-                        const isFound = currentStep.found && isMid;
-                        
+                    <motion.div 
+                        initial={false}
+                        animate={{ 
+                            x: (currentStep.activeRange[0] + currentStep.activeRange[1]) / 2 * UNIT_WIDTH - (data.length - 1) / 2 * UNIT_WIDTH,
+                            width: (currentStep.activeRange[1] - currentStep.activeRange[0] + 1) * UNIT_WIDTH,
+                            opacity: 1
+                        }}
+                        className="absolute h-24 bg-[var(--viz-cyan)]/5 border-x-2 border-dashed border-[var(--viz-cyan)]/20 rounded-2xl z-0"
+                    />
+                </AnimatePresence>
+
+                {/* Array Nodes */}
+                <div className="relative flex items-center justify-center z-10">
+                    {data.map((val, idx) => {
+                        const isMid = idx === currentStep.mid;
+                        const isFound = isMid && currentStep.found;
+                        const isActive = idx >= currentStep.activeRange[0] && idx <= currentStep.activeRange[1];
+                        const xPos = (idx - (data.length - 1) / 2) * UNIT_WIDTH;
+
                         return (
                             <motion.div
-                                key={node.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0 }}
+                                key={idx}
+                                initial={false}
                                 animate={{ 
-                                    opacity: inRange ? 1 : 0.2, 
-                                    scale: isMid ? 1.1 : 1,
-                                    height: `${getBarHeight(node.value)}%`
+                                    x: xPos,
+                                    scale: isMid ? 1.25 : 1,
+                                    opacity: isActive ? 1 : 0.15,
+                                    backgroundColor: isFound ? "var(--viz-green)" : isMid ? "var(--viz-cyan)" : "var(--card)",
+                                    borderColor: isFound ? "var(--viz-green)" : isMid ? "var(--viz-cyan)" : "var(--border)",
+                                    color: isMid ? "black" : "var(--foreground)",
+                                    boxShadow: isMid ? `0 0 30px rgba(var(--viz-cyan-rgb), 0.3)` : "none"
                                 }}
-                                className={`relative flex-1 min-w-[20px] max-w-[50px] rounded-t-lg border-x border-t transition-colors duration-300 flex flex-col justify-end items-center pb-2 group
-                                    ${isFound ? "bg-green-500/20 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]" : 
-                                      isMid ? "bg-[var(--viz-cyan)]/20 border-[var(--viz-cyan)] shadow-[0_0_20px_rgba(245,158,11,0.3)]" : 
-                                      inRange ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)]/40" : 
-                                      "bg-muted"}`}
+                                className="absolute w-12 h-12 border-2 rounded-xl flex items-center justify-center font-mono text-sm font-black shadow-lg"
                             >
-                                <span className={`text-[10px] md:text-xs font-bold font-mono ${isMid || isFound ? "text-white scale-125" : "text-muted-foreground"}`}>
-                                    {node.value}
-                                </span>
+                                {val}
+                                <div className="absolute -top-6 text-[8px] text-muted-foreground/30 font-mono font-bold uppercase">{idx}</div>
                                 
-                                {/* Index Label */}
-                                <div className="absolute -bottom-6 text-[8px] font-mono text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {node.index}
-                                </div>
-
-                                {/* Pointers */}
-                                {node.index === currentStep.low && (
-                                    <motion.div layoutId="ptr-l" className="absolute -bottom-8 flex flex-col items-center z-20">
-                                        <ArrowUp size={12} className="text-[var(--viz-cyan)]" />
-                                        <span className="text-[7px] font-black text-[var(--viz-cyan)]">L</span>
-                                    </motion.div>
-                                )}
-                                {node.index === currentStep.high && (
-                                    <motion.div layoutId="ptr-r" className="absolute -bottom-8 flex flex-col items-center z-20">
-                                        <ArrowUp size={12} className="text-[var(--viz-rose)]" />
-                                        <span className="text-[7px] font-black text-[var(--viz-rose)]">R</span>
-                                    </motion.div>
-                                )}
                                 {isMid && (
-                                    <motion.div layoutId="ptr-m" className="absolute -top-8 flex flex-col items-center z-20">
-                                        <span className="text-[7px] font-black text-[var(--viz-cyan)]">M</span>
-                                        <ArrowDown size={12} className="text-[var(--viz-cyan)]" />
+                                    <motion.div layoutId="ptr" className="absolute -bottom-10 flex flex-col items-center">
+                                        <ArrowDown size={14} className="text-[var(--viz-cyan)] mb-1" />
+                                        <span className="text-[8px] font-black text-[var(--viz-cyan)] uppercase tracking-tighter">Probe</span>
                                     </motion.div>
                                 )}
                             </motion.div>
                         );
                     })}
-                </AnimatePresence>
-            </div>
-
-            {/* Target Line Visual (Background Hint) */}
-            <motion.div 
-                className="absolute left-0 right-0 border-t border-dashed border-[var(--viz-cyan)]/20 z-0 flex items-center justify-end pr-4 pointer-events-none"
-                animate={{ bottom: `${getBarHeight(target)}%` }}
-            >
-                <span className="text-[8px] font-mono text-[var(--viz-cyan)]/50 bg-[var(--card)] px-1">TARGET Y-AXIS</span>
-            </motion.div>
-
-         </div>
-
-         {/* --- Info Footer --- */}
-         <div className="bg-[var(--card)] p-6 flex flex-col md:flex-row gap-8 items-center">
-            
-            <div className="flex-1 w-full space-y-4">
-                <div className="p-4 rounded-2xl bg-muted/30 flex items-center gap-4">
-                    <Activity size={18} className="text-muted-foreground" />
-                    <p className="font-mono text-sm leading-relaxed text-foreground/80 flex-1">
-                        <span className="text-[var(--viz-cyan)] mr-2">»</span>
-                        {currentStep.message}
-                    </p>
                 </div>
             </div>
 
-            <div className="flex gap-4 md:gap-8 text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[var(--viz-cyan)]" /> Low
+            {/* Explanation Toast */}
+            <AnimatePresence mode="wait">
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-10 w-full flex justify-center z-30 pointer-events-none">
+                    <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md border border-border shadow-2xl max-w-[400px] text-center">
+                        <p className="text-xs text-[var(--viz-amber)] font-mono font-medium tracking-tight uppercase">{currentStep.message}</p>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
+
+            {/* Metrics Overlay */}
+            <div className="absolute top-8 left-8 z-30 flex flex-col gap-4 pointer-events-none">
+                <div className="bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2 mb-3">
+                            <Activity size={12} /> Scan Log
+                    </span>
+                    <div className="flex flex-col gap-1.5 h-[120px] overflow-hidden">
+                        <AnimatePresence mode="popLayout">
+                            {currentStep.logs.map((log, i) => (
+                                <motion.div 
+                                    key={`${currentIndex}-${i}`}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="text-[9px] font-mono text-muted-foreground/70 leading-tight border-l-2 border-[var(--viz-cyan)]/20 pl-2"
+                                >
+                                    {log}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {/* Timeline Scrubber */}
+        <div className="mt-8 p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4 relative z-10 border border-border/50">
+            <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-3">
+                    <Hash size={14} className="text-[var(--viz-cyan)]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-mono">Iteration Sequence {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[var(--viz-cyan)]" /> Mid
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[var(--viz-rose)]" /> High
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
                 </div>
             </div>
 
-         </div>
+            <div className="relative flex items-center group/slider h-2">
+                <div className="absolute w-full h-1 bg-background/10 rounded-full" />
+                <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(88,196,221,0.4)] transition-all" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
+                <input 
+                    type="range" min="0" max={history.length - 1} value={currentIndex} 
+                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                    className="w-full h-6 opacity-0 cursor-pointer z-10"
+                />
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_15px_var(--viz-cyan)] pointer-events-none transition-all"
+                    style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 3px)` }}
+                />
+            </div>
+        </div>
+      </div>
 
-         {/* Progress Line */}
-         <div className="h-1 w-full bg-muted">
-             <motion.div 
-                className="h-full bg-[var(--viz-cyan)]" 
-                initial={{ width: 0 }}
-                animate={{ width: `${((currentIndex + 1) / history.length) * 100}%` }}
-             />
-         </div>
-
+      {/* Legend */}
+      <div className="px-10 py-6 bg-muted/10  rounded-[2.5rem] border border-border/20 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Pivot Pointer</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Optimal State</span></div>
       </div>
     </div>
   );

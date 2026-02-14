@@ -3,31 +3,61 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, MapPin, Cpu, Target, RefreshCw,
-  Plus, Trash2, Edit3, Move, X, Check
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, 
+  TrendingUp, Activity, MapPin, Cpu, RefreshCw,
+  Plus, Trash2, Edit3, Move, Check
 } from "lucide-react";
 
 const INF = 99;
 
 type Node = { id: number; x: number; y: number };
 
-interface DijkstraState {
+interface DijkstraStep {
   distances: number[];
   visited: Set<number>;
   activeNode: number | null;
-  activeEdge: string | null;
-  pq: { id: number; dist: number }[];
+  activeEdge: [number, number] | null;
+  relaxedEdges: Set<string>;
   message: string;
   step: string;
   logs: string[];
 }
 
 export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [matrix, setMatrix] = useState<number[][]>([]);
+  const [nodes, setNodes] = useState<Node[]>(() => {
+    const numNodes = 5;
+    const width = 800;
+    const height = 500;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 3.5;
+
+    const initialNodes: Node[] = [];
+    for (let i = 0; i < numNodes; i++) {
+      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
+      initialNodes.push({
+        id: i,
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle),
+      });
+    }
+    return initialNodes;
+  });
+  const [matrix, setMatrix] = useState<number[][]>(() => {
+    const numNodes = 5;
+    const newMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
+    for (let i = 0; i < numNodes; i++) {
+      for (let j = 0; j < numNodes; j++) {
+        if (i !== j && Math.random() < 0.4) {
+          newMatrix[i][j] = Math.floor(Math.random() * 9) + 1;
+        }
+      }
+    }
+    for (let i = 0; i < numNodes - 1; i++) {
+        if (newMatrix[i][i+1] === 0) newMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
+    }
+    return newMatrix;
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,14 +81,18 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
     return () => observer.disconnect();
   }, []);
 
-  const generateGraph = () => {
+  const resetSimulation = React.useCallback(() => {
     setIsPlaying(false);
     setCurrentIndex(0);
-    const numNodes = 6;
+  }, []);
+
+  const generateGraph = React.useCallback(() => {
+    resetSimulation();
+    const numNodes = 5;
     const { width, height } = dimensions;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 3;
+    const radius = Math.min(width, height) / 3.5;
 
     const newNodes: Node[] = [];
     for (let i = 0; i < numNodes; i++) {
@@ -73,30 +107,20 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
 
     const newMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
     for (let i = 0; i < numNodes; i++) {
-      for (let j = i + 1; j < numNodes; j++) {
-        if (Math.random() < 0.5) {
-          const weight = Math.floor(Math.random() * 9) + 1;
-          newMatrix[i][j] = weight;
-          newMatrix[j][i] = weight;
+      for (let j = 0; j < numNodes; j++) {
+        if (i !== j && Math.random() < 0.4) {
+          newMatrix[i][j] = Math.floor(Math.random() * 9) + 1;
         }
       }
     }
     for (let i = 0; i < numNodes - 1; i++) {
-        if (newMatrix[i][i+1] === 0) {
-            const weight = Math.floor(Math.random() * 5) + 1;
-            newMatrix[i][i+1] = weight;
-            newMatrix[i+1][i] = weight;
-        }
+        if (newMatrix[i][i+1] === 0) newMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
     }
     setMatrix(newMatrix);
-  };
+  }, [dimensions, resetSimulation]);
 
-  useEffect(() => {
-    if (dimensions.width > 0 && nodes.length === 0) generateGraph();
-  }, [dimensions.width]);
-
-  const addNode = () => {
-    if (nodes.length >= 12) return;
+  const addNode = React.useCallback(() => {
+    if (nodes.length >= 10) return;
     const newId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
     const { width, height } = dimensions;
     const newNode = {
@@ -117,15 +141,15 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
         return newMat;
     });
     resetSimulation();
-  };
+  }, [nodes, dimensions, resetSimulation]);
 
-  const clearGraph = () => {
+  const clearGraph = React.useCallback(() => {
     setNodes([]);
     setMatrix([]);
     resetSimulation();
-  };
+  }, [resetSimulation]);
 
-  const handleNodeClick = (id: number) => {
+  const handleNodeClick = React.useCallback((id: number) => {
     if (!isEditing) return;
     if (selectedNode === null) {
       setSelectedNode(id);
@@ -136,94 +160,96 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
       setMatrix(prev => {
           const newMat = prev.map(row => [...row]);
           const currentW = newMat[selectedNode][id];
-          const newW = currentW > 0 ? 0 : weight;
-          newMat[selectedNode][id] = newW;
-          newMat[id][selectedNode] = newW;
+          newMat[selectedNode][id] = currentW !== 0 ? 0 : weight;
           return newMat;
       });
       setSelectedNode(null);
       resetSimulation();
     }
-  };
+  }, [isEditing, selectedNode, resetSimulation]);
 
-  const updateNodePosition = (id: number, info: any) => {
+  const updateNodePosition = React.useCallback((id: number, info: { delta: { x: number, y: number } }) => {
     setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
-  };
-
-  const resetSimulation = () => {
-    setIsPlaying(false);
-    setCurrentIndex(0);
-  };
+  }, []);
 
   const history = useMemo(() => {
     if (nodes.length === 0) return [];
     
+    const V = nodes.length;
     const maxId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
-    const steps: DijkstraState[] = [];
-    let dist = Array(maxId).fill(INF);
-    let visited = new Set<number>();
+    const steps: DijkstraStep[] = [];
+    const dist = Array(maxId).fill(INF);
+    const visited = new Set<number>();
+    const relaxedEdges = new Set<string>();
     let currentLogs: string[] = [];
-    let activeNode: number | null = null;
-    let activeEdge: string | null = null;
-    let pq: { id: number; dist: number }[] = [];
-
-    const record = (msg: string, step: string) => {
+    
+    const record = (msg: string, step: string, activeNode: number | null = null, activeEdge: [number, number] | null = null) => {
       steps.push({
         distances: [...dist],
         visited: new Set(visited),
         activeNode,
         activeEdge,
-        pq: [...pq].sort((a, b) => a.dist - b.dist),
+        relaxedEdges: new Set(relaxedEdges),
         message: msg,
-        step: step,
+        step,
         logs: [...currentLogs]
       });
     };
 
+    const addLog = (l: string) => { currentLogs = [l, ...currentLogs]; };
+
     const startNode = nodes[0]?.id ?? 0;
     dist[startNode] = 0;
-    pq.push({ id: startNode, dist: 0 });
+    addLog(`Dijkstra Protocol Engaged. Source: Node ${startNode}.`);
+    record(`Initializing distances. Node ${startNode} priority set to 0.`, "INIT", startNode);
 
-    record(`Dijkstra protocol initiated. Source node ${startNode} added to Priority Queue.`, "INIT");
+    const V = nodes.length;
+    for (let count = 0; count < V; count++) {
+        let u = -1;
+        let minDist = INF;
+        for (let i = 0; i < maxId; i++) {
+            if (!visited.has(i) && dist[i] < minDist) {
+                minDist = dist[i];
+                u = i;
+            }
+        }
 
-    while (pq.length > 0) {
-        pq.sort((a, b) => a.dist - b.dist);
-        const { id: u, dist: d } = pq.shift()!;
-        if (d > dist[u]) continue;
+        if (u === -1) break;
 
-        activeNode = u;
         visited.add(u);
-        record(`Extracted node ${u} from the priority manifold.`, "MIN_EXTRACTION");
+        addLog(`Settled Node ${u} with minimal cost ${dist[u]}.`);
+        record(`Selecting unvisited node ${u} with smallest distance.`, "PICK_MIN", u);
 
         for (let v = 0; v < maxId; v++) {
-             if (!matrix[u] || matrix[u][v] === undefined) continue;
-             if (matrix[u][v] > 0) {
-                 const weight = matrix[u][v];
-                 activeEdge = `${Math.min(u, v)}-${Math.max(u, v)}`;
-                 record(`Probing neighbor ${v} via link {${u}, ${v}} (Weight: ${weight}).`, "NEIGHBOR_PROBE");
-
-                 if (dist[u] + weight < dist[v]) {
-                     dist[v] = dist[u] + weight;
-                     pq.push({ id: v, dist: dist[v] });
-                     record(`Relaxation successful. Updated distance for Node ${v} to ${dist[v]}.`, "RELAXATION");
-                 } else {
-                     record(`Path through ${u} is not shorter than existing ${dist[v]}.`, "NO_UPDATE");
-                 }
-             }
-             activeEdge = null;
+            const weight = matrix[u]?.[v] || 0;
+            if (weight > 0 && !visited.has(v)) {
+                record(`Evaluating neighbor ${v} of ${u}...`, "PROBE", u, [u, v]);
+                if (dist[u] + weight < dist[v]) {
+                    dist[v] = dist[u] + weight;
+                    relaxedEdges.add(`${u}-${v}`);
+                    addLog(`Relaxed path to ${v} via ${u}: New Cost ${dist[v]}.`);
+                    record(`Relaxation achieved! dist[${v}] updated to ${dist[v]}.`, "RELAX", u, [u, v]);
+                } else {
+                    record(`No update for ${v}. Path through ${u} (${dist[u]} + ${weight}) >= current ${dist[v] === INF ? "∞" : dist[v]}.`, "STABLE", u, [u, v]);
+                }
+            }
         }
-        activeNode = null;
-        record(`Node ${u} processing complete. Stabilized.`, "STABILIZED");
     }
 
-    record("Shortest path resolution complete.", "COMPLETE");
+    record("Optimal paths resolved. Dijkstra synthesis complete.", "COMPLETE");
     return steps;
   }, [nodes, matrix]);
 
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => prev >= history.length - 1 ? (setIsPlaying(false), prev) : prev + 1);
+        setCurrentIndex((prev) => {
+          if (prev >= history.length - 1) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
       }, speed);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -232,19 +258,28 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
   }, [isPlaying, history.length, speed]);
 
   const currentStep = history[currentIndex] || {
-    distances: [], visited: new Set(), activeNode: null, activeEdge: null,
-    pq: [], message: "Initializing...", step: "IDLE", logs: []
+    distances: [],
+    visited: new Set(),
+    activeNode: null,
+    activeEdge: null,
+    relaxedEdges: new Set(),
+    message: "Initializing...",
+    step: "IDLE",
+    logs: []
   };
 
-  const getLineCoords = (uIdx: number, vIdx: number) => {
-    const u = nodes.find(n => n.id === uIdx), v = nodes.find(n => n.id === vIdx);
-    if (!u || !v) return { x1: 0, y1: 0, x2: 0, y2: 0 };
-    const dx = v.x - u.x, dy = v.y - u.y, dist = Math.sqrt(dx*dx + dy*dy);
-    const radius = 24;
-    return {
-        x1: u.x + (dx / dist) * radius, y1: u.y + (dy / dist) * radius,
-        x2: v.x - (dx / dist) * radius, y2: v.y - (dy / dist) * radius
-    };
+  const getEdgeData = (uIdx: number, vIdx: number) => {
+    const u = nodes.find(n => n.id === uIdx);
+    const v = nodes.find(n => n.id === vIdx);
+    if (!u || !v) return null;
+    const dx = v.x - u.x, dy = v.y - u.y, d = Math.sqrt(dx*dx + dy*dy);
+    const ux = dx/d, uy = dy/d;
+    const hasOpposite = matrix[vIdx]?.[uIdx] !== 0;
+    const curve = hasOpposite ? 30 : 0;
+    const cpX = (u.x + v.x)/2 - uy * curve;
+    const cpY = (u.y + v.y)/2 + ux * curve;
+    const path = `M ${u.x + ux*20} ${u.y + uy*20} Q ${cpX} ${cpY} ${v.x - ux*25} ${v.y - uy*25}`;
+    return { path, cpX, cpY, ux, uy };
   };
 
   return (
@@ -255,12 +290,12 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
         
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-rose)]">
-              Dijkstra <span className="text-[var(--muted-foreground)]/40">Lemma Analyzer</span>
+            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
+              Dijkstra <span className="text-[var(--muted-foreground)]/40">Priority Mapper</span>
             </h2>
             <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[var(--viz-rose)] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--muted-foreground)]/30">Single-Source Shortest Path</p>
+               <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
+               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--muted-foreground)]/30">Shortest Path Synthesis</p>
             </div>
           </div>
 
@@ -287,15 +322,15 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
              {!isEditing && (
                 <>
                     <button onClick={generateGraph} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Randomize"><RefreshCw size={20}/></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Reset"><RotateCcw size={20}/></button>
+                    <button onClick={resetSimulation} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Reset"><RotateCcw size={20}/></button>
                     
                     {!isPlaying ? (
-                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-rose)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
-                            <Play size={16} fill="currentColor"/> EXECUTE
+                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
+                            <Play size={16} fill="currentColor"/> START
                         </button>
                     ) : (
                         <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-3 bg-[var(--muted)] text-[var(--foreground)] border border-[var(--border)] rounded-xl font-bold text-xs hover:bg-[var(--accent)] transition-all">
-                            <Pause size={16} fill="currentColor"/> HALT
+                            <Pause size={16} fill="currentColor"/> PAUSE
                         </button>
                     )}
                 </>
@@ -303,7 +338,7 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
           </div>
         </div>
 
-        <div className="relative min-h-[500px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair">
+        <div className="relative min-h-[520px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair">
             
             <div ref={containerRef} className="absolute inset-0 w-full h-full">
                 <AnimatePresence>
@@ -312,71 +347,52 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
                             <div className="px-4 py-2 bg-[var(--popover)] text-[var(--popover-foreground)] backdrop-blur-md rounded-full border border-[var(--border)] shadow-2xl flex items-center gap-3">
                                 <Move size={12} className="text-[var(--viz-amber)]" />
                                 <span className="text-[10px] font-bold tracking-wide">
-                                    {selectedNode !== null ? `Select target to link Node ${selectedNode}` : "Drag nodes • Click to Link"}
+                                    {selectedNode !== null ? `Target node for Edge ${selectedNode} → ...` : "Drag nodes • Click for Directed Edge"}
                                 </span>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                <div className="absolute top-6 right-6 z-30 flex flex-col gap-4 pointer-events-none max-w-[200px]">
+                <div className="absolute top-6 right-6 z-30 flex flex-col gap-4 pointer-events-none max-w-[220px]">
                     <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm">
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-3">
-                             <TrendingUp size={12} /> Distances
+                             <Activity size={12} /> Pipeline
+                        </span>
+                        <div className="space-y-2">
+                             <div className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider text-center ${currentStep.step === "PICK_MIN" ? "bg-[var(--viz-amber)]/10 border-[var(--viz-amber)]/30 text-[var(--viz-amber)]" : "bg-[var(--muted)] text-[var(--muted-foreground)]/30 border-transparent"}`}>
+                                Min Distance Select
+                             </div>
+                             <div className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider text-center ${currentStep.step === "RELAX" ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)]/30 text-[var(--viz-cyan)]" : "bg-[var(--muted)] text-[var(--muted-foreground)]/30 border-transparent"}`}>
+                                Edge Relaxation
+                             </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-3">
+                             <TrendingUp size={12} /> Distance Matrix
                         </span>
                         <div className="grid grid-cols-4 gap-2">
                              {nodes.map(n => {
                                  const d = currentStep.distances[n.id];
+                                 const isV = currentStep.visited.has(n.id);
+                                 const isA = currentStep.activeNode === n.id;
                                  return (
                                      <div key={n.id} className="flex flex-col items-center">
                                          <span className="text-[8px] text-[var(--muted-foreground)]/50 mb-0.5">{n.id}</span>
                                          <motion.div 
                                              layout
-                                             className={`w-8 h-8 rounded-lg border flex items-center justify-center font-mono text-[10px] font-bold transition-colors ${d !== INF && d !== undefined ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-[var(--border)] text-[var(--muted-foreground)]/30"}`}
+                                             className={`w-8 h-8 rounded-lg border flex items-center justify-center font-mono text-[10px] font-bold transition-colors ${isA ? "bg-[var(--viz-cyan)] border-[var(--viz-cyan)] text-black" : isV ? "bg-[var(--viz-green)]/10 border-[var(--viz-green)] text-[var(--viz-green)]" : d !== INF ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)] text-[var(--viz-cyan)]" : "border-[var(--border)] text-[var(--muted-foreground)]/30"}`}
                                          >
-                                             {d === INF || d === undefined ? "∞" : d}
+                                             {d === INF ? "∞" : d}
                                          </motion.div>
                                      </div>
                                  )
                              })}
                         </div>
                     </div>
-
-                    <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm flex flex-col max-h-[250px] overflow-hidden">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-3">
-                             <Activity size={12} /> Priority Queue
-                        </span>
-                        <div className="flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin pointer-events-auto">
-                            <AnimatePresence mode="popLayout">
-                                {currentStep.pq.map((item, i) => (
-                                    <motion.div
-                                        key={`${item.id}-${item.dist}-${i}`}
-                                        layout
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, scale: 0 }}
-                                        className="flex items-center justify-between px-3 py-2 rounded-lg border bg-[var(--background)]/50 border-[var(--border)]"
-                                    >
-                                        <span className="text-[10px] font-bold text-[var(--foreground)]">Node {item.id}</span>
-                                        <div className="px-1.5 py-0.5 rounded bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] text-[9px] font-black font-mono">
-                                            {item.dist}
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                            {currentStep.pq.length === 0 && <span className="text-[9px] italic text-[var(--muted-foreground)]/50 text-center">Empty</span>}
-                        </div>
-                    </div>
                 </div>
-
-                <AnimatePresence>
-                    {!isEditing && currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-rose)]/10 border border-[var(--viz-rose)]/30 rounded-full z-30 pointer-events-none">
-                            <Zap size={12} className="text-[var(--viz-rose)]" />
-                            <span className="text-[9px] font-black font-mono text-[var(--viz-rose)] uppercase tracking-[0.2em]">{currentStep.step}</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 <AnimatePresence mode="wait">
                     {!isEditing && (
@@ -388,53 +404,93 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
                     )}
                 </AnimatePresence>
 
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                        </marker>
+                    </defs>
+
                     {matrix.map((row, i) => 
                         row.map((weight, j) => {
-                            if (i >= j || weight === 0) return null;
-                            const { x1, y1, x2, y2 } = getLineCoords(i, j);
-                            const isH = currentStep.activeEdge === `${Math.min(i,j)}-${Math.max(i,j)}`;
+                            if (weight === 0) return null;
+                            const edgeInfo = getEdgeData(i, j);
+                            if (!edgeInfo) return null;
+                            const { path } = edgeInfo;
+                            
+                            const isActive = currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j;
+                            const isRelaxed = currentStep.relaxedEdges.has(`${i}-${j}`);
+
                             return (
-                                <React.Fragment key={`edge-${i}-${j}`}>
-                                    <motion.line
-                                        layout
-                                        x1={x1} y1={y1} x2={x2} y2={y2}
+                                <g key={`edge-path-${i}-${j}`}>
+                                    <motion.path
+                                        d={path}
+                                        fill="none"
                                         stroke="currentColor"
-                                        className={`${isH ? "text-[var(--viz-amber)]" : "text-[var(--muted-foreground)]/15"}`}
-                                        strokeWidth={isH ? 4 : 2}
-                                        initial={{ opacity: 0 }}
+                                        className={`${isActive ? "text-[var(--viz-cyan)]" : isRelaxed ? "text-[var(--viz-green)]/40" : "text-[var(--muted-foreground)]/15"}`}
+                                        strokeWidth={isActive ? 3 : 1.5}
+                                        markerEnd="url(#arrowhead)"
                                         animate={{ opacity: 1 }}
                                     />
-                                    <motion.g 
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        className="pointer-events-none"
+                                    {isActive && (
+                                        <motion.circle r="4" fill="var(--viz-cyan)">
+                                            <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
+                                        </motion.circle>
+                                    )}
+                                </g>
+                            );
+                        })
+                    )}
+
+                    {matrix.map((row, i) => 
+                        row.map((weight, j) => {
+                            if (weight === 0) return null;
+                            const edgeInfo = getEdgeData(i, j);
+                            if (!edgeInfo) return null;
+                            const { cpX, cpY } = edgeInfo;
+                            
+                            const isActive = currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j;
+
+                            return (
+                                <motion.g 
+                                    key={`edge-weight-${i}-${j}`}
+                                    animate={{ 
+                                        scale: isActive ? 1.3 : 1,
+                                    }}
+                                >
+                                    <circle 
+                                        cx={cpX} 
+                                        cy={cpY} 
+                                        r="12" 
+                                        fill="var(--viz-amber)" 
+                                        stroke="var(--background)" 
+                                        strokeWidth={isActive ? 2 : 0}
+                                        style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.2))" }}
+                                    />
+                                    <text 
+                                        x={cpX} 
+                                        y={cpY} 
+                                        dy="4" 
+                                        textAnchor="middle" 
+                                        fontSize="10" 
+                                        fontWeight="900" 
+                                        className="font-mono" 
+                                        fill="var(--background)"
                                     >
-                                        <circle cx={(x1+x2)/2} cy={(y1+y2)/2} r="11" fill="var(--background)" stroke="var(--border)" strokeWidth="1.5" />
-                                        <text 
-                                            x={(x1+x2)/2} 
-                                            y={(y1+y2)/2} 
-                                            dy="4" 
-                                            textAnchor="middle" 
-                                            fontSize="11" 
-                                            fontWeight="bold" 
-                                            fill="var(--foreground)"
-                                            className="font-mono"
-                                        >
-                                            {weight}
-                                        </text>
-                                    </motion.g>
-                                </React.Fragment>
+                                        {weight}
+                                    </text>
+                                </motion.g>
                             );
                         })
                     )}
                 </svg>
 
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full z-10">
                     {nodes.map(node => {
-                        const isV = currentStep.visited.has(node.id);
-                        const isA = currentStep.activeNode === node.id;
-                        const isS = node.id === 0;
+                        const d = currentStep.distances[node.id];
+                        const isVisited = currentStep.visited.has(node.id);
+                        const isActive = currentStep.activeNode === node.id || currentStep.activeEdge?.[1] === node.id;
+                        const isSource = node.id === (nodes[0]?.id ?? 0);
                         const isSelected = selectedNode === node.id;
 
                         return (
@@ -445,19 +501,18 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
                                 onDrag={(_, info) => updateNodePosition(node.id, info)}
                                 onClick={() => handleNodeClick(node.id)}
                                 animate={{ 
-                                    x: node.x - 20, 
-                                    y: node.y - 20,
-                                    backgroundColor: isSelected || isA ? "var(--viz-amber)" : isV ? "var(--viz-green)" : "var(--card)",
-                                    borderColor: isSelected || isA ? "var(--viz-amber)" : isV ? "var(--viz-green)" : "var(--border)",
-                                    scale: isA || isSelected ? 1.2 : 1,
-                                    boxShadow: isA || isSelected ? `0 0 30px rgba(var(--viz-gold-rgb), 0.3)` : isV ? `0 0 20px rgba(var(--viz-green-rgb), 0.2)` : "none"
+                                    x: node.x - 24, 
+                                    y: node.y - 24,
+                                    backgroundColor: isSelected ? "var(--viz-amber)" : isActive ? "var(--viz-cyan)" : isVisited ? "rgba(var(--viz-green-rgb), 0.1)" : "var(--card)",
+                                    borderColor: isSelected ? "var(--viz-amber)" : isActive ? "var(--viz-cyan)" : isVisited ? "var(--viz-green)" : "var(--border)",
+                                    scale: isActive || isSelected ? 1.15 : 1,
+                                    boxShadow: isActive ? `0 0 30px rgba(var(--viz-cyan-rgb), 0.2)` : "none"
                                 }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                className={`absolute w-10 h-10 border-2 rounded-full z-20 flex flex-col items-center justify-center font-mono shadow-lg ${isEditing ? "cursor-grab active:cursor-grabbing" : ""}`}
+                                className={`absolute w-12 h-12 border-2 rounded-full z-20 flex flex-col items-center justify-center font-mono shadow-xl transition-colors ${isEditing ? "cursor-grab active:cursor-grabbing" : ""}`}
                             >
-                                <span className={`text-xs font-black ${isA || isV || isSelected ? "text-[var(--background)]" : "text-[var(--foreground)]"}`}>{node.id}</span>
-                                {isS && !isEditing && <div className="absolute -top-6"><MapPin size={14} className="text-[var(--viz-rose)]" /></div>}
+                                <span className={`text-[10px] font-black mb-[-2px] ${isActive || isSelected ? "text-black" : "text-[var(--muted-foreground)]/40"}`}>{node.id}</span>
+                                <span className={`text-xs font-black ${isActive || isSelected ? "text-black" : 'text-[var(--foreground)]'}`}>{d === INF ? "∞" : d}</span>
+                                {isSource && !isEditing && <div className="absolute -top-6"><MapPin size={14} className="text-[var(--viz-rose)]" /></div>}
                             </motion.div>
                         );
                     })}
@@ -468,8 +523,8 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
         <div className={`mt-8 p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--viz-amber)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Temporal Frame {currentIndex + 1} of {history.length}</span>
+                    <Activity size={14} className="text-[var(--viz-rose)]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Synthesis Progress {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronLeft size={18} /></button>
@@ -479,13 +534,13 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-[var(--background)]/10 rounded-full" />
-                <div className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(var(--viz-rose-rgb), 0.3)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
+                <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(88,196,221,0.4)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={history.length - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
                     className="w-full h-6 opacity-0 cursor-pointer z-10"
                 />
-                <div className="absolute w-1.5 h-4 bg-[var(--viz-amber)] rounded-full shadow-[0_0_15px_rgba(var(--viz-gold-rgb), 0.5)] pointer-events-none transition-all"
+                <div className="absolute w-1.5 h-4 bg-[var(--foreground)] rounded-full shadow-[0_0_15px_rgba(255,255,255,0.3)] pointer-events-none transition-all"
                     style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 3px)` }}
                 />
             </div>
@@ -493,10 +548,10 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
       </div>
 
       <div className="px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Extraction</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Neighbor Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Stabilized Manifold</span></div>
-         <div className="flex items-center gap-3"><Target size={14} className="text-[var(--muted-foreground)]/20" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Priority Relaxation</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Optimal Node</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Priority Weight</span></div>
+         <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Path Synthesis</span></div>
       </div>
     </div>
   );

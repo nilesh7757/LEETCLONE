@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Settings, ArrowLeft, ExternalLink, Trash2 } from "lucide-react";
+import { Plus, ArrowLeft, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Problem {
@@ -25,7 +25,7 @@ interface Contest {
 
 export default function ManageContestClient({ contest }: { contest: Contest }) {
   // Use state for problems in case we add delete functionality later
-  const [problems, setProblems] = useState(contest.problems);
+  const [problems] = useState(contest.problems);
 
   return (
     <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">

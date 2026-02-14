@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, Calendar, User, Tag, Edit } from "lucide-react"; // Added Edit icon
+import { ArrowLeft, Calendar, User, Edit } from "lucide-react"; // Added Edit icon
 import { Metadata } from "next";
 import { auth } from "@/auth"; // Import auth for session
 
@@ -74,6 +74,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <article>
           {post.coverImage && (
             <div className="w-full h-64 md:h-96 relative mb-8 rounded-2xl overflow-hidden border border-[var(--card-border)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={post.coverImage} 
                 alt={post.title} 
@@ -104,6 +105,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden">
                         {post.author.image ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
                             <img src={post.author.image} alt={post.author.name || "Author"} className="w-full h-full object-cover" />
                         ) : (
                             <User className="w-full h-full p-2 text-[var(--foreground)]/40" />

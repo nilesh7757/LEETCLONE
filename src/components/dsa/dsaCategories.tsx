@@ -3,7 +3,7 @@ import {
   ArrowDownNarrowWide, Activity, Check, Search, Target, Microscope,
   GitBranch, Share2, Cpu, Network, Layers, GitMerge, RotateCcw, Zap,
   Database, Sliders, GitPullRequest, FastForward, Link, Infinity as InfinityIcon,
-  ShoppingBag, Route, MoveHorizontal, ListOrdered, ListTree, Crown, X,
+  ShoppingBag, Route, MoveHorizontal, ListTree, Crown,
   FileSearch, BoxSelect, Binary, Sparkles, Layout, Terminal, TrendingUp,
   AlertTriangle
 } from "lucide-react";
@@ -429,7 +429,7 @@ export const dsaCategories = [
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Prim's Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Prim&apos;s Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Use a Priority Queue to pick the smallest edge connected to the MST.
                     </p>
@@ -439,7 +439,7 @@ export const dsaCategories = [
                 </div>
                 
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Kruskal's Logic</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Kruskal&apos;s Logic</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Sort all edges, then use DSU (Disjoint Set Union) to merge components.
                     </p>
@@ -463,7 +463,7 @@ export const dsaCategories = [
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Greedy Pathfinding" icon={Target}>
-            <p>Dijkstra's Algorithm finds the <strong>Shortest Path</strong> from a source node to all other nodes in a weighted graph (with non-negative weights). It operates on the principle of <strong>Greedy Relaxation</strong>.</p>
+            <p>Dijkstra&apos;s Algorithm finds the <strong>Shortest Path</strong> from a source node to all other nodes in a weighted graph (with non-negative weights). It operates on the principle of <strong>Greedy Relaxation</strong>.</p>
             <p>At each step, we visit the unvisited node with the smallest known distance from the start, guaranteeing that its distance is final.</p>
           </DocSection>
           <div className="space-y-8">
@@ -566,8 +566,8 @@ q.pop(); // Removes 10`} />
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Partition Strategy" icon={Binary} color="var(--viz-rose)">
-            <p>Quick Sort is a <strong>Divide and Conquer</strong> algorithm driven by the <strong>Pivot Standard</strong>. It selects a 'pivot' element and partitions the array so that all smaller elements move to its left and larger ones to its right.</p>
-            <p>We visualize the <strong>Lomuto Partition Scheme</strong>, which is simpler to implement but may perform more swaps than Hoare's scheme. It iterates a single pointer to expand the 'smaller elements' region.</p>
+            <p>Quick Sort is a <strong>Divide and Conquer</strong> algorithm driven by the <strong>Pivot Standard</strong>. It selects a &apos;pivot&apos; element and partitions the array so that all smaller elements move to its left and larger ones to its right.</p>
+            <p>We visualize the <strong>Lomuto Partition Scheme</strong>, which is simpler to implement but may perform more swaps than Hoare&apos;s scheme. It iterates a single pointer to expand the &apos;smaller elements&apos; region.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N log N)" space="O(log N)" />
@@ -878,7 +878,7 @@ q.pop(); // Removes 10`} />
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Pattern Autocorrelation" icon={Microscope}>
-            <p>The Knuth-Morris-Pratt (KMP) algorithm optimizes pattern matching by exploiting the <strong>Self-Similarity</strong> of the pattern. When a mismatch occurs, we don't need to backtrack the text pointer; we only shift the pattern pointer.</p>
+            <p>The Knuth-Morris-Pratt (KMP) algorithm optimizes pattern matching by exploiting the <strong>Self-Similarity</strong> of the pattern. When a mismatch occurs, we don&apos;t need to backtrack the text pointer; we only shift the pattern pointer.</p>
             <p>This is achieved via the <strong>Prefix Function</strong> ($\\$pi$), which maps the length of the longest proper prefix that is also a suffix.</p>
           </DocSection>
           <div className="space-y-8">
@@ -1233,7 +1233,7 @@ q.pop(); // Removes 10`} />
             <div className="mt-12 p-8 bg-white/[0.03] border border-white/10 rounded-[2rem]">
                 <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Sparkles className="text-[var(--viz-amber)]" size={20} /> Handling Negative Cycles</h4>
                 <p className="text-sm text-white/60 leading-relaxed">
-                    Floyd-Warshall can detect <strong>Negative Weight Cycles</strong>. If after the algorithm finishes, any diagonal element `dist[i][i]` is less than 0, then a negative cycle exists that passes through node $i$. This is a unique advantage over Dijkstra's algorithm.
+                    Floyd-Warshall can detect <strong>Negative Weight Cycles</strong>. If after the algorithm finishes, any diagonal element `dist[i][i]` is less than 0, then a negative cycle exists that passes through node $i$. This is a unique advantage over Dijkstra&apos;s algorithm.
                 </p>
             </div>
         </div>
@@ -1306,7 +1306,7 @@ q.pop(); // Removes 10`} />
           <div className="space-y-8">
             <ComplexityCard time="O(V + E)" space="O(V)" />
             <DocSection title="Indegree Lemma" icon={ArrowDownNarrowWide} color="var(--viz-amber)">
-              <p>In Kahn's Algorithm, nodes with 0 indegree have no dependencies and can be processed immediately. Removing them potentially frees up their neighbors.</p>
+              <p>In Kahn&apos;s Algorithm, nodes with 0 indegree have no dependencies and can be processed immediately. Removing them potentially frees up their neighbors.</p>
             </DocSection>
           </div>
         </div>
@@ -1320,7 +1320,7 @@ q.pop(); // Removes 10`} />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Kahn's Algorithm (BFS)</h4>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Kahn&apos;s Algorithm (BFS)</h4>
                     <CodeSnippet code={`vector<int> kahn(int V, vector<vector<int>>& adj) {\n    vector<int> indegree(V, 0);
     for (int u = 0; u < V; u++)
         for (int v : adj[u]) indegree[v]++;

@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
       await axios.post("/api/auth/forgot-password", { email });
       setSent(true);
       toast.success("Reset link sent!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to send reset link.");
     } finally {
       setLoading(false);

@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu
+  Play, RotateCcw, Pause, Hash, 
+  Search, ChevronLeft, ChevronRight, Zap, GitBranch,
+  ArrowUp, Activity, Plus, Trash2, Cpu
 } from "lucide-react";
 
 // Professional Palette
@@ -55,7 +54,6 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
   const [history, setHistory] = useState<HistoryStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,10 +123,8 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
         record(workingRoot, `Allocated root manifold for value ${val}.`, "INIT_ROOT", workingRoot.id, 'found');
       } else {
         let curr = workingRoot;
-        let parent = null;
         while (curr) {
           record(workingRoot, `Evaluating node ${curr.value}.`, "TRAVERSE", curr.id);
-          parent = curr;
           if (val < curr.value) {
             record(workingRoot, `${val} < ${curr.value}: Descending LEFT manifold.`, "DESCEND_L", curr.id);
             if (!curr.left) {
@@ -185,17 +181,17 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
             if (val === curr.value) {
                 record(workingRoot, `Target ${val} isolated. Reconstructing manifold...`, "ISOLATED", curr.id, 'discarded');
                 // Basic deletion logic for state update
-                const deleteNode = (root: any, v: number): any => {
+                const deleteNode = (root: BSTNode | null, v: number): BSTNode | null => {
                     if (!root) return null;
                     if (v < root.value) root.left = deleteNode(root.left, v);
                     else if (v > root.value) root.right = deleteNode(root.right, v);
                     else {
                         if (!root.left) return root.right;
                         if (!root.right) return root.left;
-                        let min = root.right;
-                        while (min.left) min = min.left;
-                        root.value = min.value;
-                        root.right = deleteNode(root.right, min.value);
+                        let minNode = root.right;
+                        while (minNode.left) minNode = minNode.left;
+                        root.value = minNode.value;
+                        root.right = deleteNode(root.right, minNode.value);
                     }
                     return root;
                 };
@@ -247,10 +243,9 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
   }, [history, currentIndex, defaultNodes]);
 
   // --- Dynamic Fit-to-Screen Logic ---
-  useEffect(() => {
+  const viewTransform = useMemo(() => {
     if (currentStep.nodes.length === 0) {
-        setViewTransform({ x: 0, y: 0, scale: 1 });
-        return;
+        return { x: 0, y: 0, scale: 1 };
     }
 
     const PADDING = 80;
@@ -284,10 +279,6 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
     newScale = Math.min(Math.max(newScale, 0.1), 1.1);
 
     // Calculate Translation to Center
-    // We want the center of the tree (midX, midY) to align with the center of the container (dimW/2, dimH/2)
-    // Since we use transform-origin: 0 0, we need to shift:
-    // x = centerContainer - (minX * scale) - (treeWidth * scale) / 2
-    
     const treeCenterX = minX + treeWidth / 2;
     const treeCenterY = minY + treeHeight / 2;
     
@@ -297,7 +288,7 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
     const newX = containerCenterX - (treeCenterX * newScale);
     const newY = containerCenterY - (treeCenterY * newScale);
     
-    setViewTransform({ x: newX, y: newY, scale: newScale });
+    return { x: newX, y: newY, scale: newScale };
 
   }, [currentStep.nodes, dimensions]);
 

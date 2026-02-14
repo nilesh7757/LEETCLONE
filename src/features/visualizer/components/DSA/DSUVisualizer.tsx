@@ -4,13 +4,11 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   RotateCcw, Play, Pause, ChevronLeft, ChevronRight, 
-  Network, GitBranch, Zap, MousePointer2, CheckCircle2,
-  Settings2, Hash, Database, Cpu
+  Network, Hash, Database
 } from "lucide-react";
 
 // --- Constants & Config ---
 const NUM_NODES = 12;
-const ANIMATION_SPEED_MS = 800;
 
 // Manim-inspired Palette
 const COLORS = [
@@ -107,8 +105,8 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
     const steps: DSUState[] = [];
     
     // We work with mutable local copies for calculation, pushing snapshots to steps
-    let parent = [...latest.parent];
-    let rank = [...latest.rank];
+    const parent = [...latest.parent];
+    const rank = [...latest.rank];
     const edges = [...latest.edges, [u, v] as [number, number]];
 
     // Helper to push a snapshot
@@ -129,7 +127,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
 
     // 1. FIND U
     let currU = u;
-    let pathU = [u];
+    const pathU = [u];
     snapshot(`Find(${u}): Starting at node ${u}`, "FIND", [u], pathU);
     
     while (currU !== parent[currU]) {
@@ -141,13 +139,13 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
     
     // Path Compression U (Instant state update, visual step)
     if (pathU.length > 2) {
-       pathU.slice(0, -1).forEach(node => parent[node] = rootU);
+       pathU.slice(0, -1).forEach(node => { parent[node] = rootU; });
        snapshot(`Path Compression: Pointing nodes on path directly to root ${rootU}`, "COMPRESS", [u], pathU);
     }
 
     // 2. FIND V
     let currV = v;
-    let pathV = [v];
+    const pathV = [v];
     snapshot(`Find(${v}): Starting at node ${v}`, "FIND", [v], pathV);
 
     while (currV !== parent[currV]) {
@@ -159,7 +157,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
 
     // Path Compression V
     if (pathV.length > 2) {
-       pathV.slice(0, -1).forEach(node => parent[node] = rootV);
+       pathV.slice(0, -1).forEach(node => { parent[node] = rootV; });
        snapshot(`Path Compression: Pointing nodes on path directly to root ${rootV}`, "COMPRESS", [v], pathV);
     }
 
@@ -277,7 +275,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
     });
 
     return positions;
-  }, [currentStep?.parent]); // Add optional chaining
+  }, [currentStep]); // Fixed dependency
 
   // Helpers
   const getRoot = (i: number) => {

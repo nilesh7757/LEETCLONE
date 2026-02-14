@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Search, Info, 
-  ChevronLeft, ChevronRight, Zap, GitBranch, Layers, 
-  Cpu, Activity, Layout, Terminal, ListTree, MousePointer2,
-  ArrowDownCircle, ArrowUpCircle
+  Play, RotateCcw, Pause, Hash, 
+  ChevronLeft, ChevronRight, ListTree,
+  Layers, Cpu
 } from "lucide-react";
 
 // Professional Palette - High Fidelity
@@ -53,18 +52,7 @@ class TreeNode {
 }
 
 export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: number }) {
-  const [treeRoot, setTreeRoot] = useState<TreeNode | null>(null);
-  const [history, setHistory] = useState<TraversalStep[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [mode, setMode] = useState<'PRE' | 'IN' | 'POST'>('IN');
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
-
-  // Initialize standard balanced tree
-  useEffect(() => {
+  const [treeRoot] = useState<TreeNode>(() => {
     const root = new TreeNode(1);
     root.left = new TreeNode(2);
     root.right = new TreeNode(3);
@@ -72,8 +60,15 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
     root.left.right = new TreeNode(5);
     root.right.left = new TreeNode(6);
     root.right.right = new TreeNode(7);
-    setTreeRoot(root);
-  }, []);
+    return root;
+  });
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [mode, setMode] = useState<'PRE' | 'IN' | 'POST'>('IN');
+  
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
   // Responsive logic
   useEffect(() => {
@@ -94,23 +89,21 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
   const calculateLayout = React.useCallback((root: TreeNode | null) => {
     const visualNodes: VisualNode[] = [];
-    const traverse = (node: TreeNode | null, x: number, y: number, offset: number, parentId: string | null) => {
+    const traverseNodes = (node: TreeNode | null, x: number, y: number, offset: number, parentId: string | null) => {
       if (!node) return;
       visualNodes.push({ id: node.id, value: node.value, x, y, parentId, status: 'idle' });
       const nextOffset = offset * 0.5;
-      traverse(node.left, x - offset, y + 85, nextOffset, node.id);
-      traverse(node.right, x + offset, y + 85, nextOffset, node.id);
+      traverseNodes(node.left, x - offset, y + 85, nextOffset, node.id);
+      traverseNodes(node.right, x + offset, y + 85, nextOffset, node.id);
     };
-    traverse(root, dimensions.width / 2, 60, dimensions.width / 4, null);
+    traverseNodes(root, dimensions.width / 2, 60, dimensions.width / 4, null);
     return visualNodes;
   }, [dimensions.width]);
 
-  useEffect(() => {
-    if (!treeRoot) return;
-    generateTraversal(mode);
-  }, [treeRoot, mode, dimensions.width]);
-
-  const generateTraversal = (type: 'PRE' | 'IN' | 'POST') => {
+  // Algorithm Simulation
+  const history = useMemo(() => {
+    if (!treeRoot) return [];
+    
     const steps: TraversalStep[] = [];
     const baseNodes = calculateLayout(treeRoot);
     const resultOrder: number[] = [];
@@ -130,7 +123,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
             else if (resultOrder.includes(n.value)) s = 'processed';
             else if (stack.includes(n.value)) s = 'visiting';
             else s = 'idle';
-            return { ...n, status: s as any };
+            return { ...n, status: s };
         }),
         traversedOrder: [...resultOrder],
         stack: [...stack],
@@ -148,7 +141,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
       stack.push(node.value);
       
-      if (type === 'PRE') {
+      if (mode === 'PRE') {
         record(node, `PRE-ORDER: Root Priority. Node ${node.value} localized.`, "VISIT-ACTIVE", 'active', true);
       } else {
         record(node, `Descending into Node ${node.value}...`, "DESCEND", 'visiting');
@@ -156,23 +149,32 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
       traverse(node.left);
 
-      if (type === 'IN') {
+      if (mode === 'IN') {
         record(node, `IN-ORDER: Left branch resolved. Visiting Node ${node.value}.`, "VISIT-ACTIVE", 'active', true);
-      } else if (type === 'POST') {
+      } else if (mode === 'POST') {
         record(node, `Left and Right exploration continues from Node ${node.value}.`, "RECURSE", 'visiting');
       }
 
       traverse(node.right);
 
-      if (type === 'POST') {
+      if (mode === 'POST') {
         record(node, `POST-ORDER: Sub-manifolds resolved. Node ${node.value} mapped.`, "VISIT-ACTIVE", 'active', true);
       }
       
       stack.pop();
       if (stack.length > 0) {
         // Find parent to return to
-        const parent = baseNodes.find(n => n.value === stack[stack.length-1])!;
-        record(parent as any, `Ascending from Node ${node.value} to Node ${parent.value}.`, "ASCEND", 'visiting');
+        const parentId = stack[stack.length-1];
+        
+        const findTreeNode = (root: TreeNode | null, val: number): TreeNode | null => {
+            if (!root) return null;
+            if (root.value === val) return root;
+            return findTreeNode(root.left, val) || findTreeNode(root.right, val);
+        };
+        const actualParent = findTreeNode(treeRoot, parentId);
+        if (actualParent) {
+            record(actualParent, `Ascending from Node ${node.value} to Node ${actualParent.value}.`, "ASCEND", 'visiting');
+        }
       }
     };
 
@@ -189,10 +191,8 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       logs: ["Optimal Map Generated.", ...currentLogs].slice(0, 10)
     });
 
-    setHistory(steps);
-    setCurrentIndex(0);
-    setIsPlaying(false);
-  };
+    return steps;
+  }, [treeRoot, mode, calculateLayout, dimensions.width]);
 
   useEffect(() => {
     if (isPlaying) {

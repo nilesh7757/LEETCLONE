@@ -3,11 +3,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database,
-  ArrowDown, GitCommit, Split, X, Edit3, Check, GitMerge
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight,
+  Activity, X, Edit3, Check, GitMerge, Plus, Hash
 } from "lucide-react";
 
 // Professional Palette
@@ -42,17 +39,24 @@ interface HistoryStep {
 }
 
 export default function MergeSortVisualizer({ speed = 800 }: { speed?: number }) {
-  const [initialData, setInitialData] = useState<VisualNode[]>([]);
+  const [initialData, setInitialData] = useState<VisualNode[]>(() => {
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: `node-${Math.random().toString(36).substr(2, 9)}`,
+      value: Math.floor(Math.random() * 50) + 10,
+      logicalIndex: i,
+      level: 0,
+      group: 0
+    }));
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Initial Data
-  const generateArray = () => {
+  const generateArray = React.useCallback(() => {
     setIsPlaying(false);
     setCurrentIndex(0);
     const nodes = Array.from({ length: 8 }, (_, i) => ({
@@ -63,9 +67,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
       group: 0
     }));
     setInitialData(nodes);
-  };
-
-  useEffect(() => { generateArray(); }, []);
+  }, []);
 
   // --- Interactive Editing ---
   const addItem = () => {
@@ -97,7 +99,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
     if (initialData.length === 0) return [];
     
     const steps: HistoryStep[] = [];
-    let currentNodes = JSON.parse(JSON.stringify(initialData));
+    let currentNodesState = JSON.parse(JSON.stringify(initialData));
     let logs: string[] = [];
 
     const record = (
@@ -107,7 +109,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
         merging: [[number, number], [number, number]] | null = null
     ) => {
       steps.push({
-        nodes: JSON.parse(JSON.stringify(currentNodes)),
+        nodes: JSON.parse(JSON.stringify(currentNodesState)),
         activeRange: range,
         mergingRanges: merging,
         message: msg,
@@ -116,16 +118,47 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
       });
     };
 
-    const addLog = (l: string) => logs = [l, ...logs];
+    const addLog = (l: string) => { logs = [l, ...logs]; };
 
     addLog("Vector manifold initialized.");
     record("Ready for recursive decomposition.", "BOOT");
 
     // Helper to update node state in bulk
     const updateNodes = (indices: number[], updates: Partial<VisualNode>) => {
-        currentNodes = currentNodes.map((n: VisualNode) => 
+        currentNodesState = currentNodesState.map((n: VisualNode) => 
             indices.includes(n.logicalIndex) ? { ...n, ...updates } : n
         );
+    };
+
+    const mergeArrays = (l: number, m: number, r: number, level: number) => {
+        // Prepare for merge
+        addLog(`Merging [${l}, ${m}] and [${m+1}, ${r}].`);
+        record(`Merging sub-manifolds at depth ${level + 1}.`, "MERGE_START", [l, r], [[l, m], [m + 1, r]]);
+
+        // Perform Merge (Standard Logic)
+        const leftArr = currentNodesState.filter((n: VisualNode) => n.logicalIndex >= l && n.logicalIndex <= m);
+        const rightArr = currentNodesState.filter((n: VisualNode) => n.logicalIndex >= m + 1 && n.logicalIndex <= r);
+        
+        // Sort by value to simulate the result of the merge
+        const mergedArr = [...leftArr, ...rightArr].sort((a, b) => a.value - b.value);
+        
+        // re-assign logicalIndex based on sorted order
+        const newNodesState = [...currentNodesState];
+        
+        mergedArr.forEach((sortedItem: VisualNode, i: number) => {
+             const nodeIndex = newNodesState.findIndex(n => n.id === sortedItem.id);
+             if (nodeIndex !== -1) {
+                 newNodesState[nodeIndex] = {
+                     ...newNodesState[nodeIndex],
+                     logicalIndex: l + i,
+                     level: level, 
+                 };
+             }
+        });
+        currentNodesState = newNodesState;
+
+        addLog(`Range [${l}, ${r}] merged and sorted.`);
+        record(`Reconstruction complete for range [${l}, ${r}].`, "MERGE_END", [l, r]);
     };
 
     const mergeSort = (l: number, r: number, level: number, group: number) => {
@@ -146,55 +179,12 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
         mergeSort(l, m, level + 1, group * 2);
         mergeSort(m + 1, r, level + 1, group * 2 + 1);
         
-        merge(l, m, r, level);
-    };
-
-    const merge = (l: number, m: number, r: number, level: number) => {
-        // Prepare for merge
-        addLog(`Merging [${l}, ${m}] and [${m+1}, ${r}].`);
-        record(`Merging sub-manifolds at depth ${level + 1}.`, "MERGE_START", [l, r], [[l, m], [m + 1, r]]);
-
-        // Perform Merge (Standard Logic)
-        let leftArr = currentNodes.filter((n: VisualNode) => n.logicalIndex >= l && n.logicalIndex <= m);
-        let rightArr = currentNodes.filter((n: VisualNode) => n.logicalIndex >= m + 1 && n.logicalIndex <= r);
-        
-        // Sort by value to simulate the result of the merge
-        const mergedArr = [...leftArr, ...rightArr].sort((a, b) => a.value - b.value);
-        
-        // Update nodes to move back up to 'level' and correct positions
-        const indices = Array.from({length: r - l + 1}, (_, k) => l + k);
-        const originalIds = indices.map(idx => currentNodes.find((n: VisualNode) => n.logicalIndex === idx)?.id);
-        
-        // We need to map the sorted values back to the original logical positions [l...r]
-        // But visual nodes must maintain their identity (id) to animate correctly.
-        // So we swap the properties of the nodes at positions l...r to match the merged result.
-        
-        // Actually, easier: re-assign logicalIndex based on sorted order
-        const newNodesState = [...currentNodes];
-        
-        mergedArr.forEach((sortedItem: VisualNode, i: number) => {
-             // Find the node in the current state that matches sortedItem.id
-             const nodeIndex = newNodesState.findIndex(n => n.id === sortedItem.id);
-             if (nodeIndex !== -1) {
-                 newNodesState[nodeIndex] = {
-                     ...newNodesState[nodeIndex],
-                     logicalIndex: l + i,
-                     level: level, // Move back up
-                     // Keep group? Resetting group helps align them visually? 
-                     // Actually, just let them align by logicalIndex.
-                 };
-             }
-        });
-        currentNodes = newNodesState;
-
-        addLog(`Range [${l}, ${r}] merged and sorted.`);
-        record(`Reconstruction complete for range [${l}, ${r}].`, "MERGE_END", [l, r]);
+        mergeArrays(l, m, r, level);
     };
 
     mergeSort(0, initialData.length - 1, 0, 0);
     
-    // Final step: ensure all at level 0
-    currentNodes = currentNodes.map((n: VisualNode) => ({ ...n, level: 0 }));
+    currentNodesState = currentNodesState.map((n: VisualNode) => ({ ...n, level: 0 }));
     record("Recursion complete. Vector sorted.", "COMPLETE");
 
     return steps;
@@ -289,7 +279,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
             {/* Tree Structure */}
             <div className="relative w-full h-full flex items-center justify-center">
                 <AnimatePresence mode="popLayout">
-                    {currentStep.nodes.map((node, index) => {
+                    {currentStep.nodes.map((node) => {
                         const isInActiveRange = currentStep.activeRange && node.logicalIndex >= currentStep.activeRange[0] && node.logicalIndex <= currentStep.activeRange[1];
                         const isMerging = currentStep.mergingRanges && (
                             (node.logicalIndex >= currentStep.mergingRanges[0][0] && node.logicalIndex <= currentStep.mergingRanges[0][1]) || 
@@ -297,8 +287,6 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
                         );
                         const isSorted = currentStep.step === "COMPLETE";
 
-                        // Calculate X position: Center the array, spread by UNIT_WIDTH
-                        // Add some gap between groups if split
                         const xPos = (node.logicalIndex - (currentStep.nodes.length - 1) / 2) * UNIT_WIDTH;
                         const yPos = (node.level * LEVEL_HEIGHT) - 100;
 
@@ -386,7 +374,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
 
             <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 rounded-full shadow-[0_0_10px_rgba(88,196,221,0.3)]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%`, backgroundColor: MANIM_COLORS.blue }} />
+                <div className="absolute h-1 bg-[var(--viz-amber)] rounded-full shadow-[0_0_10px_rgba(var(--viz-blue-rgb), 0.3)]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
                 <input 
                     type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
                     onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}

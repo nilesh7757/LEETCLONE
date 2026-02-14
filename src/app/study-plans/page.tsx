@@ -1,9 +1,24 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { BookOpen, Trophy, ArrowRight, Layers, Plus, Lock, Globe } from "lucide-react";
+import { BookOpen, Trophy, ArrowRight, Layers, Plus, Lock } from "lucide-react";
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import { Mic } from "lucide-react";
+
+import Image from "next/image";
+
+interface StudyPlan {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  isPublic: boolean;
+  isOfficial: boolean;
+  coverImage?: string | null;
+  _count: {
+    problems: number;
+  };
+}
 
 export default async function StudyPlansPage() {
   const session = await auth();
@@ -136,7 +151,7 @@ export default async function StudyPlansPage() {
   );
 }
 
-function StudyPlanCard({ plan, userId }: { plan: any, userId?: string }) {
+function StudyPlanCard({ plan }: { plan: StudyPlan, userId?: string }) {
   const isPurple = !plan.isOfficial;
   const themeColor = isPurple ? "var(--viz-purple)" : "var(--viz-gold)";
   const themeRGB = isPurple ? "var(--viz-purple-rgb)" : "var(--viz-gold-rgb)";
@@ -161,7 +176,12 @@ function StudyPlanCard({ plan, userId }: { plan: any, userId?: string }) {
          )}
          
          {plan.coverImage ? (
-            <img src={plan.coverImage} alt={plan.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+            <Image 
+                src={plan.coverImage} 
+                alt={plan.title} 
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110" 
+            />
          ) : (
             <Trophy className="w-16 h-16 transition-all duration-500 text-[var(--muted-foreground)]/20 group-hover:scale-110" style={{ color: `rgba(${themeRGB}, 0.2)` }} />
          )}

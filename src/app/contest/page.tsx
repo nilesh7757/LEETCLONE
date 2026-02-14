@@ -8,9 +8,6 @@ import {
   Clock, 
   User, 
   Trophy, 
-  Calendar, 
-  Search, 
-  ArrowRight, 
   Loader2, 
   Target 
 } from "lucide-react";

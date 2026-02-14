@@ -7,17 +7,13 @@ import {
   Save, 
   Trash2, 
   GripVertical, 
-  Calendar, 
   Info, 
-  Lock, 
-  Globe,
+  Lock,
   Loader2,
   Clock,
   Sparkles,
   X,
-  Eye,
-  Code2,
-  Wand2
+  Eye
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -35,11 +31,21 @@ interface SelectedProblem {
   day: number;
 }
 
+interface ProblemInput {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+  category: string;
+  description?: string;
+  type?: string;
+}
+
 export default function CreateStudyPlanPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic] = useState(false);
   const [durationDays, setDurationDays] = useState(7);
   const [selectedProblems, setSelectedProblems] = useState<SelectedProblem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +53,7 @@ export default function CreateStudyPlanPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
 
-  const handleAddProblem = (problem: any) => {
+  const handleAddProblem = (problem: ProblemInput) => {
     setSelectedProblems([
       ...selectedProblems,
       {
@@ -75,8 +81,12 @@ export default function CreateStudyPlanPage() {
         handleAddProblem(data.problem);
         toast.success("AI Problem generated and added!");
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to generate AI problem.");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to generate AI problem.");
+      } else {
+        toast.error("Failed to generate AI problem.");
+      }
     } finally {
       setIsGeneratingAI(false);
     }
@@ -113,8 +123,12 @@ export default function CreateStudyPlanPage() {
       });
       toast.success("Study plan created successfully!");
       router.push("/study-plans");
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to create study plan.");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to create study plan.");
+      } else {
+        toast.error("Failed to create study plan.");
+      }
     } finally {
       setIsSubmitting(false);
     }

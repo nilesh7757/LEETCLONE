@@ -21,6 +21,16 @@ declare module "next-auth" {
   }
 }
 
+interface UserWithRole {
+  role?: string;
+  streak?: number;
+}
+
+interface SessionUpdate {
+  role?: string;
+  streak?: number;
+}
+
 export const authConfig = {
   pages: {
     signIn: "/login",
@@ -47,7 +57,7 @@ export const authConfig = {
       }
       return session;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       console.log("[AUTH] SignIn Attempt:", user.email);
       return true;
     },
@@ -77,8 +87,8 @@ export const authConfig = {
             }
         }
 
-        token.role = (user as any).role || "USER";
-        token.streak = (user as any).streak || 0;
+        token.role = (user as UserWithRole).role || "USER";
+        token.streak = (user as UserWithRole).streak || 0;
       }
 
       // If we don't have the role/streak yet, try to fetch from DB
@@ -103,11 +113,11 @@ export const authConfig = {
         if (session.name) token.name = session.name;
         if (session.image) token.picture = session.image;
         // If role could be updated from profile, handle it here as well
-        if ((session as any).role) { // Cast to any to access role
-            token.role = (session as any).role;
+        if ((session as SessionUpdate).role) {
+            token.role = (session as SessionUpdate).role;
         }
-        if ((session as any).streak !== undefined) {
-            token.streak = (session as any).streak;
+        if ((session as SessionUpdate).streak !== undefined) {
+            token.streak = (session as SessionUpdate).streak;
         }
       }
       return token;

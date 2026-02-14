@@ -12,23 +12,20 @@ import Image from "next/image";
 
 let socket: Socket;
 
-const BrushIcon = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M10,4 C10,2.8954305 10.8954305,2 12,2 C13.1045695,2 14,2.8954305 14,4 L14,10 L20,10 L20,14 L4,14 L4,10 L10,10 L10,4 Z M4,14 L20,14 L20,22 L12,22 L4,22 L4,14 Z M16,22 L16,16.3646005 M8,22 L8,16.3646005 M12,22 L12,16.3646005" />
-  </svg>
-);
+interface Notification {
+  id: string;
+  read: boolean;
+  message: string;
+  link?: string;
+  createdAt: string | Date;
+  sender?: {
+    image?: string;
+  };
+}
 
 export default function NotificationBell() {
   const { data: session } = useSession();
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -43,7 +40,7 @@ export default function NotificationBell() {
       try {
         const { data } = await axios.get("/api/notifications");
         setNotifications(data.notifications);
-        setUnreadCount(data.notifications.filter((n: any) => !n.read).length);
+        setUnreadCount(data.notifications.filter((n: Notification) => !n.read).length);
       } catch (error) {
         console.error("Failed to fetch notifications", error);
       }
@@ -60,7 +57,7 @@ export default function NotificationBell() {
       socket.emit("join_user", session.user.id);
     });
 
-    socket.on("notification_received", (newNotification) => {
+    socket.on("notification_received", (newNotification: Notification) => {
       setNotifications((prev) => [newNotification, ...prev]);
       setUnreadCount((prev) => prev + 1);
       toast.info(newNotification.message);

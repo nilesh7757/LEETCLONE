@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Info, 
-  ChevronRight, ChevronLeft, Activity, Cpu, Zap, TrendingUp,
-  BarChart2, Target
+  Play, RotateCcw, Pause, Hash, 
+  ChevronRight, ChevronLeft, Cpu, Zap, TrendingUp
 } from "lucide-react";
 
 // Consistency with other visualizers in the Academy of Algorithms
@@ -32,7 +31,14 @@ interface KadaneStep {
 }
 
 export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
-  const [initialData, setInitialData] = useState<number[]>([]);
+  const [initialData, setInitialData] = useState<number[]>(() => {
+    const arr = Array.from({ length: ARRAY_SIZE }, () => 
+      Math.floor(Math.random() * 30) - 12
+    );
+    if (!arr.some(n => n < 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = -15;
+    if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = 10;
+    return arr;
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,8 +55,6 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
     if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = 10;
     setInitialData(arr);
   };
-
-  useEffect(() => { generateArray(); }, []);
 
   const history = useMemo(() => {
     if (initialData.length === 0) return [];

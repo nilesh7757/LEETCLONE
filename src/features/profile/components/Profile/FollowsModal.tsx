@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+interface User {
+  id: string;
+  name: string;
+  image?: string | null;
+  rating?: number;
+}
+
 interface FollowsModalProps {
   userId: string;
   type: "followers" | "following";
@@ -12,13 +19,13 @@ interface FollowsModalProps {
 }
 
 export default function FollowsModal({ userId, type, onClose }: FollowsModalProps) {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const { data } = await axios.get(`/api/users/${userId}/follows?type=${type}`);
+        const { data } = await axios.get(`/api/users/${userId}/follows?type=\${type}`);
         setUsers(data.users);
       } catch (error) {
         console.error("Failed to load users", error);
@@ -45,10 +52,10 @@ export default function FollowsModal({ userId, type, onClose }: FollowsModalProp
             <div className="p-4 text-center text-[var(--foreground)]/60">No users found.</div>
           ) : (
             users.map((u) => (
-              <Link key={u.id} href={`/profile/${u.id}`} onClick={onClose} className="flex items-center gap-3 p-3 hover:bg-[var(--foreground)]/5 rounded-lg transition-colors">
+              <Link key={u.id} href={`/profile/\${u.id}`} onClick={onClose} className="flex items-center gap-3 p-3 hover:bg-[var(--foreground)]/5 rounded-lg transition-colors">
                 <div className="w-10 h-10 rounded-full bg-[var(--foreground)]/10 overflow-hidden shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     {u.image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={u.image} alt={u.name} className="w-full h-full object-cover" />
                     ) : (
                         <UserCircle className="w-full h-full p-1.5 text-[var(--foreground)]/40" />

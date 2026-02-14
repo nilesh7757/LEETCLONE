@@ -1,19 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Split from "react-split";
-import { Editor } from "@monaco-editor/react";
+import { Editor, Monaco } from "@monaco-editor/react";
+import type { editor } from "monaco-editor";
 import { 
-  Settings, RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, 
-  XCircle, AlertTriangle, AlertCircle, ChevronLeft, FileText, History, 
-  X, MessageSquare, Code2, Plus, Terminal, Loader2, Sparkles, 
-  Maximize2, Minimize2, Flame, Layout, Clock, Database, Braces, Check 
+  RotateCcw, Play, Send, ChevronUp, ChevronDown, CheckCircle, 
+  XCircle, ChevronLeft, FileText, History, 
+  X, Sparkles, 
+  Minimize2, Flame, Terminal, Braces, Check, Loader2, Code2, Plus 
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import NotificationBell from "@/components/ui/NotificationBell";
 import { toast } from "sonner";
 import axios from "axios";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,7 +23,6 @@ import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { languages, getStarterCode } from "@/lib/starterCode";
 import GeminiChat from "@/features/ai/components/GeminiChat";
-import BlueprintModal from "@/features/problems/components/Blueprint/BlueprintModal";
 
 interface TestCase {
   input: string | object;
@@ -46,6 +46,12 @@ interface Submission {
   code: string;
 }
 
+interface Blueprint {
+  id: string;
+  type: string;
+  data: unknown;
+}
+
 interface Problem {
   id: string;
   title: string;
@@ -62,7 +68,7 @@ interface Problem {
   creatorId?: string | null;
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
   pattern?: string | null;
-  blueprint?: any[] | null;
+  blueprint?: Blueprint[] | null;
 }
 
 interface WorkspaceClientProps {
@@ -73,7 +79,17 @@ interface WorkspaceClientProps {
 }
 
 interface SessionUser {
+  id: string;
   streak?: number;
+}
+
+interface MonacoMarker {
+  startLineNumber: number;
+  startColumn: number;
+  endLineNumber: number;
+  endColumn: number;
+  message: string;
+  severity: number;
 }
 
 export default function WorkspaceClient({ problem, examples }: WorkspaceClientProps) {
@@ -96,20 +112,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [isLangOpen, setIsLangOpen] = useState(false);
   
-  // Layout State
-  const [_editorConsoleSizes, setEditorConsoleSizes] = useState<number[]>([60, 40]);
-
   // Collab & Socket
-  const [collabRoomId] = useState<string | null>(null);
   const collabSocketRef = useRef<Socket | null>(null);
   const isRemoteUpdate = useRef(false);
-  const editorRef = useRef<any>(null);
-  const monacoRef = useRef<any>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null); 
+  const monacoRef = useRef<Monaco | null>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
 
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const { resolvedTheme } = useTheme();
-  const { update } = useSession();
   const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
   const _contestId = searchParams.get("contestId");
@@ -128,7 +139,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     
     // Clear Markers when language changes
     if (monacoRef.current && editorRef.current) {
-       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel()!, "api-feedback", []);
     }
 
     if (saved) {
@@ -158,14 +169,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- Handlers ---
-
   // --- Helper: Parse Error Lines ---
   const parseAndSetMarkers = useCallback((errorMsg: string) => {
      if (!monacoRef.current || !editorRef.current) return;
      
      const model = editorRef.current.getModel();
-     const markers: any[] = [];
+     if (!model) return;
+     const markers: MonacoMarker[] = [];
      const lines = errorMsg.split('\n');
      
      // Smarter Regex: Captures Line and Column
@@ -197,7 +207,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                  endLineNumber: lineNumber,
                  endColumn: model.getLineMaxColumn(lineNumber),
                  message: line.trim(),
-                 severity: monacoRef.current.MarkerSeverity.Error
+                 severity: monacoRef.current!.MarkerSeverity.Error
               });
            }
         }
@@ -214,7 +224,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     
     // Clear previous markers
     if (monacoRef.current && editorRef.current) {
-       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel()!, "api-feedback", []);
     }
     
     try {
@@ -228,7 +238,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         code,
         type: problem.type,
         language,
-        testCases: sanitizedTestCases
+        testCases: sanitizedTestCases,
+        contestId: _contestId
       });
       
       setResults(data.results);
@@ -244,9 +255,9 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
       } else {
         toast.success("Finished");
       }
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        toast.error("Execution Error: " + (e.response?.data?.error || e.message));
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast.error("Execution Error: " + (err.response?.data?.error || err.message));
       } else {
         toast.error("Execution Error");
       }
@@ -277,9 +288,9 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             if (compError && compError.error) {
                 parseAndSetMarkers(compError.error);
             } else {
-                monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+                monacoRef.current.editor.setModelMarkers(editorRef.current.getModel()!, "api-feedback", []);
             }
-         } catch (e) { /* ignore silent background failures */ }
+         } catch { /* ignore silent background failures */ }
       }
     }, 1200); // 1.2s debounce
 
@@ -290,7 +301,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     try {
       const { data } = await axios.get(`/api/submission?problemId=${problem.id}`);
       setSubmissions(data.submissions);
-    } catch (e) { console.error(e); }
+    } catch (err) { console.error(err); }
   }, [problem.id]);
 
   useEffect(() => {
@@ -325,8 +336,9 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
            }]);
         }
       }
-    } catch (e) {
+    } catch (err) {
       toast.error("Submission failed");
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -405,15 +417,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         {/* === LEFT PANEL: Description & Tabs === */}
         <div className="flex flex-col h-full bg-[var(--card)]/20 border-r border-[var(--border)]">
            <div className="flex items-center gap-1 px-2 border-b border-[var(--border)] bg-[var(--background)]/50 shrink-0">
-              {[
+              {([
                  { id: 'description', label: 'Description', icon: FileText },
                  { id: 'submissions', label: 'Submissions', icon: History },
                  { id: 'solutions', label: 'Solutions', icon: Braces },
                  { id: 'ai', label: 'AI Helper', icon: Sparkles },
-              ].map(t => (
+              ] as const).map(t => (
                  <button
                     key={t.id}
-                    onClick={() => setActiveTab(t.id as any)}
+                    onClick={() => setActiveTab(t.id)}
                     className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium border-b-2 transition-all ${
                        activeTab === t.id 
                        ? "border-[var(--viz-blue)] text-[var(--foreground)]" 
@@ -505,7 +517,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
               sizes={consoleOpen ? [60, 40] : [100, 0]}
               minSize={consoleOpen ? 100 : 0}
               gutterSize={consoleOpen ? 6 : 0}
-              onDragEnd={(sizes) => setEditorConsoleSizes(sizes)}
               className="flex-1 flex flex-col h-full"
            >
               {/* --- EDITOR AREA --- */}
@@ -566,11 +577,11 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                               
                                               // Clear Error Markers on Edit
                                               if (monacoRef.current && editorRef.current) {
-                                                 monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), "api-feedback", []);
+                                                 monacoRef.current.editor.setModelMarkers(editorRef.current.getModel()!, "api-feedback", []);
                                               }
                     
-                                              if (!isRemoteUpdate.current && collabSocketRef.current && collabRoomId) {
-                                                 collabSocketRef.current.emit("code_update", { roomId: collabRoomId, code: newCode, language });
+                                              if (!isRemoteUpdate.current && collabSocketRef.current) {
+                                                 collabSocketRef.current.emit("code_update", { roomId: "temp", code: newCode, language });
                                               }
                                            }}                       options={{
                           minimap: { enabled: false },
@@ -636,13 +647,14 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                        {consoleTab === 'testcase' ? (
                           <div className="space-y-4">
                              <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar pb-2">
-                                {localTestCases.map((_, i) => (
+                                {localTestCases.map((_, i) => {
+                                   return (
                                    <button 
                                       key={i} 
                                       onClick={() => setActiveTestCaseId(i)}
                                       className={`relative px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border ${
                                          activeTestCaseId === i 
-                                         ? "bg-[var(--card)] border-[var(--viz-cyan)] text-[var(--foreground)] shadow-md" 
+                                         ? "bg-[var(--card)] border-[var(--border)] text-[var(--foreground)] shadow-md" 
                                          : "bg-transparent border-transparent text-[var(--muted-foreground)] hover:bg-[var(--foreground)]/5"
                                       }`}
                                    >
@@ -662,7 +674,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                          </span>
                                       )}
                                    </button>
-                                ))}
+                                   );
+                                })}
                                 <button 
                                    onClick={handleAddTestCase}
                                    className="px-3 py-2 rounded-lg text-xs font-medium text-[var(--foreground)] hover:bg-[var(--foreground)]/10 transition-colors border border-dashed border-[var(--border)] flex items-center gap-1"
@@ -690,7 +703,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                    </div>
                                    <div className="space-y-1.5">
                                       <label className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest ml-1">Expected Output (Optional)</label>
-                                       <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-[var(--viz-green)]/50 transition-all">
+                                       <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl focus-within:ring-1 focus-within:ring-[var(--viz-green)]/50 transition-all">
                                          <textarea 
                                             className="w-full bg-transparent p-3 text-xs font-mono text-[var(--foreground)]/80 outline-none resize-none min-h-[60px]"
                                             value={typeof localTestCases[activeTestCaseId].expectedOutput === 'object' ? JSON.stringify(localTestCases[activeTestCaseId].expectedOutput, null, 2) : localTestCases[activeTestCaseId].expectedOutput}
@@ -719,10 +732,9 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                    <div className="flex flex-col gap-1">
                                       {(() => {
                                          const currentResult = results[activeTestCaseId];
-                                         const globalError = results.find((r: any) => r.status === "Compilation Error" || r.status === "Runtime Error");
+                                         const globalError = results.find((r: Result) => r.status === "Compilation Error" || r.status === "Runtime Error");
                                          const displayStatus = currentResult?.status || globalError?.status || "Execution Failed";
                                          const isSuccess = displayStatus === 'Accepted';
-                                         const isError = displayStatus !== 'Accepted';
 
                                          return (
                                             <>
@@ -747,8 +759,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                       {localTestCases.map((_, i) => {
                                          const res = results[i];
                                          // If global error (like compilation), mark all as error
-                                         const isGlobalError = results.some((r: any) => r.status === "Compilation Error");
-                                         const status = isGlobalError ? "Compilation Error" : (res?.status || "Unknown");
+                                         const isGlobalError = results.some((r: Result) => r.status === "Compilation Error");
+                                         const caseStatus = isGlobalError ? "Compilation Error" : (res?.status || "Unknown");
                                          
                                          return (
                                             <button 
@@ -760,7 +772,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                                   : "bg-transparent border-transparent text-[var(--muted-foreground)] hover:bg-[var(--foreground)]/5"
                                                }`}
                                             >
-                                               <div className={`w-2 h-2 rounded-full ${status === 'Accepted' ? "bg-[var(--viz-green)] shadow-[0_0_8px_var(--viz-green)]" : "bg-[var(--viz-red)] shadow-[0_0_8px_var(--viz-red)]"}`} />
+                                               <div className={`w-2 h-2 rounded-full ${caseStatus === 'Accepted' ? "bg-[var(--viz-green)] shadow-[0_0_8px_var(--viz-green)]" : "bg-[var(--viz-red)] shadow-[0_0_8px_var(--viz-red)]"}`} />
                                                Case {i + 1}
                                             </button>
                                          );
@@ -774,7 +786,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                       // 2. If Compilation Error, show that error (usually in first result or all)
                                       // 3. Fallback "Not Run" state
                                       const currentResult = results[activeTestCaseId];
-                                      const globalError = results.find((r: any) => r.status === "Compilation Error");
+                                      const globalError = results.find((r: Result) => r.status === "Compilation Error");
                                       const resultToDisplay = currentResult || globalError;
 
                                       if (!resultToDisplay) return <div className="text-xs text-[var(--muted-foreground)]">Result pending or not returned for this case.</div>;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, ArrowRight, Code2, Sparkles, Lock, Flame } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, ArrowRight, Code2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Problem {

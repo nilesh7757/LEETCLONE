@@ -2,13 +2,19 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Sparkles, Loader2, AlertCircle, ArrowRight, BrainCircuit, CheckCircle, BookOpen } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Loader2, BrainCircuit, CheckCircle, BookOpen } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+interface AIAnalysis {
+  weakness: string;
+  analysis: string;
+  recommendedTopic: string;
+}
+
 export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: string }) {
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
@@ -48,12 +54,12 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
     setIsLoading(true);
     try {
       const url = studyPlanId 
-        ? `/api/study-plans/analyze-weakness?studyPlanId=${studyPlanId}`
+        ? `/api/study-plans/analyze-weakness?studyPlanId=\${studyPlanId}`
         : "/api/study-plans/analyze-weakness";
       const { data } = await axios.get(url);
       setAnalysis(data);
-    } catch (error: any) {
-      if (error.response?.status === 429) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
         const end = Date.now() + (60 * 1000);
         localStorage.setItem("gemini_cooldown_end", end.toString());
         setCooldown(60);
@@ -78,10 +84,10 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
       
       if (data.success) {
         toast.success("Problem generated and added to your plan!");
-        router.push(`/problems/${data.problem.slug}?edit=true`);
+        router.push(`/problems/\${data.problem.slug}?edit=true`);
       }
-    } catch (error: any) {
-      if (error.response?.status === 429) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
         const end = Date.now() + (60 * 1000);
         localStorage.setItem("gemini_cooldown_end", end.toString());
         setCooldown(60);
@@ -103,9 +109,10 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
       });
       if (data.success) {
         toast.success("Study Plan Created! Taking you there...");
-        router.push(`/study-plans/${data.plan.slug}`);
+        router.push(`/study-plans/\${data.plan.slug}`);
       }
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to generate study plan.");
     } finally {
       setIsGeneratingPlan(false);
@@ -142,9 +149,6 @@ export default function AIWeaknessAnalysis({ studyPlanId }: { studyPlanId?: stri
        </button>
     </div>
   );
-
-  // No longer returning null here as we now provide a default 'Starting Out' analysis from the API
-  // if (analysis.weakness === "No data yet") return null;
 
   return (
     <motion.div 

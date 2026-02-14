@@ -102,6 +102,16 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
   throw new AIError("AI service unavailable.", 500);
 }
 
+interface TestCase {
+  input: string;
+  expectedOutput: string;
+}
+
+interface GenerativeMessage {
+  role: "user" | "model";
+  parts: { text: string }[];
+}
+
 export async function auditAndAnalyze(
   code: string, 
   language: string, 
@@ -134,8 +144,8 @@ export async function auditAndAnalyze(
     const response = await runAI(prompt, "You are a precise technical reviewer.", true);
     const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson);
-  } catch (e) {
-    console.error("Audit/Analyze Error:", e);
+  } catch (error) {
+    logger.error("Audit/Analyze Error:", error);
     return { 
       passed: true, 
       feedback: "Analysis partially skipped due to service error.",
@@ -171,8 +181,8 @@ export async function auditSolution(
     const response = await runAI(prompt, "You are a strict algorithm auditor.", true);
     const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson);
-  } catch (e) {
-    console.error("Audit Error:", e);
+  } catch (error) {
+    logger.error("Audit Error:", error);
     return { passed: true, feedback: "Audit skipped due to service error." };
   }
 }
@@ -184,8 +194,8 @@ export async function analyzeCodeComplexity(code: string, language: string): Pro
     const response = await runAI(prompt, "You are a complexity analyzer. Be precise.", true);
     const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson);
-  } catch (e) {
-    console.error("Complexity Error:", e);
+  } catch (error) {
+    logger.error("Complexity Error:", error);
     return { timeComplexity: "N/A", spaceComplexity: "N/A" };
   }
 }
@@ -197,13 +207,14 @@ export async function evaluateSystemDesign(question: string, answer: string): Pr
     const response = await runAI(prompt, "You are a Senior Staff Engineer conducting an interview.", true);
     const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson);
-  } catch (e) {
+  } catch (error) {
+    logger.error("System Design Evaluation Error:", error);
     return { feedback: "Evaluation currently unavailable.", score: 0 };
   }
 }
 
 export async function chatWithAI(
-  messages: { role: "user" | "model"; parts: { text: string }[] }[],
+  messages: GenerativeMessage[],
   context: { 
     problemTitle: string; 
     problemDescription: string; 
@@ -211,7 +222,7 @@ export async function chatWithAI(
     language: string;
     isInterviewMode?: boolean;
     isPeriodicQuestion?: boolean;
-    testCases?: any[];
+    testCases?: TestCase[];
   }
 ): Promise<string> {
   if (!GEMINI_API_KEY && !GROQ_API_KEY) {
@@ -274,7 +285,7 @@ export async function chatWithAI(
 }
 
 export async function chatWithAIStream(
-  messages: { role: "user" | "model"; parts: { text: string }[] }[],
+  messages: GenerativeMessage[],
   context: { 
     problemTitle: string; 
     problemDescription: string; 
@@ -282,7 +293,7 @@ export async function chatWithAIStream(
     language: string;
     isInterviewMode?: boolean;
     isPeriodicQuestion?: boolean;
-    testCases?: any[];
+    testCases?: TestCase[];
   }
 ) {
   if (!genAI) {
@@ -341,7 +352,7 @@ export async function chatWithAIStream(
 
   // Gemini history MUST start with 'user' and alternate roles.
   // We filter out any leading 'model' messages and ensure strict alternation.
-  const history: any[] = [];
+  const history: GenerativeMessage[] = [];
   let lastRole = "";
 
   for (const m of messages.slice(0, -1)) {

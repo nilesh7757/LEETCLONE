@@ -2,15 +2,32 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, ThumbsUp, ThumbsDown, Reply, CornerDownRight } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Reply } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
-import axios from "axios";
 import TiptapEditor from "@/features/editor/components/TiptapEditor";
 import Link from "next/link";
 
+interface Vote {
+  userId: string;
+  type: "UP" | "DOWN";
+}
+
+interface User {
+  id: string;
+  name: string | null;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: string | Date;
+  user: User | null;
+  votes: Vote[];
+  children?: Comment[];
+}
+
 interface CommentItemProps {
-  comment: any;
+  comment: Comment;
   problemId: string;
   depth?: number;
   onReply: (parentId: string, content: string) => Promise<void>;
@@ -24,11 +41,11 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Calculate votes
-  const upvotes = comment.votes.filter((v: any) => v.type === "UP").length;
-  const downvotes = comment.votes.filter((v: any) => v.type === "DOWN").length;
+  const upvotes = comment.votes.filter((v: Vote) => v.type === "UP").length;
+  const downvotes = comment.votes.filter((v: Vote) => v.type === "DOWN").length;
   const score = upvotes - downvotes;
   
-  const userVote = comment.votes.find((v: any) => v.userId === session?.user?.id);
+  const userVote = comment.votes.find((v: Vote) => v.userId === (session?.user as { id: string })?.id);
 
   const handleReplySubmit = async () => {
     if (!replyContent.trim()) return;
@@ -37,19 +54,19 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
       await onReply(comment.id, replyContent);
       setIsReplying(false);
       setReplyContent("");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className={`flex flex-col gap-2 ${depth > 0 ? "ml-4 pl-4 border-l border-[var(--card-border)]" : ""}`}>
+    <div className={`flex flex-col gap-2 \${depth > 0 ? "ml-4 pl-4 border-l border-[var(--card-border)]" : ""}`}>
       {/* Comment Header */}
       <div className="flex items-center gap-2 text-sm text-[var(--foreground)]/60">
         {comment.user?.id ? (
-          <Link href={`/profile/${comment.user.id}`} className="font-semibold text-[var(--foreground)] hover:underline hover:text-[var(--accent-gradient-to)] transition-colors">
+          <Link href={`/profile/\${comment.user.id}`} className="font-semibold text-[var(--foreground)] hover:underline hover:text-[var(--accent-gradient-to)] transition-colors">
             {comment.user.name}
           </Link>
         ) : (
@@ -119,7 +136,7 @@ export default function CommentItem({ comment, problemId, depth = 0, onReply, on
       {/* Nested Replies */}
       {comment.children && comment.children.length > 0 && (
         <div className="mt-2">
-          {comment.children.map((child: any) => (
+          {comment.children.map((child: Comment) => (
             <CommentItem 
               key={child.id} 
               comment={child} 

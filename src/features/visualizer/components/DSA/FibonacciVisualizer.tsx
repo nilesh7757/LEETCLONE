@@ -3,21 +3,15 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database
+  Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, Zap, 
+  ArrowUp, Activity, Cpu, TrendingUp
 } from "lucide-react";
 
 // Professional Palette
 const MANIM_COLORS = { 
-  text: "var(--foreground)", 
-  background: "var(--card)",
   blue: "var(--viz-cyan)",
   green: "var(--viz-deep-purple)",
-  gold: "var(--viz-deep-purple)",
-  red: "var(--viz-rose)",
-  purple: "var(--viz-purple)"
+  gold: "var(--viz-deep-purple)"
 };
 
 interface FibStep {
@@ -31,16 +25,15 @@ interface FibStep {
 
 export default function FibonacciVisualizer({ speed = 800 }: { speed?: number }) {
   const [n, setN] = useState(10);
-  const [history, setHistory] = useState<FibStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Pre-compute Tabulation
-  useEffect(() => {
+  const history = useMemo(() => {
     const steps: FibStep[] = [];
-    let dp = new Array(n + 1).fill(null);
+    const dp = new Array(n + 1).fill(null);
     let logs: string[] = [];
 
     const record = (msg: string, step: string, curr: number, deps: number[]) => {
@@ -54,7 +47,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
       });
     };
 
-    const addLog = (l: string) => logs = [l, ...logs];
+    const addLog = (l: string) => { logs = [l, ...logs]; };
 
     addLog("Initializing DP tabulation manifold.");
     record("Awaiting base case injection.", "BOOT", -1, []);
@@ -73,7 +66,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
     for (let i = 2; i <= n; i++) {
         addLog(`Synthesizing state dp[${i}].`);
         record(`Evaluating recurrence for index ${i}.`, "SYNTHESIZE", i, [i-1, i-2]);
-        dp[i] = dp[i-1] + dp[i-2];
+        dp[i] = (dp[i-1] as number) + (dp[i-2] as number);
         addLog(`Result resolved: ${dp[i-1]} + ${dp[i-2]} = ${dp[i]}.`);
         record(`Manifold stabilized at index ${i}. State committed.`, "COMMIT", i, [i-1, i-2]);
     }
@@ -81,8 +74,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
     addLog("Global resolution complete.");
     record(`Sequence fully stabilized. F(${n}) = ${dp[n]}.`, "COMPLETE", n, []);
 
-    setHistory(steps);
-    setCurrentIndex(0);
+    return steps;
   }, [n]);
 
   // Playback Control
@@ -103,14 +95,16 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = history[currentIndex] || { 
-    dp: new Array(n + 1).fill(null), 
-    message: "Initializing...", 
-    step: "IDLE", 
-    currentIndex: -1, 
-    dependencies: [], 
-    logs: [] 
-  };
+  const currentStep = useMemo(() => {
+    return history[currentIndex] || { 
+        dp: new Array(n + 1).fill(null), 
+        message: "Initializing...", 
+        step: "IDLE", 
+        currentIndex: -1, 
+        dependencies: [], 
+        logs: [] 
+    };
+  }, [history, currentIndex, n]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -136,7 +130,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                 <span className="text-[9px] font-black font-mono text-muted-foreground/20 uppercase">Target (N)</span>
                 <input 
                     type="number" value={n} 
-                    onChange={e => setN(Math.max(1, Math.min(15, parseInt(e.target.value)||1)))}
+                    onChange={e => { setN(Math.max(1, Math.min(15, parseInt(e.target.value)||1))); setCurrentIndex(0); setIsPlaying(false); }}
                     className="w-10 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-deep-purple)] focus:outline-none"
                 />
             </div>
@@ -194,7 +188,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                                     animate={{ 
                                         scale: isA ? 1.2 : isD ? 1.1 : 1,
                                         backgroundColor: isA ? MANIM_COLORS.gold : isD ? `${MANIM_COLORS.blue}15` : isS ? `${MANIM_COLORS.green}10` : "var(--card)",
-                                        borderColor: isA ? MANIM_COLORS.gold : isD ? MANIM_COLORS.blue : isS ? MANIM_COLORS.green : "var(--border)",
+                                        borderColor: isA ? MANIM_COLORS.gold : isD ? MANIM_COLORS.blue : isS ? "var(--viz-deep-purple)" : "var(--border)",
                                         boxShadow: isA ? `0 0 30px ${MANIM_COLORS.gold}44` : isD ? `0 0 20px ${MANIM_COLORS.blue}22` : "none"
                                     }}
                                     transition={{ type: "spring", stiffness: 150, damping: 25 }}
@@ -223,7 +217,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                         <AnimatePresence>
                             {currentStep.logs.map((log, i) => (
                                 <motion.div
-                                    key={`log-${i}`}
+                                    key={`log-${currentIndex}-${i}`}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"

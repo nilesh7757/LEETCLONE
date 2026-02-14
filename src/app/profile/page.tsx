@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   UserCircle, Mail, LogOut, Globe, Camera, Save, Loader2, 
-  TrendingUp, Calendar, ShieldCheck, AlertTriangle, Ban, 
-  CheckCircle, Award, X, Sparkles, Zap, Hash, Target, PenTool 
+  TrendingUp, Calendar, 
+  CheckCircle, Award, X, Sparkles, Zap, Target 
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -17,7 +17,10 @@ import { useTheme } from "next-themes";
 
 import Image from "next/image";
 
-const ActivityCalendar = dynamic<any>(() => import("react-activity-calendar").then(mod => (mod as any).ActivityCalendar || (mod as any).default), { ssr: false });
+const ActivityCalendar = dynamic(() => import("react-activity-calendar").then(mod => {
+  const m = mod as unknown as { ActivityCalendar: React.ComponentType<unknown>; default: React.ComponentType<unknown> };
+  return m.ActivityCalendar || m.default;
+}), { ssr: false });
 
 interface RatingHistory {
   date: string;
@@ -181,9 +184,6 @@ export default function ProfilePage() {
     return null;
   }
 
-  const warnings = stats?.user?.warnings || 0;
-  const isBanned = stats?.user?.isBanned || false;
-  
   // Rank Logic
   const rating = stats?.user?.rating || 1500;
   let rankColor = "var(--muted-foreground)";
@@ -529,7 +529,7 @@ export default function ProfilePage() {
                                         stroke: activity.count > 0 ? `rgba(var(--viz-purple-rgb), 0.5)` : 'transparent',
                                         strokeWidth: 1
                                     }
-                                } as any)
+                                } as React.Attributes)
                             )}
                         />
                     ) : (

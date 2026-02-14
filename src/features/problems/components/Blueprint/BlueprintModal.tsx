@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle, XCircle, ArrowRight, BrainCircuit, Lightbulb, Loader2, Send } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -40,9 +40,9 @@ export default function BlueprintModal({ problemTitle, problemDescription, onCom
       } else {
         toast.error("Logic needs improvement.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Judging error:", error);
-      if (error.response?.status === 429) {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
         toast.error("AI Quota reached. Please wait 60s.");
       } else {
         toast.error("Failed to judge logic. Please try again.");

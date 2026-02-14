@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database
+  Play, RotateCcw, Pause, Hash, 
+  ChevronLeft, ChevronRight, Zap, 
+  ArrowUp, 
+  TrendingUp, Activity, Plus, Trash2, Database
 } from "lucide-react";
 
 // Professional Palette
@@ -85,7 +85,7 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
     setIsPlaying(false);
     const steps: HistoryStep[] = [];
     let currentLogs: string[] = [];
-    let currentHeap = [...heapData];
+    const currentHeap = [...heapData];
 
     const record = (msg: string, step: string, highlights: number[] = [], swaps: number[] = []) => {
       steps.push({

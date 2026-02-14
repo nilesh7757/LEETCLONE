@@ -43,7 +43,7 @@ export default function InterviewConfigPage() {
       try {
         const { data } = await axios.get("/api/interview/history");
         setHistory(data.history);
-      } catch (_error) {
+      } catch {
         console.error("Failed to load history");
       } finally {
         setIsLoadingHistory(false);
@@ -59,7 +59,7 @@ export default function InterviewConfigPage() {
     try {
       const { data } = await axios.post("/api/interview/generate", { topic, difficulty });
       router.push(`/interview/${data.interview.id}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to start interview.");
     } finally {
       setIsGenerating(false);

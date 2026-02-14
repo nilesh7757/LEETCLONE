@@ -12,7 +12,7 @@ interface WorkspaceProps {
 interface Blueprint {
   id: string;
   type: string;
-  data: any;
+  data: unknown;
 }
 
 interface ProblemData {

@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { toast } from "sonner";
 import Split from "react-split";
-import Editor from "@monaco-editor/react";
+import Editor, { Monaco } from "@monaco-editor/react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { PlusCircle, Trash2, Code, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, AlertCircle, RotateCcw, Settings, Play, Zap } from "lucide-react";
+import { PlusCircle, Trash2, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, AlertCircle, RotateCcw, Settings, Play } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
 
@@ -53,14 +52,12 @@ const difficulties = ["Easy", "Medium", "Hard"];
 const categories = ["Arrays", "Strings", "Trees", "Graphs", "Dynamic Programming", "Other"];
 
 export default function ProblemForm({ initialData, onSubmit, isEditing = false, contestId }: ProblemFormProps) {
-  const { data: session } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingEditorial, setIsGeneratingEditorial] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
   const [activeTab, setActiveTab] = useState<"details" | "editorial" | "sql_setup">("details"); // Added sql_setup tab
-  const editorConsoleSplitRef = useRef<any>(null);
-  const [syntaxError, setSyntaxError] = useState<string | null>(null); // Declare syntaxError
+  const [syntaxError] = useState<string | null>(null); // Declare syntaxError
 
   // Language Dropdown State
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -82,7 +79,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleEditorWillMount = (monaco: any) => {
+  const handleEditorWillMount = (monaco: Monaco) => {
     monaco.editor.defineTheme('cream', {
       base: 'vs',
       inherit: true,
@@ -187,9 +184,13 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       });
       setValue("editorial", data.editorial);
       toast.success("Editorial generated successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Editorial generation error:", error);
-      toast.error(error.response?.data?.error || "Failed to generate editorial.");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to generate editorial.");
+      } else {
+        toast.error("Failed to generate editorial.");
+      }
     } finally {
       setIsGeneratingEditorial(false);
     }
@@ -236,7 +237,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
           disabled={isSubmitting}
           className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-white bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-[var(--viz-cyan)]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 cursor-pointer"
         >
-          {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isEditing ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+          {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : isEditing ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
           {isEditing ? "Push Changes" : "Establish Module"}
         </button>
       </div>
@@ -281,7 +282,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
           <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar relative">
             {activeTab === 'details' ? (
-              <form className="space-y-10">
+              <div className="space-y-10">
                 {/* Problem Title */}
                 <div className="space-y-2">
                   <label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
@@ -551,7 +552,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                     )}
                   </div>
                 </div>
-              </form>
+              </div>
             ) : activeTab === 'sql_setup' ? (
               // SQL Setup Tab
               <div className="space-y-10 h-full flex flex-col">
@@ -596,7 +597,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                     disabled={isGeneratingEditorial || !isEditing}
                     className="px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] bg-purple-600 text-white rounded-[1.5rem] hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 transition-all shadow-xl shadow-purple-600/20 active:scale-95"
                   >
-                    {isGeneratingEditorial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    {isGeneratingEditorial ? <Loader2 size={16} className="animate-spin" /> : <Wand2 className="w-4 h-4" />}
                     Generate Synthesis
                   </button>
                 </div>
@@ -681,6 +682,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                 )}
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
                     title="Reset Code"
                     onClick={() => setValue("referenceSolution", getStarterCode(problemType === "SQL" ? "sql" : language) || "")}
@@ -688,6 +690,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                     <RotateCcw className="w-4 h-4" />
                   </button>
                   <button
+                    type="button"
                     className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
                     title="Settings"
                   >
@@ -754,7 +757,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
 
           {/* Bottom section of right panel: Test Case Editors */}
           <div className="flex flex-col h-full bg-[var(--card)]/5 min-h-0 overflow-y-auto p-8 space-y-8 custom-scrollbar relative">
-            {(problemType as any) === "SYSTEM_DESIGN" ? (
+            {problemType === "SYSTEM_DESIGN" ? (
                <div className="flex flex-col items-center justify-center h-full text-[var(--muted-foreground)] text-center p-8 opacity-40">
                   <LayoutTemplate className="w-12 h-12 mb-4 stroke-1" />
                   <p className="text-[10px] font-black uppercase tracking-[0.2em]">Architecture Assessment Mode</p>
@@ -791,8 +794,12 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                     toast.success("Oracle signal received!");
                                  }
                               }
-                           } catch (e: any) {
-                              toast.error("Oracle Failure: " + e.message);
+                           } catch (e: unknown) {
+                              if (axios.isAxiosError(e)) {
+                                toast.error("Oracle Failure: " + e.message);
+                              } else {
+                                toast.error("Oracle Failure");
+                              }
                            } finally {
                               toast.dismiss(loadingToast);
                            }
@@ -831,7 +838,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                   control={control}
                                   rules={{
                                     validate: (value) => {
-                                       if ((problemType as any) === "SYSTEM_DESIGN") return true;
+                                       if (problemType === "SYSTEM_DESIGN") return true;
                                        if (value.length === 0) return "At least one example test case is required";
                                        if (value.some(tc => !tc.input.trim() || !tc.output.trim())) return "Input and Output cannot be blank for example test cases.";
                                        return true;
@@ -857,7 +864,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
                                                 control={control}
                                                 rules={{
                                                   validate: (value) => {
-                                                    if ((problemType as any) === "SYSTEM_DESIGN") return true;
+                                                    if (problemType === "SYSTEM_DESIGN") return true;
                                                     return value.length > 0 || "At least one hidden test case is required";
                                                   }
                                                 }}
@@ -898,17 +905,4 @@ function generateSlug(title: string): string {
     .replace(/[^\w\s-]/g, "") // Remove non-word chars
     .replace(/[\s_-]+/g, "-") // Replace spaces/underscores with single dash
     .replace(/^-+|-+$/g, ""); // Remove dashes from start/end
-}
-
-function Loader() {
-  return (
-    <div className="flex items-center justify-center space-x-2 text-[var(--foreground)]">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        className="w-4 h-4 border-2 border-[var(--foreground)]/50 border-t-[var(--foreground)] rounded-full"
-      />
-      <span>Loading...</span>
-    </div>
-  );
 }

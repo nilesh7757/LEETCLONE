@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import LoginWall from "@/features/auth/components/Login/Wall";
 

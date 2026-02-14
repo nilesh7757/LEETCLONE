@@ -5,8 +5,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Search, ChevronRight } from "lucide-react";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
+interface DSACategory {
+  id: string;
+  title: string;
+  themeColor: string;
+  themeRGB: string;
+  component: (speed: number) => React.ReactNode;
+  detailedDocs?: React.ReactNode;
+}
+
 interface DSAMainContentProps {
-  selectedCategory: any;
+  selectedCategory: DSACategory;
   animationSpeed: number;
 }
 

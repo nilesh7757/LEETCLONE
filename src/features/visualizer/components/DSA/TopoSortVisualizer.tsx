@@ -3,11 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database,
-  ArrowRight, ArrowDown, Type, Shuffle, ListOrdered
+  Play, RotateCcw, Pause, Hash, 
+  ChevronLeft, ChevronRight, 
+  Shuffle, ListOrdered, Zap, Activity, Layers, Network
 } from "lucide-react";
 
 // Professional Palette
@@ -38,32 +36,15 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
   const [edges, setEdges] = useState<[number, number][]>([
     [0, 2], [0, 3], [1, 3], [1, 4], [2, 5], [3, 5], [4, 5]
   ]);
-  const [history, setHistory] = useState<TopoStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
 
-  // Coordinate Sync
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        setDimensions({
-          width: entries[0].contentRect.width,
-          height: entries[0].contentRect.height
-        });
-      }
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
+  const labels = useMemo(() => ["A", "B", "C", "D", "E", "F"], []);
 
-  const labels = ["A", "B", "C", "D", "E", "F"];
-
-  const generateRandomEdges = () => {
+  const generateRandomEdges = React.useCallback(() => {
     setIsPlaying(false);
     const newEdges: [number, number][] = [];
     for (let i = 0; i < NUM_NODES; i++) {
@@ -73,13 +54,13 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
     }
     if (newEdges.length === 0) newEdges.push([0, 1], [1, 2], [2, 3]);
     setEdges(newEdges);
-  };
+  }, []);
 
   // Algorithm Simulation
-  useEffect(() => {
+  const history = useMemo(() => {
     const steps: TopoStep[] = [];
     let logs: string[] = [];
-    let inDegree = new Array(NUM_NODES).fill(0);
+    const inDegree = new Array(NUM_NODES).fill(0);
     const adj: number[][] = Array.from({ length: NUM_NODES }, () => []);
 
     for (const [u, v] of edges) {
@@ -100,12 +81,12 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
       });
     };
 
-    const addLog = (l: string) => logs = [l, ...logs];
+    const addLog = (l: string) => { logs = [l, ...logs]; };
 
     addLog("Dependency manifold initialized.");
     record("Calculating in-degrees for all nodes.", "BOOT", null, null, [], []);
 
-    let q: number[] = [];
+    const q: number[] = [];
     for (let i = 0; i < NUM_NODES; i++) {
         if (inDegree[i] === 0) {
             q.push(i);
@@ -114,7 +95,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
         }
     }
 
-    let res: number[] = [];
+    const res: number[] = [];
     while (q.length > 0) {
         const u = q.shift()!;
         res.push(u);
@@ -135,9 +116,8 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
     addLog("Topological resolution complete.");
     record("Global sequence fully resolved.", "COMPLETE", null, null, [], res);
 
-    setHistory(steps);
-    setCurrentIndex(0);
-  }, [edges]);
+    return steps;
+  }, [edges, labels]);
 
   // Playback Control
   useEffect(() => {

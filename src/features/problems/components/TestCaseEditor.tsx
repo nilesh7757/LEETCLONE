@@ -2,20 +2,20 @@
 
 import { useState, useRef } from "react";
 import { PlusCircle, Trash2, Upload, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
-import { useFieldArray, Control, UseFormRegister } from "react-hook-form";
+import { useFieldArray, Control, UseFormRegister, FieldValues, Path, FieldArray } from "react-hook-form";
 
 interface TestCase {
   input: string;
   output: string;
 }
 
-interface TestCaseEditorProps {
-  name: string;
+interface TestCaseEditorProps<T extends FieldValues> {
+  name: Path<T>;
   label: string;
   showOutputs?: boolean;
   hideInput?: boolean;
-  control: Control<any>;
-  register: UseFormRegister<any>;
+  control: Control<T>;
+  register: UseFormRegister<T>;
 }
 
 const BulkImportModal = ({
@@ -55,8 +55,12 @@ const BulkImportModal = ({
       onImport(cases);
       onClose();
       setTextContent("");
-    } catch (err: any) {
-      setError(err.message || "Failed to parse test cases.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to parse test cases.");
+      }
     }
   };
 
@@ -69,12 +73,12 @@ const BulkImportModal = ({
       try {
         const json = JSON.parse(trimmed);
         if (Array.isArray(json)) {
-          return json.map((item: any) => ({
-            input: typeof item.input === "string" ? item.input : JSON.stringify(item.input),
+          return json.map((item: { input?: unknown; output?: unknown }) => ({
+            input: typeof item.input === "string" ? item.input : JSON.stringify(item.input || ""),
             output: typeof item.output === "string" ? item.output : JSON.stringify(item.output || ""),
           }));
         }
-      } catch (e) {
+      } catch {
         // Not valid JSON, fall through to text parsing
       }
     }
@@ -222,14 +226,14 @@ const BulkImportModal = ({
   );
 };
 
-const TestCaseEditor = ({
+const TestCaseEditor = <T extends FieldValues>({
   name,
   label,
   showOutputs = true,
   hideInput = false,
   control,
   register,
-}: TestCaseEditorProps) => {
+}: TestCaseEditorProps<T>) => {
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const { fields, append, remove } = useFieldArray({
     control,
@@ -237,11 +241,11 @@ const TestCaseEditor = ({
   });
 
   const handleAddTestCase = () => {
-    append({ input: "", output: "" });
+    append({ input: "", output: "" } as unknown as FieldArray<T, Path<T>>);
   };
 
   const handleBulkImport = (cases: TestCase[]) => {
-    append(cases);
+    append(cases as unknown as FieldArray<T, Path<T>>[]);
   };
 
   return (
@@ -297,12 +301,12 @@ const TestCaseEditor = ({
             <div className={`grid grid-cols-1 ${showOutputs && !hideInput ? "md:grid-cols-2" : ""} gap-6`}>
               {!hideInput && (
                 <div className="space-y-2">
-                  <label htmlFor={`${name}.${index}.input`} className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  <label htmlFor={`${name}.\${index}.input`} className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
                     Input Buffer {index + 1}
                   </label>
                   <textarea
-                    id={`${name}.${index}.input`}
-                    {...register(`${name}.${index}.input`, { required: true })}
+                    id={`${name}.\${index}.input`}
+                    {...register(`${name}.\${index}.input` as Path<T>, { required: true })}
                     rows={3}
                     className="w-full p-4 font-mono text-xs rounded-2xl bg-[var(--background)] border border-transparent focus:border-[var(--viz-cyan)]/20 text-[var(--foreground)] outline-none resize-none transition-all shadow-inner"
                     placeholder="nums = [2,7,11,15], target = 9"
@@ -311,12 +315,12 @@ const TestCaseEditor = ({
               )}
               {showOutputs && (
                 <div className="space-y-2">
-                  <label htmlFor={`${name}.${index}.output`} className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
+                  <label htmlFor={`${name}.\${index}.output`} className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">
                     Target Output {index + 1}
                   </label>
                   <textarea
-                    id={`${name}.${index}.output`}
-                    {...register(`${name}.${index}.output`, { required: true })}
+                    id={`${name}.\${index}.output`}
+                    {...register(`${name}.\${index}.output` as Path<T>, { required: true })}
                     rows={3}
                     className="w-full p-4 font-mono text-xs rounded-2xl bg-[var(--background)] border border-transparent focus:border-[var(--viz-cyan)]/20 text-[var(--foreground)] outline-none resize-none transition-all shadow-inner"
                     placeholder="[0,1]"

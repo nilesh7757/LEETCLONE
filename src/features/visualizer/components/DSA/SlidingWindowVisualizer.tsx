@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Sparkles, Hash, Link as LinkIcon, 
-  Search, Info, ChevronLeft, ChevronRight, Zap, GitBranch,
-  Layers, ArrowUp, MousePointer2, Network, Share2, StepForward,
-  TrendingUp, Activity, Layout, Plus, Trash2, Cpu, Database,
-  ArrowRight, ArrowDown, Type, Maximize, ShieldAlert
+  Play, RotateCcw, Pause, Hash, 
+  Zap, 
+  Activity, Database,
+  ArrowDown, Type, Maximize, ShieldAlert, ChevronLeft, ChevronRight
 } from "lucide-react";
 
 // Professional Palette
@@ -40,18 +39,12 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
   // Coordinate Sync
   useEffect(() => {
     if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        setDimensions({
-          width: entries[0].contentRect.width,
-          height: entries[0].contentRect.height
-        });
-      }
+    const observer = new ResizeObserver(() => {
+      // Logic for resize if needed
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
@@ -62,7 +55,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
     const chars = inputString.split("");
     const steps: WindowStep[] = [];
     let logs: string[] = [];
-    let set = new Set<string>();
+    const set = new Set<string>();
     let maxLen = 0;
     let l = 0;
     let r = 0;

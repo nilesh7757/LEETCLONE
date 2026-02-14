@@ -26,8 +26,12 @@ export default function EnrollmentButton({ planId, initialEnrolled, initialRemin
       setEnrolled(true);
       toast.success("Enrolled in study plan!");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to enroll");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to enroll");
+      } else {
+        toast.error("Failed to enroll");
+      }
     } finally {
       setLoading(false);
     }
@@ -39,8 +43,12 @@ export default function EnrollmentButton({ planId, initialEnrolled, initialRemin
       await axios.put("/api/study-plans/enroll", { planId, reminderTime });
       toast.success("Reminder updated!");
       setShowReminderSettings(false);
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update reminder");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to update reminder");
+      } else {
+        toast.error("Failed to update reminder");
+      }
     } finally {
       setLoading(false);
     }
@@ -69,7 +77,7 @@ export default function EnrollmentButton({ planId, initialEnrolled, initialRemin
         className="w-full py-2 text-sm font-medium text-[var(--foreground)]/60 hover:text-[var(--foreground)] flex items-center justify-center gap-2"
       >
         {reminderTime ? <Bell className="w-4 h-4 text-orange-500" /> : <BellOff className="w-4 h-4" />}
-        {reminderTime ? `Reminder: ${reminderTime}` : "Set Daily Reminder"}
+        {reminderTime ? `Reminder: \${reminderTime}` : "Set Daily Reminder"}
       </button>
 
       {showReminderSettings && (

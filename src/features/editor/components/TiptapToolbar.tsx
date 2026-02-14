@@ -1,7 +1,7 @@
 "use client";
 
 import { type Editor } from '@tiptap/react';
-import { Bold, Italic, Strikethrough, Code, List, ListOrdered, Heading1, Heading2, Quote, Minus, Underline, Link as LucideLink, Image, PencilLine, Terminal, X, Check } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Code, List, ListOrdered, Heading1, Heading2, Quote, Minus, Underline, Link as LucideLink, Image as ImageIcon, PencilLine, Terminal, X, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -193,7 +193,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
         }}
         className={getButtonClass(editor.isActive('image'))}
       >
-        <Image className="w-4 h-4" />
+        <ImageIcon className="w-4 h-4" />
       </button>
 
       <button

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
-  Edit3, User, Calendar, Tag, Search, ArrowRight, 
-  MessageSquare, Sparkles, BookOpen, Filter, Zap 
+  Edit3, User, Search, ArrowRight, 
+  Sparkles, BookOpen, Filter 
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -183,6 +183,7 @@ export default function BlogPage() {
                         <div className="relative">
                             <div className="w-10 h-10 rounded-xl bg-[var(--muted)] overflow-hidden shadow-sm border border-[var(--border)] group-hover/author:border-[var(--viz-cyan)] transition-colors">
                                 {post.author.image ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
                                     <img src={post.author.image} alt={post.author.name} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Loader2, Upload, X, Image as ImageIcon, Tag, Hash, Link as LinkIcon, PenTool, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Upload, X, Image as ImageIcon, Hash, Link as LinkIcon, PenTool, Sparkles } from "lucide-react";
 import Link from "next/link";
 import TiptapEditor from "@/features/editor/components/TiptapEditor";
 import { motion, AnimatePresence } from "framer-motion";

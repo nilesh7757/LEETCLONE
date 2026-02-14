@@ -1,16 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, Zap, 
-  Activity, Database, ArrowDown, ArrowUp, Search, Hash
+  Play, RotateCcw, Pause,
+  Search, Database, ArrowDown
 } from "lucide-react";
 
 // --- Configuration ---
 const CELL_SIZE = 50;
 const GAP = 8;
-const VIEWPORT_WIDTH = 800; // Approximate visual width
 
 // Manim-inspired Palette
 const COLORS = { 
@@ -19,7 +18,6 @@ const COLORS = {
   gold: "var(--viz-gold)",
   red: "var(--viz-red)",
   purple: "var(--viz-purple)",
-  dark: "#1e1e1e",
   muted: "rgba(255,255,255,0.1)"
 };
 
@@ -36,16 +34,16 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
   // --- State ---
   const [text, setText] = useState("ABABDABACDABABCABAB");
   const [pattern, setPattern] = useState("ABABCABAB");
-  const [history, setHistory] = useState<KMPStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- Algorithm Logic ---
-  useEffect(() => {
+  const history = useMemo(() => {
     const steps: KMPStep[] = [];
     const n = text.length;
     const m = pattern.length;
+    if (n === 0 || m === 0) return [];
     
     // 1. Build LPS
     const lps = new Array(m).fill(0);
@@ -57,8 +55,9 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
         lps[idx] = len;
         idx++;
       } else {
-        if (len !== 0) len = lps[len - 1];
-        else {
+        if (len !== 0) {
+            len = lps[len - 1];
+        } else {
           lps[idx] = 0;
           idx++;
         }
@@ -77,7 +76,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
     });
 
     while (i < n) {
-      // Comparison Step
       steps.push({
         i, j, lps: [...lps], matchIndices: [...matches], 
         phase: "COMPARE", 
@@ -85,7 +83,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
       });
 
       if (pattern[j] === text[i]) {
-        // Match
         i++; j++;
         if (j === m) {
           matches.push(i - j);
@@ -93,7 +90,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
             i: i - 1, j: j - 1, lps: [...lps], matchIndices: [...matches], 
             phase: "FOUND", message: `Full pattern match found at index ${i - j}!`
           });
-          j = lps[j - 1]; // Reset for next potential match
+          j = lps[j - 1]; 
           steps.push({
             i, j, lps: [...lps], matchIndices: [...matches], 
             phase: "JUMP", message: "Resetting pattern index using LPS to find overlaps."
@@ -105,7 +102,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
           });
         }
       } else {
-        // Mismatch
         steps.push({
           i, j, lps: [...lps], matchIndices: [...matches], 
           phase: "MISMATCH", message: `Mismatch detected at T[${i}] vs P[${j}].`
@@ -128,19 +124,18 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
     }
 
     steps.push({
-      i: n-1, j: 0, lps: [...lps], matchIndices: [...matches], 
+      i: Math.max(0, n-1), j: 0, lps: [...lps], matchIndices: [...matches], 
       phase: "DONE", message: "Search Complete."
     });
 
-    setHistory(steps);
-    setCurrentIndex(0);
+    return steps;
   }, [text, pattern]);
 
   // --- Playback Engine ---
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = setInterval(() => {
-        setCurrentIndex(prev => {
+        setCurrentIndex((prev) => {
           if (prev >= history.length - 1) {
             setIsPlaying(false);
             return prev;
@@ -165,32 +160,17 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
     currentStep.phase === "JUMP" ? COLORS.purple :
     COLORS.gold;
 
-  // New Camera Logic:
-  // We want text[i] to be at X=0 (Center of Screen).
-  // The 'tape' starts at i=0.
-  // So position of text[0] should be 0.
-  // Position of text[i] relative to text[0] is i * STEP.
-  // So we translate the whole tape by -i * STEP to bring text[i] to 0.
-  // AND we need to offset by -CELL_SIZE/2 to center the cell itself.
   const STEP = CELL_SIZE + GAP;
   const textTranslateX = -(currentStep.i * STEP) - (CELL_SIZE / 2);
-  
-  // Pattern Logic:
-  // Pattern[j] aligns with Text[i].
-  // Since Text[i] is at 0, Pattern[j] must be at 0.
-  // So we translate pattern by -j * STEP.
   const patternTranslateX = -(currentStep.j * STEP) - (CELL_SIZE / 2);
 
   return (
     <div className="flex flex-col gap-6 select-none font-sans">
       
-      {/* --- Main Dashboard --- */}
       <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
-         {/* Background Grid */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
-         {/* Header & Inputs */}
          <div className="relative z-10 p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
                 <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl text-[var(--viz-cyan)]">
@@ -232,26 +212,21 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
          </div>
 
-         {/* --- The Visual Stage --- */}
          <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center overflow-hidden">
             
-            {/* Center Focus Marker (The Lens) */}
             <div className="absolute left-1/2 top-0 bottom-0 w-[60px] -ml-[30px] border-x-2 border-dashed border-[var(--viz-cyan)]/20 bg-[var(--viz-cyan)]/5 z-0" />
             <div className="absolute left-1/2 top-8 -translate-x-1/2 flex flex-col items-center z-10 opacity-50">
                 <ArrowDown size={16} className="text-[var(--viz-cyan)] animate-bounce" />
                 <span className="text-[9px] font-mono font-black text-[var(--viz-cyan)] tracking-widest mt-1">LENS</span>
             </div>
 
-            {/* Gradient Mask for Edges */}
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-card to-transparent z-20 pointer-events-none" />
             <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-card to-transparent z-20 pointer-events-none" />
 
-            {/* TEXT TRACK Container */}
             <div className="relative w-full h-[80px] mt-12 z-10">
-                {/* The 'Rail' is absolutely positioned at center */}
                 <div className="absolute left-1/2 top-0">
                     <motion.div 
-                        className="flex absolute top-0 left-0" // Starts at 0,0 relative to parent (center)
+                        className="flex absolute top-0 left-0" 
                         animate={{ x: textTranslateX }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
@@ -269,7 +244,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                                     }}
                                     animate={{ 
                                         scale: isCurrent ? 1.2 : 1,
-                                        opacity: Math.abs(i - currentStep.i) > 6 ? 0.2 : 1, // Fade distant nodes
+                                        opacity: Math.abs(i - currentStep.i) > 6 ? 0.2 : 1,
                                         borderColor: isCurrent ? activeColor : isMatch ? COLORS.green : "var(--border)",
                                         backgroundColor: isCurrent ? `${activeColor}20` : isMatch ? `${COLORS.green}15` : "var(--card)"
                                     }}
@@ -284,7 +259,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                 </div>
             </div>
 
-            {/* PATTERN TRACK Container */}
             <div className="relative w-full h-[80px] mb-12 z-10">
                 <div className="absolute left-1/2 top-0">
                     <motion.div 
@@ -313,7 +287,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                                     {char}
                                     <div className="absolute -bottom-6 text-[8px] text-muted-foreground/40 font-mono">{j}</div>
                                     
-                                    {/* LPS Pointer Visual */}
                                     {isCurrent && currentStep.phase === "MISMATCH" && currentStep.lps[j-1] > 0 && (
                                         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center w-max">
                                             <div className="text-[8px] font-black text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30 mb-1">
@@ -330,10 +303,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
 
          </div>
 
-         {/* --- Info Footer --- */}
          <div className="bg-[var(--card)] p-6 flex flex-col lg:flex-row gap-8">
-            
-            {/* Status Panel */}
             <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="px-2 py-1 rounded-lg bg-muted text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</div>
@@ -349,7 +319,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                 </div>
             </div>
 
-            {/* LPS Table Mini-View */}
             <div className="lg:w-1/3 flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-muted-foreground/50">
                     <Database size={14} />
@@ -357,7 +326,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                 </div>
                 <div className="flex overflow-x-auto gap-1 pb-2 scrollbar-thin">
                     {currentStep.lps.map((val, idx) => {
-                        const isActive = idx === currentStep.j - 1 && currentStep.phase === "MISMATCH"; // Highlight valid LPS source
+                        const isActive = idx === currentStep.j - 1 && currentStep.phase === "MISMATCH"; 
                         return (
                             <div key={idx} className={`flex flex-col items-center justify-center p-2 rounded-lg border min-w-[32px] transition-all ${isActive ? "bg-purple-500/20 border-purple-500 text-purple-400 scale-110" : "bg-card border-border opacity-50"}`}>
                                 <span className="text-[8px] font-bold mb-1 opacity-50">{pattern[idx]}</span>
@@ -370,7 +339,6 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
 
          </div>
 
-         {/* Progress Line */}
          <div className="h-1 w-full bg-muted">
              <motion.div 
                 className="h-full bg-[var(--viz-cyan)]" 
