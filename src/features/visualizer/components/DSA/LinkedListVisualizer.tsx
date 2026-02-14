@@ -40,23 +40,21 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     { id: 'n-2', value: 20 },
     { id: 'n-3', value: 30 }
   ]);
-  const [history, setHistory] = useState<ListStep[]>([]);
+  const [history, setHistory] = useState<ListStep[]>([{
+    nodes: [
+      { id: 'n-1', value: 10 },
+      { id: 'n-2', value: 20 },
+      { id: 'n-3', value: 30 }
+    ],
+    activeId: null,
+    highlightIds: [],
+    phase: "IDLE",
+    message: "Linked List Ready."
+  }]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // --- Initialization ---
-  useEffect(() => {
-    // Initial static state
-    setHistory([{
-        nodes: list,
-        activeId: null,
-        highlightIds: [],
-        phase: "IDLE",
-        message: "Linked List Ready."
-    }]);
-  }, [list]); // Run when list changes
 
   const updateHistory = (steps: ListStep[], finalState: LLNode[]) => {
     setList(finalState);
@@ -188,14 +186,6 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
 
     updateHistory(steps, currentNodes);
   }, [inputValue, list]);
-
-  function updateHistory(steps: ListStep[], finalState: LLNode[]) {
-    setList(finalState);
-    setHistory(steps);
-    setCurrentIndex(0);
-    setIsPlaying(true);
-    setInputValue("");
-  }
 
   // --- Playback Engine ---
   useEffect(() => {

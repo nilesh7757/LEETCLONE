@@ -12,9 +12,9 @@ import Image from "next/image";
 
 interface User {
   id: string;
-  name: string;
-  image?: string;
-  lastActive?: string | Date;
+  name?: string | null;
+  image?: string | null;
+  lastActive?: string | Date | null;
 }
 
 interface Message {
@@ -104,24 +104,6 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
-
-  const fetchMessages = async () => {
-    try {
-      const { data } = await axios.get(`/api/chat/${conversationId}`);
-      setMessages(data.messages);
-      scrollToBottom();
-    } catch (error) {
-      console.error("Failed to load messages", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  };
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();

@@ -1,6 +1,7 @@
 import { runAI } from "@/lib/gemini";
 import { executeCode } from "@/lib/codeExecution";
 import { ProblemType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 interface GeneratedProblem {
   title: string;

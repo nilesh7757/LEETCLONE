@@ -18,9 +18,11 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 
 const ActivityCalendar = dynamic(() => import("react-activity-calendar").then(mod => {
-  const m = mod as unknown as { ActivityCalendar: React.ComponentType<unknown>; default: React.ComponentType<unknown> };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const m = mod as any;
   return m.ActivityCalendar || m.default;
-}), { ssr: false });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+}), { ssr: false }) as any;
 
 interface RatingHistory {
   date: string;
@@ -390,9 +392,9 @@ export default function ProfilePage() {
                         <div className="h-full flex items-center justify-center">
                             <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-cyan)]" />
                         </div>
-                    ) : stats?.ratingHistory?.length > 0 ? (
+                    ) : (stats?.ratingHistory?.length ?? 0) > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={stats.ratingHistory}>
+                            <AreaChart data={stats!.ratingHistory}>
                                 <defs>
                                     <linearGradient id="ratingGradientProfile" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--viz-cyan)" stopOpacity={0.3}/>
@@ -508,19 +510,21 @@ export default function ProfilePage() {
                         <div className="py-12">
                             <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-purple)]" />
                         </div>
-                    ) : stats?.calendarData?.length > 0 ? (
+                    ) : (stats?.calendarData?.length ?? 0) > 0 ? (
                         <ActivityCalendar 
-                            data={stats.calendarData}
+                            data={stats!.calendarData}
                             theme={{
                                 light: ['var(--muted)', 'var(--viz-purple)'],
                                 dark: ['rgba(255,255,255,0.05)', '#d8b4fe'],
                             }}
-                            colorScheme={theme === 'dark' ? 'dark' : 'light'}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            colorScheme={(theme === 'dark' ? 'dark' : 'light') as any}
                             blockSize={14}
                             blockMargin={4}
                             fontSize={10}
                             blockRadius={4}
-                            renderBlock={(block: React.ReactElement, activity: CalendarData) => (
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            renderBlock={(block: any, activity: any) => (
                                 React.cloneElement(block, {
                                     onMouseEnter: () => setHoveredDay(activity),
                                     onMouseLeave: () => setHoveredDay(null),
@@ -529,7 +533,7 @@ export default function ProfilePage() {
                                         stroke: activity.count > 0 ? `rgba(var(--viz-purple-rgb), 0.5)` : 'transparent',
                                         strokeWidth: 1
                                     }
-                                } as React.Attributes)
+                                })
                             )}
                         />
                     ) : (

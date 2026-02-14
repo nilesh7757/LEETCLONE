@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   RotateCcw, Hash, 
@@ -219,7 +219,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                     </span>
                     <div className="flex flex-col gap-1 overflow-y-auto pr-1 scrollbar-thin">
                         <AnimatePresence mode="popLayout">
-                            {currentStep.logs.map((log, i) => (
+                            {currentStep.logs.map((log: string, i: number) => (
                                 <motion.div 
                                     key={`log-${i}`}
                                     initial={{ opacity: 0, x: -10 }}
@@ -243,7 +243,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                             <div className="w-48 h-[360px] border-x-4 border-b-4 border-dashed border-border/50 rounded-b-3xl bg-background/20 backdrop-blur-sm flex flex-col-reverse justify-start items-center p-4 gap-2 relative overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--viz-lime)]/5 to-transparent pointer-events-none" />
                                 <AnimatePresence mode="popLayout">
-                                    {currentStep.items.map((item, index) => (
+                                    {currentStep.items.map((item: DataItem, index: number) => (
                                         <motion.div
                                             key={item.id}
                                             layout
@@ -271,7 +271,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                             <div className="w-full h-24 border-y-4 border-dashed border-border/50 bg-background/20 backdrop-blur-sm flex items-center justify-end px-4 gap-2 relative overflow-hidden rounded-xl">
                                 <div className="absolute inset-0 bg-gradient-to-l from-[var(--viz-green)]/5 to-transparent pointer-events-none" />
                                 <AnimatePresence mode="popLayout">
-                                    {currentStep.items.map((item, index) => (
+                                    {currentStep.items.map((item: DataItem, index: number) => (
                                         <motion.div
                                             key={item.id}
                                             layout

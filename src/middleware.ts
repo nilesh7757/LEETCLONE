@@ -12,7 +12,7 @@ export default authMiddleware(async (req) => {
   if (pathname.startsWith("/api")) {
     // Exclude certain APIs if needed
     if (!pathname.startsWith("/api/auth")) {
-      const ip = req.ip || "127.0.0.1";
+      const ip = req.headers.get("x-forwarded-for")?.split(',')[0] || "127.0.0.1";
       const result = await rateLimit(ip, 50, 60000); // 50 requests per minute
 
       if (!result.success) {

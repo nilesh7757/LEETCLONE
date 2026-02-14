@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { ProblemArchitect } from "@/lib/agent/problemArchitect";
 import { auth } from "@/auth";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 
-export const POST = apiHandler(async (req: NextRequest) => {
+export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
     throw new ApiError("Unauthorized", 401);

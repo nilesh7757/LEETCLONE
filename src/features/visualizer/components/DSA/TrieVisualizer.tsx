@@ -312,7 +312,7 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
               <button onClick={() => recordOperation('INSERT', inputValue)} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all" title="Insert"><Plus size={20}/></button>
               <button onClick={() => recordOperation('SEARCH', inputValue)} className="p-2 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)] transition-all" title="Search"><Search size={20}/></button>
               <div className="w-px h-6 bg-border mx-1" />
-              <button onClick={() => { rootRef.current = new TrieNode("*"); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-red-500/10 rounded-xl text-muted-foreground/40 hover:text-red-500 transition-all"><RotateCcw size={20}/></button>
+              <button onClick={() => { setTreeRoot(new TrieNode("*")); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-red-500/10 rounded-xl text-muted-foreground/40 hover:text-red-500 transition-all"><RotateCcw size={20}/></button>
             </div>
           </div>
         </div>

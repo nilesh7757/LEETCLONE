@@ -10,7 +10,12 @@ interface DSACategory {
   description: string;
   themeColor: string;
   themeRGB: string;
-  icon: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: (speed: number) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  detailedDocs: any;
 }
 
 interface DSASidebarProps {

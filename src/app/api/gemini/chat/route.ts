@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { chatWithAI, chatWithAIStream, AIError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
 
-export const POST = apiHandler(async (req: NextRequest) => {
+export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (!session?.user) {
     throw new ApiError("Unauthorized", 401);

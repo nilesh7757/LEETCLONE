@@ -203,7 +203,6 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
     addLog(`Dijkstra Protocol Engaged. Source: Node ${startNode}.`);
     record(`Initializing distances. Node ${startNode} priority set to 0.`, "INIT", startNode);
 
-    const V = nodes.length;
     for (let count = 0; count < V; count++) {
         let u = -1;
         let minDist = INF;

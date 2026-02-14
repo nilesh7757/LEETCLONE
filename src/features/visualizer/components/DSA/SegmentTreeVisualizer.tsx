@@ -74,7 +74,23 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
     return () => observer.disconnect();
   }, []);
 
-  // ... (getMergeFn, getIdentity, getOpName omitted for brevity but they are above getLayout)
+  const getMergeFn = useCallback(() => {
+    if (treeMode === 'MIN') return (a: number, b: number) => Math.min(a, b);
+    if (treeMode === 'MAX') return (a: number, b: number) => Math.max(a, b);
+    return (a: number, b: number) => a + b;
+  }, [treeMode]);
+
+  const getIdentity = useCallback(() => {
+    if (treeMode === 'MIN') return Infinity;
+    if (treeMode === 'MAX') return -Infinity;
+    return 0;
+  }, [treeMode]);
+
+  const getOpName = useCallback(() => {
+    if (treeMode === 'MIN') return "Minimum";
+    if (treeMode === 'MAX') return "Maximum";
+    return "Sum";
+  }, [treeMode]);
 
   // --- Layout Algorithm ---
   const getLayout = useCallback((tree: (number | null)[], n: number) => {
@@ -125,7 +141,129 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
   }, [dimensions.width]);
 
   // --- Data Logic ---
-  // ... currentTree and recordOperation ...
+  const currentTree = useMemo(() => {
+    const n = arrayData.length;
+    const tree = Array(4 * n).fill(null);
+    const merge = getMergeFn();
+
+    const build = (node: number, start: number, end: number) => {
+      if (start === end) {
+        tree[node] = arrayData[start];
+        return;
+      }
+      const mid = Math.floor((start + end) / 2);
+      build(2 * node, start, mid);
+      build(2 * node + 1, mid + 1, end);
+      tree[node] = merge(tree[2 * node], tree[2 * node + 1]);
+    };
+
+    if (n > 0) build(1, 0, n - 1);
+    return tree;
+  }, [arrayData, getMergeFn]);
+
+  const recordOperation = useCallback((type: 'BUILD' | 'QUERY' | 'UPDATE') => {
+    const steps: HistoryStep[] = [];
+    const n = arrayData.length;
+    const tree = [...currentTree];
+    const merge = getMergeFn();
+    const identity = getIdentity();
+    let currentLogs: string[] = [];
+
+    const record = (msg: string, step: string, hId: string | null, range: [number, number] | null = null, qRes: number | null = null, statusOverrides?: Record<string, VisualNode['status']>) => {
+      const layout = getLayout(tree, n);
+      const frameNodes = layout.map(node => ({
+        ...node,
+        status: statusOverrides?.[node.id] || (node.id === hId ? 'highlighted' : 'idle')
+      }));
+      steps.push({
+        nodes: frameNodes,
+        message: msg,
+        step,
+        highlightedId: hId,
+        activeRange: range,
+        queryResult: qRes,
+        logs: [...currentLogs]
+      });
+    };
+
+    const addLog = (l: string) => { currentLogs = [l, ...currentLogs].slice(0, 10); };
+
+    if (type === 'BUILD') {
+      addLog(`Initializing Segment Tree build for ${n} elements.`);
+      const buildSteps = (node: number, start: number, end: number) => {
+        record(`Processing range [${start}, ${end}] at node ${node}.`, "BUILD", `node-${node}`, [start, end]);
+        if (start === end) {
+          addLog(`Leaf node ${node} assigned value ${arrayData[start]}.`);
+          return;
+        }
+        const mid = Math.floor((start + end) / 2);
+        buildSteps(2 * node, start, mid);
+        buildSteps(2 * node + 1, mid + 1, end);
+        record(`Merging results for range [${start}, ${end}].`, "MERGE", `node-${node}`, [start, end]);
+      };
+      buildSteps(1, 0, n - 1);
+      addLog("Build protocol complete.");
+      record("Segment Tree fully synthesized.", "IDLE", null);
+    } else if (type === 'QUERY') {
+      const L = parseInt(queryL);
+      const R = parseInt(queryR);
+      if (isNaN(L) || isNaN(R) || L < 0 || R >= n || L > R) return;
+
+      addLog(`Executing Range ${getOpName()} Query for [${L}, ${R}].`);
+      const query = (node: number, start: number, end: number, qL: number, qR: number): number => {
+        record(`Checking node ${node} range [${start}, ${end}] against [${qL}, ${qR}].`, "QUERY", `node-${node}`, [qL, qR]);
+        
+        if (qR < start || end < qL) {
+          addLog(`Node ${node} is outside query range. Returning identity.`);
+          return identity;
+        }
+        if (qL <= start && end <= qR) {
+          addLog(`Node ${node} range fully contained. Contributing value ${tree[node]}.`);
+          record(`Node ${node} fully contained.`, "CONTRIBUTE", `node-${node}`, [qL, qR], null, { [`node-${node}`]: 'contributing' });
+          return tree[node]!;
+        }
+        
+        const mid = Math.floor((start + end) / 2);
+        const p1 = query(2 * node, start, mid, qL, qR);
+        const p2 = query(2 * node + 1, mid + 1, end, qL, qR);
+        return merge(p1, p2);
+      };
+      const result = query(1, 0, n - 1, L, R);
+      addLog(`Query resolved. Final Result: ${result}.`);
+      record(`Final sequence resolved: ${result}.`, "IDLE", null, [L, R], result);
+    } else {
+      const idx = parseInt(updateIdx);
+      const val = parseInt(updateVal);
+      if (isNaN(idx) || isNaN(val) || idx < 0 || idx >= n) return;
+
+      addLog(`Updating index ${idx} to value ${val}.`);
+      const update = (node: number, start: number, end: number, i: number, v: number) => {
+        record(`Descending to update index ${i}. Current range [${start}, ${end}].`, "UPDATE", `node-${node}`, [i, i], null, { [`node-${node}`]: 'updating' });
+        if (start === end) {
+          tree[node] = v;
+          addLog(`Leaf node ${node} updated to ${v}.`);
+          return;
+        }
+        const mid = Math.floor((start + end) / 2);
+        if (i <= mid) update(2 * node, start, mid, i, v);
+        else update(2 * node + 1, mid + 1, end, i, v);
+        tree[node] = merge(tree[2 * node]!, tree[2 * node + 1]!);
+        record(`Recalculated internal node ${node} value to ${tree[node]}.`, "MERGE", `node-${node}`, [i, i], null, { [`node-${node}`]: 'updating' });
+      };
+      update(1, 0, n - 1, idx, val);
+      addLog("Update protocol complete.");
+      setArrayData(prev => {
+        const next = [...prev];
+        next[idx] = val;
+        return next;
+      });
+      record("Manifold updated and synchronized.", "IDLE", null);
+    }
+
+    setHistory(steps);
+    setCurrentIndex(0);
+    setIsPlaying(true);
+  }, [arrayData, currentTree, getMergeFn, getIdentity, getLayout, queryL, queryR, updateIdx, updateVal, getOpName]);
 
   // Playback Control
   useEffect(() => {
@@ -154,7 +292,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
       activeRange: null,
       logs: [] 
     };
-  }, [history, currentIndex, getLayout, arrayData.length]);
+  }, [history, currentIndex, getLayout, arrayData.length, currentTree]);
 
   // --- Dynamic Fit-to-Screen Logic ---
   const viewTransform = useMemo(() => {

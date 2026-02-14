@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { PlusCircle, Trash2, Upload, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
-import { useFieldArray, Control, UseFormRegister, FieldValues, Path, FieldArray } from "react-hook-form";
+import { useFieldArray, Control, UseFormRegister, FieldValues, Path, ArrayPath } from "react-hook-form";
 
 interface TestCase {
   input: string;
@@ -10,7 +10,7 @@ interface TestCase {
 }
 
 interface TestCaseEditorProps<T extends FieldValues> {
-  name: Path<T>;
+  name: ArrayPath<T>;
   label: string;
   showOutputs?: boolean;
   hideInput?: boolean;
@@ -241,11 +241,13 @@ const TestCaseEditor = <T extends FieldValues>({
   });
 
   const handleAddTestCase = () => {
-    append({ input: "", output: "" } as unknown as FieldArray<T, Path<T>>);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    append({ input: "", output: "" } as any);
   };
 
   const handleBulkImport = (cases: TestCase[]) => {
-    append(cases as unknown as FieldArray<T, Path<T>>[]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    append(cases as any);
   };
 
   return (

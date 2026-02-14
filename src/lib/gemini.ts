@@ -94,7 +94,9 @@ export async function runAI(prompt: string, systemInstruction?: string, jsonMode
         await new Promise(r => setTimeout(r, 1000));
         continue;
       }
-      logger.error(`Gemini (${model}) Error:`, error.response?.data?.error?.message || error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const axiosError = axios.isAxiosError(error) ? error.response?.data?.error?.message : null;
+      logger.error(`Gemini (${model}) Error:`, axiosError || errorMessage);
     }
   }
 

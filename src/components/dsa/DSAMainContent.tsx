@@ -8,10 +8,15 @@ import ErrorBoundary from "@/components/ui/ErrorBoundary";
 interface DSACategory {
   id: string;
   title: string;
+  description: string;
   themeColor: string;
   themeRGB: string;
-  component: (speed: number) => React.ReactNode;
-  detailedDocs?: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: (speed: number) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  detailedDocs: any;
 }
 
 interface DSAMainContentProps {

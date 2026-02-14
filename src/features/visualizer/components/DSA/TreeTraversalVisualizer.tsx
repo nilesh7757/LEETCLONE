@@ -226,7 +226,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                 {(['PRE', 'IN', 'POST'] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() => { setMode(t); setHistory([]); setCurrentIndex(0); }}
+                    onClick={() => { setMode(t); setCurrentIndex(0); }}
                     className={`px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === t ? "bg-[var(--viz-lavender)] text-black shadow-lg scale-105" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
                   >
                     {t === 'PRE' ? 'Pre' : t === 'IN' ? 'In' : 'Post'} Order

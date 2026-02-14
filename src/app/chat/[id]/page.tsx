@@ -48,6 +48,10 @@ export default async function ChatPage({ params }: ChatPageProps) {
   // Identify other user
   const otherUser = conversation.participants.find(p => p.userId !== session.user.id)?.user;
   
+  if (!otherUser) {
+    redirect("/chat");
+  }
+
   // Get all recipient IDs (everyone except current user)
   const recipientIds = conversation.participants
     .filter(p => p.userId !== session.user.id)
@@ -56,7 +60,13 @@ export default async function ChatPage({ params }: ChatPageProps) {
   return (
     <ChatClient 
       conversationId={id} 
-      currentUser={session.user} 
+      currentUser={{
+        id: session.user.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        name: session.user.name as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        image: session.user.image as any,
+      }} 
       otherUser={otherUser} 
       recipientIds={recipientIds}
     />

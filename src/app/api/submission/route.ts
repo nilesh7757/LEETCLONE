@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { executeCode, TestInputOutput, ExecutionResult } from "@/lib/codeExecution";
 import { auditAndAnalyze, evaluateSystemDesign } from "@/lib/gemini";
 import { socketClient } from "@/lib/socket-client";
