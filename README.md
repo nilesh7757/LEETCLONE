@@ -1,3 +1,4 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LEETCLONE)
 # LEETCLONE - A High-Performance LeetCode Clone
 
 LEETCLONE is a full-stack platform for competitive programming, featuring real-time collaborative coding, AI-powered code analysis, and competitive contests.
