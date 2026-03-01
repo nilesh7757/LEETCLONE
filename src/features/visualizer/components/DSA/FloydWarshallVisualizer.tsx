@@ -48,8 +48,19 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
   const [numNodes, setNumNodes] = useState(4);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const MAX_NODES = 8; // Safety limit for visualization
+
+  const handleResize = () => {
+    setNumNodes(prev => {
+      const next = (prev % 6) + 3;
+      if (next > MAX_NODES) return 3;
+      return next;
+    });
+    setCurrentIndex(0);
+    setIsPlaying(false);
+  };
 
   // --- Graph Generation ---
   const initialGraph = useMemo(() => {
@@ -183,7 +194,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
           </div>
 
           <div className="flex items-center gap-3">
-             <button onClick={() => setNumNodes(prev => (prev % 6) + 3)} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all" title="Change Graph Size"><RefreshCw size={18}/></button>
+             <button onClick={handleResize} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all" title="Change Graph Size"><RefreshCw size={18}/></button>
              <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
              <button 
                 onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 

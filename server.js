@@ -1,7 +1,10 @@
 import { Server } from "socket.io";
 import { createServer } from "http";
+import Redis from "ioredis";
+import { createAdapter } from "@socket.io/redis-adapter";
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
+const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
@@ -10,6 +13,20 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"]
   }
 });
+
+const pubClient = new Redis(redisUrl);
+const subClient = pubClient.duplicate();
+
+pubClient.on("error", (err) => {
+  console.error("Redis Pub Client Error:", err);
+});
+
+subClient.on("error", (err) => {
+  console.error("Redis Sub Client Error:", err);
+});
+
+// Use the adapter
+io.adapter(createAdapter(pubClient, subClient));
 
 const onlineUsers = new Map(); // userId -> Set(socketIds)
 const collabRooms = new Map(); // roomId -> { code: string, language: string, users: Map<socketId, { username, image }> }

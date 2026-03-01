@@ -4,6 +4,9 @@ import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import MobileNav from "./MobileNav";
 import UserTopNav from "./UserTopNav";
+import DraculaTransformation from "../ui/DraculaTransformation";
+import MatrixTransformation from "../ui/MatrixTransformation";
+import GOTTransformation from "../ui/GOTTransformation";
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +23,10 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[var(--background)] flex">
+      <DraculaTransformation />
+      <MatrixTransformation />
+      <GOTTransformation />
+      
       {/* Desktop Sidebar */}
       <div className="hidden md:block shrink-0">
         <Sidebar />
@@ -36,8 +43,8 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 md:pl-64 pt-16 md:pt-0 min-h-screen relative flex flex-col transition-all duration-200 ease-in-out overflow-hidden">
-        <div className={`flex-1 w-full flex flex-col ${isWorkspace ? "" : "p-4 md:p-8 pt-20 md:pt-16 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"}`}>
+      <main className="flex-1 md:pl-64 min-h-screen relative flex flex-col transition-all duration-200 ease-in-out overflow-hidden">
+        <div className={`flex-1 w-full flex flex-col ${isWorkspace ? "" : "p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"}`}>
           {children}
         </div>
       </main>

@@ -9,7 +9,6 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
   logger.info(`[API] Fetching performance for user ID: ${id}`);
 
   const now = new Date();
-  // Calculate sliding window: 4 months ago to 8 months ahead (Total 12 months)
   const startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 4, 1));
   const endDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 8, 0));
 
@@ -44,7 +43,8 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
           problemId: true,
           problem: {
             select: {
-              difficulty: true
+              difficulty: true,
+              category: true
             }
           }
         }
@@ -63,7 +63,7 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
     throw new ApiError("User not found", 404);
   }
 
-  // Difficulty breakdown logic...
+  // Difficulty breakdown
   const solvedStats = await prisma.problem.groupBy({
       by: ['difficulty'],
       where: {
@@ -89,8 +89,26 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
       }
   });
 
+  // Category breakdown for Radar Chart
+  const categoryStats = await prisma.problem.groupBy({
+    by: ['category'],
+    where: {
+        submissions: {
+            some: {
+                userId: id,
+                status: "Accepted"
+            }
+        }
+    },
+    _count: { id: true }
+  });
+
+  const categoryMap: Record<string, number> = {};
+  categoryStats.forEach(stat => {
+    categoryMap[stat.category] = stat._count.id;
+  });
+
   const submissionCounts: Record<string, number> = {};
-  
   if (user.submissions && Array.isArray(user.submissions)) {
       user.submissions.forEach(sub => {
         if (sub.createdAt) {
@@ -101,30 +119,24 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
               const d = String(dateObj.getUTCDate()).padStart(2, '0');
               const dateStr = `${y}-${m}-${d}`;
               submissionCounts[dateStr] = (submissionCounts[dateStr] || 0) + 1;
-            } catch {
-              // Ignore
-            }
+            } catch { }
         }
       });
   }
 
-  // Fill in all days for the dynamic 12-month window
   const calendarData = [];
   const loopDate = new Date(startDate);
-  
   while (loopDate <= endDate) {
       const y = loopDate.getUTCFullYear();
       const m = String(loopDate.getUTCMonth() + 1).padStart(2, '0');
       const d = String(loopDate.getUTCDate()).padStart(2, '0');
       const dateStr = `${y}-${m}-${d}`;
-      
       const count = submissionCounts[dateStr] || 0;
       calendarData.push({
           date: dateStr,
           count: count,
           level: count === 0 ? 0 : Math.min(Math.floor(count / 2) + 1, 4)
       });
-      
       loopDate.setUTCDate(loopDate.getUTCDate() + 1);
   }
 
@@ -147,6 +159,7 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
       solvedEasy: solvedByDifficulty.Easy,
       solvedMedium: solvedByDifficulty.Medium,
       solvedHard: solvedByDifficulty.Hard,
+      categoryStats: categoryMap
     },
     ratingHistory: ratingHistoryData,
     calendarData

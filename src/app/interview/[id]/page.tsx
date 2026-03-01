@@ -379,68 +379,96 @@ function InterviewResults({ results, interview }: { results: InterviewResultsDat
             <div className="h-[1px] flex-1 bg-[var(--border)]" />
         </div>
 
-        {interview.answers.map((ans: Answer, i: number) => {
-          const q = interview.questions.find((q: Question) => q.id === ans.questionId);
-          if (!q) return null;
-          return (
-            <div key={i} className="bg-[var(--card)] rounded-[3rem] p-10 space-y-10 relative overflow-hidden shadow-xl">
-              <div className="flex justify-between items-start gap-8 pb-8 border-b border-[var(--border)]">
-                <h4 className="text-2xl font-light tracking-tight text-[var(--foreground)] leading-tight">{q.question}</h4>
-                <div className="shrink-0 flex flex-col items-end">
-                  <div className="text-2xl font-black text-[var(--foreground)] font-mono">{ans.score}%</div>
-                  <div className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Efficiency</div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-6">
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Send className="w-3 h-3 text-[var(--viz-blue)]" /> Transmission
-                    </label>
-                    <div className="p-6 bg-[var(--muted)] rounded-2xl shadow-inner">
-                      <p className="text-sm text-[var(--foreground)] font-light italic leading-relaxed">&quot;{ans.answer}&quot;</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black text-[var(--viz-purple)] uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Bot className="w-3 h-3" /> Synthesis Feedback
-                    </label>
-                    <div className="p-6 bg-[var(--viz-purple)]/[0.03] rounded-2xl border border-[var(--viz-purple)]/10">
-                      <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.feedback}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {ans.idealAnswer && (
-                    <div className="space-y-3">
-                      <label className="text-[9px] font-black text-[var(--viz-green)] uppercase tracking-[0.3em] flex items-center gap-2">
-                        <CheckCircle2 className="w-3 h-3" /> Theoretical Optimum
-                      </label>
-                      <div className="p-6 bg-[var(--viz-green)]/[0.03] rounded-2xl border border-[var(--viz-green)]/10">
-                        <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.idealAnswer}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {ans.improvement && (
-                    <div className="space-y-3">
-                      <label className="text-[9px] font-black text-[var(--viz-gold)] uppercase tracking-[0.3em] flex items-center gap-2">
-                        <Lightbulb className="w-3 h-3" /> Refinement Logic
-                      </label>
-                      <div className="p-6 bg-[var(--viz-gold)]/[0.03] rounded-2xl border border-[var(--viz-gold)]/10">
-                        <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.improvement}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        <InterviewBreakdown interview={interview} />
       </div>
     </main>
+  );
+}
+
+function InterviewBreakdown({ interview }: { interview: Interview }) {
+  const [visibleCount, setVisibleCount] = useState(2);
+  const answers = interview.answers;
+
+  return (
+    <div className="space-y-10">
+      {answers.slice(0, visibleCount).map((ans, i) => {
+        const q = interview.questions.find((q) => q.id === ans.questionId);
+        if (!q) return null;
+        return (
+          <motion.div 
+            key={i} 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-[var(--card)] rounded-[3rem] p-10 space-y-10 relative overflow-hidden shadow-xl"
+          >
+            <div className="flex justify-between items-start gap-8 pb-8 border-b border-[var(--border)]">
+              <h4 className="text-2xl font-light tracking-tight text-[var(--foreground)] leading-tight">{q.question}</h4>
+              <div className="shrink-0 flex flex-col items-end">
+                <div className="text-2xl font-black text-[var(--foreground)] font-mono">{ans.score}%</div>
+                <div className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Efficiency</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[9px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <Send className="w-3 h-3 text-[var(--viz-blue)]" /> Transmission
+                  </label>
+                  <div className="p-6 bg-[var(--muted)] rounded-2xl shadow-inner">
+                    <p className="text-sm text-[var(--foreground)] font-light italic leading-relaxed">&quot;{ans.answer}&quot;</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[9px] font-black text-[var(--viz-purple)] uppercase tracking-[0.3em] flex items-center gap-2">
+                    <Bot className="w-3 h-3" /> Synthesis Feedback
+                  </label>
+                  <div className="p-6 bg-[var(--viz-purple)]/[0.03] rounded-2xl border border-[var(--viz-purple)]/10">
+                    <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.feedback}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {ans.idealAnswer && (
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black text-[var(--viz-green)] uppercase tracking-[0.3em] flex items-center gap-2">
+                      <CheckCircle2 className="w-3 h-3" /> Theoretical Optimum
+                    </label>
+                    <div className="p-6 bg-[var(--viz-green)]/[0.03] rounded-2xl border border-[var(--viz-green)]/10">
+                      <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.idealAnswer}</p>
+                    </div>
+                  </div>
+                )}
+
+                {ans.improvement && (
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black text-[var(--viz-gold)] uppercase tracking-[0.3em] flex items-center gap-2">
+                      <Lightbulb className="w-3 h-3" /> Refinement Logic
+                    </label>
+                    <div className="p-6 bg-[var(--viz-gold)]/[0.03] rounded-2xl border border-[var(--viz-gold)]/10">
+                      <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.improvement}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+
+      {visibleCount < answers.length && (
+        <div className="flex justify-center pb-10">
+          <button 
+            onClick={() => setVisibleCount(prev => prev + 2)}
+            className="px-10 py-4 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-[var(--border)] transition-all"
+          >
+            Show more detailed analysis ({answers.length - visibleCount} units remaining)
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

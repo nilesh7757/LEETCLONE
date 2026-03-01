@@ -1,7 +1,8 @@
-import axios from "axios";
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { logger } from "./logger";
+import { prisma } from "./prisma";
+import crypto from "crypto";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -25,83 +26,53 @@ export const MODELS = [
   "gemini-pro",
 ];
 
-const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
-
 /**
  * Universal AI Executor: Tries Groq first, then fallbacks to Gemini
  */
-export async function runAI(prompt: string, systemInstruction?: string, jsonMode = false) {
-  // 1. Try Groq Primary (Extremely Fast & Generous Quota)
-  if (groq) {
-    try {
-      logger.info("Attempting Groq (llama-3.3-70b-versatile)...");
-      
-      // Groq JSON mode often requires "JSON" to be in the prompt
-      const finalPrompt = jsonMode && !prompt.toLowerCase().includes("json") 
-        ? prompt + "\n\nReturn the response in valid JSON format." 
-        : prompt;
+export async function runAI(prompt: string, systemInstruction?: string, jsonMode = false): Promise<string> {
+  if (!GROQ_API_KEY && !GEMINI_API_KEY) {
+    throw new AIError("No AI API Keys configured.", 500);
+  }
 
-      const chatCompletion = await groq.chat.completions.create({
+  // 1. Try Groq (Llama 3 70B is very fast and capable)
+  if (groq && GROQ_API_KEY) {
+    try {
+      const completion = await groq.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: finalPrompt },
+          { role: "user" as const, content: prompt },
         ],
         model: "llama-3.3-70b-versatile",
         response_format: jsonMode ? { type: "json_object" } : undefined,
-        temperature: 0.5,
-        max_tokens: 1500, // Increased for batch evaluations
+        temperature: 0.2,
       });
 
-      const response = chatCompletion.choices[0]?.message?.content;
-      if (response) return response;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorStatus = (error as { status?: number })?.status;
-      logger.error("Groq Error:", errorMessage);
-      if (errorStatus === 413) {
-        logger.warn("Groq context too large, falling back...");
-      }
-      logger.warn("Groq failed, falling back to Gemini...");
+      return completion.choices[0]?.message?.content || "";
+    } catch (error) {
+      logger.error("[AI_GROQ_ERROR] Groq failed, falling back to Gemini:", error instanceof Error ? error.message : String(error));
     }
   }
 
-  // 2. Fallback to Gemini (Multiple Models)
-  let hitQuota = false;
-  for (const model of MODELS) {
+  // 2. Fallback to Gemini
+  if (genAI && GEMINI_API_KEY) {
     try {
-      logger.info(`Attempting Gemini (${model})...`);
-      const response = await axios.post(
-        `${BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          contents: [
-            { role: "user", parts: [{ text: (systemInstruction ? systemInstruction + "\n\n" : "") + prompt }] }
-          ],
-          generationConfig: {
-            responseMimeType: jsonMode ? "application/json" : "text/plain",
-            temperature: 0.5,
-            maxOutputTokens: 1000,
-          },
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      // Use the first available model from our list
+      const modelName = MODELS[0];
+      const model = genAI.getGenerativeModel({ 
+        model: modelName,
+        systemInstruction: systemInstruction,
+      });
 
-      const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return text;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.status === 429) {
-        logger.warn(`Quota hit for Gemini (${model}). Skipping...`);
-        hitQuota = true;
-        await new Promise(r => setTimeout(r, 1000));
-        continue;
-      }
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const axiosError = axios.isAxiosError(error) ? error.response?.data?.error?.message : null;
-      logger.error(`Gemini (${model}) Error:`, axiosError || errorMessage);
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      logger.error("[AI_GEMINI_ERROR] Gemini also failed:", error instanceof Error ? error.message : String(error));
+      throw new AIError("AI Service unavailable. Both Groq and Gemini failed.", 503);
     }
   }
 
-  if (hitQuota) throw new AIError("All AI models are currently busy. Please wait 60 seconds.", 429);
-  throw new AIError("AI service unavailable.", 500);
+  throw new AIError("AI Configuration error.", 500);
 }
 
 interface TestCase {
@@ -114,38 +85,75 @@ interface GenerativeMessage {
   parts: { text: string }[];
 }
 
+interface AuditAndAnalyzeResult {
+    passed: boolean;
+    feedback: string;
+    timeComplexity: string;
+    spaceComplexity: string;
+}
+
+/**
+ * Helper to generate a unique hash for code-related tasks to use in caching
+ */
+function generateHash(data: string): string {
+  return crypto.createHash("sha256").update(data).digest("hex");
+}
+
 export async function auditAndAnalyze(
   code: string, 
   language: string, 
   problemTitle: string, 
   problemDesc: string
-): Promise<{ passed: boolean; feedback: string; timeComplexity: string; spaceComplexity: string }> {
-  const prompt = `
-    You are a Senior Software Engineer. Audit and analyze this solution for: "${problemTitle}".
-    Description: ${problemDesc.substring(0, 500)}
-    
-    CODE:
-    \`\`\`\${language}
-    ${code}
-    \`\`\`
-    
-    TASKS:
-    1. Audit: Check for logic shortcuts or hardcoded answers.
-    2. Complexity: Determine Time and Space complexity (O(...) format).
-    
-    Return ONLY JSON: 
-    { 
-      "passed": true/false, 
-      "feedback": "Audit feedback", 
-      "timeComplexity": "O(...)", 
-      "spaceComplexity": "O(...)" 
-    }
-  `;
+): Promise<AuditAndAnalyzeResult> {
+  const cacheKey = generateHash(`${problemTitle}:${language}:${code}`);
 
   try {
+    const cached = await prisma.codeCache.findUnique({
+      where: { hash: cacheKey }
+    });
+
+    if (cached) {
+      logger.info(`[AI_CACHE] Cache hit for key: ${cacheKey.substring(0, 8)}...`);
+      return cached.result as unknown as AuditAndAnalyzeResult;
+    }
+
+    const prompt = `
+      You are a Senior Software Engineer. Audit and analyze this solution for: "${problemTitle}".
+      Description: ${problemDesc.substring(0, 500)}
+      
+      CODE:
+      \`\`\`${language}
+      ${code}
+      \`\`\`
+      
+      TASKS:
+      1. Audit: Check for logic shortcuts or hardcoded answers.
+      2. Complexity: Determine Time and Space complexity (O(...) format).
+      
+      Return ONLY JSON: 
+      { 
+        "passed": true/false, 
+        "feedback": "Audit feedback", 
+        "timeComplexity": "O(...)", 
+        "spaceComplexity": "O(...)" 
+      }
+    `;
+
     const response = await runAI(prompt, "You are a precise technical reviewer.", true);
     const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleanJson);
+    const result = JSON.parse(cleanJson) as AuditAndAnalyzeResult;
+
+    // 2. Save to Cache (Background)
+    prisma.codeCache.create({
+      data: {
+        id: crypto.randomUUID(),
+        hash: cacheKey,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        result: result as unknown as any // JSON fields in Prisma need specialized handling, any is common here but casting to unknown first is safer
+      }
+    }).catch(err => logger.error("[AI_CACHE] Failed to save cache:", err));
+
+    return result;
   } catch (error) {
     logger.error("Audit/Analyze Error:", error);
     return { 
@@ -168,12 +176,12 @@ export async function auditSolution(
     Description: ${problemDesc.substring(0, 500)}
     
     CODE:
-    \`\`\`\${language}
+    \`\`\`${language}
     ${code}
     \`\`\`
     
     TASKS:
-    1. Check if the user used "shortcuts" that violate the intended pattern (e.g., using an array to reverse a linked list when O(1) space was required).
+    1. Check if the user used "shortcuts" that violate the intended pattern.
     2. Check if the code is actually solving the logic or just returning hardcoded answers.
     
     Return JSON: { "passed": true/false, "feedback": "Brief explanation" }
@@ -232,7 +240,7 @@ export async function chatWithAI(
   }
 
   const desc = context.problemDescription.substring(0, 1500);
-  const code = context.code.substring(0, 3000);
+  const userCode = context.code.substring(0, 3000);
   const testCasesStr = context.testCases && context.testCases.length > 0 
     ? JSON.stringify(context.testCases.map(tc => ({ input: tc.input, expected: tc.expectedOutput })), null, 2)
     : "No test cases provided.";
@@ -248,15 +256,15 @@ export async function chatWithAI(
       Example Test Cases: ${testCasesStr}
 
       User's Current Code:
-      \`\`\`\${context.language}
-      ${code}
+      \`\`\`${context.language}
+      ${userCode}
       \`\`\`
 
       INTERVIEWER RULES:
       1. Be professional, slightly formal, but fair.
-      2. If "isPeriodicQuestion" is true, ask a pointed question about their current code or approach (e.g., "Why did you choose this data structure?", "What is the time complexity of this specific part?", "How would you handle [edge case]?").
+      2. If "isPeriodicQuestion" is true, ask a pointed question about their current code or approach.
       3. If they are stuck, give a MINIMAL hint. Do NOT solve it for them.
-      4. Observe their code. If you see a major bug or inefficiency, ask them a question that might lead them to find it themselves.
+      4. Observe their code. If you see a major bug, ask a leading question.
       5. Keep responses concise (max 3 sentences).
     `;
   } else {
@@ -265,23 +273,22 @@ export async function chatWithAI(
       Problem: "${context.problemTitle}"
       Description: ${desc}
       Example Test Cases: ${testCasesStr}
-      User's Code: ${code}
+      User's Code: ${userCode}
 
       RULES:
       1. NEVER provide the full code solution at once.
       2. Guide the user using hints and conceptual questions.
-      3. If they ask for help, point out logical errors in their code.
-      4. Only provide small code snippets (max 5 lines) for specific syntax issues.
+      3. Point out logical errors.
+      4. Only provide small code snippets (max 5 lines).
       5. Be concise and professional.
     `;
   }
 
-  // Restore history window to 10 messages
-  const history = messages.slice(-10).map(m => `${m.role === 'model' ? 'Tutor' : 'Student'}: ${m.parts[0].text}`).join("\n");
+  const historyText = messages.slice(-20).map(m => `${m.role === 'model' ? 'Tutor' : 'Student'}: ${m.parts[0].text}`).join("\n");
   
   const userPrompt = context.isPeriodicQuestion 
     ? "Ask me a challenging interview question about my current code." 
-    : `History:\n${history}\n\nStudent's New Message: ${messages[messages.length-1]?.parts[0]?.text}`;
+    : `History:\n${historyText}\n\nStudent's New Message: ${messages[messages.length-1]?.parts[0]?.text}`;
 
   return await runAI(userPrompt, systemPrompt);
 }
@@ -303,7 +310,7 @@ export async function chatWithAIStream(
   }
 
   const desc = context.problemDescription.substring(0, 1500);
-  const code = context.code.substring(0, 3000);
+  const userCode = context.code.substring(0, 3000);
   const testCasesStr = context.testCases && context.testCases.length > 0 
     ? JSON.stringify(context.testCases.map(tc => ({ input: tc.input, expected: tc.expectedOutput })), null, 2)
     : "No test cases provided.";
@@ -312,38 +319,21 @@ export async function chatWithAIStream(
 
   if (context.isInterviewMode) {
     systemPrompt = `
-      You are a Senior Technical Interviewer at a top tech company (like Google or Meta).
-      You are conducting a live technical interview for the problem: "${context.problemTitle}".
-      
+      You are a Senior Technical Interviewer for: "${context.problemTitle}".
       Problem Description: ${desc}
       Example Test Cases: ${testCasesStr}
-
       User's Current Code:
-      \`\`\`\${context.language}
-      ${code}
+      \`\`\`${context.language}
+      ${userCode}
       \`\`\`
-
-      INTERVIEWER RULES:
-      1. Be professional, slightly formal, but fair.
-      2. If "isPeriodicQuestion" is true, ask a pointed question about their current code or approach.
-      3. If they are stuck, give a MINIMAL hint. Do NOT solve it for them.
-      4. Observe their code. If you see a major bug or inefficiency, ask them a question that might lead them to find it themselves.
-      5. Keep responses concise (max 3 sentences).
+      INTERVIEWER RULES: Be professional. If periodic, ask a question. If stuck, minimal hint. Max 3 sentences.
     `;
   } else {
     systemPrompt = `
-      You are a strict but encouraging Socratic AI Coding Tutor. 
-      Problem: "${context.problemTitle}"
+      You are a Socratic AI Coding Tutor for: "${context.problemTitle}".
       Description: ${desc}
-      Example Test Cases: ${testCasesStr}
-      User's Code: ${code}
-
-      RULES:
-      1. NEVER provide the full code solution at once.
-      2. Guide the user using hints and conceptual questions.
-      3. If they ask for help, point out logical errors in their code.
-      4. Only provide small code snippets (max 5 lines).
-      5. Be concise and professional.
+      User's Code: ${userCode}
+      RULES: No full solutions. Use hints. Point out errors. snippets max 5 lines.
     `;
   }
 
@@ -352,15 +342,11 @@ export async function chatWithAIStream(
     systemInstruction: systemPrompt
   });
 
-  // Gemini history MUST start with 'user' and alternate roles.
-  // We filter out any leading 'model' messages and ensure strict alternation.
   const history: GenerativeMessage[] = [];
   let lastRole = "";
 
   for (const m of messages.slice(0, -1)) {
     const role = m.role === "model" ? "model" : "user";
-    
-    // Skip if it doesn't alternate or if we haven't started with a user message yet
     if (role === lastRole) continue;
     if (history.length === 0 && role !== "user") continue;
 
@@ -379,4 +365,3 @@ export async function chatWithAIStream(
   const result = await chat.sendMessageStream(userMessage);
   return result.stream;
 }
-

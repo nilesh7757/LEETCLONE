@@ -125,68 +125,67 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
           <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] bg-[var(--viz-blue)]/5 blur-[150px] rounded-full mix-blend-screen" />
       </div>
       
-      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] shadow-[0_0_20px_rgba(34,211,238,0.2)]">
-                <Sparkles size={20} />
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 relative z-10"> 
+      
+              {/* Header Section */}
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-16">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                      <Sparkles size={18} />
+                    </div>
+                    <span className="text-[9px] md:text-[10px] font-black tracking-[0.2em] md:tracking-[0.3em] text-[var(--muted-foreground)] uppercase">
+                      Engineering Challenges
+                    </span>
+                  </div>
+      
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-[var(--foreground)]">
+                    Problem <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] font-medium">Matrix</span>
+                  </h1>
+                  <p className="text-base md:text-lg text-[var(--muted-foreground)] max-w-2xl font-light leading-relaxed">
+                    Explore a vast collection of algorithmic challenges designed to refine your cognitive stack.
+                  </p>
+                </div>
+      
+                {/* Stats Pills */}
+                <div className="flex flex-wrap gap-3 md:gap-4">
+                   <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-4 md:px-6 py-3 md:py-4 flex items-center gap-3 md:gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/10 flex-1 sm:flex-none">
+                      <div className="p-2.5 md:p-3 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] group-hover:scale-110 transition-transform">
+                        <Target className="w-5 h-5 md:w-6 md:h-6" />
+                      </div>
+                      <div>
+                        <div className="text-xl md:text-2xl font-bold text-[var(--foreground)]">{stats.totalProblems}</div>
+                        <div className="text-[9px] md:text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Available</div>    
+                      </div>
+                   </div>
+      
+                   {userId && (
+                      <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-4 md:px-6 py-3 md:py-4 flex items-center gap-3 md:gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-green)]/10 flex-1 sm:flex-none">
+                          <div className="p-2.5 md:p-3 bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] group-hover:scale-110 transition-transform">
+                            <Trophy className="w-5 h-5 md:w-6 md:h-6" />
+                          </div>
+                          <div>
+                            <div className="text-xl md:text-2xl font-bold text-[var(--foreground)]">{stats.solvedCount}</div>
+                            <div className="text-[9px] md:text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Solved</div>   
+                          </div>
+                      </div>
+                   )}
+                </div>
               </div>
-              <span className="text-[10px] font-black tracking-[0.3em] text-[var(--muted-foreground)] uppercase">
-                Engineering Challenges
-              </span>
-            </div>
-            
-            <h1 className="text-5xl md:text-6xl font-light tracking-tight text-[var(--foreground)]">
-              Problem <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] font-medium">Matrix</span>
-            </h1>
-            <p className="text-lg text-[var(--muted-foreground)] max-w-2xl font-light leading-relaxed">
-              Explore a vast collection of algorithmic challenges designed to refine your cognitive stack.
-            </p>
-          </div>
-
-          {/* Stats Pills */}
-          <div className="flex gap-4">
-             <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/10">
-                <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] group-hover:scale-110 transition-transform">
-                  <Target className="w-6 h-6" />
+      
+              {/* Layout Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">  
+      
+                {/* Sidebar Filters (Left) */}
+                <div className="lg:col-span-3 space-y-6 md:space-y-8 order-2 lg:order-1">
+                  <DailyProblemCard />
+                  <div className="lg:sticky lg:top-8">
+                    <ProblemFilters />
+                  </div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-[var(--foreground)]">{stats.totalProblems}</div>
-                  <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Available</div>
-                </div>
-             </div>
-             
-             {userId && (
-                <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-green)]/10">
-                    <div className="p-3 bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] group-hover:scale-110 transition-transform">
-                      <Trophy className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-[var(--foreground)]">{stats.solvedCount}</div>
-                      <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Solved</div>
-                    </div>
-                </div>
-             )}
-          </div>
-        </div>
-
-        {/* Layout Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          
-          {/* Sidebar Filters (Left) */}
-          <div className="lg:col-span-3 space-y-8">
-            <DailyProblemCard />
-            <div className="sticky top-8">
-              <ProblemFilters />
-            </div>
-          </div>
-
-          {/* Main Content (Right) */}
-          <div className="lg:col-span-9 space-y-8">
-             <ProblemTable 
+      
+                {/* Main Content (Right) */}
+                <div className="lg:col-span-9 space-y-8 order-1 lg:order-2">             <ProblemTable 
                 problems={problemsWithStatus} 
                 totalPages={totalPages} 
                 currentPage={currentPage} 

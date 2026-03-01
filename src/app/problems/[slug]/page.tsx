@@ -112,17 +112,16 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
   }
 
   if (Array.isArray(rawTestSets)) {
-    allTestCases = rawTestSets;
+    allTestCases = rawTestSets.map(tc => ({ ...tc, isExample: tc.isExample ?? true }));
   } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in rawTestSets && 'hidden' in rawTestSets) {
     (rawTestSets.examples as TestInputOutput[]).forEach(tc => allTestCases.push({ ...tc, isExample: true }));
     (rawTestSets.hidden as TestInputOutput[]).forEach(tc => allTestCases.push({ ...tc, isExample: false }));
   } else {
-    // console.error("page.tsx: Unexpected format for problem.testSets:", rawTestSets);
     allTestCases = [];
   }
 
   // Filter for only example test cases to pass to WorkspaceClient
-  const examplesForClient = allTestCases.filter(tc => tc.isExample === true);
+  const examplesForClient = allTestCases.filter(tc => tc.isExample !== false);
 
   // Check if user has already solved this problem to skip blueprint
   const userSubmission = userId ? await prisma.submission.findFirst({

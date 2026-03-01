@@ -22,8 +22,16 @@ export default function BlueprintModal({ problemTitle, problemDescription, onCom
     suggestions?: string[];
   } | null>(null);
 
+  const MAX_LOGIC_LENGTH = 1500;
+  const MIN_LOGIC_LENGTH = 20;
+
   const handleJudge = async () => {
-    if (!logicText.trim() || isJudging) return;
+    if (logicText.trim().length < MIN_LOGIC_LENGTH) {
+      toast.error(`Please provide at least ${MIN_LOGIC_LENGTH} characters.`);
+      return;
+    }
+    
+    if (isJudging) return;
 
     setIsJudging(true);
     setFeedback(null);
@@ -95,7 +103,11 @@ export default function BlueprintModal({ problemTitle, problemDescription, onCom
               <div className="relative">
                 <textarea
                   value={logicText}
-                  onChange={(e) => setLogicText(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= MAX_LOGIC_LENGTH) {
+                      setLogicText(e.target.value);
+                    }
+                  }}
                   placeholder="Example: I will use a hash map to store frequencies of each character. Then, I'll iterate through the string to find the first character with frequency 1..."
                   disabled={isJudging}
                   className="w-full h-48 p-4 bg-[var(--background)] border border-[var(--card-border)] rounded-xl text-[var(--foreground)] focus:ring-2 focus:ring-blue-500/50 outline-none resize-none transition-all disabled:opacity-50"

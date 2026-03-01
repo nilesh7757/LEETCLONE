@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { PlusCircle, Trash2, FileText, LayoutTemplate, SlidersHorizontal, ListChecks, Hash, BookOpen, ChevronLeft, Clock, HardDrive, Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, AlertCircle, RotateCcw, Settings, Play } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
+import { generateSlug } from "@/lib/utils";
 
 import TiptapEditor from "@/features/editor/components/TiptapEditor";
 import TestCaseEditor from "./TestCaseEditor";
@@ -894,13 +895,4 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false, 
       </Split>
     </div>
   );
-}
-
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "") // Remove non-word chars
-    .replace(/[\s_-]+/g, "-") // Replace spaces/underscores with single dash
-    .replace(/^-+|-+$/g, ""); // Remove dashes from start/end
 }

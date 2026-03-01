@@ -5,6 +5,7 @@ import { runAI } from "@/lib/gemini";
 import { apiHandler } from "@/lib/api-handler";
 import { logger } from "@/lib/logger";
 import { ProblemType, Prisma } from "@prisma/client";
+import { generateSlug } from "@/lib/utils";
 
 interface TopicStats {
   solved: number;
@@ -147,16 +148,8 @@ export const POST = apiHandler(async (req: Request) => {
     return formatted;
   };
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "") // Remove non-word chars
-      .replace(/[\s_-]+/g, "-") // Replace spaces/underscores with single dash
-      .replace(/^-+|-+$/g, ""); // Remove dashes from start/end
-  };
 
-  // --- AUDITOR PHASE: Fix hallucinations before saving ---
+    // --- AUDITOR PHASE: Fix hallucinations before saving ---
   const auditProblem = async (prob: GeneratedAIProblem): Promise<GeneratedAIProblem> => {
     logger.info(`[AI Auditor] Auditing: ${prob.title}`);
     const auditPrompt = `

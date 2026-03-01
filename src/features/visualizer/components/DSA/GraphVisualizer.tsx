@@ -20,67 +20,76 @@ interface BFSDFSStep {
   logs: string[];
 }
 
-export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
-  const [nodes, setNodes] = useState<Node[]>(() => {
-    const numNodes = 6;
-    const width = 800;
-    const height = 500;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) / 3.5;
+export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
-    const initialNodes: Node[] = [];
-    for (let i = 0; i < numNodes; i++) {
-      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
-      initialNodes.push({
-        id: i,
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-      });
-    }
-    return initialNodes;
-  });
-  const [matrix, setMatrix] = useState<number[][]>(() => {
-    const numNodes = 6;
-    const newMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
-    for (let i = 0; i < numNodes; i++) {
-      for (let j = i + 1; j < numNodes; j++) {
-        if (Math.random() < 0.3) {
-          newMatrix[i][j] = 1;
-          newMatrix[j][i] = 1;
-        }
-      }
-    }
-    // Ensure connectivity
-    for (let i = 0; i < numNodes - 1; i++) {
-        newMatrix[i][i+1] = 1;
-        newMatrix[i+1][i] = 1;
-    }
-    return newMatrix;
-  });
-  const [mode, setMode] = useState<"BFS" | "DFS">("BFS");
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [matrix, setMatrix] = useState<number[][]>([]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [mode, setMode] = useState<"BFS" | "DFS">("BFS");
   const [isEditing, setIsEditing] = useState(false);
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
-  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
 
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
-        setDimensions({
-          width: entries[0].contentRect.width,
-          height: entries[0].contentRect.height
+        const { width, height } = entries[0].contentRect;
+        // defer to avoid cascading renders
+        requestAnimationFrame(() => {
+            setDimensions({ width, height });
+            setIsMobile(width < 768);
         });
       }
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
+
+  // Initialize nodes
+  useEffect(() => {
+    if (dimensions.width > 0 && nodes.length === 0) {
+        const numNodes = dimensions.width < 768 ? 5 : 6;
+        const centerX = dimensions.width / 2;
+        const centerY = dimensions.height / 2;
+        const radius = Math.min(dimensions.width, dimensions.height) / 3.5;
+
+        const initialNodes: Node[] = [];
+        for (let i = 0; i < numNodes; i++) {
+            const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
+            initialNodes.push({
+                id: i,
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+            });
+        }
+
+        const initialMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
+        for (let i = 0; i < numNodes; i++) {
+            for (let j = i + 1; j < numNodes; j++) {
+                if (Math.random() < 0.3) {
+                    initialMatrix[i][j] = 1;
+                    initialMatrix[j][i] = 1;
+                }
+            }
+        }
+        for (let i = 0; i < numNodes - 1; i++) {
+            initialMatrix[i][i+1] = 1;
+            initialMatrix[i+1][i] = 1;
+        }
+
+        // Only use deferred update
+        requestAnimationFrame(() => {
+            setNodes(initialNodes);
+            setMatrix(initialMatrix);
+        });
+    }
+  }, [dimensions, nodes.length]);
 
   const resetSimulation = React.useCallback(() => {
     setIsPlaying(false);
@@ -232,7 +241,6 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
                 record(`Popped Node ${u} from stack and marking visited.`, "VISIT", u, stack);
                 addLog(`Visited Node ${u}.`);
 
-                // To match visual expectation, we push neighbors in reverse
                 for (let v = maxId - 1; v >= 0; v--) {
                     if (matrix[u]?.[v] === 1 && !visited.has(v)) {
                         stack.push(v);
@@ -349,12 +357,12 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
                     )}
                 </AnimatePresence>
 
-                <div className="absolute top-6 right-6 z-30 flex flex-col gap-4 pointer-events-none max-w-[220px]">
-                    <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-3">
-                             <TrendingUp size={12} /> {mode === "BFS" ? "Queue" : "Stack"} state
+                <div className="absolute top-4 right-4 md:top-6 md:right-6 z-30 flex flex-col gap-3 md:gap-4 pointer-events-none max-w-[160px] md:max-w-[220px]">
+                    <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-3 md:p-4 rounded-2xl shadow-sm">
+                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-2 md:mb-3">
+                             <TrendingUp size={isMobile ? 10 : 12} /> {mode === "BFS" ? "Queue" : "Stack"}
                         </span>
-                        <div className="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                        <div className="flex flex-wrap gap-1 md:gap-1.5 min-h-[24px] md:min-h-[32px] items-center">
                              <AnimatePresence>
                                  {currentStep.queueStack.map((val, idx) => (
                                      <motion.div 
@@ -372,7 +380,7 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
                         </div>
                     </div>
 
-                    <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm h-[200px] overflow-hidden flex flex-col">
+                    <div className="hidden md:flex bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm h-[200px] overflow-hidden flex flex-col">
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-2">
                              <Activity size={12} /> Log
                         </span>

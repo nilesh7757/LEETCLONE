@@ -5,6 +5,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
+const AUTH_SECRET = process.env.AUTH_SECRET || "default_auth_secret_for_development_purposes";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
@@ -30,7 +32,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (!user.password) {
-          // User likely signed up with Google
           throw new Error("This account was created using Google. Please sign in with Google.");
         }
 
@@ -51,5 +52,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  secret: process.env.AUTH_SECRET,
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.sub = user.id;
+        // Search for properties safely
+        if ("role" in user) token.role = user.role as string;
+        if ("streak" in user) token.streak = user.streak as number;
+      }
+
+      if (token.sub && (!token.role || token.streak === undefined)) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub as string },
+            select: { role: true, streak: true, name: true, image: true },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.streak = dbUser.streak;
+            token.name = dbUser.name;
+            token.picture = dbUser.image;
+          }
+        } catch (error) {
+          console.error("JWT Callback Error:", error);
+        }
+      }
+
+      if (trigger === "update" && session) {
+        if (session.name) token.name = session.name;
+        if (session.image) token.picture = session.image;
+        if (session.role) token.role = session.role;
+        if (session.streak !== undefined) token.streak = session.streak;
+      }
+      return token;
+    },
+  },
+  secret: AUTH_SECRET,
 });

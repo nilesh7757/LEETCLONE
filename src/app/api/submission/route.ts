@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import { executeCode, TestInputOutput, ExecutionResult } from "@/lib/codeExecution";
 import { auditAndAnalyze, evaluateSystemDesign } from "@/lib/gemini";
 import { socketClient } from "@/lib/socket-client";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
+import { updateUserStreak } from "@/lib/services/streak";
+import { processContestScoring } from "@/lib/services/contest";
 
 // Ensure socket is connected
 socketClient.connect();
-const socket = socketClient.socket;
 
 export const GET = apiHandler(async (req: Request) => {
   const session = await auth();
@@ -57,9 +57,10 @@ export const GET = apiHandler(async (req: Request) => {
 
 export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
-  if (!session || !session.user) {
+  if (!session || !session.user || !session.user.id) {
     throw new ApiError("Unauthorized", 401);
   }
+  const userId = session.user.id;
 
   const { code, language, problemId, type } = await req.json();
   logger.info(`[SUBMISSION] Start Submission for: ${problemId}, type: ${type}`);
@@ -70,26 +71,14 @@ export const POST = apiHandler(async (req: Request) => {
     select: {
       id: true,
       title: true,
-      slug: true,
       difficulty: true,
-      category: true,
       description: true,
       timeLimit: true,
       memoryLimit: true,
       testSets: true,
-      referenceSolution: true,
       initialSchema: true,
       initialData: true,
       type: true,
-      contests: {
-        select: {
-          id: true,
-          startTime: true,
-          endTime: true,
-          creatorId: true,
-          isOfficial: true,
-        },
-      },
     },
   });
 
@@ -97,6 +86,7 @@ export const POST = apiHandler(async (req: Request) => {
     throw new ApiError("Problem not found", 404);
   }
 
+  // Parse Test Cases
   let combinedTestCases: TestInputOutput[] = [];
   let rawTestSets = problem.testSets;
 
@@ -110,12 +100,9 @@ export const POST = apiHandler(async (req: Request) => {
 
   if (Array.isArray(rawTestSets)) {
     combinedTestCases = rawTestSets as unknown as TestInputOutput[];
-  } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in (rawTestSets as Record<string, unknown>) && 'hidden' in (rawTestSets as Record<string, unknown>)) {
+  } else if (rawTestSets && typeof rawTestSets === 'object' && 'examples' in (rawTestSets as Record<string, unknown>)) {
     const sets = rawTestSets as unknown as { examples: TestInputOutput[]; hidden: TestInputOutput[] };
-    combinedTestCases = [
-      ...sets.examples,
-      ...sets.hidden
-    ];
+    combinedTestCases = [...(sets.examples || []), ...(sets.hidden || [])];
   }
 
   // 2. Execute Code
@@ -173,12 +160,12 @@ export const POST = apiHandler(async (req: Request) => {
 
   // Determine overall status
   let maxRuntime = 0;
-  let firstFailingResult = null;
+  let firstFailingResult: ExecutionResult | null = null;
   let overallStatus = "Accepted";
 
   if (Array.isArray(results)) {
     for (const res of results) {
-      if (res.runtime && typeof res.runtime === 'number' && !isNaN(res.runtime)) {
+      if (typeof res.runtime === 'number' && !isNaN(res.runtime)) {
         if (res.runtime > maxRuntime) maxRuntime = res.runtime;
       }
       if (res.status !== "Accepted" && overallStatus === "Accepted") {
@@ -206,144 +193,59 @@ export const POST = apiHandler(async (req: Request) => {
     }
   }
 
-  // 3. Save Submission
-  const submission = await prisma.submission.create({
-    data: {
-      code,
-      language: problem.type === "SQL" ? "sql" : (problem.type === "SYSTEM_DESIGN" ? "markdown" : language), 
-      status: overallStatus,
-      score: designScore,
-      runtime: maxRuntime, 
-      timeComplexity: geminiTimeComplexity,
-      spaceComplexity: geminiSpaceComplexity,
-      auditPassed, 
-      auditFeedback, 
-      problemId,
-      userId: session.user.id,
-      testCaseResults: results ? (results as unknown as Prisma.InputJsonValue) : [],
-    },
+  // 3. Save Submission and Update User Stats (Transactional)
+  const finalSubmission = await prisma.$transaction(async (tx) => {
+    const sub = await tx.submission.create({
+      data: {
+        code,
+        language: problem.type === "SQL" ? "sql" : (problem.type === "SYSTEM_DESIGN" ? "markdown" : language), 
+        status: overallStatus,
+        score: designScore,
+        runtime: maxRuntime, 
+        timeComplexity: geminiTimeComplexity,
+        spaceComplexity: geminiSpaceComplexity,
+        auditPassed, 
+        auditFeedback, 
+        problemId,
+        userId: userId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        testCaseResults: results ? (results as any) : [],
+      },
+    });
+
+    if (overallStatus === "Accepted") {
+      const previousAccepted = await tx.submission.count({
+        where: {
+          userId: userId,
+          problemId,
+          status: "Accepted",
+          id: { not: sub.id }
+        }
+      });
+
+      if (previousAccepted === 0) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { solvedCount: { increment: 1 } }
+        });
+      }
+    }
+    return sub;
   });
 
-  // User Stats Update
-  if (overallStatus === "Accepted") {
-    const previousAccepted = await prisma.submission.count({
-      where: {
-        userId: session.user.id,
-        problemId,
-        status: "Accepted",
-        id: { not: submission.id }
-      }
-    });
-
-    if (previousAccepted === 0) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { solvedCount: { increment: 1 } }
-      });
-    }
-  }
-
+  // 4. Update Streak and Contest Scoring (Async)
   let updatedStreak = 0;
   if (overallStatus === "Accepted") {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { streak: true, lastSolvedDate: true }
-    });
-
-    if (user) {
-      const today = new Date();
-      today.setUTCHours(0, 0, 0, 0);
-      const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
-      if (lastSolved) lastSolved.setUTCHours(0, 0, 0, 0);
-
-      let newStreak = user.streak;
-      if (!lastSolved) {
-        newStreak = 1;
-      } else if (lastSolved.getTime() !== today.getTime()) {
-        const yesterday = new Date(today);
-        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-        newStreak = lastSolved.getTime() === yesterday.getTime() ? newStreak + 1 : 1;
-      }
-      updatedStreak = newStreak;
-
-      if (newStreak !== user.streak || !lastSolved || lastSolved.getTime() !== today.getTime()) {
-        await prisma.user.update({
-          where: { id: session.user.id },
-          data: {
-            streak: newStreak,
-            lastSolvedDate: new Date()
-          }
-        });
-      }
-    }
-  }
-
-  // Contest Scoring
-  if (overallStatus === "Accepted") {
-    const now = new Date();
-    const activeContests = await prisma.contest.findMany({
-      where: {
-        problems: { some: { id: problemId } },
-        startTime: { lte: now },
-        endTime: { gte: now },
-      },
-      include: {
-        registrations: { where: { userId: session.user.id } }
-      }
-    });
-
-    for (const contest of activeContests) {
-      if (contest.creatorId === session.user.id) continue;
-
-      const registration = contest.registrations[0];
-      if (registration) {
-        const previousSolves = await prisma.submission.count({
-          where: {
-            problemId,
-            userId: session.user.id,
-            status: "Accepted",
-            createdAt: { gte: contest.startTime, lte: contest.endTime },
-            id: { not: submission.id }
-          }
-        });
-
-        if (previousSolves === 0 && contest.isOfficial) {
-          let points = 10;
-          if (problem.difficulty === "Medium") points = 20;
-          if (problem.difficulty === "Hard") points = 30;
-          
-          await prisma.contestRegistration.update({
-            where: { id: registration.id },
-            data: { score: { increment: points } }
-          });
-        }
-      }
-
-      // Leaderboard update
-      const contestRegistrations = await prisma.contestRegistration.findMany({
-        where: { contestId: contest.id },
-        orderBy: [{ score: "desc" }, { registeredAt: "asc" }],
-        include: { user: { select: { id: true, name: true, image: true } } },
-      });
-
-      let currentRank = 1;
-      let previousScore = -1;
-      const leaderboard = contestRegistrations.map((reg, index) => {
-        if (reg.score !== previousScore) currentRank = index + 1;
-        previousScore = reg.score;
-        return {
-          rank: currentRank,
-          user: reg.user,
-          score: reg.score,
-        };
-      });
-
-      socket.emit("leaderboard_update", { contestId: contest.id, leaderboard });
+    try {
+      updatedStreak = await updateUserStreak(userId);
+      await processContestScoring(userId, problemId, problem.difficulty, finalSubmission.id);
+    } catch (err) {
+      logger.error("[SUBMISSION] Post-processing failed", err);
     }
   }
 
   return NextResponse.json({ 
-    submission,
+    submission: finalSubmission,
     newStreak: updatedStreak,
     failedTestCase: firstFailingResult ? {
       input: firstFailingResult.input,
@@ -352,4 +254,3 @@ export const POST = apiHandler(async (req: Request) => {
     } : null
   });
 });
-    

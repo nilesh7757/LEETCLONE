@@ -27,6 +27,11 @@ interface GeminiChatProps {
   testCases?: TestCase[];
 }
 
+interface HistoryMessage {
+    role: string;
+    parts: { text: string }[];
+}
+
 export default function GeminiChat({ 
   problemId, 
   problemTitle, 
@@ -137,26 +142,44 @@ export default function GeminiChat({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Load chat history from LocalStorage
+  // Load chat history from DB
   useEffect(() => {
-    const savedMessages = localStorage.getItem(`gemini_chat_\${problemId}`);
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    } else {
-      setMessages([
-        {
-          id: "1",
-          role: "model",
-          text: `Hi! I'm your AI Tutor. I can help you with "\${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
-        },
-      ]);
-    }
+    const fetchHistory = async () => {
+      try {
+        const { data } = await axios.get(`/api/gemini/chat?problemId=${problemId}`);
+        if (data.messages && data.messages.length > 0) {
+          const mapped: Message[] = data.messages.map((m: HistoryMessage) => ({
+            id: Math.random().toString(),
+            role: m.role === 'model' ? 'model' : 'user',
+            text: m.parts[0]?.text || ""
+          }));
+          setMessages(mapped);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to fetch chat history from DB", err);
+      }
+      
+      const savedMessages = localStorage.getItem(`gemini_chat_${problemId}`);
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages));
+      } else {
+        setMessages([
+          {
+            id: "1",
+            role: "model",
+            text: `Hi! I'm your AI Tutor. I can help you with "${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
+          },
+        ]);
+      }
+    };
+
+    fetchHistory();
   }, [problemId, problemTitle]);
 
-  // Save chat history to LocalStorage
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem(`gemini_chat_\${problemId}`, JSON.stringify(messages));
+      localStorage.setItem(`gemini_chat_${problemId}`, JSON.stringify(messages));
     }
     scrollToBottom();
   }, [messages, problemId]);
@@ -270,26 +293,31 @@ export default function GeminiChat({
     }
   };
 
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     if (window.confirm("Clear all chat history for this problem?")) {
-      localStorage.removeItem(`gemini_chat_\${problemId}`);
-      setMessages([
-        {
-          id: "1",
-          role: "model",
-          text: `Hi! I'm your AI Tutor. I can help you with "\${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
-        },
-      ]);
-      toast.success("History cleared");
+      try {
+        await axios.delete(`/api/gemini/chat?problemId=${problemId}`);
+        localStorage.removeItem(`gemini_chat_${problemId}`);
+        setMessages([
+          {
+            id: "1",
+            role: "model",
+            text: `Hi! I'm your AI Tutor. I can help you with "${problemTitle}". \n\nFeel free to ask for hints, explanation of the problem, or feedback on your code!`,
+          },
+        ]);
+        toast.success("History cleared");
+      } catch (err) {
+        console.error("Clear history failed", err);
+        toast.error("Failed to clear history on server.");
+      }
     }
   };
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      {/* Header */}
-      <div className={`p-4 flex items-center justify-between z-10 \${isInterviewMode ? 'bg-purple-600/5' : 'bg-transparent'}`}>
+      <div className={`p-4 flex items-center justify-between z-10 ${isInterviewMode ? 'bg-purple-600/5' : 'bg-transparent'}`}>
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl \${isInterviewMode ? 'bg-purple-500/20' : 'bg-purple-500/10'}`}>
+          <div className={`p-2 rounded-xl ${isInterviewMode ? 'bg-purple-500/20' : 'bg-purple-500/10'}`}>
             {isInterviewMode ? <ShieldAlert className="w-4 h-4 text-purple-500" /> : <Sparkles className="w-4 h-4 text-purple-500" />}
           </div>
           <div>
@@ -297,7 +325,7 @@ export default function GeminiChat({
               {isInterviewMode ? "Interview Mode" : "AI Tutor"}
             </h3>
             <p className="text-[10px] text-[var(--foreground)]/40 font-bold uppercase tracking-widest">
-              {isInterviewMode ? "Real-time assessment" : "Groq Neural Engine"}
+              Groq Neural Engine
             </p>
           </div>
         </div>
@@ -309,7 +337,7 @@ export default function GeminiChat({
                 setIsVoiceOn(!isVoiceOn);
                 if (!isVoiceOn) toast.success("AI Voice Enabled");
               }}
-              className={`p-2 rounded-lg transition-all cursor-pointer \${isVoiceOn ? 'bg-purple-500/20 text-purple-500' : 'text-[var(--foreground)]/30 hover:bg-[var(--foreground)]/5'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${isVoiceOn ? 'bg-purple-500/20 text-purple-500' : 'text-[var(--foreground)]/30 hover:bg-[var(--foreground)]/5'}`}
               title="Toggle AI Voice"
             >
               {isVoiceOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -333,10 +361,10 @@ export default function GeminiChat({
             key={msg.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`flex items-start gap-4 \${msg.role === "user" ? "flex-row-reverse" : ""}`}
+            className={`flex items-start gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
           >
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm \${msg.role === "user"
+              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${msg.role === "user"
                 ? "bg-[var(--foreground)]/10 text-[var(--foreground)]"
                 : "bg-purple-600/10 text-purple-500"
               }`}
@@ -344,7 +372,7 @@ export default function GeminiChat({
               {msg.role === "user" ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
             </div>
             <div
-              className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed whitespace-pre-wrap \${msg.role === "user"
+              className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user"
                 ? "bg-[var(--foreground)]/5 text-[var(--foreground)] rounded-tr-none"
                 : "bg-[var(--card)]/40 text-[var(--foreground)]/90 rounded-tl-none"
               }`}
@@ -377,8 +405,8 @@ export default function GeminiChat({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={cooldown > 0}
-            placeholder={cooldown > 0 ? `Neural Cooldown (\${cooldown}s)...` : "Signal your question..."}
-            className={`w-full pl-5 pr-14 py-4 bg-[var(--card)]/20 border border-transparent focus:border-purple-500/20 rounded-3xl text-sm text-[var(--foreground)] outline-none transition-all resize-none h-[64px] custom-scrollbar shadow-inner \${cooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            placeholder={cooldown > 0 ? `Neural Cooldown (${cooldown}s)...` : "Signal your question..."}
+            className={`w-full pl-5 pr-14 py-4 bg-[var(--card)]/20 border border-transparent focus:border-purple-500/20 rounded-3xl text-sm text-[var(--foreground)] outline-none transition-all resize-none h-[64px] custom-scrollbar shadow-inner ${cooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           <button
             onClick={handleSend}

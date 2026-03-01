@@ -3,6 +3,7 @@ import { runAI } from "@/lib/gemini";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { apiHandler } from "@/lib/api-handler";
+import { generateSlug } from "@/lib/utils";
 
 interface AITestCase {
   input?: string;
@@ -87,14 +88,6 @@ export const POST = apiHandler(async (req: Request) => {
     }
   }
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "") // Remove non-word chars
-      .replace(/[\s_-]+/g, "-") // Replace spaces/underscores with single dash
-      .replace(/^-+|-+$/g, ""); // Remove dashes from start/end
-  };
 
   // Create the problem in a "Draft/Unverified" state
   const problem = await prisma.problem.create({

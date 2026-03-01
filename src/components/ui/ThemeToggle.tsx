@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun, Coffee, Check } from "lucide-react";
+import { Moon, Sun, Coffee, Check, Ghost, Terminal, Shield } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -33,6 +33,9 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
     { id: "dark", label: "Dark", icon: Moon, color: "text-blue-400" },
     { id: "light", label: "Light", icon: Sun, color: "text-amber-400" },
     { id: "cream", label: "Cream", icon: Coffee, color: "text-orange-400" },
+    { id: "dracula", label: "Dracula", icon: Ghost, color: "text-red-500" },
+    { id: "matrix", label: "Matrix", icon: Terminal, color: "text-green-500" },
+    { id: "got", label: "Winter", icon: Shield, color: "text-sky-400" },
   ];
 
   const currentTheme = themes.find((t) => t.id === theme) || themes[0];
@@ -64,7 +67,15 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
               <button
                 key={t.id}
                 onClick={() => {
-                  setTheme(t.id);
+                  if (t.id === "dracula") {
+                    window.dispatchEvent(new CustomEvent("start-dracula-transformation"));
+                  } else if (t.id === "matrix") {
+                    window.dispatchEvent(new CustomEvent("start-matrix-transformation"));
+                  } else if (t.id === "got") {
+                    window.dispatchEvent(new CustomEvent("start-got-transformation"));
+                  } else {
+                    setTheme(t.id);
+                  }
                   setIsOpen(false);
                 }}
                 className={`w-full px-3 py-2.5 flex items-center justify-between text-sm rounded-xl transition-all duration-200 group ${

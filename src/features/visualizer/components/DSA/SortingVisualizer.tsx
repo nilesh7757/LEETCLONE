@@ -24,8 +24,23 @@ interface HistoryStep {
 }
 
 export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [nodeWidth, setNodeWidth] = useState(65);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setNodeWidth(mobile ? 35 : 65);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [initialData, setInitialData] = useState<VisualNode[]>(() => {
-    return Array.from({ length: ARRAY_SIZE }, (_, i) => ({
+    const size = typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : ARRAY_SIZE;
+    return Array.from({ length: size }, (_, i) => ({
       id: `bubble-node-${Math.random().toString(36).substr(2, 9)}`,
       value: Math.floor(Math.random() * 60) + 20,
       logicalIndex: i,
@@ -191,42 +206,40 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
                     const nodeColor = isSwapping ? "var(--viz-rose)" : isComparing ? "var(--viz-amber)" : isSorted ? "var(--viz-green)" : "rgba(var(--viz-blue-rgb), 0.15)";
                     const nodeColorRGB = isSwapping ? "var(--viz-red-rgb)" : isComparing ? "var(--viz-gold-rgb)" : isSorted ? "var(--viz-green-rgb)" : "var(--viz-blue-rgb)";
                     
-                    return (
-                        <motion.div
-                            key={node.id}
-                            layout
-                            animate={{ 
-                                x: (node.logicalIndex - (ARRAY_SIZE - 1) / 2) * 65, 
-                                height: `${node.value}%`,
-                                backgroundColor: nodeColor,
-                                borderColor: isSwapping || isComparing || isSorted ? nodeColor : "rgba(var(--viz-blue-rgb), 0.3)",
-                                boxShadow: isComparing || isSwapping || isSorted ? `0 0 35px rgba(${nodeColorRGB}, 0.3)` : "none",
-                                scale: isComparing || isSwapping ? 1.1 : 1,
-                            }}
-                            transition={{ type: "spring", stiffness: 120, damping: 25 }}
-                            className="absolute bottom-0 w-12 border-t-2 border-x-2 rounded-t-xl z-20 flex flex-col items-center justify-start pt-2 font-mono overflow-hidden"
-                        >
-                            <span className={`text-xs font-bold ${isComparing || isSwapping ? 'text-[var(--background)]' : 'text-[var(--foreground)]/60'}`}>{node.value}</span>
-                            <div className={`mt-auto pb-1 text-[8px] opacity-20 uppercase ${isComparing || isSwapping ? 'text-[var(--background)]' : 'text-[var(--foreground)]'}`}>0x{node.id.slice(-4)}</div>
-                        </motion.div>
-                    );
-                })}
-            </div>
-        </div>
-
-        <div className="mt-8 p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10">
-            <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--primary)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronRight size={18} /></button>
-                </div>
-            </div>
-
-            <div className="relative flex items-center group/slider">
+                                        return (
+                                            <motion.div
+                                                key={node.id}
+                                                layout
+                                                animate={{
+                                                    x: (node.logicalIndex - (currentStep.nodes.length - 1) / 2) * nodeWidth,
+                                                    height: `${node.value}%`,
+                                                    backgroundColor: nodeColor,
+                                                    borderColor: isSwapping || isComparing || isSorted ? nodeColor : "rgba(var(--viz-blue-rgb), 0.3)",
+                                                    boxShadow: isComparing || isSwapping || isSorted ? `0 0 35px rgba(${nodeColorRGB}, 0.3)` : "none",
+                                                    scale: isComparing || isSwapping ? 1.1 : 1,     
+                                                }}
+                                                transition={{ type: "spring", stiffness: 120, damping: 25 }}
+                                                className={`absolute bottom-0 ${isMobile ? 'w-7' : 'w-12'} border-t-2 border-x-2 rounded-t-xl z-20 flex flex-col items-center justify-start pt-2 font-mono overflow-hidden`}
+                                            >
+                                                <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-bold ${isComparing || isSwapping ? 'text-[var(--background)]' : 'text-[var(--foreground)]/60'}`}>{node.value}</span>
+                                                <div className={`mt-auto pb-1 ${isMobile ? 'text-[6px]' : 'text-[8px]'} opacity-20 uppercase ${isComparing || isSwapping ? 'text-[var(--background)]' : 'text-[var(--foreground)]'}`}>0x{node.id.slice(-4)}</div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                    
+                            <div className="mt-8 p-4 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2rem] md:rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+                                <div className="flex items-center justify-between px-2">
+                                    <div className="flex items-center gap-2 md:gap-3">
+                                        <Hash size={14} className="text-[var(--primary)]" />        
+                                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
+                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1 md:p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronLeft size={isMobile ? 16 : 18} /></button>
+                                                        <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1 md:p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronRight size={isMobile ? 16 : 18} /></button>
+                                                    </div>                                </div>
+                                <div className="relative flex items-center group/slider">
                 <div className="absolute w-full h-1 bg-[var(--background)]/10 rounded-full" />
                 <div className="absolute h-1 bg-[var(--viz-amber)] rounded-full shadow-[0_0_10px_rgba(var(--viz-blue-rgb), 0.4)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 

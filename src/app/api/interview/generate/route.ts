@@ -18,6 +18,17 @@ export const POST = apiHandler(async (req: Request) => {
 
   const { topic, difficulty } = await req.json();
 
+  // Input Validation
+  if (!topic || typeof topic !== 'string' || topic.trim().length < 2 || topic.trim().length > 100) {
+    throw new ApiError("Topic must be between 2 and 100 characters.", 400);
+  }
+
+  if (!["Entry", "Senior", "Staff"].includes(difficulty)) {
+    throw new ApiError("Invalid difficulty level. Must be Entry, Senior, or Staff.", 400);
+  }
+
+  const sanitizedTopic = topic.trim().replace(/[<>]/g, ""); // Basic XSS/HTML tag removal
+
   // 1. Fetch user's solving stats for context
   const submissions = await prisma.submission.findMany({
     where: { userId, status: "Accepted" },
@@ -34,7 +45,7 @@ export const POST = apiHandler(async (req: Request) => {
   const systemPrompt = `You are a Technical Interviewer. Generate a Mock Interview session.
   Candidate Skills: ${user?.skills.join(", ") || "None listed"}
   Candidate Experience: ${JSON.stringify(stats)}
-  Interview Focus: ${topic}
+  Interview Focus: ${sanitizedTopic}
   Difficulty Level: ${difficulty}
 
   Return ONLY JSON:
@@ -48,7 +59,7 @@ export const POST = apiHandler(async (req: Request) => {
     ]
   }`;
 
-  const userPrompt = `Create a challenging ${difficulty} level interview about ${topic}.`;
+  const userPrompt = `Create a challenging ${difficulty} level interview about ${sanitizedTopic}.`;
   
   try {
     const responseText = await runAI(userPrompt, systemPrompt, true);
@@ -59,7 +70,7 @@ export const POST = apiHandler(async (req: Request) => {
     const interview = await prisma.mockInterview.create({
       data: {
         userId,
-        topic,
+        topic: sanitizedTopic,
         difficulty,
         questions: interviewData.questions,
         status: "ONGOING"

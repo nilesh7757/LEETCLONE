@@ -1,6 +1,5 @@
 import type { NextAuthConfig, DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
-import { prisma } from "@/lib/prisma"; // Import the existing PrismaClient instance
 
 // Extend the Session type to include the 'role'
 declare module "next-auth" {
@@ -10,25 +9,15 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      role?: string | null; // Add role property
-      streak?: number; // Add streak property
+      role?: string | null; 
+      streak?: number; 
     } & DefaultSession["user"];
   }
 
   interface JWT {
-    role?: string | null; // Add role to JWT
-    streak?: number; // Add streak to JWT
+    role?: string | null; 
+    streak?: number; 
   }
-}
-
-interface UserWithRole {
-  role?: string;
-  streak?: number;
-}
-
-interface SessionUpdate {
-  role?: string;
-  streak?: number;
 }
 
 export const authConfig = {
@@ -38,6 +27,7 @@ export const authConfig = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.AUTH_SECRET || "development-secret-key-at-least-32-chars-long-!",
   callbacks: {
     async session({ session, token }) {
       if (token?.sub) {
@@ -49,7 +39,7 @@ export const authConfig = {
       if (token?.picture) {
         session.user.image = token.picture;
       }
-      if (token?.role) { // Add role to session
+      if (token?.role) { 
         session.user.role = token.role as string;
       }
       if (token?.streak !== undefined) {
@@ -61,68 +51,7 @@ export const authConfig = {
       console.log("[AUTH] SignIn Attempt:", user.email);
       return true;
     },
-    async jwt({ token, user, trigger, session, account }) {
-      if (user) {
-        console.log("[AUTH] JWT New User/Sign-in:", user.email);
-        token.sub = user.id;
-
-        // Ensure user exists in DB for social logins if adapter didn't do it yet
-        if (account?.provider === "google") {
-            const existingUser = await prisma.user.findUnique({
-                where: { email: user.email as string }
-            });
-
-            if (!existingUser) {
-                console.log("[AUTH] Creating new Google user in DB:", user.email);
-                await prisma.user.create({
-                    data: {
-                        id: user.id,
-                        email: user.email,
-                        name: user.name,
-                        image: user.image,
-                        role: "USER",
-                        streak: 0,
-                    }
-                });
-            }
-        }
-
-        token.role = (user as UserWithRole).role || "USER";
-        token.streak = (user as UserWithRole).streak || 0;
-      }
-
-      // If we don't have the role/streak yet, try to fetch from DB
-      if (token.sub && (!token.role || token.streak === undefined)) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub as string },
-          select: { role: true, name: true, image: true, streak: true },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.streak = dbUser.streak;
-          token.name = dbUser.name;
-          token.picture = dbUser.image;
-        } else {
-          // Fallback if not in DB yet (e.g. just after social sign in before adapter finished)
-          token.role = token.role || "USER";
-          token.streak = token.streak || 0;
-        }
-      }
-
-      if (trigger === "update" && session) {
-        if (session.name) token.name = session.name;
-        if (session.image) token.picture = session.image;
-        // If role could be updated from profile, handle it here as well
-        if ((session as SessionUpdate).role) {
-            token.role = (session as SessionUpdate).role;
-        }
-        if ((session as SessionUpdate).streak !== undefined) {
-            token.streak = (session as SessionUpdate).streak;
-        }
-      }
-      return token;
-    },
-    authorized({ auth, request: { nextUrl } }) {
+    async authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isProtectedRoute = [
         "/problems",
@@ -140,8 +69,8 @@ export const authConfig = {
   },
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID || "dummy-id",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "dummy-secret",
     }),
   ],
 } satisfies NextAuthConfig;
