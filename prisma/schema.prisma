@@ -8,42 +8,111 @@ datasource db {
 }
 
 model Problem {
-  id                String             @id @default(uuid())
-  title             String
-  slug              String             @unique
-  difficulty        String
-  category          String
-  description       String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  referenceSolution String?
-  testSets          Json               @default("[]")
-  memoryLimit       Int                @default(256)
-  timeLimit         Int                @default(2)
-  isPublic          Boolean            @default(true)
-  creatorId         String?
-  editorial         String?
-  type              ProblemType        @default(CODING)
-  initialData       String?
-  initialSchema     String?
-  hints             String[]           @default([])
-  blueprint         Json?
-  pattern           String?
-  isVerified        Boolean            @default(true)
-  source            String             @default("SYSTEM")
-  lastAiFeedback    String?
-  blogPosts         BlogPost[]
-  comments          Comment[]
-  Draft             Draft[]
-  creator           User?              @relation("CreatedProblems", fields: [creatorId], references: [id])
-  studyPlans        StudyPlanProblem[]
-  submissions       Submission[]
-  contests          Contest[]          @relation("ContestToProblem")
+  id                 String               @id @default(uuid())
+  title              String
+  slug               String               @unique
+  difficulty         String
+  category           String
+  description        String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  referenceSolution  String?
+  testSets           Json                 @default("[]")
+  memoryLimit        Int                  @default(256)
+  timeLimit          Int                  @default(2)
+  isPublic           Boolean              @default(true)
+  creatorId          String?
+  editorial          String?
+  type               ProblemType          @default(CODING)
+  initialData        String?
+  initialSchema      String?
+  hints              String[]             @default([])
+  blueprint          Json?
+  pattern            String?
+  isVerified         Boolean              @default(true)
+  source             String               @default("SYSTEM")
+  lastAiFeedback     String?
+  blogPosts          BlogPost[]
+  comments           Comment[]
+  Draft              Draft[]
+  creator            User?                @relation("CreatedProblems", fields: [creatorId], references: [id], onDelete: SetNull)
+  studyPlans         StudyPlanProblem[]
+  submissions        Submission[]
+  contests           Contest[]            @relation("ContestToProblem")
+  collaborators      ProblemCollaborator[]
+  shareToken         String?              @unique // Token for shareable collaboration links
+  verificationStatus String               @default("STABLE") // STABLE, UNSTABLE, VETTING
+  verifiedSolutions  Json                 @default("[]") // Store metadata about different language solutions verified
+  resources          LearningResource[]
 
+  @@index([creatorId])
   @@index([difficulty, category, isPublic])
   @@index([type])
   @@index([title])
   @@index([slug])
+}
+
+model ProblemCollaborator {
+  id        String   @id @default(uuid())
+  problemId String
+  userId    String
+  role      String   @default("SETTER") // SETTER, TESTER
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, userId])
+}
+
+model Contest {
+  id                   String                @id @default(uuid())
+  title                String
+  description          String
+  startTime            DateTime
+  endTime              DateTime
+  createdAt            DateTime              @default(now())
+  creatorId            String
+  publishProblems      Boolean               @default(false)
+  accessCode           String?
+  visibility           String                @default("PUBLIC")
+  isOfficial           Boolean               @default(false)
+  isRated              Boolean               @default(false)
+  scoringProtocol      String                @default("CLASSIC") // CLASSIC, TACTICAL
+  status               String                @default("DRAFT") // DRAFT, VETTING, READY, LIVE, ENDED
+  verificationProtocol Json                  @default("{}") // Track approvals
+  blogPosts            BlogPost[]
+  creator              User                  @relation("CreatedContests", fields: [creatorId], references: [id], onDelete: Cascade)
+  registrations        ContestRegistration[]
+  ratingUpdates        UserRatingHistory[]
+  problems             Problem[]             @relation("ContestToProblem")
+  collaborators        ContestCollaborator[]
+  shareToken           String?               @unique // Token for shareable collaboration links
+  announcements        Announcement[]
+
+  @@index([creatorId])
+  @@index([startTime, endTime])
+  @@index([visibility])
+  @@index([isOfficial])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  message   String
+  createdAt DateTime @default(now())
+  contestId String
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@index([contestId])
+}
+
+model ContestCollaborator {
+  id        String   @id @default(uuid())
+  contestId String
+  userId    String
+  role      String   @default("SETTER") // SETTER, TESTER, COORDINATOR
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
 }
 
 model StudyPlan {
@@ -60,9 +129,11 @@ model StudyPlan {
   isOfficial   Boolean               @default(false)
   pendingData  Json?
   status       String                @default("DRAFT")
-  creator      User?                 @relation("CreatedStudyPlans", fields: [creatorId], references: [id])
+  creator      User?                 @relation("CreatedStudyPlans", fields: [creatorId], references: [id], onDelete: SetNull)
   enrollments  StudyPlanEnrollment[]
   problems     StudyPlanProblem[]
+
+  @@index([creatorId])
 }
 
 model StudyPlanProblem {
@@ -74,6 +145,8 @@ model StudyPlanProblem {
   studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
 
   @@unique([studyPlanId, problemId])
+  @@index([studyPlanId])
+  @@index([problemId])
 }
 
 model StudyPlanEnrollment {
@@ -87,6 +160,8 @@ model StudyPlanEnrollment {
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, studyPlanId])
+  @@index([userId])
+  @@index([studyPlanId])
 }
 
 model Comment {
@@ -129,8 +204,11 @@ model UserRatingHistory {
   ratingAfter  Int
   rank         Int
   date         DateTime @default(now())
-  contest      Contest  @relation(fields: [contestId], references: [id])
-  user         User     @relation(fields: [userId], references: [id])
+  contest      Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contestId])
 }
 
 model Submission {
@@ -149,64 +227,79 @@ model Submission {
   auditFeedback   String?
   auditPassed     Boolean? @default(true)
   reports         Report[]
-  problem         Problem  @relation(fields: [problemId], references: [id])
-  user            User?    @relation(fields: [userId], references: [id])
+  problem         Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([userId])
+  @@index([problemId])
   @@index([userId, status])
   @@index([problemId, status])
   @@index([createdAt(sort: Desc)])
 }
 
 model User {
-  id                   String                    @id @default(uuid())
-  name                 String?
-  email                String?                   @unique
-  emailVerified        DateTime?
-  image                String?
-  password             String?
-  bio                  String?
-  website              String?
-  description          String?
-  rating               Int                       @default(1500)
-  createdAt            DateTime                  @default(now())
-  updatedAt            DateTime?                 @updatedAt
-  role                 String                    @default("USER")
-  isBanned             Boolean                   @default(false)
-  warnings             Int                       @default(0)
-  isVerified           Boolean                   @default(false)
-  otp                  String?
-  otpExpires           DateTime?
-  resetToken           String?
-  resetTokenExpires    DateTime?
-  lastSolvedDate       DateTime?
-  streak               Int                       @default(0)
-  solvedCount          Int                       @default(0)
-  lastActive           DateTime?                 @default(now())
-  skills               String[]                  @default([])
-  aiChats              AiChat[]
-  accounts             Account[]
-  blogPosts            BlogPost[]
-  comments             Comment[]
-  commentVotes         CommentVote[]
-  createdContests      Contest[]                 @relation("CreatedContests")
-  registrations        ContestRegistration[]
-  conversations        ConversationParticipant[]
-  Draft                Draft[]
-  messages             Message[]
-  mockInterviews       MockInterview[]
-  sentNotifications    Notification[]            @relation("UserSentNotifications")
-  notifications        Notification[]            @relation("UserNotifications")
-  createdProblems      Problem[]                 @relation("CreatedProblems")
-  reportsMade          Report[]                  @relation("Reporter")
-  sessions             Session[]
-  snippets             Snippet[]
-  createdStudyPlans    StudyPlan[]               @relation("CreatedStudyPlans")
-  studyPlanEnrollments StudyPlanEnrollment[]
-  submissions          Submission[]
-  UserBadge            UserBadge[]
-  ratingHistory        UserRatingHistory[]
-  following            User[]                    @relation("UserFollows")
-  followedBy           User[]                    @relation("UserFollows")
+  id                    String                    @id @default(uuid())
+  name                  String?
+  email                 String?                   @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  bio                   String?
+  website               String?
+  description           String?
+  rating                Int                       @default(1500)
+  arcadePoints          Int                       @default(0)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime?                 @updatedAt
+  role                  String                    @default("USER")
+  isBanned              Boolean                   @default(false)
+  warnings              Int                       @default(0)
+  isVerified            Boolean                   @default(false)
+  otp                   String?
+  otpExpires            DateTime?
+  resetToken            String?
+  resetTokenExpires     DateTime?
+  lastSolvedDate        DateTime?
+  streak                Int                       @default(0)
+  solvedCount           Int                       @default(0)
+  lastActive            DateTime?                 @default(now())
+  skills                String[]                  @default([])
+  githubUsername        String?
+  leetcodeUsername      String?
+  codeforcesUsername    String?
+  codechefUsername      String?
+  atcoderUsername       String?
+  devPowerLevel         Int                       @default(0)
+  aiProfileFeedback     String?
+  externalStats         Json?
+  aiChats               AiChat[]
+  accounts              Account[]
+  blogPosts             BlogPost[]
+  comments              Comment[]
+  commentVotes          CommentVote[]
+  createdContests       Contest[]                 @relation("CreatedContests")
+  registrations         ContestRegistration[]
+  conversations         ConversationParticipant[]
+  Draft                 Draft[]
+  messages              Message[]
+  mockInterviews        MockInterview[]
+  sentNotifications     Notification[]            @relation("UserSentNotifications")
+  notifications         Notification[]            @relation("UserNotifications")
+  createdProblems       Problem[]                 @relation("CreatedProblems")
+  reportsMade           Report[]                  @relation("Reporter")
+  sessions              Session[]
+  snippets              Snippet[]
+  createdStudyPlans     StudyPlan[]               @relation("CreatedStudyPlans")
+  studyPlanEnrollments  StudyPlanEnrollment[]
+  submissions           Submission[]
+  UserBadge             UserBadge[]
+  ratingHistory         UserRatingHistory[]
+  arcadeScores          ArcadeScore[]
+  siegePlans            SiegePlan[]
+  following             User[]                    @relation("UserFollows")
+  followedBy            User[]                    @relation("UserFollows")
+  problemCollaborations ProblemCollaborator[]
+  contestCollaborations ContestCollaborator[]
 
   @@index([rating(sort: Desc)])
   @@index([streak(sort: Desc)])
@@ -214,6 +307,19 @@ model User {
   @@index([role])
   @@index([isBanned])
   @@index([isVerified])
+}
+
+model ArcadeScore {
+  id        String   @id @default(uuid())
+  userId    String
+  gameId    String   // BUG_SNIPER, ARCHITECT, BLITZ, CLASH
+  score     Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([gameId])
+  @@index([score(sort: Desc)])
 }
 
 model MockInterview {
@@ -260,10 +366,11 @@ model ConversationParticipant {
   userId         String
   conversationId String
   lastReadAt     DateTime?    @default(now())
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, conversationId])
+  @@index([conversationId])
 }
 
 model Message {
@@ -274,9 +381,10 @@ model Message {
   createdAt      DateTime     @default(now())
   senderId       String
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  sender         User         @relation(fields: [senderId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
+  @@index([senderId])
   @@index([conversationId, createdAt(sort: Desc)])
 }
 
@@ -287,31 +395,11 @@ model Report {
   status       String     @default("PENDING")
   submissionId String
   reporterId   String
-  reporter     User       @relation("Reporter", fields: [reporterId], references: [id])
-  submission   Submission @relation(fields: [submissionId], references: [id])
-}
+  reporter     User       @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-model Contest {
-  id              String                @id @default(uuid())
-  title           String
-  description     String
-  startTime       DateTime
-  endTime         DateTime
-  createdAt       DateTime              @default(now())
-  creatorId       String
-  publishProblems Boolean               @default(false)
-  accessCode      String?
-  visibility      String                @default("PUBLIC")
-  isOfficial      Boolean               @default(false)
-  blogPosts       BlogPost[]
-  creator         User                  @relation("CreatedContests", fields: [creatorId], references: [id])
-  registrations   ContestRegistration[]
-  ratingUpdates   UserRatingHistory[]
-  problems        Problem[]             @relation("ContestToProblem")
-
-  @@index([startTime, endTime])
-  @@index([visibility])
-  @@index([isOfficial])
+  @@index([reporterId])
+  @@index([submissionId])
 }
 
 model ContestRegistration {
@@ -321,10 +409,11 @@ model ContestRegistration {
   score        Int      @default(0)
   rank         Int?
   registeredAt DateTime @default(now())
-  contest      Contest  @relation(fields: [contestId], references: [id])
-  user         User     @relation(fields: [userId], references: [id])
+  contest      Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, contestId])
+  @@index([contestId])
 }
 
 model BlogPost {
@@ -341,10 +430,14 @@ model BlogPost {
   contestId  String?
   problemId  String?
   tags       String[]
-  author     User      @relation(fields: [authorId], references: [id])
-  contest    Contest?  @relation(fields: [contestId], references: [id])
-  problem    Problem?  @relation(fields: [problemId], references: [id])
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  contest    Contest?  @relation(fields: [contestId], references: [id], onDelete: SetNull)
+  problem    Problem?  @relation(fields: [problemId], references: [id], onDelete: SetNull)
   comments   Comment[]
+
+  @@index([authorId])
+  @@index([contestId])
+  @@index([problemId])
 }
 
 model Account {
@@ -390,6 +483,8 @@ model Snippet {
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Badge {
@@ -454,3 +549,37 @@ enum ProblemType {
   SQL
   READING
 }
+
+model SiegePlan {
+  id            String   @id @default(uuid())
+  userId        String
+  targetCompany String
+  planData      Json     // Stores the weekly roadmap generated by AI
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum ResourceType {
+  VIDEO
+  BOOK
+  BLOG
+  WEBSITE
+  ANIMATION
+}
+
+model LearningResource {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  url         String
+  type        ResourceType @default(VIDEO)
+  topic       String       // e.g. "Arrays", "Graphs"
+  creator     String?      // e.g. "Striver", "NeetCode"
+  isPublic    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  problems    Problem[]
+}
+

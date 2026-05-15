@@ -40,6 +40,13 @@ interface ProblemData {
   initialData: string | null;
   pattern: string | null;
   blueprint: Blueprint[] | null;
+  resources: {
+    id: string;
+    title: string;
+    url: string;
+    type: string;
+    creator: string | null;
+  }[];
 }
 
 export default async function Workspace({ params, searchParams }: WorkspaceProps) {
@@ -78,6 +85,18 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
       initialData: true,
       pattern: true,
       blueprint: true,
+      resources: {
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          type: true,
+          creator: true,
+        },
+        where: {
+          isPublic: true
+        }
+      }
     }
   }) as ProblemData;
 
@@ -137,10 +156,10 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
       {/* Main Workspace - Client Component for Interactive Elements */}
       <WorkspaceClient 
         problem={{
-          ...problem,
-          initialSchema: problem.initialSchema || undefined,
-          initialData: problem.initialData || undefined,
-          blueprint: problem.blueprint || undefined, // Ensure blueprint is passed
+          ...(problem as any),
+          initialSchema: (problem as any).initialSchema || undefined,
+          initialData: (problem as any).initialData || undefined,
+          blueprint: (problem as any).blueprint || undefined, // Ensure blueprint is passed
         }}
         examples={examplesForClient} // Pass only the example test cases
         showBlueprint={!!studyPlanId}

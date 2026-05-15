@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   UserCircle, LogOut, Camera, Save, Loader2, 
   TrendingUp, Calendar, 
-  Award, X, Sparkles, Zap,
-  Terminal, Ghost, Shield
+  Award, X, Sparkles, Zap, Rocket,
+  Github, CheckCircle2, AlertCircle
 } from "lucide-react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
@@ -60,17 +60,37 @@ interface SessionUser {
   website?: string | null;
   description?: string | null;
   skills?: string[];
+  arcadePoints?: number;
+  githubUsername?: string | null;
+  leetcodeUsername?: string | null;
+  codeforcesUsername?: string | null;
+  codechefUsername?: string | null;
+  atcoderUsername?: string | null;
+  devPowerLevel?: number;
+  aiProfileFeedback?: string | null;
 }
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme } = useTheme();
 
   const [stats, setStats] = useState<PerformanceStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+
+  // Local overrides for immediate UI update after sync
+  const [localOmniData, setLocalOmniData] = useState<{
+    powerLevel?: number;
+    advice?: string;
+    description?: string;
+    externalStats?: any;
+    githubUsername?: string;
+    leetcodeUsername?: string;
+    codeforcesUsername?: string;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -79,6 +99,11 @@ export default function ProfilePage() {
     description: "",
     image: "",
     skills: [] as string[],
+    githubUsername: "",
+    leetcodeUsername: "",
+    codeforcesUsername: "",
+    codechefUsername: "",
+    atcoderUsername: "",
   });
 
   const [skillInput, setSkillInput] = useState("");
@@ -104,6 +129,11 @@ export default function ProfilePage() {
         description: user.description || "",
         image: user.image || "",
         skills: user.skills || [],
+        githubUsername: user.githubUsername || "",
+        leetcodeUsername: user.leetcodeUsername || "",
+        codeforcesUsername: user.codeforcesUsername || "",
+        codechefUsername: user.codechefUsername || "",
+        atcoderUsername: user.atcoderUsername || "",
       });
       fetchStats(user.id);
     }
@@ -123,17 +153,77 @@ export default function ProfilePage() {
     setFormData({ ...formData, skills: formData.skills.filter(s => s !== skill) });
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdate = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
     try {
+      // 1. Save general profile
       await axios.put("/api/profile/update", formData);
-      await update(formData);
+      
+      // 2. Save usernames
+      await axios.put("/api/profile/update-omni-usernames", {
+        githubUsername: formData.githubUsername,
+        leetcodeUsername: formData.leetcodeUsername,
+        codeforcesUsername: formData.codeforcesUsername,
+        codechefUsername: formData.codechefUsername,
+        atcoderUsername: formData.atcoderUsername,
+      });
+
+      // 3. Force update session
+      await update({
+        ...session?.user,
+        ...formData
+      });
+
       toast.success("Identity updated successfully");
+      return true;
     } catch (error) {
       toast.error("Failed to sync identity");
+      return false;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncOmni = async () => {
+    // PRE-SYNC: Automatically save the current usernames
+    setSyncing(true);
+    const saveSuccess = await handleUpdate();
+    if (!saveSuccess) {
+        setSyncing(false);
+        return;
+    }
+
+    try {
+      const { data } = await axios.post("/api/profile/sync-omni");
+      
+      // Update local state for immediate feedback
+      setLocalOmniData({
+        powerLevel: data.powerLevel,
+        advice: data.advice,
+        description: data.title,
+        externalStats: data.externalStats,
+        githubUsername: formData.githubUsername,
+        leetcodeUsername: formData.leetcodeUsername,
+        codeforcesUsername: formData.codeforcesUsername
+      });
+
+      // Refresh session one more time with full synced data
+      await update({
+          ...session?.user,
+          devPowerLevel: data.powerLevel,
+          aiProfileFeedback: data.advice,
+          description: data.title,
+          externalStats: data.externalStats
+      });
+
+      toast.success("Neural Synchronization Complete", {
+        description: `New Power Level: ${data.powerLevel}`
+      });
+    } catch (error) {
+      toast.error("Synchronization Failed");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -167,6 +257,24 @@ export default function ProfilePage() {
   }
 
   const ratingValue = stats?.user?.rating || 1500;
+  const arcadePoints = (session?.user as SessionUser)?.arcadePoints || 0;
+  
+  // Logic for display: Prefer local synced data, then session data, then default 0
+  const powerLevel = localOmniData?.powerLevel ?? (session?.user as SessionUser)?.devPowerLevel ?? 0;
+  const aiFeedback = localOmniData?.advice ?? (session?.user as SessionUser)?.aiProfileFeedback;
+  const devTitle = localOmniData?.description ?? (session?.user as any)?.description;
+  const externalStats = localOmniData?.externalStats ?? (session?.user as any)?.externalStats;
+
+  const isPlatformConnected = (platform: 'github' | 'leetcode' | 'codeforces' | 'codechef' | 'atcoder') => {
+    const user = session?.user as any;
+    if (platform === 'github') return !!(localOmniData?.githubUsername || user?.githubUsername);
+    if (platform === 'leetcode') return !!(localOmniData?.leetcodeUsername || user?.leetcodeUsername);
+    if (platform === 'codeforces') return !!(localOmniData?.codeforcesUsername || user?.codeforcesUsername);
+    if (platform === 'codechef') return !!(formData.codechefUsername || user?.codechefUsername);
+    if (platform === 'atcoder') return !!(formData.atcoderUsername || user?.atcoderUsername);
+    return false;
+  };
+
   let rankColor = "var(--muted-foreground)";
   let rankTitle = "Unrated";
   if (ratingValue >= 2400) { rankColor = "var(--viz-red)"; rankTitle = "Grandmaster"; }
@@ -175,24 +283,8 @@ export default function ProfilePage() {
   else if (ratingValue >= 1200) { rankColor = "var(--viz-emerald)"; rankTitle = "Pupil"; }
   else { rankColor = "var(--viz-slate)"; rankTitle = "Newbie"; }
 
-  const isMatrix = theme === "matrix";
-  const isDracula = theme === "dracula";
-  const isGOT = theme === "got";
-
   return (
-    <div className={`min-h-screen w-full relative pb-20 overflow-x-hidden pt-8 transition-colors duration-500 ${isMatrix ? 'bg-black' : ''}`}>
-      <AnimatePresence>
-        {isMatrix && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.15 }} exit={{ opacity: 0 }} className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
-        )}
-        {isDracula && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.05 }} exit={{ opacity: 0 }} className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_#ff0000_0%,_transparent_70%)]" />
-        )}
-        {isGOT && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,_#38bdf8_0%,_transparent_50%)]" />
-        )}
-      </AnimatePresence>
-
+    <div className={`min-h-screen w-full relative pb-20 overflow-x-hidden pt-8 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
@@ -204,8 +296,8 @@ export default function ProfilePage() {
             <div className={`p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-2xl relative overflow-hidden`}>
                 <div className="flex flex-col items-center">
                     <div className="relative mb-8 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                        <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse opacity-20 ${isMatrix ? 'bg-[#00ff41]' : isDracula ? 'bg-red-600' : isGOT ? 'bg-sky-400' : 'bg-cyan-400'}`} />
-                        <div className={`w-32 h-32 rounded-full p-1 bg-gradient-to-tr relative z-10 ${isMatrix ? 'from-[#00ff41] to-black' : isDracula ? 'from-red-600 to-black' : isGOT ? 'from-sky-400 to-white' : 'from-cyan-400 to-purple-500'}`}>
+                        <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse opacity-20 bg-cyan-400`} />
+                        <div className={`w-32 h-32 rounded-full p-1 bg-gradient-to-tr relative z-10 from-cyan-400 to-purple-500`}>
                             <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--background)] bg-[var(--card)] relative">
                                 {formData.image ? (
                                     <Image src={formData.image} alt="Profile" fill className="object-cover group-hover:opacity-50 transition-all" />
@@ -222,11 +314,8 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <div className={`mb-8 flex items-center gap-3 ${isMatrix ? 'text-[#00ff41] font-mono' : isGOT ? 'font-serif' : ''}`}>
+                    <div className={`mb-8 flex items-center gap-3`}>
                         <h2 className="text-3xl font-black tracking-tighter">{formData.name || "UNIDENTIFIED_USER"}</h2>
-                        {isMatrix && <Terminal size={20} />}
-                        {isDracula && <Ghost size={20} className="text-red-600" />}
-                        {isGOT && <Shield size={20} className="text-sky-400" />}
                     </div>
 
                     <form onSubmit={handleUpdate} className="w-full space-y-6">
@@ -266,6 +355,155 @@ export default function ProfilePage() {
                             </button>
                         </div>
                     </form>
+
+                    <div className="w-full mt-6 pt-6 border-t border-[var(--border)]">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 block">Arcade_Stats</label>
+                        <div className="flex items-center gap-3 p-4 bg-[var(--viz-amber)]/10 text-[var(--viz-amber)] rounded-2xl border border-[var(--viz-amber)]/20">
+                            <Zap className="w-5 h-5 fill-current" />
+                            <div className="text-left">
+                                <div className="text-xs font-bold">Arcade Points</div>
+                                <div className="text-[10px] opacity-70">{arcadePoints} AP Collected</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-full mt-6 pt-6 border-t border-[var(--border)]">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 block">Neural_Omni_Sync</label>
+                        <div className="space-y-4">
+                            {/* GITHUB */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">GitHub_Node</span>
+                                    {isPlatformConnected('github') && <CheckCircle2 size={10} className="text-emerald-500" />}
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('github') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
+                                    <Github size={12} className={isPlatformConnected('github') ? 'text-emerald-500' : 'text-[#52525b]'} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Username" 
+                                        value={formData.githubUsername} 
+                                        onChange={(e) => setFormData({...formData, githubUsername: e.target.value})}
+                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
+                                    />
+                                </div>
+                                {isPlatformConnected('github') && (externalStats?.github || localOmniData?.externalStats?.github) && (
+                                    <div className="px-3 text-[9px] font-bold text-emerald-500/60 uppercase tracking-widest flex gap-3">
+                                        <span>Repos: {(localOmniData?.externalStats?.github || externalStats?.github).publicRepos}</span>
+                                        <span>Followers: {(localOmniData?.externalStats?.github || externalStats?.github).followers}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* LEETCODE */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">LeetCode_Node</span>
+                                    {isPlatformConnected('leetcode') && <CheckCircle2 size={10} className="text-emerald-500" />}
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('leetcode') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
+                                    <Zap size={12} className={isPlatformConnected('leetcode') ? 'text-amber-500' : 'text-[#52525b]'} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Username" 
+                                        value={formData.leetcodeUsername} 
+                                        onChange={(e) => setFormData({...formData, leetcodeUsername: e.target.value})}
+                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
+                                    />
+                                </div>
+                                {isPlatformConnected('leetcode') && (externalStats?.leetcode || localOmniData?.externalStats?.leetcode) && (
+                                    <div className="px-3 text-[9px] font-bold text-amber-500/60 uppercase tracking-widest flex gap-3">
+                                        <span>Solved: {(localOmniData?.externalStats?.leetcode || externalStats?.leetcode).totalSolved}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* CODEFORCES */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">Codeforces_Node</span>
+                                    {isPlatformConnected('codeforces') && <CheckCircle2 size={10} className="text-emerald-500" />}
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('codeforces') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
+                                    <Award size={12} className={isPlatformConnected('codeforces') ? 'text-blue-500' : 'text-[#52525b]'} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Username" 
+                                        value={formData.codeforcesUsername} 
+                                        onChange={(e) => setFormData({...formData, codeforcesUsername: e.target.value})}
+                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
+                                    />
+                                </div>
+                                {isPlatformConnected('codeforces') && (externalStats?.codeforces || localOmniData?.externalStats?.codeforces) && (
+                                    <div className="px-3 text-[9px] font-bold text-blue-500/60 uppercase tracking-widest flex gap-3">
+                                        <span>Rating: {(localOmniData?.externalStats?.codeforces || externalStats?.codeforces).rating}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* CODECHEF */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">CodeChef_Node</span>
+                                    {isPlatformConnected('codechef') && <CheckCircle2 size={10} className="text-emerald-500" />}
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('codechef') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
+                                    <div className="w-3 h-3 rounded-full bg-amber-600/20 flex items-center justify-center text-amber-600 font-bold text-[8px]">C</div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Username" 
+                                        value={formData.codechefUsername} 
+                                        onChange={(e) => setFormData({...formData, codechefUsername: e.target.value})}
+                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
+                                    />
+                                </div>
+                                {isPlatformConnected('codechef') && (externalStats?.codechef || localOmniData?.externalStats?.codechef) && (
+                                    <div className="px-3 text-[9px] font-bold text-amber-600/60 uppercase tracking-widest flex gap-3">
+                                        <span>Rating: {(localOmniData?.externalStats?.codechef || externalStats?.codechef).rating}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* ATCODER */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">Atcoder_Node</span>
+                                    {isPlatformConnected('atcoder') && <CheckCircle2 size={10} className="text-emerald-500" />}
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('atcoder') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
+                                    <div className="w-3 h-3 rounded-full bg-slate-400/20 flex items-center justify-center text-slate-400 font-bold text-[8px]">A</div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Username" 
+                                        value={formData.atcoderUsername} 
+                                        onChange={(e) => setFormData({...formData, atcoderUsername: e.target.value})}
+                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
+                                    />
+                                </div>
+                                {isPlatformConnected('atcoder') && (externalStats?.atcoder || localOmniData?.externalStats?.atcoder) && (
+                                    <div className="px-3 text-[9px] font-bold text-slate-400/60 uppercase tracking-widest flex gap-3">
+                                        <span>Rating: {(localOmniData?.externalStats?.atcoder || externalStats?.atcoder).rating}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button 
+                                onClick={handleSyncOmni}
+                                disabled={syncing}
+                                className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
+                                    syncing ? 'bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] border-[var(--viz-cyan)]/20' : 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95'
+                                }`}
+                            >
+                                {syncing ? <Loader2 size={12} className="animate-spin" /> : <Rocket size={12} />} 
+                                {syncing ? "SYNCING_NEURAL_STREAMS..." : "SYNC_ALL_PLATFORMS"}
+                            </button>
+                            
+                            {!isPlatformConnected('github') && !isPlatformConnected('leetcode') && !isPlatformConnected('codeforces') && (
+                                <p className="text-[9px] text-amber-500/50 flex items-center gap-1.5 px-1 font-bold uppercase italic tracking-tighter">
+                                    <AlertCircle size={10} /> Link accounts & save changes first
+                                </p>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
           </motion.div>
@@ -275,6 +513,56 @@ export default function ProfilePage() {
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-7 xl:col-span-8 space-y-6"
           >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-8 rounded-[3rem] bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/20 shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                        <Rocket size={80} className="text-blue-400" />
+                    </div>
+                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400 mb-2">Dev Power Level</h3>
+                    <motion.div 
+                        key={powerLevel}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="text-7xl font-black tracking-tighter mb-4"
+                    >
+                        {powerLevel}
+                    </motion.div>
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <div className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full inline-block text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                            {devTitle || "UNRANKED_CANDIDATE"}
+                        </div>
+                        {externalStats?.consistency && (
+                            <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border flex items-center gap-1.5 ${
+                                externalStats.consistency.status === 'ELITE_MOMENTUM' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' :
+                                externalStats.consistency.status === 'STEADY' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
+                                externalStats.consistency.status === 'INCONSISTENT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                'bg-red-500/10 border-red-500/20 text-red-400 animate-pulse'
+                            }`}>
+                                <Zap size={10} fill="currentColor" />
+                                {externalStats.consistency.status.replace('_', ' ')}: {externalStats.consistency.recentSolved7Days} SOLVED (7D)
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden flex flex-col justify-center">
+                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-3 flex items-center gap-2">
+                        <Sparkles size={14} className="text-amber-500" /> Neural Coach Assessment
+                    </h3>
+                    <AnimatePresence mode="wait">
+                        <motion.p 
+                            key={aiFeedback}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="text-sm font-medium leading-relaxed italic text-[var(--foreground)]/80"
+                        >
+                            {aiFeedback || "Awaiting neural synchronization to provide placement intelligence..."}
+                        </motion.p>
+                    </AnimatePresence>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden">
                     <h3 className="text-[9px] font-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
@@ -284,9 +572,9 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="space-y-6">
-                    <StatCapsuleSmall label="Easy" count={stats?.user?.solvedEasy || 0} color={isMatrix ? "#00ff41" : "#10b981"} />
-                    <StatCapsuleSmall label="Medium" count={stats?.user?.solvedMedium || 0} color={isMatrix ? "#00ff41" : "#f59e0b"} />
-                    <StatCapsuleSmall label="Hard" count={stats?.user?.solvedHard || 0} color={isMatrix ? "#00ff41" : "#ef4444"} />
+                    <StatCapsuleSmall label="Easy" count={stats?.user?.solvedEasy || 0} color="#10b981" />
+                    <StatCapsuleSmall label="Medium" count={stats?.user?.solvedMedium || 0} color="#f59e0b" />
+                    <StatCapsuleSmall label="Hard" count={stats?.user?.solvedHard || 0} color="#ef4444" />
                 </div>
             </div>
 
@@ -296,7 +584,7 @@ export default function ProfilePage() {
                         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-1">Skill Trajectory</h3>
                         <div className="text-5xl font-black font-mono tracking-tighter">{ratingValue}</div>
                     </div>
-                    <div className={`p-4 rounded-2xl ${isMatrix ? 'bg-[#00ff41]/10 text-[#00ff41]' : 'bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]'}`}>
+                    <div className={`p-4 rounded-2xl bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]`}>
                         <TrendingUp size={24} />
                     </div>
                 </div>
@@ -306,14 +594,14 @@ export default function ProfilePage() {
                             <AreaChart data={stats.ratingHistory}>
                                 <defs>
                                     <linearGradient id="ratingP" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={isMatrix ? "#00ff41" : isDracula ? "#ff0000" : "var(--viz-cyan)"} stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor={isMatrix ? "#00ff41" : isDracula ? "#ff0000" : "var(--viz-cyan)"} stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="var(--viz-cyan)" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="var(--viz-cyan)" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
                                 <XAxis dataKey="date" hide />
                                 <YAxis hide domain={['dataMin - 50', 'dataMax + 50']} />
                                 <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)' }} />
-                                <Area type="monotone" dataKey="rating" stroke={isMatrix ? "#00ff41" : isDracula ? "#ff0000" : "var(--viz-cyan)"} strokeWidth={4} fill="url(#ratingP)" />
+                                <Area type="monotone" dataKey="rating" stroke="var(--viz-cyan)" strokeWidth={4} fill="url(#ratingP)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     )}
@@ -330,10 +618,10 @@ export default function ProfilePage() {
                         <ActivityCalendar 
                             data={stats.calendarData}
                             theme={{
-                                dark: ['rgba(255,255,255,0.05)', isMatrix ? '#00ff41' : isDracula ? '#ff0000' : '#38bdf8'],
-                                light: ['#f1f5f9', isMatrix ? '#00ff41' : '#0ea5e9']
+                                dark: ['rgba(255,255,255,0.05)', '#38bdf8'],
+                                light: ['#f1f5f9', '#0ea5e9']
                             }}
-                            colorScheme={(theme === 'dark' || isMatrix || isDracula || isGOT ? 'dark' : 'light') as any}
+                            colorScheme={(theme === 'dark' ? 'dark' : 'light') as any}
                             blockSize={14}
                             blockMargin={5}
                             blockRadius={4}

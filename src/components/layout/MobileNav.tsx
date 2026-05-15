@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, Code2, BookOpen, MonitorPlay, Trophy, PenTool, LineChart, Globe, MessageSquare, ShieldAlert, UserCircle, LogOut } from "lucide-react";
+import { Menu, X, Code2, BookOpen, MonitorPlay, Trophy, PenTool, LineChart, Globe, MessageSquare, ShieldAlert, UserCircle, LogOut, Gamepad2, Shield, GraduationCap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "../ui/Logo";
@@ -53,8 +53,11 @@ export default function MobileNav() {
   const navItems = [
     { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
     { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)", rgb: "var(--viz-purple-rgb)" },
+    { label: "Academy", href: "/resources", icon: GraduationCap, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
     { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)", rgb: "var(--viz-red-rgb)" },
     { label: "Contest", href: "/contest", icon: Trophy, color: "var(--viz-gold)", rgb: "var(--viz-gold-rgb)" },
+    { label: "Siege", href: "/siege", icon: Shield, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
+    { label: "Arcade", href: "/arcade", icon: Gamepad2, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
     { label: "Visualize", href: "/dsa", icon: PenTool, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
     { label: "Leaderboard", href: "/leaderboard", icon: LineChart, color: "var(--viz-green)", rgb: "var(--viz-green-rgb)" },
     { label: "Blog", href: "/blog", icon: Globe, color: "var(--viz-green)", rgb: "var(--viz-green-rgb)" },
@@ -74,7 +77,7 @@ export default function MobileNav() {
             </button>
             <Link href="/" className="flex items-center gap-2">
                 <Logo className="w-8 h-8" />
-                <span className="font-bold text-lg text-[var(--foreground)]">LeetClone</span>
+                <span className="font-bold text-lg text-[var(--foreground)]">LogiQuest</span>
             </Link>
         </div>
         
@@ -127,7 +130,7 @@ export default function MobileNav() {
                 <div className="flex items-center justify-between px-4 h-16">
                     <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
                         <Logo className="w-7 h-7" />
-                        <span className="font-bold text-lg text-[var(--foreground)]">LeetClone</span>
+                        <span className="font-bold text-lg text-[var(--foreground)]">LogiQuest</span>
                     </Link>
                     <button 
                         onClick={() => setIsOpen(false)}

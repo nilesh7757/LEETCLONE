@@ -12,7 +12,12 @@ import {
   Globe,
   MonitorPlay,
   PenTool,
-  ShieldAlert
+  ShieldAlert,
+  Rocket,
+  LayoutTemplate,
+  Gamepad2,
+  Shield,
+  GraduationCap
 } from "lucide-react";
 import Logo from "../ui/Logo";
 import { useSession } from "next-auth/react";
@@ -68,9 +73,13 @@ export default function Sidebar() {
 
   const navItems = [
     { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)" },
+    { label: "Architect", href: "/architect", icon: LayoutTemplate, color: "var(--viz-purple)" },
     { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)" },
+    { label: "Academy", href: "/resources", icon: GraduationCap, color: "var(--viz-blue)" },
     { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)" },
-    { label: "Contest", href: "/contest", icon: Trophy, color: "var(--viz-gold)" },
+    { label: "Arena", href: "/arena", icon: Rocket, color: "var(--viz-gold)" },
+    { label: "Siege", href: "/siege", icon: Shield, color: "var(--viz-blue)" },
+    { label: "Arcade", href: "/arcade", icon: Gamepad2, color: "var(--viz-blue)" },
     { label: "Visualize", href: "/dsa", icon: PenTool, color: "var(--viz-blue)" },
     { label: "Leaderboard", href: "/leaderboard", icon: LineChart, color: "var(--viz-green)" },
     { label: "Blog", href: "/blog", icon: Globe, color: "var(--viz-green)" },
@@ -84,7 +93,7 @@ export default function Sidebar() {
       <div className="p-6 pb-2">
         <Link href="/" className="flex items-center gap-2 mb-8 group">
           <Logo className="w-8 h-8 transition-transform group-hover:scale-110" />
-          <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">LeetClone</span>
+          <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">LogiQuest</span>
         </Link>
         
         {/* Search Bar */}

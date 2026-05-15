@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import confetti from "canvas-confetti";
 import { getStarterCode } from "@/lib/starterCode";
 import { Submission } from "@/types/submission";
 
@@ -30,21 +31,46 @@ interface Problem {
 
 export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
   const { update } = useSession();
-  
+
   const initialLanguage = problem.type === "SQL" ? "sql" : "javascript";
-  const initialCode = problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(initialLanguage);
+  const initialCode =
+    problem.type === "SQL"
+      ? "SELECT * FROM Users;"
+      : getStarterCode(initialLanguage);
 
   const [code, setCode] = useState(initialCode);
   const [language, setLanguage] = useState(initialLanguage);
-  const [localTestCases, setLocalTestCases] = useState<TestCase[]>(initialExamples);
+
+  // Persistence: Load last language
+  useEffect(() => {
+    const lastLang = localStorage.getItem("last_language");
+    if (lastLang && problem.type !== "SQL") {
+       setLanguage(lastLang);
+    }
+  }, [problem.type]);
+
+  // Persistence: Save last language
+  useEffect(() => {
+    if (problem.type !== "SQL") {
+       localStorage.setItem("last_language", language);
+    }
+  }, [language, problem.type]);
+
+  const [localTestCases, setLocalTestCases] =
+    useState<TestCase[]>(initialExamples);
   const [results, setResults] = useState<Result[] | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
-  const [activeTab, setActiveTab] = useState<'description' | 'submissions' | 'solutions' | 'ai'>('description');
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<Submission | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    "description" | "resources" | "submissions" | "solutions" | "ai"
+  >("description");
   const [consoleOpen, setConsoleOpen] = useState(true);
-  const [consoleTab, setConsoleTab] = useState<'testcase' | 'result'>('testcase');
+  const [consoleTab, setConsoleTab] = useState<"testcase" | "result">(
+    "testcase",
+  );
   const [activeTestCaseId, setActiveTestCaseId] = useState(0);
   const [streak, setStreak] = useState(0);
   const [solvedToday, setSolvedToday] = useState(false);
@@ -68,18 +94,28 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
     const draftKey = `draft_${problem.id}_${language}`;
     const saved = localStorage.getItem(draftKey);
     if (saved) setCode(saved);
-    else setCode(problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language));
+    else
+      setCode(
+        problem.type === "SQL"
+          ? "SELECT * FROM Users;"
+          : getStarterCode(language),
+      );
   }, [language, problem.id, problem.type]);
 
   useEffect(() => {
     const draftKey = `draft_${problem.id}_${language}`;
-    const defaultCode = problem.type === "SQL" ? "SELECT * FROM Users;" : getStarterCode(language);
+    const defaultCode =
+      problem.type === "SQL"
+        ? "SELECT * FROM Users;"
+        : getStarterCode(language);
     if (code !== defaultCode) localStorage.setItem(draftKey, code);
   }, [code, language, problem.id, problem.type]);
 
   const fetchSubmissions = useCallback(async () => {
     try {
-      const { data } = await axios.get(`/api/submission?problemId=${problem.id}`);
+      const { data } = await axios.get(
+        `/api/submission?problemId=${problem.id}`,
+      );
       setSubmissions(data.submissions);
     } catch (err) {
       console.error("Failed to fetch submissions", err);
@@ -89,13 +125,19 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
   const handleRun = async (parseAndSetMarkers: (msg: string) => void) => {
     setIsRunning(true);
     setConsoleOpen(true);
-    setConsoleTab('result');
+    setConsoleTab("result");
     setResults(null);
-    
+
     try {
-      const sanitizedTestCases = localTestCases.map(tc => ({
-        input: typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input),
-        expectedOutput: typeof tc.expectedOutput === 'object' ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || "")
+      const sanitizedTestCases = localTestCases.map((tc) => ({
+        input:
+          typeof tc.input === "object"
+            ? JSON.stringify(tc.input)
+            : String(tc.input),
+        expectedOutput:
+          typeof tc.expectedOutput === "object"
+            ? JSON.stringify(tc.expectedOutput)
+            : String(tc.expectedOutput || ""),
       }));
 
       const { data } = await axios.post("/api/run", {
@@ -103,14 +145,21 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         code,
         type: problem.type,
         language,
-        testCases: sanitizedTestCases
+        testCases: sanitizedTestCases,
       });
-      
+
       setResults(data.results);
+
+      // EXTRACT ERROR FOR MARKERS
+      const errorResult = data.results.find(
+        (r: Result) =>
+          r.status === "Compilation Error" ||
+          r.status === "Runtime Error" ||
+          r.error,
+      );
       
-      const errorResult = data.results.find((r: Result) => r.status === "Compilation Error" || r.status === "Runtime Error" || r.error);
       if (errorResult && errorResult.error) {
-         parseAndSetMarkers(errorResult.error);
+        parseAndSetMarkers(errorResult.error);
       }
 
       if (data.results.some((r: Result) => r.status !== "Accepted")) {
@@ -120,7 +169,9 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        toast.error("Execution Error: " + (err.response?.data?.error || err.message));
+        toast.error(
+          "Execution Error: " + (err.response?.data?.error || err.message),
+        );
       } else {
         toast.error("Execution Error");
       }
@@ -136,25 +187,33 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         problemId: problem.id,
         code,
         type: problem.type,
-        language
+        language,
       });
-      
+
       if (data.submission.status === "Accepted") {
         toast.success("Accepted! 🎉");
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#22c55e", "#3b82f6", "#eab308", "#ef4444"],
+        });
         if (data.newStreak) update({ streak: data.newStreak });
-        setActiveTab('submissions');
+        setActiveTab("submissions");
         fetchSubmissions();
       } else {
         toast.error("Wrong Answer");
         setConsoleOpen(true);
-        setConsoleTab('result');
+        setConsoleTab("result");
         if (data.failedTestCase) {
-           setResults([{
+          setResults([
+            {
               status: "Wrong Answer",
               input: data.failedTestCase.input,
               actual: data.failedTestCase.output,
-              expected: data.failedTestCase.expected
-           }]);
+              expected: data.failedTestCase.expected,
+            },
+          ]);
         }
       }
     } catch (err) {
@@ -171,7 +230,11 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
     setActiveTestCaseId(newCases.length - 1);
   };
 
-  const updateTestCase = (index: number, field: 'input' | 'expectedOutput', value: string) => {
+  const updateTestCase = (
+    index: number,
+    field: "input" | "expectedOutput",
+    value: string,
+  ) => {
     const newCases = [...localTestCases];
     newCases[index] = { ...newCases[index], [field]: value };
     setLocalTestCases(newCases);
@@ -186,21 +249,37 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
   };
 
   return {
-    code, setCode,
-    language, setLanguage,
-    localTestCases, setLocalTestCases,
-    results, setResults,
-    isRunning, setIsRunning,
-    isSubmitting, setIsSubmitting,
-    submissions, setSubmissions,
-    selectedSubmission, setSelectedSubmission,
-    activeTab, setActiveTab,
-    consoleOpen, setConsoleOpen,
-    consoleTab, setConsoleTab,
-    activeTestCaseId, setActiveTestCaseId,
-    handleRun, handleSubmit, handleAddTestCase, updateTestCase, removeTestCase,
+    code,
+    setCode,
+    language,
+    setLanguage,
+    localTestCases,
+    setLocalTestCases,
+    results,
+    setResults,
+    isRunning,
+    setIsRunning,
+    isSubmitting,
+    setIsSubmitting,
+    submissions,
+    setSubmissions,
+    selectedSubmission,
+    setSelectedSubmission,
+    activeTab,
+    setActiveTab,
+    consoleOpen,
+    setConsoleOpen,
+    consoleTab,
+    setConsoleTab,
+    activeTestCaseId,
+    setActiveTestCaseId,
+    handleRun,
+    handleSubmit,
+    handleAddTestCase,
+    updateTestCase,
+    removeTestCase,
     fetchSubmissions,
     streak,
-    solvedToday
+    solvedToday,
   };
 }
