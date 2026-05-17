@@ -30,7 +30,9 @@ jobs:
       run: npm run lint
 
     - name: Run Tests
-      run: npx jest
+      run: npx jest --maxWorkers=2
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
 
     # Prisma generate is needed before build/typecheck
     - name: Generate Prisma Client

@@ -24,14 +24,13 @@ describe('gemini.ts (AI Services)', () => {
 
   describe('runAI', () => {
     it('should throw if no API keys are configured', async () => {
-        // This test still needs isolation because keys are captured at module load
-        await jest.isolateModules(async () => {
-            const originalEnv = process.env;
-            process.env = { ...originalEnv, GEMINI_API_KEY: '', GROQ_API_KEY: '', NVIDIA_API_KEY: '' };
-            const { runAI: isolatedRunAI } = await import('@/lib/gemini');
-            await expect(isolatedRunAI('test')).rejects.toThrow('No AI API Keys configured.');
-            process.env = originalEnv;
-        });
+        const originalEnv = process.env;
+        process.env = { ...originalEnv, GEMINI_API_KEY: '', GROQ_API_KEY: '', NVIDIA_API_KEY: '', HF_API_KEY: '' };
+        
+        const { auditAndAnalyze: testAudit } = await import('@/lib/gemini');
+        await expect(testAudit('code', 'js', 'title', 'desc')).rejects.toThrow('No AI API Keys configured.');
+        
+        process.env = originalEnv;
     });
   });
 

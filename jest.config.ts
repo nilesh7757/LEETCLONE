@@ -15,6 +15,8 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  maxWorkers: 2,
+  logHeapUsage: true,
   transformIgnorePatterns: [
     '/node_modules/(?!(next-auth|@auth/core|@auth/prisma-adapter|@upstash/redis|uncrypto|msgpackr|bullmq)/)',
   ],

@@ -7,19 +7,28 @@ import crypto from "crypto";
 import { z } from "zod";
 import axios from "axios";
 
-// API Keys
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-const HF_API_KEY = process.env.HF_API_KEY;
+// API Keys getter to allow for dynamic environment changes (useful for testing)
+const getKeys = () => ({
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GROQ_API_KEY: process.env.GROQ_API_KEY,
+  NVIDIA_API_KEY: process.env.NVIDIA_API_KEY,
+  HF_API_KEY: process.env.HF_API_KEY,
+});
 
-const groq = GROQ_API_KEY ? new Groq({ apiKey: GROQ_API_KEY }) : null;
-const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const nvidia = NVIDIA_API_KEY ? new OpenAI({
-  apiKey: NVIDIA_API_KEY,
-  baseURL: 'https://integrate.api.nvidia.com/v1',
-  timeout: 60000,
-}) : null;
+let groq: Groq | null = null;
+let genAI: GoogleGenerativeAI | null = null;
+let nvidia: OpenAI | null = null;
+
+function initClients() {
+  const keys = getKeys();
+  if (!groq && keys.GROQ_API_KEY) groq = new Groq({ apiKey: keys.GROQ_API_KEY });
+  if (!genAI && keys.GEMINI_API_KEY) genAI = new GoogleGenerativeAI(keys.GEMINI_API_KEY);
+  if (!nvidia && keys.NVIDIA_API_KEY) nvidia = new OpenAI({
+    apiKey: keys.NVIDIA_API_KEY,
+    baseURL: 'https://integrate.api.nvidia.com/v1',
+    timeout: 60000,
+  });
+}
 
 export class AIError extends Error {
   status: number;
@@ -44,8 +53,14 @@ export async function runAI<T = unknown>(
   schemaOrJsonMode?: z.ZodSchema<T> | boolean,
   fastMode: boolean = false
 ): Promise<T | string> {
+  initClients();
+  const keys = getKeys();
   const isJsonMode = !!schemaOrJsonMode;
   const schema = schemaOrJsonMode instanceof z.ZodType ? schemaOrJsonMode : null;
+
+  if (!keys.GEMINI_API_KEY && !keys.GROQ_API_KEY && !keys.NVIDIA_API_KEY && !keys.HF_API_KEY) {
+    throw new AIError("No AI API Keys configured.", 500);
+  }
 
   const parseResponse = (text: string) => {
     try {
@@ -65,7 +80,7 @@ export async function runAI<T = unknown>(
   };
 
   // 1. Try NVIDIA (Llama 3.1 405B)
-  if (nvidia && NVIDIA_API_KEY && !fastMode) {
+  if (nvidia && keys.NVIDIA_API_KEY && !fastMode) {
     try {
       const completion = await nvidia.chat.completions.create({
         messages: [
@@ -89,7 +104,7 @@ export async function runAI<T = unknown>(
   }
 
   // 2. Try Groq (Llama 3.3 70B)
-  if (groq && GROQ_API_KEY) {
+  if (groq && keys.GROQ_API_KEY) {
     try {
       const completion = await groq.chat.completions.create({
         messages: [
@@ -113,7 +128,7 @@ export async function runAI<T = unknown>(
   }
 
   // 3. Try Gemini (Using stable gemini-pro if flash fails)
-  if (genAI && GEMINI_API_KEY) {
+  if (genAI && keys.GEMINI_API_KEY) {
     const geminiModels = ["gemini-1.5-flash", "gemini-pro"];
     
     for (const modelId of geminiModels) {
@@ -145,7 +160,7 @@ export async function runAI<T = unknown>(
   }
 
   // 4. HF Fallback
-  if (HF_API_KEY) {
+  if (keys.HF_API_KEY) {
       try {
           const hfRes = await axios.post(
               "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct",
@@ -153,7 +168,7 @@ export async function runAI<T = unknown>(
                 inputs: (systemInstruction ? `<|system|>\n${systemInstruction}\n` : "") + `<|user|>\n${prompt}\n\nReturn JSON only.\n<|assistant|>`,
                 parameters: { max_new_tokens: 2048, return_full_text: false }
               },
-              { headers: { Authorization: `Bearer ${HF_API_KEY}` }, timeout: 30000 }
+              { headers: { Authorization: `Bearer ${keys.HF_API_KEY}` }, timeout: 30000 }
           );
           const content = hfRes.data[0]?.generated_text || hfRes.data.generated_text || "";
           if (isJsonMode) return parseResponse(content);

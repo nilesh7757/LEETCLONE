@@ -8,10 +8,12 @@ class Logger {
   }
 
   info(message: string, ...args: unknown[]) {
+    if (process.env.NODE_ENV === "test") return;
     console.log(this.formatMessage("info", message, ...args));
   }
 
   warn(message: string, ...args: unknown[]) {
+    if (process.env.NODE_ENV === "test") return;
     console.warn(this.formatMessage("warn", message, ...args));
   }
 
