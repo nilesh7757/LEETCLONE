@@ -13,18 +13,18 @@ export function apiHandler<T extends unknown[]>(handler: Handler<T>): Handler<T>
       logger.error("API Error:", error instanceof Error ? error.message : String(error));
 
       if (error instanceof ApiError) {
-        return NextResponse.json({ error: error.message }, { status: error.statusCode });
+        return Response.json({ error: error.message }, { status: error.statusCode });
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          return NextResponse.json(
+          return Response.json(
             { error: "A record with this unique value already exists." },
             { status: 409 }
           );
         }
         if (error.code === 'P2025') {
-          return NextResponse.json(
+          return Response.json(
             { error: "The requested record was not found." },
             { status: 404 }
           );
@@ -32,7 +32,7 @@ export function apiHandler<T extends unknown[]>(handler: Handler<T>): Handler<T>
         // Handle other specific Prisma errors as needed
       }
 
-      return NextResponse.json(
+      return Response.json(
         { error: "Internal Server Error" },
         { status: 500 }
       );

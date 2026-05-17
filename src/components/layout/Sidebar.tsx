@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Code2, 
-  Trophy, 
   BookOpen, 
   LineChart, 
   MessageSquare, 

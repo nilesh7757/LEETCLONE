@@ -2,23 +2,25 @@
 
 import { motion } from "framer-motion";
 import { 
-  Play, Book, Globe, Layout, 
+  Book, Globe, Layout, 
   ExternalLink, Youtube, FileText, 
-  Video, MonitorPlay
+  MonitorPlay
 } from "lucide-react";
 
 export type ResourceType = "VIDEO" | "BOOK" | "BLOG" | "WEBSITE" | "ANIMATION";
 
+export interface Resource {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  type: ResourceType;
+  topic: string;
+  creator: string | null;
+}
+
 interface ResourceCardProps {
-  resource: {
-    id: string;
-    title: string;
-    description: string | null;
-    url: string;
-    type: ResourceType;
-    topic: string;
-    creator: string | null;
-  };
+  resource: Resource;
   index: number;
 }
 

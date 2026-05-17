@@ -4,7 +4,8 @@ import ProblemFilters from "@/features/problems/components/ProblemFilters";
 import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
 import { auth } from "@/auth"; 
 import { Trophy, Target, Sparkles } from "lucide-react";
-import { Prisma } from "@prisma/client";
+import { Prisma, ProblemType } from "@prisma/client";
+import * as motion from "framer-motion/client";
 
 export const dynamic = "force-dynamic";
 
@@ -116,80 +117,101 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--viz-cyan)]/30">
+    <div className="min-h-screen w-full bg-[#020202] text-[#e1e1e1] font-sans selection:bg-[#3b82f6]/30 overflow-x-hidden">
       
-      {/* Cinematic Background Glows */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[var(--viz-purple)]/5 blur-[150px] rounded-full mix-blend-screen" />
-          <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-[var(--viz-cyan)]/5 blur-[150px] rounded-full mix-blend-screen" />
-          <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] bg-[var(--viz-blue)]/5 blur-[150px] rounded-full mix-blend-screen" />
+      {/* 1. BACKGROUND ARCHITECTURE */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+         {/* Perspective Grid Floor */}
+         <div 
+            className="absolute inset-0 opacity-[0.03]"
+            style={{ 
+               backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, 
+               backgroundSize: '100px 100px',
+               perspective: '1200px',
+               transform: 'rotateX(65deg) translateY(-10%)',
+               transformOrigin: 'top'
+            }} 
+         />
+         {/* Atmospheric Glows */}
+         <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-[#3b82f6]/5 rounded-full blur-[160px]" />
+         <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#a855f7]/5 rounded-full blur-[140px]" />
       </div>
       
-            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 relative z-10"> 
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 relative z-10"> 
       
-              {/* Header Section */}
-              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-16">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] shadow-[0_0_20px_rgba(34,211,238,0.2)]">
-                      <Sparkles size={18} />
-                    </div>
-                    <span className="text-[9px] md:text-[10px] font-black tracking-[0.2em] md:tracking-[0.3em] text-[var(--muted-foreground)] uppercase">
-                      Engineering Challenges
-                    </span>
-                  </div>
-      
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-[var(--foreground)]">
-                    Problem <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--viz-cyan)] to-[var(--viz-blue)] font-medium">Matrix</span>
-                  </h1>
-                  <p className="text-base md:text-lg text-[var(--muted-foreground)] max-w-2xl font-light leading-relaxed">
-                    Explore a vast collection of algorithmic challenges designed to refine your cognitive stack.
-                  </p>
+        {/* 2. DASHBOARD HEADER */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-16">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+               <div className="p-2 bg-[#3b82f6]/10 rounded-lg text-[#3b82f6]">
+                  <Sparkles size={20} />
+               </div>
+               <span className="text-[10px] font-bold tracking-widest text-[#52525b] uppercase">Algorithm Repository</span>
+            </div>
+
+            <div className="space-y-2">
+               <h1 className="text-5xl font-bold tracking-tight text-white">
+                 Problem <span className="text-[#3b82f6]">Set</span>
+               </h1>
+               <p className="text-lg text-[#a1a1aa] max-w-2xl font-normal leading-relaxed">
+                 Explore a collection of curated coding challenges. Practice, learn, and master algorithmic patterns.
+               </p>
+            </div>
+          </div>
+
+          {/* 3. STATS */}
+          <div className="flex gap-4">
+             <div className="p-6 bg-[#111] border border-white/5 rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-300">
+                <div className="flex justify-between items-center relative z-10">
+                   <span className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Total Problems</span>
+                   <Target className="w-3.5 h-3.5 text-[#3b82f6] opacity-40 group-hover:opacity-100 transition-all" />
                 </div>
-      
-                {/* Stats Pills */}
-                <div className="flex flex-wrap gap-3 md:gap-4">
-                   <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-4 md:px-6 py-3 md:py-4 flex items-center gap-3 md:gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/10 flex-1 sm:flex-none">
-                      <div className="p-2.5 md:p-3 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)] group-hover:scale-110 transition-transform">
-                        <Target className="w-5 h-5 md:w-6 md:h-6" />
-                      </div>
-                      <div>
-                        <div className="text-xl md:text-2xl font-bold text-[var(--foreground)]">{stats.totalProblems}</div>
-                        <div className="text-[9px] md:text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Available</div>    
-                      </div>
+                <div className="text-4xl font-bold text-white tabular-nums group-hover:text-[#3b82f6] transition-colors">{stats.totalProblems}</div>
+             </div>
+
+             {userId && (
+                <div className="p-6 bg-[#111] border border-white/5 rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[#22c55e]/30 transition-all duration-300">
+                   <div className="flex justify-between items-center relative z-10">
+                      <span className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Solved</span>
+                      <Trophy className="w-3.5 h-3.5 text-[#22c55e] opacity-40 group-hover:opacity-100 transition-all" />
                    </div>
-      
-                   {userId && (
-                      <div className="group relative overflow-hidden bg-[var(--card)]/50 backdrop-blur-md rounded-2xl px-4 md:px-6 py-3 md:py-4 flex items-center gap-3 md:gap-4 transition-all hover:bg-[var(--card)] hover:shadow-2xl hover:shadow-[var(--viz-green)]/10 flex-1 sm:flex-none">
-                          <div className="p-2.5 md:p-3 bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] group-hover:scale-110 transition-transform">
-                            <Trophy className="w-5 h-5 md:w-6 md:h-6" />
-                          </div>
-                          <div>
-                            <div className="text-xl md:text-2xl font-bold text-[var(--foreground)]">{stats.solvedCount}</div>
-                            <div className="text-[9px] md:text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Solved</div>   
-                          </div>
-                      </div>
-                   )}
+                   <div className="text-4xl font-bold text-[#22c55e] tabular-nums">{stats.solvedCount}</div>
                 </div>
-              </div>
-      
-              {/* Layout Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">  
-      
-                {/* Sidebar Filters (Left) */}
-                <div className="lg:col-span-3 space-y-6 md:space-y-8 order-2 lg:order-1">
-                  <DailyProblemCard />
-                  <div className="lg:sticky lg:top-8">
-                    <ProblemFilters />
-                  </div>
-                </div>
-      
-                {/* Main Content (Right) */}
-                <div className="lg:col-span-9 space-y-8 order-1 lg:order-2">             <ProblemTable 
-                problems={problemsWithStatus} 
-                totalPages={totalPages} 
-                currentPage={currentPage} 
-             />
+             )}
+          </div>
+        </div>
+
+        {/* 4. MAIN CONTENT GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">  
+
+          {/* SIDEBAR */}
+          <div className="lg:col-span-3 space-y-10">
+            <div className="space-y-3">
+               <div className="flex items-center gap-2 px-1">
+                  <div className="w-1 h-1 rounded-full bg-[#3b82f6]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Daily Challenge</span>
+               </div>
+               <DailyProblemCard />
+            </div>
+
+            <div className="lg:sticky lg:top-12 space-y-3">
+               <div className="flex items-center gap-2 px-1">
+                  <div className="w-1 h-1 rounded-full bg-[#a855f7]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Filters</span>
+               </div>
+               <ProblemFilters />
+            </div>
+          </div>
+
+          {/* MAIN TABLE */}
+          <div className="lg:col-span-9">             
+             <div className="bg-[#111] border border-white/5 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                <ProblemTable 
+                   problems={problemsWithStatus} 
+                   totalPages={totalPages} 
+                   currentPage={currentPage} 
+                />
+             </div>
           </div>
         </div>
       </div>

@@ -35,10 +35,7 @@ Candidate's Logic:
 ${logic}`;
 
   try {
-    const responseText = await runAI(userPrompt, systemPrompt, true);
-    const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-    const parsed = JSON.parse(cleanJson);
-
+    const parsed = await runAI(userPrompt, systemPrompt, true);
     return NextResponse.json(parsed);
   } catch (error: unknown) {
     if (error instanceof AIError && error.status === 429) {

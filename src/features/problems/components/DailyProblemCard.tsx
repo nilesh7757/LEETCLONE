@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Loader2, Code2, Database, LayoutTemplate, Zap } from "lucide-react";
+import { ArrowRight, Loader2, Code2, Database, LayoutTemplate, Zap, Target } from "lucide-react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
@@ -35,8 +35,11 @@ export default function DailyProblemCard() {
 
   if (loading) {
     return (
-      <div className="w-full h-32 rounded-3xl bg-[var(--card)]/30 backdrop-blur-md animate-pulse flex items-center justify-center">
-         <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" />
+      <div className="w-full h-64 rounded-[2.5rem] bg-white/[0.02] border border-white/5 backdrop-blur-3xl animate-pulse flex items-center justify-center">
+         <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-[#3b82f6]" />
+            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[#52525b]">Syncing Objective...</span>
+         </div>
       </div>
     );
   }
@@ -45,58 +48,73 @@ export default function DailyProblemCard() {
 
   const getIcon = () => {
       switch(problem.type) {
-          case 'SQL': return <Database className="w-5 h-5 text-[var(--viz-blue)]" />;
-          case 'SYSTEM_DESIGN': return <LayoutTemplate className="w-5 h-5 text-[var(--viz-purple)]" />;
-          default: return <Code2 className="w-5 h-5 text-[var(--viz-green)]" />;
+          case 'SQL': return <Database size={20} className="text-[#3b82f6]" />;
+          case 'SYSTEM_DESIGN': return <LayoutTemplate size={20} className="text-[#a855f7]" />;
+          default: return <Code2 size={20} className="text-[#22c55e]" />;
       }
   };
 
   const difficultyColor = 
-      problem.difficulty === "Easy" ? "var(--viz-green)" : 
-      problem.difficulty === "Medium" ? "var(--viz-amber)" : 
-      "var(--viz-red)";
+      problem.difficulty === "Easy" ? "#22c55e" : 
+      problem.difficulty === "Medium" ? "#f59e0b" : 
+      "#ef4444";
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       className="relative group"
     >
       <Link href={`/problems/${problem.slug}`} className="block h-full">
-        <div className="relative p-8 rounded-[2rem] bg-[var(--card)] overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--viz-cyan)]/10 group-hover:-translate-y-1">
+        <div className="relative p-8 rounded-[2.5rem] bg-[#0a0a0a] border border-[#f59e0b]/20 overflow-hidden transition-all duration-500 hover:border-[#f59e0b]/40 shadow-2xl hover:shadow-[#f59e0b]/10 group-hover:-translate-y-1">
           
-          {/* Background Decor */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[var(--viz-cyan)]/10 to-transparent rounded-bl-[10rem] opacity-50 group-hover:opacity-100 transition-opacity" />
+          {/* HUD Accents */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#f59e0b]/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute bottom-4 right-4 opacity-5 pointer-events-none">
+             <Target size={120} className="text-[#f59e0b]" />
+          </div>
           
           <div className="relative z-10 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                 <div className="p-2 bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] rounded-lg">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                 <div className="p-2.5 bg-[#f59e0b]/10 text-[#f59e0b] rounded-xl shadow-inner border border-[#f59e0b]/20">
                     <Zap size={18} fill="currentColor" />
                  </div>
-                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Daily Context</span>
+                 <div className="flex flex-col">
+                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#f59e0b]">Active_Alert</span>
+                    <span className="text-[8px] font-mono text-[#52525b] uppercase mt-[-2px]">Critical_Priority</span>
+                 </div>
               </div>
               
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--background)] border border-[var(--border)]">
-                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: difficultyColor }} />
-                 <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: difficultyColor }}>{problem.difficulty}</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#020202] border border-white/5">
+                 <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: difficultyColor, boxShadow: `0 0 8px ${difficultyColor}` }} />
+                 <span className="text-[9px] font-black uppercase tracking-widest text-[#a1a1aa]">{problem.difficulty}</span>
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold text-[var(--foreground)] mb-2 flex items-center gap-3 group-hover:text-[var(--viz-cyan)] transition-colors">
-                {getIcon()}
-                {problem.title}
-            </h3>
+            <div className="space-y-4 mb-10">
+               <h3 className="text-3xl font-black tracking-tighter text-white leading-tight group-hover:text-[#f59e0b] transition-colors">
+                   {problem.title}
+               </h3>
+               <div className="flex items-center gap-3 opacity-60">
+                  {getIcon()}
+                  <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#a1a1aa]">{problem.category}</span>
+               </div>
+            </div>
             
-            <p className="text-sm font-light text-[var(--muted-foreground)] mb-8 line-clamp-2">
-               Mastering {problem.category} patterns for optimal performance.
-            </p>
+            <p className="text-sm font-light text-[#52525b] mb-10 line-clamp-2 leading-relaxed">
+               Analyze {problem.category} patterns and edge cases. Solve this featured challenge to sharpen your problem-solving skills.            </p>
 
-            <div className="mt-auto flex items-center text-[var(--viz-cyan)] font-bold text-xs uppercase tracking-widest gap-2 opacity-80 group-hover:opacity-100 group-hover:gap-4 transition-all">
-               Initialize Sequence <ArrowRight className="w-4 h-4" />
+            <div className="mt-auto flex items-center justify-between">
+               <div className="flex items-center text-[#f59e0b] font-black text-[10px] uppercase tracking-[0.3em] gap-3">
+                  Initiate_Task <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500" />
+               </div>
+               <span className="text-[9px] font-mono text-[#262626]">00:00:00:12</span>
             </div>
           </div>
+          
+          {/* Scanline */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#f59e0b]/5 to-transparent h-[2px] w-full -translate-y-full group-hover:translate-y-[1000%] transition-all duration-[3000ms] ease-linear pointer-events-none" />
         </div>
       </Link>
     </motion.div>

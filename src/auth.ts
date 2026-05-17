@@ -60,19 +60,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Search for properties safely
         if ("role" in user) token.role = user.role as string;
         if ("streak" in user) token.streak = user.streak as number;
+        if ("arcadePoints" in user) token.arcadePoints = user.arcadePoints as number;
+        if ("githubUsername" in user) token.githubUsername = user.githubUsername as string;
+        if ("leetcodeUsername" in user) token.leetcodeUsername = user.leetcodeUsername as string;
+        if ("codeforcesUsername" in user) token.codeforcesUsername = user.codeforcesUsername as string;
+        if ("devPowerLevel" in user) token.devPowerLevel = user.devPowerLevel as number;
       }
 
-      if (token.sub && (!token.role || token.streak === undefined)) {
+      if (token.sub && (!token.role || token.devPowerLevel === undefined)) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub as string },
-            select: { role: true, streak: true, name: true, image: true },
+            select: { 
+              role: true, streak: true, name: true, image: true,
+              arcadePoints: true, githubUsername: true, leetcodeUsername: true,
+              codeforcesUsername: true, devPowerLevel: true
+            },
           });
           if (dbUser) {
             token.role = dbUser.role;
             token.streak = dbUser.streak;
             token.name = dbUser.name;
             token.picture = dbUser.image;
+            token.arcadePoints = dbUser.arcadePoints;
+            token.githubUsername = dbUser.githubUsername;
+            token.leetcodeUsername = dbUser.leetcodeUsername;
+            token.codeforcesUsername = dbUser.codeforcesUsername;
+            token.devPowerLevel = dbUser.devPowerLevel;
           }
         } catch (error) {
           console.error("JWT Callback Error:", error);
@@ -84,6 +98,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (session.image) token.picture = session.image;
         if (session.role) token.role = session.role;
         if (session.streak !== undefined) token.streak = session.streak;
+        if (session.arcadePoints !== undefined) token.arcadePoints = session.arcadePoints;
+        if (session.githubUsername !== undefined) token.githubUsername = session.githubUsername;
+        if (session.leetcodeUsername !== undefined) token.leetcodeUsername = session.leetcodeUsername;
+        if (session.codeforcesUsername !== undefined) token.codeforcesUsername = session.codeforcesUsername;
+        if (session.devPowerLevel !== undefined) token.devPowerLevel = session.devPowerLevel;
       }
       return token;
     },

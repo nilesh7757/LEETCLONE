@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
 import { updateUserStreak } from "@/lib/services/streak";
 import { processContestScoring } from "@/lib/services/contest";
+import { executionQueue, queueEvents } from "@/lib/queue";
 
 // Ensure socket is connected
 socketClient.connect();
@@ -110,7 +111,7 @@ export const POST = apiHandler(async (req: Request) => {
   let designScore: number | null = null;
 
   if (problem.type === "CODING") {
-    results = await executeCode({
+    const job = await executionQueue.add('submit-code', {
       problemId: problem.id,
       code,
       language,
@@ -122,8 +123,9 @@ export const POST = apiHandler(async (req: Request) => {
       timeLimit: problem.timeLimit,
       memoryLimit: problem.memoryLimit
     });
+    results = await job.waitUntilFinished(queueEvents, 30000);
   } else if (problem.type === "SQL") {
-    results = await executeCode({
+    const job = await executionQueue.add('submit-sql', {
       problemId: problem.id,
       code,
       language: "sql",
@@ -135,6 +137,7 @@ export const POST = apiHandler(async (req: Request) => {
       initialSchema: problem.initialSchema || "",
       initialData: problem.initialData || ""
     });
+    results = await job.waitUntilFinished(queueEvents, 30000);
   } else if (problem.type === "SYSTEM_DESIGN") {
     const evalResult = await evaluateSystemDesign(
       `Title: ${problem.title}\nDescription: ${problem.description}`,
@@ -175,23 +178,27 @@ export const POST = apiHandler(async (req: Request) => {
     }
   }
 
-  // AI Audit
-  let auditPassed = true;
-  let auditFeedback = "No issues found.";
-  let geminiTimeComplexity = "N/A";
-  let geminiSpaceComplexity = "N/A";
-  
-  if (problem.type === "CODING" && overallStatus === "Accepted") {
-    try {
-      const analysis = await auditAndAnalyze(code, language, problem.title, problem.description);
-      auditPassed = analysis.passed;
-      auditFeedback = analysis.feedback;
-      geminiTimeComplexity = analysis.timeComplexity;
-      geminiSpaceComplexity = analysis.spaceComplexity;
-    } catch (e) {
-      logger.error("AI Analysis failed", e instanceof Error ? e.message : String(e));
+  // AI Audit - NON-BLOCKING (Optimized for speed)
+  // We save the submission first, then trigger the audit in the background if it's Accepted.
+  const triggerAudit = async (submissionId: string) => {
+    if (problem.type === "CODING" && overallStatus === "Accepted") {
+        try {
+          const analysis = await auditAndAnalyze(code, language, problem.title, problem.description);
+          await prisma.submission.update({
+            where: { id: submissionId },
+            data: {
+              auditPassed: analysis.passed,
+              auditFeedback: analysis.feedback,
+              timeComplexity: analysis.timeComplexity,
+              spaceComplexity: analysis.spaceComplexity,
+            }
+          });
+          logger.info(`[AUDIT] Completed for submission ${submissionId}`);
+        } catch (e) {
+          logger.error("[AUDIT] Background analysis failed", e instanceof Error ? e.message : String(e));
+        }
     }
-  }
+  };
 
   // 3. Save Submission and Update User Stats (Transactional)
   const finalSubmission = await prisma.$transaction(async (tx) => {
@@ -202,10 +209,10 @@ export const POST = apiHandler(async (req: Request) => {
         status: overallStatus,
         score: designScore,
         runtime: maxRuntime, 
-        timeComplexity: geminiTimeComplexity,
-        spaceComplexity: geminiSpaceComplexity,
-        auditPassed, 
-        auditFeedback, 
+        timeComplexity: "Calculating...", // Placeholder for async audit
+        spaceComplexity: "Calculating...",
+        auditPassed: null, // Pending audit
+        auditFeedback: "Audit in progress...",
         problemId,
         userId: userId,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -233,6 +240,9 @@ export const POST = apiHandler(async (req: Request) => {
     return sub;
   });
 
+  // Trigger the background audit
+  triggerAudit(finalSubmission.id);
+
   // 4. Update Streak and Contest Scoring (Async)
   let updatedStreak = 0;
   if (overallStatus === "Accepted") {
@@ -244,7 +254,7 @@ export const POST = apiHandler(async (req: Request) => {
     }
   }
 
-  return NextResponse.json({ 
+  return Response.json({ 
     submission: finalSubmission,
     newStreak: updatedStreak,
     failedTestCase: firstFailingResult ? {

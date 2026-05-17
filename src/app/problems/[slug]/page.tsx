@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import WorkspaceClient from "./WorkspaceClient";
+import WorkspaceClient, { Problem } from "./WorkspaceClient";
 import { auth } from "@/auth";
 import { TestInputOutput } from "@/lib/codeExecution";
 
@@ -156,11 +156,11 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
       {/* Main Workspace - Client Component for Interactive Elements */}
       <WorkspaceClient 
         problem={{
-          ...(problem as any),
-          initialSchema: (problem as any).initialSchema || undefined,
-          initialData: (problem as any).initialData || undefined,
-          blueprint: (problem as any).blueprint || undefined, // Ensure blueprint is passed
-        }}
+          ...problem,
+          initialSchema: (problem as unknown as { initialSchema: string }).initialSchema || undefined,
+          initialData: (problem as unknown as { initialData: string }).initialData || undefined,
+          blueprint: (problem as unknown as { blueprint: unknown[] }).blueprint || undefined,
+        } as unknown as Problem}
         examples={examplesForClient} // Pass only the example test cases
         showBlueprint={!!studyPlanId}
         alreadySolved={!!userSubmission}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { ThumbsUp, ThumbsDown, Reply } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -79,9 +80,11 @@ export default function CommentItem({
     >
       <div className="flex items-center gap-3">
         {author.image ? (
-          <img
+          <Image
             src={author.image}
             alt={author.name || ""}
+            width={32}
+            height={32}
             className="w-8 h-8 rounded-full border border-[var(--card-border)]"
           />
         ) : (

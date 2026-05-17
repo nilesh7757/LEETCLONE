@@ -6,6 +6,22 @@ import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
 
+interface ImprovedProblemData {
+  title: string;
+  description: string;
+  difficulty: string;
+  category: string;
+  pattern: string;
+  testSets: Array<{
+    input: string;
+    expectedOutput: string;
+    isExample: boolean;
+    explanation?: string;
+  }>;
+  blueprint: unknown[];
+  referenceSolution: string;
+}
+
 export const POST = apiHandler(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
   const session = await auth();
@@ -52,9 +68,7 @@ export const POST = apiHandler(async (req: Request, { params }: { params: Promis
   `;
 
   try {
-    const responseText = await runAI(userPrompt, systemPrompt, true);
-    const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-    const updatedData = JSON.parse(cleanJson);
+    const updatedData = await runAI(userPrompt, systemPrompt, true) as ImprovedProblemData;
 
     const updatedProblem = await prisma.problem.update({
       where: { id: problem.id },
@@ -64,8 +78,8 @@ export const POST = apiHandler(async (req: Request, { params }: { params: Promis
         difficulty: updatedData.difficulty,
         category: updatedData.category,
         pattern: updatedData.pattern,
-        testSets: updatedData.testSets,
-        blueprint: updatedData.blueprint,
+        testSets: updatedData.testSets as unknown,
+        blueprint: updatedData.blueprint as unknown,
         referenceSolution: updatedData.referenceSolution,
         lastAiFeedback: feedback,
         isVerified: false, 

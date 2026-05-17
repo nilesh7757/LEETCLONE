@@ -17,9 +17,19 @@ export async function generateTestCases(
   difficulty: string,
   category: string,
   referenceSolution: string,
-  language: string = "python" // Default to python for running the reference solution
+  passedLanguage?: string,
 ): Promise<GeneratedTestSet> {
-  logger.info(`[TEST_CASE_GEN] Generating test cases for: ${problemTitle}`);
+  
+  function detectLanguage(src: string): string {
+    if (src.includes("def ") || src.includes("import sys")) return "python";
+    if (src.includes("#include") || src.includes("std::")) return "cpp";
+    if (src.includes("public class ") || src.includes("System.out.println")) return "java";
+    return "javascript";
+  }
+
+  const language = passedLanguage || detectLanguage(referenceSolution);
+  
+  logger.info(`[TEST_CASE_GEN] Generating test cases for: ${problemTitle} using ${language}`);
 
   const prompt = `
     You are an expert competitive programmer and test engineer. 
@@ -46,13 +56,18 @@ export async function generateTestCases(
   `;
 
   try {
-    const response = await runAI(prompt, "You generate robust test inputs for algorithmic problems.", true);
-    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    const rawInputs = JSON.parse(cleanJson);
+    let rawInputs = await runAI(prompt, "You generate robust test inputs for algorithmic problems.", true);
+
+    if (typeof rawInputs === 'string') {
+      const cleanJson = rawInputs.replace(/```json/g, "").replace(/```/g, "").trim();
+      rawInputs = JSON.parse(cleanJson);
+    }
+
+    const inputsObj = rawInputs as { examples: string[]; hidden: string[] };
 
     const allInputs = [
-      ...rawInputs.examples.map((input: string) => ({ input, isExample: true })),
-      ...rawInputs.hidden.map((input: string) => ({ input, isExample: false }))
+      ...inputsObj.examples.map((input: string) => ({ input, isExample: true })),
+      ...inputsObj.hidden.map((input: string) => ({ input, isExample: false }))
     ];
 
     logger.info(`[TEST_CASE_GEN] Running reference solution against ${allInputs.length} inputs...`);

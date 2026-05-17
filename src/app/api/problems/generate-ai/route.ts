@@ -12,6 +12,16 @@ interface AITestCase {
   isExample?: boolean;
 }
 
+interface GeneratedProblemData {
+  title: string;
+  description: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  category: string;
+  type: "CODING" | "SQL" | "SYSTEM_DESIGN" | "READING";
+  testSets?: unknown;
+  referenceSolution: string;
+}
+
 export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,11 +58,7 @@ export const POST = apiHandler(async (req: Request) => {
   const userPrompt = `Create a challenging but educational coding problem about ${topic}. 
   Ensure it is different from standard problems.`;
 
-  const responseText = await runAI(userPrompt, systemPrompt, true);
-  
-  // Cleanup potential markdown
-  const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-  const problemData = JSON.parse(cleanJson);
+  const problemData = await runAI(userPrompt, systemPrompt, true) as GeneratedProblemData;
 
   // Format testSets correctly if they are flat or missing the standard structure
   const formattedTestSets: { examples: { input: string; expectedOutput: string }[], hidden: { input: string; expectedOutput: string }[] } = { examples: [], hidden: [] };
@@ -76,12 +82,13 @@ export const POST = apiHandler(async (req: Request) => {
          formattedTestSets.examples = formattedTestSets.hidden;
          formattedTestSets.hidden = [];
       }
-    } else if (typeof problemData.testSets === 'object') {
-      formattedTestSets.examples = (problemData.testSets.examples || []).map((ts: AITestCase) => ({
+    } else if (typeof problemData.testSets === 'object' && problemData.testSets !== null) {
+      const tsObj = problemData.testSets as { examples?: AITestCase[]; hidden?: AITestCase[] };
+      formattedTestSets.examples = (tsObj.examples || []).map((ts: AITestCase) => ({
         input: ts.input || "",
         expectedOutput: ts.expectedOutput || ts.output || ""
       }));
-      formattedTestSets.hidden = (problemData.testSets.hidden || []).map((ts: AITestCase) => ({
+      formattedTestSets.hidden = (tsObj.hidden || []).map((ts: AITestCase) => ({
         input: ts.input || "",
         expectedOutput: ts.expectedOutput || ts.output || ""
       }));
@@ -92,7 +99,12 @@ export const POST = apiHandler(async (req: Request) => {
   // Create the problem in a "Draft/Unverified" state
   const problem = await prisma.problem.create({
     data: {
-      ...problemData,
+      title: problemData.title,
+      description: problemData.description,
+      difficulty: problemData.difficulty,
+      category: problemData.category,
+      type: problemData.type,
+      referenceSolution: problemData.referenceSolution,
       testSets: JSON.stringify(formattedTestSets),
       slug: generateSlug(problemData.title) + "-" + Date.now(),
       isVerified: false,

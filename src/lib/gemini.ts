@@ -1,14 +1,25 @@
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { logger } from "./logger";
 import { prisma } from "./prisma";
 import crypto from "crypto";
+import { z } from "zod";
+import axios from "axios";
 
+// API Keys
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+const HF_API_KEY = process.env.HF_API_KEY;
 
 const groq = GROQ_API_KEY ? new Groq({ apiKey: GROQ_API_KEY }) : null;
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+const nvidia = NVIDIA_API_KEY ? new OpenAI({
+  apiKey: NVIDIA_API_KEY,
+  baseURL: 'https://integrate.api.nvidia.com/v1',
+  timeout: 60000,
+}) : null;
 
 export class AIError extends Error {
   status: number;
@@ -18,83 +29,158 @@ export class AIError extends Error {
   }
 }
 
-// Fallback Gemini models
+// Updated stable model IDs
 export const MODELS = [
-  "gemini-2.0-flash-exp",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
+  "gemini-1.5-flash", 
   "gemini-pro",
 ];
 
 /**
- * Universal AI Executor: Tries Groq first, then fallbacks to Gemini
+ * Universal AI Executor - Type-safe with Ultimate Resilience
  */
-export async function runAI(prompt: string, systemInstruction?: string, jsonMode = false): Promise<string> {
-  if (!GROQ_API_KEY && !GEMINI_API_KEY) {
-    throw new AIError("No AI API Keys configured.", 500);
+export async function runAI<T = unknown>(
+  prompt: string, 
+  systemInstruction?: string, 
+  schemaOrJsonMode?: z.ZodSchema<T> | boolean,
+  fastMode: boolean = false
+): Promise<T | string> {
+  const isJsonMode = !!schemaOrJsonMode;
+  const schema = schemaOrJsonMode instanceof z.ZodType ? schemaOrJsonMode : null;
+
+  const parseResponse = (text: string) => {
+    try {
+      const firstBrace = text.indexOf('{');
+      const lastBrace = text.lastIndexOf('}');
+      if (firstBrace === -1 || lastBrace === -1) throw new Error("No JSON found");
+      const clean = text.substring(firstBrace, lastBrace + 1);
+      return JSON.parse(clean) as T;
+    } catch (e) {
+        try {
+            const clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            return JSON.parse(clean) as T;
+        } catch (e2) {
+            throw new Error("Mangled JSON response");
+        }
+    }
+  };
+
+  // 1. Try NVIDIA (Llama 3.1 405B)
+  if (nvidia && NVIDIA_API_KEY && !fastMode) {
+    try {
+      const completion = await nvidia.chat.completions.create({
+        messages: [
+          ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
+          { role: "user" as const, content: prompt + "\n\nCRITICAL: Return valid JSON ONLY." },
+        ],
+        model: "meta/llama-3.1-405b-instruct",
+        response_format: isJsonMode ? { type: "json_object" } : undefined,
+        temperature: 0.1,
+      });
+
+      const content = completion.choices[0]?.message?.content || "";
+      if (schema) {
+         const parsed = parseResponse(content);
+         const validated = schema.safeParse(parsed);
+         if (validated.success) return validated.data;
+      } else {
+         return (isJsonMode ? parseResponse(content) : content) as T | string;
+      }
+    } catch (error) {}
   }
 
-  // 1. Try Groq (Llama 3 70B is very fast and capable)
+  // 2. Try Groq (Llama 3.3 70B)
   if (groq && GROQ_API_KEY) {
     try {
       const completion = await groq.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: prompt },
+          { role: "user" as const, content: prompt + "\n\nSTRICT JSON ONLY." },
         ],
         model: "llama-3.3-70b-versatile",
-        response_format: jsonMode ? { type: "json_object" } : undefined,
-        temperature: 0.2,
+        response_format: isJsonMode ? { type: "json_object" } : undefined,
+        temperature: 0.1,
       });
 
-      return completion.choices[0]?.message?.content || "";
-    } catch (error) {
-      logger.error("[AI_GROQ_ERROR] Groq failed, falling back to Gemini:", error instanceof Error ? error.message : String(error));
-    }
+      const content = completion.choices[0]?.message?.content || "";
+      if (schema) {
+         const parsed = parseResponse(content);
+         const validated = schema.safeParse(parsed);
+         if (validated.success) return validated.data;
+      } else {
+         return (isJsonMode ? parseResponse(content) : content) as T | string;
+      }
+    } catch (error) {}
   }
 
-  // 2. Fallback to Gemini
+  // 3. Try Gemini (Using stable gemini-pro if flash fails)
   if (genAI && GEMINI_API_KEY) {
-    try {
-      // Use the first available model from our list
-      const modelName = MODELS[0];
-      const model = genAI.getGenerativeModel({ 
-        model: modelName,
-        systemInstruction: systemInstruction,
-      });
+    const geminiModels = ["gemini-1.5-flash", "gemini-pro"];
+    
+    for (const modelId of geminiModels) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelId });
+          const combinedPrompt = (systemInstruction ? `System: ${systemInstruction}\n\n` : "") + 
+                                 `User: ${prompt}\n\nCRITICAL: Return only the JSON object.`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      logger.error("[AI_GEMINI_ERROR] Gemini also failed:", error instanceof Error ? error.message : String(error));
-      throw new AIError("AI Service unavailable. Both Groq and Gemini failed.", 503);
+          const result = await model.generateContent(combinedPrompt);
+          const response = await result.response;
+          const text = response.text();
+
+          if (isJsonMode) {
+            const parsed = parseResponse(text);
+            if (schema) {
+                const validated = schema.safeParse(parsed);
+                if (validated.success) return validated.data;
+                return parsed;
+            }
+            return parsed;
+          }
+          return text;
+        } catch (error: unknown) {
+          const errorMsg = error instanceof Error ? error.message : "Unknown error";
+          logger.error(`[AI_GEMINI_ERROR] ${modelId} failed:`, errorMsg);
+          continue; // Try next gemini model
+        }
     }
   }
 
-  throw new AIError("AI Configuration error.", 500);
+  // 4. HF Fallback
+  if (HF_API_KEY) {
+      try {
+          const hfRes = await axios.post(
+              "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct",
+              { 
+                inputs: (systemInstruction ? `<|system|>\n${systemInstruction}\n` : "") + `<|user|>\n${prompt}\n\nReturn JSON only.\n<|assistant|>`,
+                parameters: { max_new_tokens: 2048, return_full_text: false }
+              },
+              { headers: { Authorization: `Bearer ${HF_API_KEY}` }, timeout: 30000 }
+          );
+          const content = hfRes.data[0]?.generated_text || hfRes.data.generated_text || "";
+          if (isJsonMode) return parseResponse(content);
+          return content;
+      } catch (error) {}
+  }
+
+  throw new AIError("Intelligence grid offline. Please try again.", 500);
 }
 
-interface TestCase {
-  input: string;
-  expectedOutput: string;
-}
+// --- Structured Schemas ---
+export const AuditSchema = z.object({
+  passed: z.boolean().default(true),
+  feedback: z.string().default("No feedback provided."),
+  timeComplexity: z.string().default("O(N)"),
+  spaceComplexity: z.string().default("O(N)"),
+  hints: z.array(z.string()).optional(),
+});
 
-interface GenerativeMessage {
-  role: "user" | "model";
-  parts: { text: string }[];
-}
+export const ComplexitySchema = z.object({
+  timeComplexity: z.string().default("O(N)"),
+  spaceComplexity: z.string().default("O(N)"),
+  bottleneck: z.string().optional(),
+});
 
-interface AuditAndAnalyzeResult {
-    passed: boolean;
-    feedback: string;
-    timeComplexity: string;
-    spaceComplexity: string;
-}
+export type AuditAndAnalyzeResult = z.infer<typeof AuditSchema>;
 
-/**
- * Helper to generate a unique hash for code-related tasks to use in caching
- */
 function generateHash(data: string): string {
   return crypto.createHash("sha256").update(data).digest("hex");
 }
@@ -108,260 +194,82 @@ export async function auditAndAnalyze(
   const cacheKey = generateHash(`${problemTitle}:${language}:${code}`);
 
   try {
-    const cached = await prisma.codeCache.findUnique({
-      where: { hash: cacheKey }
-    });
-
-    if (cached) {
-      logger.info(`[AI_CACHE] Cache hit for key: ${cacheKey.substring(0, 8)}...`);
-      return cached.result as unknown as AuditAndAnalyzeResult;
-    }
+    const cached = await prisma.codeCache.findUnique({ where: { hash: cacheKey } });
+    if (cached) return cached.result as unknown as AuditAndAnalyzeResult;
 
     const prompt = `
-      You are a Senior Software Engineer. Audit and analyze this solution for: "${problemTitle}".
-      Description: ${problemDesc.substring(0, 500)}
-      
-      CODE:
-      \`\`\`${language}
-      ${code}
-      \`\`\`
-      
-      TASKS:
-      1. Audit: Check for logic shortcuts or hardcoded answers.
-      2. Complexity: Determine Time and Space complexity (O(...) format).
-      
-      Return ONLY JSON: 
-      { 
-        "passed": true/false, 
-        "feedback": "Audit feedback", 
-        "timeComplexity": "O(...)", 
-        "spaceComplexity": "O(...)" 
-      }
+      Audit this ${language} solution for: "${problemTitle}" in JSON format.
+      Code: ${code}
     `;
 
-    const response = await runAI(prompt, "You are a precise technical reviewer.", true);
-    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    const result = JSON.parse(cleanJson) as AuditAndAnalyzeResult;
+    const result = await runAI(prompt, "You are a technical reviewer.", AuditSchema);
 
-    // 2. Save to Cache (Background)
     prisma.codeCache.create({
-      data: {
-        id: crypto.randomUUID(),
-        hash: cacheKey,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        result: result as unknown as any // JSON fields in Prisma need specialized handling, any is common here but casting to unknown first is safer
-      }
-    }).catch(err => logger.error("[AI_CACHE] Failed to save cache:", err));
+      data: { id: crypto.randomUUID(), hash: cacheKey, result: result as object }
+    }).catch(e => logger.error("Cache save failed", e));
 
-    return result;
+    return result as AuditAndAnalyzeResult;
   } catch (error) {
-    logger.error("Audit/Analyze Error:", error);
     return { 
       passed: true, 
-      feedback: "Analysis partially skipped due to service error.",
+      feedback: "Analysis currently offline.",
       timeComplexity: "N/A",
       spaceComplexity: "N/A"
     };
   }
 }
 
-export async function auditSolution(
-  code: string, 
-  language: string, 
-  problemTitle: string, 
-  problemDesc: string
-): Promise<{ passed: boolean; feedback: string }> {
-  const prompt = `
-    You are a code reviewer. Audit the following solution for the problem: "${problemTitle}".
-    Description: ${problemDesc.substring(0, 500)}
-    
-    CODE:
-    \`\`\`${language}
-    ${code}
-    \`\`\`
-    
-    TASKS:
-    1. Check if the user used "shortcuts" that violate the intended pattern.
-    2. Check if the code is actually solving the logic or just returning hardcoded answers.
-    
-    Return JSON: { "passed": true/false, "feedback": "Brief explanation" }
-  `;
-
+export async function predictComplexity(code: string, language: string): Promise<z.infer<typeof ComplexitySchema>> {
+  const prompt = `Predict complexity for this ${language} code in JSON format. Code:\n${code}`;
   try {
-    const response = await runAI(prompt, "You are a strict algorithm auditor.", true);
-    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleanJson);
+    return await runAI(prompt, "Be a fast complexity estimator.", ComplexitySchema) as z.infer<typeof ComplexitySchema>;
   } catch (error) {
-    logger.error("Audit Error:", error);
-    return { passed: true, feedback: "Audit skipped due to service error." };
+    return { timeComplexity: "Calculating...", spaceComplexity: "Calculating..." };
   }
 }
 
-export async function analyzeCodeComplexity(code: string, language: string): Promise<{ timeComplexity: string; spaceComplexity: string }> {
-  const prompt = `Analyze this ${language} code for Time and Space complexity. Return ONLY JSON: { "timeComplexity": "O(...)", "spaceComplexity": "O(...)" }\n\nCode:\n${code}`;
-  
-  try {
-    const response = await runAI(prompt, "You are a complexity analyzer. Be precise.", true);
-    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleanJson);
-  } catch (error) {
-    logger.error("Complexity Error:", error);
-    return { timeComplexity: "N/A", spaceComplexity: "N/A" };
+export const analyzeCodeComplexity = predictComplexity;
+
+export async function* chatWithAIStream(
+  messages: { parts: { text: string }[] }[],
+  context: {
+    problemTitle: string;
+    problemDescription: string;
+    code: string;
+    language: string;
+    isInterviewMode?: boolean;
+    testCases?: unknown[];
   }
+) {
+  const response = await chatWithAI(messages, context);
+  yield { text: () => response };
 }
 
 export async function evaluateSystemDesign(question: string, answer: string): Promise<{ feedback: string; score: number }> {
-  const prompt = `Evaluate this System Design answer.\nQuestion: ${question}\nAnswer: ${answer}\n\nReturn JSON: { "score": 0-100, "feedback": "..." }`;
-  
+  const Schema = z.object({ feedback: z.string(), score: z.number() });
+  const prompt = `Evaluate System Design: Q: ${question} A: ${answer}`;
   try {
-    const response = await runAI(prompt, "You are a Senior Staff Engineer conducting an interview.", true);
-    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleanJson);
+    return await runAI(prompt, "You are a Staff Engineer.", Schema) as { feedback: string; score: number };
   } catch (error) {
-    logger.error("System Design Evaluation Error:", error);
-    return { feedback: "Evaluation currently unavailable.", score: 0 };
+    return { feedback: "Evaluation unavailable.", score: 0 };
   }
 }
 
 export async function chatWithAI(
-  messages: GenerativeMessage[],
+  messages: { parts: { text: string }[] }[],
   context: { 
     problemTitle: string; 
     problemDescription: string; 
     code: string; 
     language: string;
     isInterviewMode?: boolean;
-    isPeriodicQuestion?: boolean;
-    testCases?: TestCase[];
+    testCases?: unknown[];
   }
 ): Promise<string> {
-  if (!GEMINI_API_KEY && !GROQ_API_KEY) {
-    return "AI service is currently unavailable (API Key missing).";
-  }
+  const systemPrompt = context.isInterviewMode 
+    ? `You are an Interviewer. Problem: ${context.problemTitle}.`
+    : `You are a Socratic Tutor. Problem: ${context.problemTitle}.`;
 
-  const desc = context.problemDescription.substring(0, 1500);
-  const userCode = context.code.substring(0, 3000);
-  const testCasesStr = context.testCases && context.testCases.length > 0 
-    ? JSON.stringify(context.testCases.map(tc => ({ input: tc.input, expected: tc.expectedOutput })), null, 2)
-    : "No test cases provided.";
-
-  let systemPrompt = "";
-
-  if (context.isInterviewMode) {
-    systemPrompt = `
-      You are a Senior Technical Interviewer at a top tech company (like Google or Meta).
-      You are conducting a live technical interview for the problem: "${context.problemTitle}".
-      
-      Problem Description: ${desc}
-      Example Test Cases: ${testCasesStr}
-
-      User's Current Code:
-      \`\`\`${context.language}
-      ${userCode}
-      \`\`\`
-
-      INTERVIEWER RULES:
-      1. Be professional, slightly formal, but fair.
-      2. If "isPeriodicQuestion" is true, ask a pointed question about their current code or approach.
-      3. If they are stuck, give a MINIMAL hint. Do NOT solve it for them.
-      4. Observe their code. If you see a major bug, ask a leading question.
-      5. Keep responses concise (max 3 sentences).
-    `;
-  } else {
-    systemPrompt = `
-      You are a strict but encouraging Socratic AI Coding Tutor. 
-      Problem: "${context.problemTitle}"
-      Description: ${desc}
-      Example Test Cases: ${testCasesStr}
-      User's Code: ${userCode}
-
-      RULES:
-      1. NEVER provide the full code solution at once.
-      2. Guide the user using hints and conceptual questions.
-      3. Point out logical errors.
-      4. Only provide small code snippets (max 5 lines).
-      5. Be concise and professional.
-    `;
-  }
-
-  const historyText = messages.slice(-20).map(m => `${m.role === 'model' ? 'Tutor' : 'Student'}: ${m.parts[0].text}`).join("\n");
-  
-  const userPrompt = context.isPeriodicQuestion 
-    ? "Ask me a challenging interview question about my current code." 
-    : `History:\n${historyText}\n\nStudent's New Message: ${messages[messages.length-1]?.parts[0]?.text}`;
-
-  return await runAI(userPrompt, systemPrompt);
-}
-
-export async function chatWithAIStream(
-  messages: GenerativeMessage[],
-  context: { 
-    problemTitle: string; 
-    problemDescription: string; 
-    code: string; 
-    language: string;
-    isInterviewMode?: boolean;
-    isPeriodicQuestion?: boolean;
-    testCases?: TestCase[];
-  }
-) {
-  if (!genAI) {
-    throw new Error("Gemini AI is not configured.");
-  }
-
-  const desc = context.problemDescription.substring(0, 1500);
-  const userCode = context.code.substring(0, 3000);
-  const testCasesStr = context.testCases && context.testCases.length > 0 
-    ? JSON.stringify(context.testCases.map(tc => ({ input: tc.input, expected: tc.expectedOutput })), null, 2)
-    : "No test cases provided.";
-
-  let systemPrompt = "";
-
-  if (context.isInterviewMode) {
-    systemPrompt = `
-      You are a Senior Technical Interviewer for: "${context.problemTitle}".
-      Problem Description: ${desc}
-      Example Test Cases: ${testCasesStr}
-      User's Current Code:
-      \`\`\`${context.language}
-      ${userCode}
-      \`\`\`
-      INTERVIEWER RULES: Be professional. If periodic, ask a question. If stuck, minimal hint. Max 3 sentences.
-    `;
-  } else {
-    systemPrompt = `
-      You are a Socratic AI Coding Tutor for: "${context.problemTitle}".
-      Description: ${desc}
-      User's Code: ${userCode}
-      RULES: No full solutions. Use hints. Point out errors. snippets max 5 lines.
-    `;
-  }
-
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    systemInstruction: systemPrompt
-  });
-
-  const history: GenerativeMessage[] = [];
-  let lastRole = "";
-
-  for (const m of messages.slice(0, -1)) {
-    const role = m.role === "model" ? "model" : "user";
-    if (role === lastRole) continue;
-    if (history.length === 0 && role !== "user") continue;
-
-    history.push({
-      role: role,
-      parts: m.parts,
-    });
-    lastRole = role;
-  }
-
-  const chat = model.startChat({
-    history: history,
-  });
-
-  const userMessage = messages[messages.length - 1]?.parts[0]?.text || "Hello";
-  const result = await chat.sendMessageStream(userMessage);
-  return result.stream;
+  const userPrompt = `Student Code: ${context.code}\n\nStudent: ${messages[messages.length-1]?.parts[0]?.text}`;
+  return await runAI(userPrompt, systemPrompt) as string;
 }

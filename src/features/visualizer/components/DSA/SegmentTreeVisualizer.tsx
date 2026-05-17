@@ -356,7 +356,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -424,7 +424,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
 
                 {/* Explanation Box */}
                 <AnimatePresence mode="wait">
-                    <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-10 text-center z-30 flex flex-col items-center gap-4">
+                    <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-4 md:px-10 text-center z-30 flex flex-col items-center gap-4">
                         {currentStep.queryResult !== undefined && currentStep.queryResult !== null && (
                             <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="px-6 py-2 bg-[var(--viz-cyan)] text-black font-black rounded-xl shadow-lg border border-white/20 flex items-center gap-3">
                                 <Target size={18}/> RESULT: {currentStep.queryResult}
@@ -587,7 +587,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+      <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Captured segment</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active update</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive probe</span></div>
@@ -596,3 +596,5 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
     </div>
   );
 }
+
+

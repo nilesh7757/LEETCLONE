@@ -1,6 +1,6 @@
-# Contributing to LEETCLONE
+# Contributing to LogiQuest
 
-Thank you for your interest in contributing to LEETCLONE!
+Thank you for your interest in contributing to LogiQuest!
 
 ## How to Contribute
 

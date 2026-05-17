@@ -2,14 +2,21 @@ import { NextResponse } from "next/server";
 import { executeCode, TestInputOutput } from "@/lib/codeExecution";
 import { ProblemType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { executionQueue, queueEvents } from "@/lib/queue";
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { 
       language, 
       code, 
       problemId,
-      type, // Allow passing type directly for new problems
+      type, 
       initialSchema,
       initialData,
       timeLimit,
@@ -17,7 +24,6 @@ export async function POST(req: Request) {
       testCases,
     } = await req.json();
 
-    // Basic validation
     if (!code) {
       return NextResponse.json({ error: "Missing code" }, { status: 400 });
     }
@@ -33,18 +39,35 @@ export async function POST(req: Request) {
           initialSchema: true,
           initialData: true,
           testSets: true,
+          referenceSolution: true,
         },
       });
     }
+
+    /**
+     * ROBUST LANGUAGE DETECTOR (V2)
+     */
+    function detectLanguage(src: string): string {
+      const clean = src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "").trim(); 
+      if (clean.includes("#include") || clean.includes("using namespace std;")) return "cpp";
+      if (
+        (clean.includes("def ") && !clean.includes("function ")) || 
+        (clean.includes("import ") && !clean.includes("from '") && !clean.includes("from \""))
+      ) {
+          return "python";
+      }
+      if (clean.includes("public class ") && clean.includes("static void main")) return "java";
+      return "javascript"; 
+    }
+
+    const finalType = (problem?.type || type || "CODING") as ProblemType;
 
     // Determine test cases to run
     let finalTestCases: TestInputOutput[] = [];
 
     if (testCases && Array.isArray(testCases) && testCases.length > 0) {
-      // Prioritize custom test cases sent from the client
       finalTestCases = testCases;
     } else if (problem) {
-      // Fallback to stored example test cases
       let allTestSets: TestInputOutput[] = [];
       if (Array.isArray(problem.testSets)) {
         allTestSets = problem.testSets as unknown as TestInputOutput[];
@@ -53,8 +76,35 @@ export async function POST(req: Request) {
     } 
 
     try {
-      let results;
-      const finalType = (problem?.type || type) as ProblemType;
+      // DYNAMIC EXPECTED OUTPUT GENERATION
+      const generationCode = code || problem?.referenceSolution;
+      const casesToGenerate = finalTestCases.filter(tc => !tc.expectedOutput || String(tc.expectedOutput).trim() === "");
+      
+      if (casesToGenerate.length > 0 && generationCode && finalType === "CODING") {
+        const refLang = language || detectLanguage(generationCode);
+        const refJob = await executionQueue.add('generate-outputs', {
+          problemId: problemId || "ref-generator",
+          type: "CODING" as ProblemType,
+          code: generationCode,
+          language: refLang,
+          testCases: casesToGenerate.map(tc => ({ 
+            input: typeof tc === 'string' ? tc : (tc.input || ""), 
+            expectedOutput: "" 
+          })),
+          timeLimit: problem?.timeLimit || 2,
+          memoryLimit: problem?.memoryLimit || 256,
+          isOutputGeneration: true
+        });
+
+        const refResults = await refJob.waitUntilFinished(queueEvents, 30000);
+
+        casesToGenerate.forEach((tc, idx) => {
+          const res = refResults[idx];
+          if (res && res.status === "Accepted") {
+            tc.expectedOutput = res.actual;
+          }
+        });
+      }
       
       const commonParams = {
         problemId: problemId || "new-problem",
@@ -67,18 +117,23 @@ export async function POST(req: Request) {
         initialData: (problem?.initialData || initialData) ?? undefined,
       };
 
-      if (finalType === ProblemType.CODING) {
-        const finalLanguage = language || "javascript";
-        results = await executeCode({ ...commonParams, language: finalLanguage });
-      } else if (finalType === ProblemType.SQL) {
-         results = await executeCode(commonParams);
-      } else {
-        return NextResponse.json({ error: `Unsupported problem type: ${finalType}` }, { status: 400 });
+      let finalLanguage = language;
+      if (finalType === "CODING") {
+        finalLanguage = language || detectLanguage(code) || "javascript";
+      } else if (finalType === "SQL") {
+        finalLanguage = "sql";
       }
+
+      const job = await executionQueue.add('run-code', { 
+        ...commonParams, 
+        language: finalLanguage 
+      });
+
+      const results = await job.waitUntilFinished(queueEvents, 30000); // 30 seconds timeout
       
       return NextResponse.json({ results });
     } catch (error: unknown) {
-      return NextResponse.json({ error: error instanceof Error ? error.message : "Execution failed" }, { status: 400 });
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Execution failed or timed out" }, { status: 400 });
     }
 
   } catch (error) {

@@ -23,6 +23,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Contest not found" }, { status: 404 });
     }
 
+    const now = new Date();
+    const contestStartTime = new Date(contest.startTime);
+    const contestEndTime = new Date(contest.endTime);
+
+    if (contest.status === "ENDED") {
+      return NextResponse.json({ error: "Contest has already ended" }, { status: 400 });
+    }
+
+    if (contest.status === "DRAFT" || contest.status === "READY") {
+      return NextResponse.json({ error: "Contest is not yet open for registration" }, { status: 400 });
+    }
+
+    if (now > contestEndTime) {
+      return NextResponse.json({ error: "Contest has already ended" }, { status: 400 });
+    }
+
+    if (contest.visibility === "PRIVATE" && contest.accessCode) {
+      const { accessCode: providedCode } = await req.json();
+      if (providedCode !== contest.accessCode) {
+        return NextResponse.json({ error: "Invalid access code" }, { status: 403 });
+      }
+    }
+
     // Removed access code validation for private contests as per user request
 
     // Check if already registered

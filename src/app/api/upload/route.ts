@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     return new Promise<NextResponse>((resolve) => {
       cloudinary.uploader.upload_stream(
         {
-          folder: "leetcode-clone-avatars", // Optional: organize uploads in a folder
+          folder: "logiquest-avatars", // Optional: organize uploads in a folder
         },
         (error, result) => {
           if (error) {

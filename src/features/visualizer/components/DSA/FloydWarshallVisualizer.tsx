@@ -174,7 +174,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     <div className="flex flex-col gap-6 font-sans select-none">
       
       {/* --- Main Dashboard --- */}
-      <div className="p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
         {/* Background Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
@@ -454,7 +454,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         </div>
 
         {/* Legend */}
-        <div className="px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
+        <div className="px-4 md:px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Via Path (i→k, k→j)</span></div>
             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Target (i→j)</span></div>
             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-amber)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Intermediate (k)</span></div>
@@ -464,3 +464,5 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     </div>
   );
 }
+
+

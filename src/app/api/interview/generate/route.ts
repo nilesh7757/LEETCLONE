@@ -6,6 +6,16 @@ import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
 
+interface InterviewQuestion {
+  id: string;
+  type: string;
+  question: string;
+}
+
+interface InterviewData {
+  questions: InterviewQuestion[];
+}
+
 export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (!session?.user?.id) throw new ApiError("Unauthorized", 401);
@@ -62,9 +72,7 @@ export const POST = apiHandler(async (req: Request) => {
   const userPrompt = `Create a challenging ${difficulty} level interview about ${sanitizedTopic}.`;
   
   try {
-    const responseText = await runAI(userPrompt, systemPrompt, true);
-    const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-    const interviewData = JSON.parse(cleanJson);
+    const interviewData = await runAI(userPrompt, systemPrompt, true) as InterviewData;
 
     // 3. Save to DB
     const interview = await prisma.mockInterview.create({
@@ -72,7 +80,7 @@ export const POST = apiHandler(async (req: Request) => {
         userId,
         topic: sanitizedTopic,
         difficulty,
-        questions: interviewData.questions,
+        questions: interviewData.questions as unknown,
         status: "ONGOING"
       }
     });

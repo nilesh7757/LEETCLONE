@@ -128,7 +128,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -267,7 +267,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                         </div>
                     ) : (
                         /* QUEUE VISUAL */
-                        <div key="queue-container" className="relative w-full max-w-[600px]">
+                        <div key="queue-container" className="relative w-full">
                             <div className="w-full h-24 border-y-4 border-dashed border-border/50 bg-background/20 backdrop-blur-sm flex items-center justify-end px-4 gap-2 relative overflow-hidden rounded-xl">
                                 <div className="absolute inset-0 bg-gradient-to-l from-[var(--viz-green)]/5 to-transparent pointer-events-none" />
                                 <AnimatePresence mode="popLayout">
@@ -362,3 +362,5 @@ function ChevronsLeft({ size = 12, ...props }: LucideProps) {
 function ChevronsUp({ size = 12, ...props }: LucideProps) { 
   return <svg {...props} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg> 
 }
+
+

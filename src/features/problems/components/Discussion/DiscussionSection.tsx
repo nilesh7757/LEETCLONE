@@ -21,6 +21,7 @@ interface Vote {
 interface User {
   id: string;
   name: string | null;
+  image: string | null;
 }
 
 interface Comment {

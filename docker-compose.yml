@@ -1,14 +1,20 @@
-version: '3.8'
-
 services:
   web:
     build: .
+    user: root
     ports:
       - "3000:3000"
     env_file:
       - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - next-cache:/app/.next
     environment:
       - NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm install && npm run dev"
     depends_on:
       - db
       - socket
@@ -17,11 +23,32 @@ services:
 
   socket:
     build: .
-    command: npm run socket
+    user: root
+    command: sh -c "npm install && npm run socket"
     ports:
       - "3001:3001"
     env_file:
       - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT=3001
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  worker:
+    build: .
+    user: root
+    command: sh -c "npm install && npm run worker"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
     environment:
       - REDIS_URL=redis://redis:6379
     depends_on:
@@ -33,9 +60,9 @@ services:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-leetclone}
-      POSTGRES_USER: ${POSTGRES_USER:-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: logiquest
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password123
     ports:
       - "5432:5432"
     volumes:
@@ -49,14 +76,7 @@ services:
     volumes:
       - redis-data:/data
 
-  piston:
-    image: engineer-man/piston
-    restart: always
-    ports:
-      - "2000:2000"
-    volumes:
-      - ./piston_data:/piston/packages
-
 volumes:
   db-data:
   redis-data:
+  next-cache:

@@ -41,19 +41,24 @@ export const POST = apiHandler(async (req: Request) => {
     initialData,
   } = await req.json();
 
+  const isDraft = !isPublic && (req.headers.get("x-source") === "FOUNDRY" || true); // Assuming private for now
+
   if (
     !title ||
     !slug ||
     !difficulty ||
     !category ||
     !description ||
-    !referenceSolution ||
     !problemType ||
-    (problemType === "CODING" && (!language || !examplesInput || !testCasesInput)) ||
     timeLimit === undefined || 
     memoryLimit === undefined
   ) {
-    throw new ApiError("Missing required problem fields", 400);
+    throw new ApiError("Missing required metadata fields", 400);
+  }
+
+  // Only require implementation details if it's NOT a draft/private foundry unit
+  if (!isDraft && problemType === "CODING" && (!referenceSolution || !language || !Array.isArray(examplesInput) || !Array.isArray(testCasesInput))) {
+     throw new ApiError("Implementation details required for public units", 400);
   }
 
   // Check if problem with same slug already exists
@@ -84,18 +89,34 @@ export const POST = apiHandler(async (req: Request) => {
   }
 
   // 1. Examples
-  const processedExamples: TestInputOutput[] = examplesInput ? examplesInput.map((ex: InputCase) => ({ input: ex.input, expectedOutput: ex.output })) : [];
+  const processedExamples: TestInputOutput[] = Array.isArray(examplesInput) ? examplesInput.map((ex: InputCase) => ({ input: ex.input, expectedOutput: ex.output })) : [];
 
   // 2. Generate outputs for hidden test cases (Only for CODING)
   const processedTestCases: TestInputOutput[] = [];
   
-  if (problemType === "CODING" && testCasesInput && testCasesInput.length > 0) {
+  if (problemType === "CODING" && Array.isArray(testCasesInput) && testCasesInput.length > 0) {
+    /**
+     * ROBUST LANGUAGE DETECTOR (Internal)
+     */
+    const detectLanguage = (src: string): string => {
+      const clean = src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "").trim(); 
+      if (clean.includes("#include") || clean.includes("using namespace std;")) return "cpp";
+      if ((clean.includes("def ") && !clean.includes("function ")) || (clean.includes("import ") && !clean.includes("from '"))) return "python";
+      if (clean.includes("public class ") && clean.includes("static void main")) return "java";
+      return "javascript";
+    };
+
+    const finalLang = language || detectLanguage(referenceSolution || "");
+
     const testCaseResults = await executeCode({
       problemId: "temp-create",
       type: "CODING",
-      language,
+      language: finalLang,
       code: referenceSolution,
-      testCases: testCasesInput.map((tc: { input: string }) => ({ input: tc.input, expectedOutput: "" })),
+      testCases: testCasesInput.map((tc: string | { input: string }) => ({ 
+        input: typeof tc === 'string' ? tc : ((tc as { input: string }).input || ""), 
+        expectedOutput: "" 
+      })),
       timeLimit,
       memoryLimit,
       isOutputGeneration: true

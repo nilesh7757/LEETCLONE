@@ -269,7 +269,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
          </div>
 
          {/* --- The Visual Stage --- */}
-         <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center p-8 overflow-hidden">
+         <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
             
             {/* Logic Badge */}
             <div className="absolute top-6 left-6">
@@ -388,3 +388,5 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     </div>
   );
 }
+
+

@@ -14,7 +14,7 @@ interface StudyPlan {
   isPublic: boolean;
   isOfficial: boolean;
   coverImage?: string | null;
-  creatorId: string;
+  creatorId: string | null;
   _count: {
     problems: number;
   };
@@ -115,7 +115,7 @@ export default async function StudyPlansPage() {
             {myPlans.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {myPlans.map(plan => (
-                  <StudyPlanCard key={plan.id} plan={plan as any} userId={userId} />
+                  <StudyPlanCard key={plan.id} plan={plan} userId={userId} />
                 ))}
               </div>
             ) : (
@@ -150,7 +150,7 @@ export default async function StudyPlansPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {officialPlans.map(plan => (
-                <StudyPlanCard key={plan.id} plan={plan as any} />
+                <StudyPlanCard key={plan.id} plan={plan} />
               ))}
             </div>
           </section>
@@ -170,7 +170,7 @@ export default async function StudyPlansPage() {
   );
 }
 
-function StudyPlanCard({ plan }: { plan: StudyPlan, userId?: string }) {
+function StudyPlanCard({ plan, userId }: { plan: StudyPlan, userId?: string }) {
   const isPurple = !plan.isOfficial;
   const themeColor = isPurple ? "#3b82f6" : "#f59e0b";
 

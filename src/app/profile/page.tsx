@@ -112,8 +112,8 @@ export default function ProfilePage() {
     try {
       const { data } = await axios.get(`/api/users/${userId}/performance`);
       setStats(data);
-    } catch (error) {
-      console.error("Failed to load performance stats:", error);
+    } catch (err) {
+      console.error("Failed to load performance stats:", err);
     } finally {
       setLoadingStats(false);
     }
@@ -177,7 +177,7 @@ export default function ProfilePage() {
 
       toast.success("Identity updated successfully");
       return true;
-    } catch (error) {
+    } catch {
       toast.error("Failed to sync identity");
       return false;
     } finally {
@@ -220,7 +220,7 @@ export default function ProfilePage() {
       toast.success("Neural Synchronization Complete", {
         description: `New Power Level: ${data.powerLevel}`
       });
-    } catch (error) {
+    } catch {
       toast.error("Synchronization Failed");
     } finally {
       setSyncing(false);
@@ -238,7 +238,7 @@ export default function ProfilePage() {
       });
       setFormData((prev) => ({ ...prev, image: res.data.url }));
       toast.success("Visual signature uploaded");
-    } catch (error) {
+    } catch {
       toast.error("Upload failed");
     }
   };
@@ -614,7 +614,7 @@ export default function ProfilePage() {
                 </h3>
                 <div className="flex justify-center overflow-x-auto pb-4">
                     {!loadingStats && stats?.calendarData && (
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                         
                         <ActivityCalendar 
                             data={stats.calendarData}
                             theme={{

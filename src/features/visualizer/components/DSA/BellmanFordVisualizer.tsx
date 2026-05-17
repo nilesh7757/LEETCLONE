@@ -293,7 +293,7 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
+      <div className="p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         
@@ -556,7 +556,7 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
         </div>
       </div>
 
-      <div className="px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+      <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Probe</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Optimal Link</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Negative Weight</span></div>
@@ -565,3 +565,5 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
     </div>
   );
 }
+
+

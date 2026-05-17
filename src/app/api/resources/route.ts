@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/lib/api-handler";
-import { ResourceType } from "@prisma/client";
+import { ResourceType, Prisma } from "@prisma/client";
 
 export const GET = apiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const topic = searchParams.get("topic");
   const type = searchParams.get("type") as ResourceType | null;
 
-  const where: any = {
+  const where: Prisma.LearningResourceWhereInput = {
     isPublic: true,
   };
 

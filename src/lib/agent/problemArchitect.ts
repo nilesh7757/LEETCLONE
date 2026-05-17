@@ -76,7 +76,7 @@ export class ProblemArchitect {
       };
   }
 
-  private async createBlueprint(): Promise<unknown> {
+  private async createBlueprint(): Promise<Blueprint> {
     const prompt = `
       Plan a competitive programming problem about "${this.topic}" with difficulty "${this.difficulty}".
       
@@ -93,7 +93,7 @@ export class ProblemArchitect {
       }
     `;
     const res = await runAI(prompt, "You are a competitive programming problem setter.", true);
-    return JSON.parse(res.replace(/```json/g, "").replace(/```/g, "").trim());
+    return res as Blueprint;
   }
 
   private async createReferenceSolution(blueprint: Blueprint) {
@@ -111,7 +111,7 @@ export class ProblemArchitect {
 
       Return ONLY the code inside a markdown block.
     `;
-    const res = await runAI(prompt, "You are a Competitive Programmer.", false);
+    const res = await runAI(prompt, "You are a Competitive Programmer.", false) as string;
     
     // Improved extraction: find content between ```...```
     const match = res.match(/```(?:javascript|js|typescript|ts)?\s*([\s\S]*?)```/);
@@ -138,11 +138,17 @@ export class ProblemArchitect {
     logger.debug("[Architect] Raw Test Inputs Response:", res);
     
     try {
-        const parsed = JSON.parse(res.replace(/```json/g, "").replace(/```/g, "").trim());
+        const parsed = res as unknown;
         if (Array.isArray(parsed)) return parsed;
-        if (parsed.inputs && Array.isArray(parsed.inputs)) return parsed.inputs;
-        if (parsed.test_cases && Array.isArray(parsed.test_cases)) return parsed.test_cases;
-        if (parsed.testCases && Array.isArray(parsed.testCases)) return parsed.testCases.map((tc: { input: string } | string) => typeof tc === 'string' ? tc : tc.input);
+        
+        if (typeof parsed === 'object' && parsed !== null) {
+            const p = parsed as { inputs?: string[]; test_cases?: string[]; testCases?: (string | { input: string })[] };
+            if (p.inputs && Array.isArray(p.inputs)) return p.inputs;
+            if (p.test_cases && Array.isArray(p.test_cases)) return p.test_cases;
+            if (p.testCases && Array.isArray(p.testCases)) {
+                return p.testCases.map((tc: { input: string } | string) => typeof tc === 'string' ? tc : tc.input);
+            }
+        }
         return [];
     } catch (e) {
         logger.error("[Architect] Failed to parse test inputs:", e instanceof Error ? e.message : String(e));
@@ -200,7 +206,7 @@ export class ProblemArchitect {
         Task: Fix the solution to handle the input correctly and not crash.
         Return ONLY the fixed code.
       `;
-      const res = await runAI(prompt, "You are a Senior Debugger.", false);
+      const res = await runAI(prompt, "You are a Senior Debugger.", false) as string;
       return res.replace(/```typescript/g, "").replace(/```/g, "").trim();
   }
 }

@@ -36,7 +36,7 @@ export const POST = apiHandler(async (req: Request) => {
   
   Return a detailed summary of their strengths and weaknesses in HTML format.`;
 
-  const overallFeedback = await runAI("Provide a final performance review.", systemPrompt);
+  const overallFeedback = await runAI("Provide a final performance review.", systemPrompt) as string;
 
   await prisma.mockInterview.update({
     where: { id: interviewId },

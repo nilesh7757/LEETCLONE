@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -376,13 +375,13 @@ export default function AdminDashboard() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12"
       >
         <div>
-          <h1 className="text-4xl font-black text-[var(--foreground)] tracking-tight flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight flex items-center gap-3">
             <div className="p-3 bg-[var(--viz-red)]/10 rounded-2xl">
               <ShieldAlert className="w-10 h-10 text-[var(--viz-red)]" />
             </div>
-            Command Center
+            Admin Dashboard
           </h1>
-          <p className="text-[var(--foreground)]/50 mt-2 font-medium">Global system overview and administrative controls.</p>
+          <p className="text-[var(--foreground)]/50 mt-2 font-medium">System overview and management controls.</p>
         </div>
         
         <div className="flex items-center gap-4">
@@ -558,8 +557,8 @@ export default function AdminDashboard() {
                       </div>
 
                       <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--foreground)]/30 mb-4 flex items-center gap-2">
-                          <Lock className="w-3 h-3" /> Reference Architecture
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground)]/30 mb-4 flex items-center gap-2">
+                          <Lock className="w-3 h-3" /> Reference Solution
                         </h4>
                         <div className="bg-black/60 p-8 rounded-3xl font-mono text-sm overflow-x-auto border border-[var(--border)] relative group">
                           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -704,11 +703,11 @@ export default function AdminDashboard() {
                     <table className="w-full text-left">
                         <thead className="bg-[var(--background)] border-b border-[var(--border)]">
                             <tr>
-                                <th className="px-8 py-5 text-[10px] font-black text-[var(--foreground)]/30 uppercase tracking-[0.2em]">User Identity</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-[var(--foreground)]/30 uppercase tracking-[0.2em]">Access Level</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-[var(--foreground)]/30 uppercase tracking-[0.2em]">Submissions</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-[var(--foreground)]/30 uppercase tracking-[0.2em]">Status</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-[var(--foreground)]/30 uppercase tracking-[0.2em]">Security</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-[var(--foreground)]/30 uppercase tracking-widest">User</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-[var(--foreground)]/30 uppercase tracking-widest">Role</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-[var(--foreground)]/30 uppercase tracking-widest">Submissions</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-[var(--foreground)]/30 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-[var(--foreground)]/30 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--border)]">
@@ -861,8 +860,8 @@ export default function AdminDashboard() {
                         <Sparkles className="w-8 h-8 text-[var(--viz-red)]" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-[var(--foreground)]">AI Output Verification</h2>
-                        <p className="text-sm text-[var(--foreground)]/50 font-medium">Verify and approve synthetic assets before public repository release.</p>
+                        <h2 className="text-xl font-bold text-[var(--foreground)]">Problem Verification</h2>
+                        <p className="text-sm text-[var(--foreground)]/50 font-medium">Verify and approve new problems before they are made public.</p>
                     </div>
                 </div>
 
@@ -877,8 +876,8 @@ export default function AdminDashboard() {
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <span className="bg-[var(--viz-red)] text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest">Synthetic Draft</span>
-                            <h3 className="font-black text-lg text-[var(--foreground)]">{problem.title}</h3>
+                            <span className="bg-[var(--viz-red)] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">New Draft</span>
+                            <h3 className="font-bold text-lg text-[var(--foreground)]">{problem.title}</h3>
                           </div>
                           <div className="flex items-center gap-4 text-xs font-bold text-[var(--foreground)]/40 uppercase">
                             <span>{problem.category}</span>

@@ -121,9 +121,8 @@ export const GET = apiHandler(async (req: Request) => {
   logger.info("Analyzing weakness for stats:", JSON.stringify(stats));
 
   try {
-    const response = await runAI(userPrompt, systemPrompt, true);
-    const cleanJson = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    return NextResponse.json(JSON.parse(cleanJson));
+    const parsed = await runAI(userPrompt, systemPrompt, true);
+    return NextResponse.json(parsed);
   } catch (error: unknown) {
     logger.error("AI Analysis failed:", error instanceof Error ? error.message : String(error));
     if (error instanceof AIError && error.status === 429) {

@@ -86,8 +86,7 @@ export default function BlogPage() {
                 Community Blog
             </h1>
             <p className="text-lg text-[var(--muted-foreground)] max-w-2xl font-light leading-relaxed">
-                Insights, algorithms, and architectural patterns shared by the LeetClone engineering community.
-            </p>
+                Insights, algorithms, and architectural patterns shared by the LogiQuest engineering community.            </p>
 
             {/* Action Bar */}
             <div className="w-full max-w-2xl mt-8 flex flex-col md:flex-row gap-4 relative z-20">

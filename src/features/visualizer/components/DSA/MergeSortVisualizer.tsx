@@ -214,7 +214,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -274,7 +274,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[550px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-8">
+        <div className="relative min-h-[550px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-4 md:p-8">
             
             {/* Tree Structure */}
             <div className="relative w-full h-full flex items-center justify-center">
@@ -388,7 +388,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+      <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Range</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Merging</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Sorted</span></div>
@@ -397,3 +397,5 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
     </div>
   );
 }
+
+

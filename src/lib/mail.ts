@@ -21,7 +21,7 @@ export async function sendOtpEmail(email: string, otp: string) {
   });
 
   await transporter.sendMail({
-    from: `"LeetClone" <${SMTP_USER}>`,
+    from: `"LogiQuest" <${SMTP_USER}>`,
     to: email,
     subject: "Verify your account",
     html: `
@@ -58,7 +58,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   });
 
   await transporter.sendMail({
-    from: `"LeetClone" <${SMTP_USER}>`,
+    from: `"LogiQuest" <${SMTP_USER}>`,
     to: email,
     subject: "Reset your password",
     html: `
@@ -93,7 +93,7 @@ export async function sendStudyReminderEmail(email: string, planTitle: string, p
   });
 
   await transporter.sendMail({
-    from: `"LeetClone" <${SMTP_USER}>`,
+    from: `"LogiQuest" <${SMTP_USER}>`,
     to: email,
     subject: `Daily Reminder: ${planTitle}`,
     html: `

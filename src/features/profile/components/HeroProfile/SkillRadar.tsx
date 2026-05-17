@@ -42,14 +42,8 @@ export default function SkillRadar({ stats, theme }: SkillRadarProps) {
     return `${point.x},${point.y}`;
   }).join(" ");
 
-  // Theme-specific colors
-  const colors: Record<string, string> = {
-    matrix: "#00ff41",
-    dracula: "#ff0000",
-    got: "#38bdf8",
-    default: "var(--viz-cyan)"
-  };
-  const activeColor = colors[theme as string] || colors.default;
+  // Active color
+  const activeColor = "var(--viz-cyan)";
 
   return (
     <div className="relative flex flex-col items-center justify-center p-4">
@@ -68,14 +62,14 @@ export default function SkillRadar({ stats, theme }: SkillRadarProps) {
 
         {/* Axis Lines */}
         {CATEGORIES.map((_, i) => {
-          const point = getCoordinates(i, radius * 2.5); // Extend line
+          const point = getCoordinates(i, radius);
           return (
             <line
               key={i}
               x1={center}
               y1={center}
-              x2={getCoordinates(i, 20).x}
-              y2={getCoordinates(i, 20).y}
+              x2={point.x}
+              y2={point.y}
               stroke="var(--border)"
               strokeWidth="1"
               className="opacity-20"

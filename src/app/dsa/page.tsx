@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDownNarrowWide, Search, Database, Network, 
   Infinity as InfinityIcon, Sparkles, Layers, 
-  Menu, Terminal, ChevronRight, Cpu, Activity,
+  Menu, ChevronRight, Cpu, Activity,
   PanelLeftClose, PanelLeftOpen
 } from "lucide-react";
 

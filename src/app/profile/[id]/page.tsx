@@ -20,7 +20,13 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       description: true,
       rating: true,
       createdAt: true,
-      email: true // Needed for layout but masked usually, or for avatar fallback
+      email: true,
+      githubUsername: true,
+      leetcodeUsername: true,
+      codeforcesUsername: true,
+      devPowerLevel: true,
+      aiProfileFeedback: true,
+      externalStats: true
     }
   });
 

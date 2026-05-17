@@ -277,7 +277,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
           {/* Narrative Prompt */}
           <AnimatePresence mode="wait">
-              <motion.div key={currentIndex} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute bottom-10 w-full max-w-[500px] px-10 text-center z-30 pointer-events-none">
+              <motion.div key={currentIndex} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute bottom-10 w-full max-w-[500px] px-4 md:px-10 text-center z-30 pointer-events-none">
                   <div className="p-5 bg-card/90  rounded-3xl backdrop-blur-md shadow-2xl">
                       <p className="text-[11px] text-[var(--viz-cyan)] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.message}</p>
                   </div>
@@ -373,7 +373,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
         {/* Sidebar Intelligence */}
         <div className="lg:col-span-4 flex flex-col gap-6">
             {/* Recursion Stack - Depth Visualization */}
-            <div className="p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl h-[260px] flex flex-col shadow-2xl relative overflow-hidden">
+            <div className="p-4 md:p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl h-[260px] flex flex-col shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-5">
                     <Layers size={80} className="text-[var(--viz-lavender)]" />
                 </div>
@@ -409,7 +409,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
             </div>
 
             {/* Sequence Resolution */}
-            <div className="p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl flex-1 flex flex-col shadow-2xl overflow-hidden relative">
+            <div className="p-4 md:p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl flex-1 flex flex-col shadow-2xl overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-6 opacity-5">
                     <ListTree size={100} className="text-[var(--viz-lavender)]" />
                 </div>
@@ -451,7 +451,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       </div>
 
       {/* Controller Interface */}
-      <div className="mt-6 p-8 bg-card/30 border border-white/5 rounded-[3.5rem] flex flex-col gap-8 relative z-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
+      <div className="mt-6 p-4 md:p-8 bg-card/30 border border-white/5 rounded-[3.5rem] flex flex-col gap-8 relative z-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--viz-lavender)]/30 to-transparent" />
           <div className="flex items-center justify-between px-6">
               <div className="flex items-center gap-4">
@@ -505,3 +505,5 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
     </div>
   );
 }
+
+

@@ -11,12 +11,26 @@ declare module "next-auth" {
       image?: string | null;
       role?: string | null; 
       streak?: number; 
+      arcadePoints?: number;
+      githubUsername?: string | null;
+      leetcodeUsername?: string | null;
+      codeforcesUsername?: string | null;
+      devPowerLevel?: number;
+      aiProfileFeedback?: string | null;
+      description?: string | null;
     } & DefaultSession["user"];
   }
 
   interface JWT {
     role?: string | null; 
     streak?: number; 
+    arcadePoints?: number;
+    githubUsername?: string | null;
+    leetcodeUsername?: string | null;
+    codeforcesUsername?: string | null;
+    devPowerLevel?: number;
+    aiProfileFeedback?: string | null;
+    description?: string | null;
   }
 }
 
@@ -45,6 +59,14 @@ export const authConfig = {
       if (token?.streak !== undefined) {
         session.user.streak = token.streak as number;
       }
+      if (token?.arcadePoints !== undefined) session.user.arcadePoints = token.arcadePoints as number;
+      if (token?.githubUsername) session.user.githubUsername = token.githubUsername as string;
+      if (token?.leetcodeUsername) session.user.leetcodeUsername = token.leetcodeUsername as string;
+      if (token?.codeforcesUsername) session.user.codeforcesUsername = token.codeforcesUsername as string;
+      if (token?.devPowerLevel !== undefined) session.user.devPowerLevel = token.devPowerLevel as number;
+      if (token?.aiProfileFeedback) session.user.aiProfileFeedback = token.aiProfileFeedback as string;
+      if (token?.description) session.user.description = token.description as string;
+      
       return session;
     },
     async signIn({ user }) {

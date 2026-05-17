@@ -50,7 +50,7 @@ export const PUT = apiHandler(async (req: Request, { params }: { params: Promise
   // Re-generate test cases if provided (ONLY FOR CODING)
   let newTestSets: string | undefined = undefined;
   
-  if (problemType === "CODING" && examplesInput && testCasesInput && referenceSolution) {
+  if (problemType === "CODING" && Array.isArray(examplesInput) && Array.isArray(testCasesInput) && referenceSolution) {
       
       const processedExamples: TestInputOutput[] = examplesInput.map((ex: InputCase) => ({ 
           input: ex.input, 
@@ -66,7 +66,10 @@ export const PUT = apiHandler(async (req: Request, { params }: { params: Promise
               type: "CODING",
               language,
               code: referenceSolution,
-              testCases: testCasesInput.map((tc: { input: string }) => ({ input: tc.input, expectedOutput: "" })),
+              testCases: testCasesInput.map((tc: string | { input: string }) => ({ 
+                  input: typeof tc === 'string' ? tc : ((tc as { input: string }).input || ""), 
+                  expectedOutput: "" 
+              })),
               timeLimit,
               memoryLimit,
               isOutputGeneration: true
@@ -88,8 +91,8 @@ export const PUT = apiHandler(async (req: Request, { params }: { params: Promise
   } else if (problemType === "SQL" || problemType === "SYSTEM_DESIGN") {
       // For SQL/System Design, we just store what's given without re-running code
       newTestSets = JSON.stringify({
-          examples: examplesInput ? examplesInput.map((ex: InputCase) => ({ input: ex.input, expectedOutput: ex.output })) : [],
-          hidden: testCasesInput ? testCasesInput.map((tc: InputCase) => ({ input: tc.input, expectedOutput: tc.output || "" })) : []
+          examples: Array.isArray(examplesInput) ? examplesInput.map((ex: InputCase) => ({ input: ex.input, expectedOutput: ex.output })) : [],
+          hidden: Array.isArray(testCasesInput) ? testCasesInput.map((tc: InputCase) => ({ input: tc.input, expectedOutput: tc.output || "" })) : []
       });
   }
 

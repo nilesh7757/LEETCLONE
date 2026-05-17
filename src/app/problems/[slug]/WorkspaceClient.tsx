@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { 
-  ChevronLeft, FileText, History, 
+  ChevronLeft, History, 
   Sparkles, Flame, MessageCircle, Info,
-  CheckCircle, XCircle, Code2
+  CheckCircle, XCircle, Code2, Library
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import NotificationBell from "@/components/ui/NotificationBell";
@@ -28,14 +28,13 @@ import ConsolePanel from "@/features/problems/components/Workspace/ConsolePanel"
 import SubmissionDetailsModal from "@/features/problems/components/Workspace/SubmissionDetailsModal";
 import ExecutionAnimation from "@/features/problems/components/Workspace/ExecutionAnimation";
 import ProblemResources from "@/features/problems/components/Workspace/ProblemResources";
-import { Library } from "lucide-react";
 
-interface TestCase {
+export interface TestCase {
   input: string | object;
   expectedOutput?: string | object;
 }
 
-interface Problem {
+export interface Problem {
   id: string;
   title: string;
   slug: string;
@@ -45,6 +44,9 @@ interface Problem {
   timeLimit: number;
   memoryLimit: number;
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
+  initialSchema?: string | null;
+  initialData?: string | null;
+  blueprint?: unknown[] | null;
   resources?: {
     id: string;
     title: string;
@@ -61,8 +63,7 @@ interface WorkspaceClientProps {
   alreadySolved?: boolean;
 }
 
-export default function WorkspaceClient({ problem, examples, showBlueprint, alreadySolved }: WorkspaceClientProps) {
-  const { resolvedTheme } = useTheme();
+export default function WorkspaceClient({ problem, examples }: WorkspaceClientProps) {
   const [mounted, setMounted] = useState(false);
   useSession();
 
@@ -81,7 +82,7 @@ export default function WorkspaceClient({ problem, examples, showBlueprint, alre
     submissions,
     selectedSubmission, setSelectedSubmission,
     activeTab, setActiveTab,
-    consoleOpen, setConsoleOpen,
+    setConsoleOpen,
     consoleTab, setConsoleTab,
     activeTestCaseId, setActiveTestCaseId,
     handleRun, handleSubmit, handleAddTestCase, updateTestCase, removeTestCase,
@@ -91,7 +92,10 @@ export default function WorkspaceClient({ problem, examples, showBlueprint, alre
   } = useWorkspace(problem, examples);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const onEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {

@@ -6,14 +6,14 @@ import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { toast } from "sonner";
 import Split from "react-split";
-import Editor, { Monaco } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { 
   PlusCircle, Trash2, FileText, LayoutTemplate, SlidersHorizontal, 
-  Save, Code2, ChevronDown, CheckCircle, Wand2, Loader2, 
-  AlertCircle, RotateCcw, Target, Cpu, ShieldAlert,
-  Binary, Fingerprint, Zap, X, ChevronRight, Rocket, Activity, Layers, CheckCircle2, ChevronLeft, Play, Upload
+  Save, Code2, ChevronDown, CheckCircle, Loader2, 
+  RotateCcw, Target, ShieldAlert,
+  Zap, ChevronRight, CheckCircle2, ChevronLeft, Play, Upload
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
@@ -163,19 +163,19 @@ export default function ProblemForm({
         isOutputGeneration: true 
       });
 
-      const allPassed = data.results.every((r: any) => r.status === "Accepted");
+      const allPassed = data.results.every((r: { status: string }) => r.status === "Accepted");
       
       if (allPassed) {
         // Automatically populate outputs if they were generated
         const updatedExamples = getValues("examplesInput").map((tc, idx) => {
-          const res = data.results[idx];
+          const res = data.results[idx] as { actual?: string };
           return res && res.actual ? { ...tc, output: res.actual } : tc;
         });
         setValue("examplesInput", updatedExamples);
 
         const updatedTestCases = getValues("testCasesInput").map((tc, idx) => {
           // data.results contains example results first, then hidden test case results
-          const res = data.results[getValues("examplesInput").length + idx];
+          const res = data.results[getValues("examplesInput").length + idx] as { actual?: string };
           return res && res.actual ? { ...tc, output: res.actual } : tc;
         });
         setValue("testCasesInput", updatedTestCases);
@@ -185,7 +185,7 @@ export default function ProblemForm({
         }
         toast.success("Verification successful: All outputs updated");
       } else {
-        const failedCase = data.results.find((r: any) => r.status !== "Accepted");
+        const failedCase = data.results.find((r: { status: string }) => r.status !== "Accepted") as { status: string; error?: string } | undefined;
         const errorMsg = failedCase 
           ? `Verification failed: ${failedCase.status}`
           : "Verification failed: Discrepancy detected";
@@ -327,7 +327,7 @@ export default function ProblemForm({
                  { id: 'intel', label: 'Hints & Editorial', icon: ShieldAlert },
               ].map(t => (
                  <button
-                    key={t.id} type="button" onClick={() => setActiveTab(t.id as any)}
+                    key={t.id} type="button" onClick={() => setActiveTab(t.id as "meta" | "context" | "setup" | "intel")}
                     className={`relative h-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 px-1 transition-all ${activeTab === t.id ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"}`}
                  >
                     <t.icon size={14} className={activeTab === t.id ? "text-[#3b82f6]" : ""} />
@@ -438,7 +438,7 @@ export default function ProblemForm({
                            { id: 'PDF', label: 'PDF' }
                         ].map(mode => (
                            <button
-                              key={mode.id} type="button" onClick={() => setDescriptionMode(mode.id as any)}
+                              key={mode.id} type="button" onClick={() => setDescriptionMode(mode.id as "RICH_TEXT" | "MARKDOWN" | "PDF")}
                               className={`px-4 py-1.5 text-[9px] font-bold uppercase tracking-widest rounded-lg transition-all ${descriptionMode === mode.id ? "bg-white text-black shadow-lg" : "text-[#52525b] hover:text-white"}`}
                            >
                               {mode.label}

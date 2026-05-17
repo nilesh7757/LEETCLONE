@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  experimental: {
+    // Optimizing for stability on Windows
+  },
   images: {
     remotePatterns: [
       {

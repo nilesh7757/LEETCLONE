@@ -9,33 +9,52 @@ export const GET = apiHandler(async (req: Request) => {
   const userId = session?.user?.id;
   
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q");
+  const query = searchParams.get("q") || searchParams.get("search");
   const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const limit = parseInt(searchParams.get("limit") || "200"); // Allow more for the bank
+  const tab = searchParams.get("tab");
+  const foundry = searchParams.get("foundry") === "true";
   const skip = (page - 1) * limit;
 
-  const whereClause: Prisma.ProblemWhereInput = {
-    AND: [
-      {
-        OR: [
-          { isPublic: true },
-          { contests: { some: { endTime: { lte: new Date() }, publishProblems: true } } }
-        ]
-      }
-    ]
-  };
+  let whereClause: Prisma.ProblemWhereInput = {};
 
-  if (userId) {
-    (whereClause.AND as Prisma.ProblemWhereInput[])[0].OR?.push({ creatorId: userId });
+  if (tab === "mine" && userId) {
+    // Show all user-created problems (bank mode)
+    whereClause = {
+      creatorId: userId
+    };
+  } else if (foundry && userId) {
+    // Foundry mode: private units only
+    whereClause = {
+      creatorId: userId,
+      isPublic: false
+    };
+  } else {
+    // Public mode
+    whereClause = {
+      OR: [
+        { isPublic: true },
+        { contests: { some: { endTime: { lte: new Date() } } } }
+      ]
+    };
+    if (userId) {
+      whereClause.OR?.push({ creatorId: userId });
+    }
   }
 
+  // Apply search query if present
   if (query) {
-    (whereClause.AND as Prisma.ProblemWhereInput[]).push({
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { category: { contains: query, mode: 'insensitive' } },
+    whereClause = {
+      AND: [
+        whereClause,
+        {
+          OR: [
+            { title: { contains: query, mode: 'insensitive' } },
+            { category: { contains: query, mode: 'insensitive' } },
+          ]
+        }
       ]
-    });
+    };
   }
 
   const [problems, total] = await Promise.all([
@@ -49,6 +68,12 @@ export const GET = apiHandler(async (req: Request) => {
         category: true,
         isPublic: true,
         creatorId: true,
+        updatedAt: true,
+        isVerified: true,
+        verificationStatus: true,
+        type: true,
+        testSets: true,
+        referenceSolution: true,
         contests: {
           select: {
             startTime: true,
@@ -58,7 +83,7 @@ export const GET = apiHandler(async (req: Request) => {
         }
       },
       orderBy: {
-        title: "asc",
+        updatedAt: "desc",
       },
       skip,
       take: limit,

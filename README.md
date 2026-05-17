@@ -1,7 +1,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LEETCLONE)
-# LEETCLONE - A High-Performance LeetCode Clone
+# LogiQuest - Solve Logic, Master the Journey
 
-LEETCLONE is a full-stack platform for competitive programming, featuring real-time collaborative coding, AI-powered code analysis, and competitive contests.
+LogiQuest is a premium full-stack platform for mastering data structures and algorithms, featuring real-time collaborative coding, interactive algorithm visualizers, and AI-powered interview preparation.
 
 ## Key Features
 

@@ -33,6 +33,14 @@ interface AITestCase {
   isExample?: boolean;
 }
 
+interface GeneratedPlanData {
+  topic: string;
+  title: string;
+  description: string;
+  problem1: GeneratedAIProblem;
+  problem2: GeneratedAIProblem;
+}
+
 export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -108,9 +116,7 @@ export const POST = apiHandler(async (req: Request) => {
   CRITICAL: Use "READING" for theoretical or complex topics (ML, DevOps, etc.) where a documentation guide is more appropriate than a practice problem. For READING, provide a very detailed "description" with study materials.`;
 
   const userPrompt = customRequest ? `Create a plan for: ${customRequest}` : "Create a custom 2-day study plan based on my stats.";
-  const responseText = await runAI(userPrompt, systemPrompt, true);
-  const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-  const planData = JSON.parse(cleanJson);
+  const planData = await runAI(userPrompt, systemPrompt, true) as GeneratedPlanData;
 
   const formatTestSets = (testSets: unknown) => {
     const formatted: { examples: { input: string; expectedOutput: string }[], hidden: { input: string; expectedOutput: string }[] } = { examples: [], hidden: [] };
@@ -166,9 +172,8 @@ export const POST = apiHandler(async (req: Request) => {
       Return ONLY the corrected JSON object.
     `;
     try {
-      const auditedText = await runAI(auditPrompt, "You are a precise JSON auditor.", true);
-      const cleanAudit = auditedText.replace(/```json/g, "").replace(/```/g, "").trim();
-      return JSON.parse(cleanAudit);
+      const audited = await runAI(auditPrompt, "You are a precise JSON auditor.", true) as GeneratedAIProblem;
+      return audited;
     } catch (e) {
       logger.error("Audit failed, using original problem", e instanceof Error ? e.message : String(e));
       return prob;

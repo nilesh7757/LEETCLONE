@@ -2,263 +2,214 @@
 
 import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  ArrowRight, 
-  Send, 
-  Loader2, 
+import {
+  ArrowRight,
+  Send,
+  Loader2,
   CheckCircle2,
   Lightbulb,
-  Bot, 
+  Bot,
   TrendingUp,
-  Award,
-  BrainCircuit
+  BrainCircuit,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import DOMPurify from "dompurify";
 
 interface Question {
   id: string;
   type: "CONCEPTUAL" | "CODING";
   question: string;
-}
-
-interface Answer {
-  questionId: string;
-  answer: string;
-  score: number;
-  feedback: string;
-  idealAnswer?: string;
-  improvement?: string;
-}
-
-interface RoadmapStep {
-  topic: string;
-  reason: string;
-  priority: 'High' | 'Medium' | 'Low';
-}
-
-interface InterviewResultsData {
-  score: number;
-  feedback: string;
-  roadmap: RoadmapStep[];
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  category: string;
+  expectedConcepts: string[];
 }
 
 interface Interview {
   id: string;
-  topic: string;
+  title: string;
   difficulty: string;
-  status: string;
   questions: Question[];
-  answers: Answer[];
 }
 
-export default function InterviewSessionPage({ params }: { params: Promise<{ id: string }> }) {
+interface Answer {
+  questionId: string;
+  content: string;
+  isSkipped: boolean;
+}
+
+interface InterviewResult {
+  score: number;
+  feedback: string;
+  categoryScores: Record<string, number>;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+}
+
+export default function InterviewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
   const [interview, setInterview] = useState<Interview | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers] = useState<Answer[]>([]);
   const [currentAnswer, setCurrentAnswer] = useState("");
-  const [localAnswers, setLocalAnswers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [results, setResults] = useState<InterviewResultsData | null>(null);
+  const [results, setResults] = useState<InterviewResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [visibleCount, setVisibleCount] = useState(2);
 
   useEffect(() => {
     const fetchInterview = async () => {
       try {
-        const { data } = await axios.get(`/api/interview/${id}`);
-        setInterview(data.interview);
-        if (data.interview.status === "COMPLETED") {
-          setResults({
-            score: data.interview.score,
-            feedback: data.interview.feedback,
-            roadmap: data.interview.roadmap
-          });
-        }
-      } catch {
-        toast.error("Failed to load interview session.");
-        router.push("/interview");
+        const response = await axios.get(`/api/interview/${id}`);
+        setInterview(response.data);
+      } catch (err) {
+        toast.error("Failed to load interview session");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchInterview();
-  }, [id, router]);
+  }, [id]);
 
-  const submitAll = useCallback(async (answers: string[]) => {
+  const handleNext = useCallback(() => {
+    if (!interview) return;
+
+    const newAnswer: Answer = {
+      questionId: interview.questions[currentStep].id,
+      content: currentAnswer,
+      isSkipped: currentAnswer.trim() === "",
+    };
+
+    const newAnswers = [...answers, newAnswer];
+    setAnswers(newAnswers);
+    setCurrentAnswer("");
+
+    if (currentStep < interview.questions.length - 1) {
+      setCurrentStep((prev) => prev + 1);
+    } else {
+      submitInterview(newAnswers);
+    }
+  }, [currentStep, currentAnswer, interview, answers]);
+
+  const submitInterview = async (finalAnswers: Answer[]) => {
     setIsSubmitting(true);
     try {
-      const { data } = await axios.post("/api/interview/submit-all", {
-        interviewId: id,
-        answers
+      const response = await axios.post(`/api/interview/${id}/submit`, {
+        answers: finalAnswers,
       });
-
-      if (data.success) {
-        setResults({
-          score: data.score,
-          feedback: data.feedback,
-          roadmap: data.roadmap
-        });
-        toast.success("Interview submitted for review!");
-      }
-    } catch (error) {
-      console.error("Submission error:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 429) {
-        toast.error("AI Busy. Retrying in 10s...");
-        setTimeout(() => submitAll(answers), 10000);
-      } else {
-        toast.error("Failed to evaluate interview. Please try again.");
-      }
+      setResults(response.data);
+      toast.success("Interview completed and analyzed!");
+    } catch (err) {
+      toast.error("Failed to analyze interview");
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
-  }, [id]);
-
-  const handleNext = () => {
-    if (!currentAnswer.trim()) return toast.error("Please provide an answer.");
-    
-    const updatedAnswers = [...localAnswers];
-    updatedAnswers[currentIndex] = currentAnswer.trim();
-    setLocalAnswers(updatedAnswers);
-
-    if (interview && currentIndex < interview.questions.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setCurrentAnswer(localAnswers[currentIndex + 1] || "");
-    } else {
-      submitAll(updatedAnswers);
-    }
   };
 
-  const handleBack = () => {
-    if (currentIndex > 0) {
-      // Save current work before going back
-      const updatedAnswers = [...localAnswers];
-      updatedAnswers[currentIndex] = currentAnswer.trim();
-      setLocalAnswers(updatedAnswers);
-
-      setCurrentIndex(prev => prev - 1);
-      setCurrentAnswer(localAnswers[currentIndex - 1] || "");
-    }
-  };
-
-
-  if (!interview || !interview.questions) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-red)]" />
-    </div>
-  );
-
-  if (results) return <InterviewResults results={results} interview={interview} />;
-
-  const currentQuestion = interview.questions[currentIndex];
-
-  if (!currentQuestion) {
-    if (currentIndex >= interview.questions.length && interview.questions.length > 0) {
-       return (
-          <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-[var(--viz-red)]" />
-            <p className="text-[var(--muted-foreground)]/60 font-mono text-xs uppercase tracking-widest">Finalizing Assessment...</p>
-          </div>
-       );
-    }
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-        <Bot className="w-12 h-12 text-[var(--viz-red)] opacity-20" />
-        <p className="text-[var(--muted-foreground)]/60 font-mono text-xs uppercase tracking-widest">Data Point Missing</p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-gradient-to)]" />
       </div>
     );
   }
 
+  if (!interview) return null;
+
+  if (results) {
+    return <InterviewReport results={results} interview={interview} answers={answers} visibleCount={visibleCount} setVisibleCount={setVisibleCount} />;
+  }
+
+  const currentQuestion = interview.questions[currentStep];
+  const progress = ((currentStep + 1) / interview.questions.length) * 100;
+
   return (
-    <main className="min-h-screen pt-12 pb-16 px-4 max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-light tracking-tight text-[var(--foreground)]">{interview.topic}</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/40">Temporal State</span>
-            <span className="text-[10px] font-mono font-bold text-[var(--viz-red)]">Unit {currentIndex + 1} of {interview.questions.length}</span>
-          </div>
+    <div className="min-h-screen bg-[var(--background)] p-4 md:p-8 flex flex-col items-center max-w-4xl mx-auto">
+      {/* Progress Bar */}
+      <div className="w-full mb-12">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+            Question {currentStep + 1} of {interview.questions.length}
+          </span>
+          <span className="text-[10px] font-black text-[var(--accent-gradient-to)] bg-[var(--accent-gradient-to)]/10 px-3 py-1 rounded-full border border-[var(--accent-gradient-to)]/20">
+            {Math.round(progress)}% Complete
+          </span>
         </div>
-        <div className="flex gap-1.5 p-1 bg-[var(--muted)] rounded-full px-3 shadow-inner">
-          {interview.questions.map((_: Question, i: number) => (
-            <div 
-              key={i} 
-              className={`h-1.5 w-10 rounded-full transition-all duration-500 ${
-                i < currentIndex ? "bg-[var(--viz-green)] shadow-[0_0_10px_rgba(var(--viz-green-rgb),0.3)]" : i === currentIndex ? "bg-[var(--viz-red)] shadow-[0_0_10px_rgba(var(--viz-red-rgb),0.3)]" : "bg-[var(--foreground)]/5"
-              }`}
-            />
-          ))}
+        <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden border border-[var(--border)]">
+          <motion.div
+            className="h-full bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)]"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+          />
         </div>
       </div>
 
+      {/* Question Card */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          className="space-y-10"
+          key={currentStep}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="w-full bg-[var(--card-bg)] border border-[var(--border)] rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden group"
         >
-          <div className="bg-[var(--card)] rounded-[3rem] p-10 md:p-16 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--viz-red)]/20 to-transparent" />
-            <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-grid-pattern" />
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[var(--accent-gradient-to)]/5 to-transparent blur-3xl rounded-full" />
+          <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-gradient-to-tr from-[var(--accent-gradient-from)]/5 to-transparent blur-3xl rounded-full" />
+
+          <div className="flex items-center gap-4 mb-8">
+            <span className="px-4 py-1.5 rounded-full bg-[var(--muted)] text-[9px] font-black uppercase tracking-widest text-[var(--foreground)] border border-[var(--border)]">
+              {currentQuestion.category}
+            </span>
+            <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+              currentQuestion.difficulty === 'EASY' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+              currentQuestion.difficulty === 'MEDIUM' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+              'bg-rose-500/10 text-rose-500 border-rose-500/20'
+            }`}>
+              {currentQuestion.difficulty}
+            </span>
+          </div>
+
+          <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[var(--foreground)] group-hover:text-[var(--accent-gradient-to)] transition-colors duration-300">
+            {currentQuestion.question}
+          </h2>
+
+          <div className="space-y-6">
+            <textarea
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Type your answer here... (be as detailed as possible)"
+              className="w-full h-64 bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl p-6 text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-gradient-to)]/30 focus:border-[var(--accent-gradient-to)] transition-all resize-none font-mono text-sm leading-relaxed"
+            />
             
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-all duration-700 pointer-events-none">
-              <Bot className="w-48 h-48 text-[var(--viz-red)]" />
-            </div>
-            
-            <div className="flex items-center gap-3 mb-10">
-              <div className="p-2 bg-[var(--viz-red)]/10 rounded-xl text-[var(--viz-red)] shadow-sm">
-                <BrainCircuit className="w-5 h-5" />
-              </div>
-              <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                currentQuestion.type === "CODING" ? "bg-[var(--viz-blue)]/10 text-[var(--viz-blue)] border-[var(--viz-blue)]/20" : "bg-[var(--viz-purple)]/10 text-[var(--viz-purple)] border-[var(--viz-purple)]/20"
-              }`}>
-                {currentQuestion.type} Analysis
-              </span>
-            </div>
-
-            <h3 className="text-3xl md:text-4xl font-light text-[var(--foreground)] leading-tight mb-16 tracking-tight">
-              {currentQuestion.question}
-            </h3>
-
-            <div className="relative group/editor">
-              {currentQuestion.type === "CODING" && (
-                <div className="absolute top-4 right-6 px-3 py-1 bg-[var(--card)] text-[9px] font-mono font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest pointer-events-none group-focus-within/editor:text-[var(--viz-red)] transition-colors z-10 shadow-sm rounded-md">
-                  Active Buffer
-                </div>
-              )}
-              <textarea
-                value={currentAnswer}
-                onChange={(e) => setCurrentAnswer(e.target.value)}
-                placeholder={currentQuestion.type === "CODING" ? "// Enter your professional implementation here..." : "Articulate your conceptual reasoning here..."}
-                disabled={isSubmitting}
-                spellCheck={currentQuestion.type !== "CODING"}
-                className={`w-full h-[400px] p-8 bg-[var(--muted)] rounded-[2rem] text-[var(--foreground)] focus:ring-2 focus:ring-[var(--viz-red)]/20 outline-none transition-all resize-none text-lg font-light shadow-inner border-none ${
-                  currentQuestion.type === "CODING" 
-                    ? "font-mono text-sm leading-relaxed whitespace-pre" 
-                    : ""
-                }`}
-              />
-            </div>
-
-            <div className="mt-12 flex justify-between items-center relative z-10">
-              <button
-                onClick={handleBack}
-                disabled={currentIndex === 0 || isSubmitting}
-                className="px-8 py-3 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] transition-all disabled:opacity-0"
-              >
-                Previous Unit
-              </button>
-
+            <div className="flex justify-between items-center pt-4">
+              <p className="text-[10px] text-[var(--muted-foreground)] font-medium italic">
+                {currentQuestion.type === 'CODING' ? 'Write clean, idiomatic code with explanations.' : 'Explain concepts clearly with examples.'}
+              </p>
               <button
                 onClick={handleNext}
-                disabled={isSubmitting || !currentAnswer.trim()}
-                className="px-12 py-4 bg-[var(--viz-red)] text-[var(--background)] rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-105 shadow-xl shadow-[var(--viz-red)]/20 disabled:opacity-50 flex items-center gap-4 group cursor-pointer"
+                disabled={isSubmitting}
+                className="flex items-center gap-3 bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 text-[var(--background)] px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 active:scale-95 group shadow-lg shadow-[var(--foreground)]/10"
               >
                 {isSubmitting ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Evaluating Performance...</>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
                 ) : (
                   <>
-                    {currentIndex === interview.questions.length - 1 ? "Initialize Synthesis" : "Next Unit"}
+                    {currentStep < interview.questions.length - 1 ? "Next Question" : "Complete Interview"}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -267,205 +218,171 @@ export default function InterviewSessionPage({ params }: { params: Promise<{ id:
           </div>
         </motion.div>
       </AnimatePresence>
-
-      {isSubmitting && (
-        <div className="fixed inset-0 z-[100] bg-[var(--background)]/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center space-y-8 animate-in fade-in duration-500">
-          <div className="relative">
-            <Loader2 className="w-20 h-20 animate-spin text-[var(--viz-red)] opacity-40" />
-            <BrainCircuit className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-[var(--viz-red)]" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-4xl font-light tracking-tight text-[var(--foreground)]">Neural Review <span className="text-[var(--viz-red)] font-medium">Active</span></h2>
-            <p className="text-[var(--muted-foreground)]/60 font-mono text-xs uppercase tracking-[0.3em]">Synthesizing performance metrics and constructing roadmap.</p>
-          </div>
-        </div>
-      )}
-    </main>
+    </div>
   );
 }
 
-function InterviewResults({ results, interview }: { results: InterviewResultsData, interview: Interview }) {
+function InterviewReport({ results, interview, answers, visibleCount, setVisibleCount }: { 
+  results: InterviewResult; 
+  interview: Interview; 
+  answers: Answer[];
+  visibleCount: number;
+  setVisibleCount: (val: number | ((prev: number) => number)) => void;
+}) {
   return (
-    <main className="min-h-screen pt-12 pb-16 px-4 max-w-5xl mx-auto space-y-12">
-      <div className="text-center space-y-4">
-        <div className="p-4 bg-[var(--viz-green)]/10 rounded-[2rem] w-fit mx-auto mb-6 shadow-sm">
-          <Award className="w-12 h-12 text-[var(--viz-green)]" />
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-black tracking-[0.4em] text-[var(--muted-foreground)]/40 uppercase">Assessment Concluded</span>
-          <h1 className="text-5xl font-light tracking-tight text-[var(--foreground)]">Performance <span className="text-[var(--viz-green)] font-medium">Report</span></h1>
-        </div>
-        <p className="text-[var(--muted-foreground)]/60 font-mono text-xs uppercase tracking-widest">Manifold: {interview.topic} • Complexity: {interview.difficulty}</p>
+    <div className="min-h-screen bg-[var(--background)] p-4 md:p-12 max-w-5xl mx-auto space-y-12">
+      {/* Header Summary */}
+      <div className="text-center relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-gradient-to)]/5 to-transparent blur-3xl -z-10 rounded-full" />
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="inline-block p-8 rounded-[40px] bg-[var(--card-bg)] border border-[var(--border)] shadow-2xl mb-8"
+        >
+          <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--muted-foreground)] mb-2">Overall Score</div>
+          <div className="text-7xl font-black bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] bg-clip-text text-transparent">
+            {results.score}%
+          </div>
+        </motion.div>
+        <h1 className="text-4xl font-black tracking-tight text-[var(--foreground)] mb-4">{interview.title}</h1>
+        <p className="text-[var(--muted-foreground)] max-w-xl mx-auto text-sm leading-relaxed">
+          Comprehensive AI analysis of your technical performance across {interview.questions.length} assessments.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 bg-[var(--card)] rounded-[3rem] p-10 flex flex-col items-center justify-center text-center shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--viz-green)]/20 to-transparent" />
-          <div className="relative w-40 h-40 flex items-center justify-center mb-6">
-            <svg className="w-full h-full transform -rotate-90">
-              <circle
-                cx="80"
-                cy="80"
-                r="72"
-                stroke="currentColor"
-                strokeWidth="10"
-                fill="transparent"
-                className="text-[var(--foreground)]/5"
-              />
-              <motion.circle
-                initial={{ strokeDashoffset: 452.4 }}
-                animate={{ strokeDashoffset: 452.4 * (1 - results.score / 100) }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-                cx="80"
-                cy="80"
-                r="72"
-                stroke="currentColor"
-                strokeWidth="10"
-                fill="transparent"
-                strokeDasharray={452.4}
-                className="text-[var(--viz-green)] shadow-[0_0_20px_rgba(var(--viz-green-rgb),0.3)]"
-              />
-            </svg>
-            <span className="absolute text-4xl font-black text-[var(--foreground)] font-mono">{results.score}%</span>
-          </div>
-          <h3 className="font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] text-[10px]">Neural Efficiency</h3>
-        </div>
-
-        <div className="lg:col-span-8 bg-[var(--card)] rounded-[3rem] p-10 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--viz-blue)]/20 to-transparent" />
-          <h3 className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-            <Bot size={14} className="text-[var(--viz-blue)]" /> Technical Evaluation
-          </h3>
-          <div 
-            className="prose prose-invert max-w-none text-sm text-[var(--muted-foreground)] font-light leading-relaxed prose-p:mb-4"
-            dangerouslySetInnerHTML={{ __html: results.feedback }}
-          />
-        </div>
-      </div>
-
-      {results.roadmap && Array.isArray(results.roadmap) && (
-        <div className="space-y-8">
-          <div className="flex items-center gap-4">
-              <div className="h-[1px] flex-1 bg-[var(--viz-purple)]/10" />
-              <h2 className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] flex items-center gap-3">
-                <TrendingUp size={14} className="text-[var(--viz-purple)]" />
-                Strategic Roadmap
-              </h2>
-              <div className="h-[1px] flex-1 bg-[var(--viz-purple)]/10" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {results.roadmap.map((step: RoadmapStep, i: number) => (
-              <div key={i} className="bg-[var(--card)] rounded-[2rem] p-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
-                <div className={`absolute top-0 right-0 px-4 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-bl-2xl ${
-                  step.priority === 'High' ? "bg-[var(--viz-red)]/10 text-[var(--viz-red)]" : 
-                  step.priority === 'Medium' ? "bg-[var(--viz-gold)]/10 text-[var(--viz-gold)]" : 
-                  "bg-[var(--viz-blue)]/10 text-[var(--viz-blue)]"
-                }`}>
-                  {step.priority} Priority
-                </div>
-                <h4 className="text-lg font-bold text-[var(--foreground)] mb-3 group-hover:text-[var(--primary)] transition-colors">{step.topic}</h4>
-                <p className="text-xs text-[var(--muted-foreground)]/70 font-light leading-relaxed">{step.reason}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-10">
-        <div className="flex items-center gap-4">
-            <div className="h-[1px] flex-1 bg-[var(--border)]" />
-            <h2 className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em]">Detailed Breakdown</h2>
-            <div className="h-[1px] flex-1 bg-[var(--border)]" />
-        </div>
-
-        <InterviewBreakdown interview={interview} />
-      </div>
-    </main>
-  );
-}
-
-function InterviewBreakdown({ interview }: { interview: Interview }) {
-  const [visibleCount, setVisibleCount] = useState(2);
-  const answers = interview.answers;
-
-  return (
-    <div className="space-y-10">
-      {answers.slice(0, visibleCount).map((ans, i) => {
-        const q = interview.questions.find((q) => q.id === ans.questionId);
-        if (!q) return null;
-        return (
-          <motion.div 
-            key={i} 
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Object.entries(results.categoryScores).map(([category, score], idx) => (
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-[var(--card)] rounded-[3rem] p-10 space-y-10 relative overflow-hidden shadow-xl"
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            key={category}
+            className="p-6 bg-[var(--card-bg)] border border-[var(--border)] rounded-3xl hover:border-[var(--accent-gradient-to)]/30 transition-all group"
           >
-            <div className="flex justify-between items-start gap-8 pb-8 border-b border-[var(--border)]">
-              <h4 className="text-2xl font-light tracking-tight text-[var(--foreground)] leading-tight">{q.question}</h4>
-              <div className="shrink-0 flex flex-col items-end">
-                <div className="text-2xl font-black text-[var(--foreground)] font-mono">{ans.score}%</div>
-                <div className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Efficiency</div>
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">{category}</span>
+              <TrendingUp className="w-4 h-4 text-[var(--accent-gradient-to)] opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.3em] flex items-center gap-2">
-                    <Send className="w-3 h-3 text-[var(--viz-blue)]" /> Transmission
-                  </label>
-                  <div className="p-6 bg-[var(--muted)] rounded-2xl shadow-inner">
-                    <p className="text-sm text-[var(--foreground)] font-light italic leading-relaxed">&quot;{ans.answer}&quot;</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-[var(--viz-purple)] uppercase tracking-[0.3em] flex items-center gap-2">
-                    <Bot className="w-3 h-3" /> Synthesis Feedback
-                  </label>
-                  <div className="p-6 bg-[var(--viz-purple)]/[0.03] rounded-2xl border border-[var(--viz-purple)]/10">
-                    <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.feedback}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                {ans.idealAnswer && (
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black text-[var(--viz-green)] uppercase tracking-[0.3em] flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3" /> Theoretical Optimum
-                    </label>
-                    <div className="p-6 bg-[var(--viz-green)]/[0.03] rounded-2xl border border-[var(--viz-green)]/10">
-                      <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.idealAnswer}</p>
-                    </div>
-                  </div>
-                )}
-
-                {ans.improvement && (
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black text-[var(--viz-gold)] uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Lightbulb className="w-3 h-3" /> Refinement Logic
-                    </label>
-                    <div className="p-6 bg-[var(--viz-gold)]/[0.03] rounded-2xl border border-[var(--viz-gold)]/10">
-                      <p className="text-sm text-[var(--muted-foreground)] font-light leading-relaxed">{ans.improvement}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <div className="text-3xl font-black text-[var(--foreground)]">{score}%</div>
+            <div className="w-full h-1 bg-[var(--muted)] rounded-full mt-4 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)]"
+                style={{ width: `${score}%` }}
+              />
             </div>
           </motion.div>
-        );
-      })}
+        ))}
+      </div>
 
+      {/* Main Analysis Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Feedback & Recs */}
+        <div className="lg:col-span-2 space-y-8">
+          <div className="p-10 bg-[var(--card-bg)] border border-[var(--border)] rounded-[32px] shadow-xl">
+            <h3 className="flex items-center gap-3 text-lg font-black uppercase tracking-widest mb-8">
+              <Bot className="w-5 h-5 text-[var(--accent-gradient-to)]" />
+              Detailed AI Feedback
+            </h3>
+            <div
+              className="prose prose-invert max-w-none text-sm text-[var(--muted-foreground)] font-light leading-relaxed prose-p:mb-4"
+              dangerouslySetInnerHTML={{
+                __html: typeof window !== 'undefined' ? DOMPurify.sanitize(results.feedback || "") : (results.feedback || ""),
+              }}
+            />
+          </div>
+
+          <div className="p-10 bg-[var(--card-bg)] border border-[var(--border)] rounded-[32px] shadow-xl">
+            <h3 className="flex items-center gap-3 text-lg font-black uppercase tracking-widest mb-8 text-amber-500">
+              <Lightbulb className="w-5 h-5" />
+              Learning Roadmap
+            </h3>
+            <div className="space-y-4">
+              {results.recommendations.map((rec, i) => (
+                <div key={i} className="flex gap-4 p-5 bg-[var(--muted)]/30 rounded-2xl border border-[var(--border)] hover:border-amber-500/30 transition-all">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 shrink-0" />
+                  <p className="text-sm text-[var(--foreground)]/80 font-medium">{rec}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Strengths/Weaknesses */}
+        <div className="space-y-8">
+          <div className="p-8 bg-emerald-500/5 border border-emerald-500/20 rounded-[32px]">
+            <h3 className="flex items-center gap-3 text-xs font-black uppercase tracking-widest mb-6 text-emerald-500">
+              <CheckCircle2 className="w-4 h-4" />
+              Core Strengths
+            </h3>
+            <div className="space-y-3">
+              {results.strengths.map((s, i) => (
+                <div key={i} className="text-sm font-bold text-emerald-500/80 bg-emerald-500/10 px-4 py-3 rounded-xl border border-emerald-500/10">
+                  {s}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-8 bg-rose-500/5 border border-rose-500/20 rounded-[32px]">
+            <h3 className="flex items-center gap-3 text-xs font-black uppercase tracking-widest mb-6 text-rose-500">
+              <BrainCircuit className="w-4 h-4" />
+              Areas to Improve
+            </h3>
+            <div className="space-y-3">
+              {results.weaknesses.map((w, i) => (
+                <div key={i} className="text-sm font-bold text-rose-500/80 bg-rose-500/10 px-4 py-3 rounded-xl border border-rose-500/10">
+                  {w}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Answer Review Section */}
+      <div className="space-y-8 pt-12 border-t border-[var(--border)]">
+        <h3 className="text-2xl font-black text-center mb-12">Performance Audit</h3>
+        <div className="space-y-8">
+          {interview.questions.slice(0, visibleCount).map((q, idx) => {
+            const answer = answers.find(a => a.questionId === q.id);
+            return (
+              <motion.div 
+                key={q.id}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="p-8 bg-[var(--card-bg)] border border-[var(--border)] rounded-3xl group hover:border-[var(--accent-gradient-to)]/20 transition-all"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-gradient-to)]">Assessment {idx + 1}</span>
+                    <h4 className="text-lg font-bold text-[var(--foreground)]">{q.question}</h4>
+                  </div>
+                  <span className="px-3 py-1 bg-[var(--muted)] text-[8px] font-black uppercase tracking-widest rounded-lg border border-[var(--border)]">
+                    {q.category}
+                  </span>
+                </div>
+                <div className="bg-[var(--muted)]/30 rounded-2xl p-6 border border-[var(--border)] group-hover:bg-[var(--muted)]/50 transition-all">
+                  <pre className="text-xs text-[var(--muted-foreground)] whitespace-pre-wrap font-mono leading-relaxed">
+                    {answer?.content || 'No response provided.'}
+                  </pre>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Show More Pagination */}
       {visibleCount < answers.length && (
-        <div className="flex justify-center pb-10">
-          <button 
-            onClick={() => setVisibleCount(prev => prev + 2)}
+        <div className="flex justify-center pt-8">
+          <button
+            onClick={() => setVisibleCount((prev) => prev + 2)}
             className="px-10 py-4 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-[var(--border)] transition-all"
           >
-            Show more detailed analysis ({answers.length - visibleCount} units remaining)
+            Show more detailed analysis ({answers.length - visibleCount} units
+            remaining)
           </button>
         </div>
       )}

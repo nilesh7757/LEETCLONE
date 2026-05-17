@@ -2,8 +2,20 @@ import axios from "axios";
 import { ProblemType } from "@prisma/client";
 import { logger } from "./logger";
 
-// Piston API is a free, open-source code execution engine.
-const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
+const JUDGE0_URL = "https://ce.judge0.com/submissions?base64_encoded=false&wait=true";
+
+// Map of LogiQuest languages to Judge0 language IDs
+const LANGUAGE_ID_MAP: Record<string, number> = {
+  javascript: 102, // Node.js 22.08.0
+  python: 100,     // Python 3.12.5
+  python3: 100,    // Python 3.12.5
+  cpp: 105,        // C++ (GCC 14.1.0)
+  "c++": 105,      // C++ (GCC 14.1.0)
+  gcc: 105,        // C++ (GCC 14.1.0)
+  sql: 82,         // SQL (SQLite 3.27.2)
+  sqlite3: 82,     // SQL (SQLite 3.27.2)
+  java: 91,        // Java (OpenJDK 17.0.2)
+};
 
 export interface TestInputOutput {
   input: string;
@@ -15,114 +27,134 @@ export interface ExecutionResult {
   input: string;
   expected: string;
   actual: string;
-  status: "Accepted" | "Wrong Answer" | "Runtime Error" | "Compilation Error" | "Time Limit Exceeded" | "Memory Limit Exceeded" | "API Error" | "Service Unreachable";
+  status: "Accepted" | "Wrong Answer" | "Runtime Error" | "Compilation Error" | "Time Limit Exceeded" | "Memory Limit Exceeded" | "Service Unreachable";
   error?: string;
-  runtime?: number; 
-  memory?: number; 
+  runtime?: number;
 }
 
 export interface ExecuteCodeParams {
-  problemId: string;
-  type: ProblemType;
   code: string;
   testCases: TestInputOutput[];
+  language?: string;
+  type?: ProblemType;
   timeLimit?: number;
   memoryLimit?: number;
-  language?: string;
   isOutputGeneration?: boolean;
+  problemId?: string;
   initialSchema?: string;
   initialData?: string;
 }
 
+/**
+ * HIGH-RELIABILITY ENGINE: Judge0 Cloud Runner
+ */
 export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionResult[]> {
-  const { type, code, testCases, language } = params;
+  const { code, testCases, language = "javascript", type } = params;
+
+  if (type !== ProblemType.CODING && type !== ProblemType.SQL) {
+    logger.warn(`[EXEC_CODE] Unsupported problem type: ${type}`);
+    return [];
+  }
+
+  const langId = LANGUAGE_ID_MAP[language.toLowerCase()];
+
+  if (!langId) {
+    logger.error(`[EXEC_CODE] Language not supported: ${language}`);
+    throw new Error(`Language ${language} not supported yet.`);
+  }
+
+  let finalCode = code;
+  if (type === ProblemType.SQL) {
+    finalCode = `${params.initialSchema || ""}\n${params.initialData || ""}\n${code}`;
+  }
+
+  logger.info(`[EXEC_CODE] Executing ${testCases.length} test cases for ${language} using Judge0 Cloud...`);
+
   const results: ExecutionResult[] = [];
+  const CHUNK_SIZE = 5;
 
-  if (type === ProblemType.CODING) {
-    if (!language) {
-      throw new Error("Language parameter is missing.");
-    }
+  for (let i = 0; i < testCases.length; i += CHUNK_SIZE) {
+    const chunk = testCases.slice(i, i + CHUNK_SIZE);
+    
+    const chunkResults = await Promise.all(
+      chunk.map(async (tc, index) => {
+        const actualIndex = i + index;
+        try {
+          if (!tc.input || String(tc.input).trim() === "") {
+              logger.warn(`[EXEC_CODE] Executing test case ${actualIndex} with empty STDIN`);
+          }
 
-    // Piston Language Mapping - Updated to common public versions
-    const languageMap: Record<string, { pistonName: string; version: string }> = {
-      javascript: { pistonName: "javascript", version: "18.15.0" },
-      python: { pistonName: "python", version: "3.10.0" },
-      java: { pistonName: "java", version: "15.0.2" },
-      cpp: { pistonName: "cpp", version: "10.2.0" },
-      csharp: { pistonName: "csharp", version: "6.12.0" },
-      go: { pistonName: "go", version: "1.16.2" },
-      rust: { pistonName: "rust", version: "1.68.2" },
-    };
+          const payload: {
+            source_code: string;
+            language_id: number;
+            stdin: string;
+            cpu_time_limit: number;
+            memory_limit: number;
+            expected_output?: string;
+          } = {
+            source_code: finalCode,
+            language_id: langId,
+            stdin: tc.input || "",
+            cpu_time_limit: params.timeLimit || 5,
+            memory_limit: (params.memoryLimit || 512) * 1024,
+          };
 
-    const langConfig = languageMap[language.toLowerCase()];
-    if (!langConfig) throw new Error(`Unsupported language: ${language}`);
+          if (!params.isOutputGeneration && tc.expectedOutput) {
+            payload.expected_output = tc.expectedOutput;
+          }
 
-    // Basic security check
-    const maliciousPatterns = ["process.exit", "child_process", "require('fs')", "os.system", "eval(", "exec("];
-    for (const pattern of maliciousPatterns) {
-      if (code.includes(pattern)) {
-        return testCases.map(tc => ({
-          input: tc.input, expected: tc.expectedOutput, actual: "", status: "Runtime Error",
-          error: `Security Violation: Use of '${pattern}' is forbidden.`
-        }));
-      }
-    }
+          const response = await axios.post(JUDGE0_URL, payload);
+          const data = response.data;
+          
+          if (!data || !data.status) {
+             throw new Error("Invalid response from execution engine");
+          }
 
-    for (const testCase of testCases) {
-      try {
-        const response = await axios.post(PISTON_URL, {
-          language: langConfig.pistonName,
-          version: langConfig.version,
-          files: [{ content: code }],
-          stdin: typeof testCase.input === 'object' ? JSON.stringify(testCase.input) : String(testCase.input),
-        }, { timeout: 10000 });
+          const statusId = data.status.id;
 
-        const { run } = response.data;
-        const actualOutput = (run.stdout || "").trim();
-        const errorOutput = (run.stderr || run.output || "").trim();
-        
-        let execStatus: ExecutionResult['status'] = "Accepted";
-        
-        if (run.code !== 0 && run.code !== null) {
-            execStatus = "Runtime Error";
-        } else if (actualOutput !== String(testCase.expectedOutput).trim()) {
-            execStatus = "Wrong Answer";
+          let status: ExecutionResult["status"] = "Accepted";
+          if (params.isOutputGeneration) {
+            if (statusId === 3 || statusId === 4) status = "Accepted";
+            else if (statusId === 5) status = "Time Limit Exceeded";
+            else if (statusId === 6) status = "Compilation Error";
+            else status = "Runtime Error";
+          } else {
+            if (statusId === 3) status = "Accepted";
+            else if (statusId === 4) status = "Wrong Answer";
+            else if (statusId === 5) status = "Time Limit Exceeded";
+            else if (statusId === 6) status = "Compilation Error";
+            else status = "Runtime Error";
+          }
+
+          return {
+            input: String(tc.input || ""),
+            expected: String(tc.expectedOutput || ""),
+            actual: (data.stdout || "").trim(),
+            status,
+            error: data.stderr || data.compile_output || data.message,
+            runtime: parseFloat(data.time) * 1000 || 0,
+          };
+        } catch (error: unknown) {
+          const errorMsg = error instanceof Error ? error.message : "Unknown error";
+          logger.error(`[EXEC_CODE] Judge0 API error for test case ${actualIndex}:`, errorMsg);
+          return {
+            input: String(tc.input || ""),
+            expected: String(tc.expectedOutput || ""),
+            actual: "",
+            status: "Service Unreachable",
+            error: errorMsg,
+            runtime: 0,
+          } as ExecutionResult;
         }
+      })
+    );
 
-        results.push({
-          input: String(testCase.input),
-          expected: String(testCase.expectedOutput),
-          actual: actualOutput,
-          status: execStatus,
-          error: run.code !== 0 ? errorOutput : undefined,
-          runtime: run.time ? run.time * 1000 : undefined,
-        });
-
-      } catch (err: unknown) {
-        let errMsg = "Unknown Error";
-        if (axios.isAxiosError(err)) {
-            errMsg = err.response?.data?.message || err.message;
-        } else if (err instanceof Error) {
-            errMsg = err.message;
-        }
-        logger.error("[EXECUTE_CODE] Piston API Error:", errMsg);
-        
-        results.push({
-          input: String(testCase.input),
-          expected: String(testCase.expectedOutput),
-          actual: "",
-          status: "API Error",
-          error: `Engine Error: ${errMsg}`,
-        });
-      }
+    results.push(...chunkResults);
+    
+    // Add a small delay between chunks to respect rate limits
+    if (i + CHUNK_SIZE < testCases.length) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-  } else if (type === ProblemType.SQL) {
-      results.push({
-          input: "SQL Execution",
-          expected: "",
-          actual: "SQL runner is being updated. Use CODING problems for now.",
-          status: "Accepted"
-      });
   }
 
   return results;

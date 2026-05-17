@@ -28,12 +28,10 @@ interface EditorPanelProps {
   isSubmitting?: boolean;
   isLoggedIn?: boolean;
 }
-
 export default function EditorPanel({ 
-  code = "", setCode = () => {}, language, setLanguage, theme = "vs-dark", 
-  problemType, initialCode = "", onMount,
-  isToolbarOnly, isEditorOnly, onRun, onSubmit, isRunning, isSubmitting,
-  isLoggedIn = true
+  code = "", setCode = () => {}, language, setLanguage, 
+  onMount,
+  isToolbarOnly, onRun, onSubmit, isRunning, isSubmitting
 }: EditorPanelProps) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -48,6 +46,7 @@ export default function EditorPanel({
 
   const parseAndSetMarkers = useCallback((errorMsg: string) => {
     if (!internalEditorRef.current || !internalMonacoRef.current) return;
+
     const monaco = internalMonacoRef.current;
     const model = internalEditorRef.current.getModel();
     if (!model) return;

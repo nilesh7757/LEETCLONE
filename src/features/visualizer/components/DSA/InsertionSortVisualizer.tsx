@@ -160,7 +160,7 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         
@@ -185,7 +185,7 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
           </div>
         </div>
 
-        <div className="relative min-h-[480px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-2xl flex flex-col items-center justify-center px-10">
+        <div className="relative min-h-[480px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-2xl flex flex-col items-center justify-center px-4 md:px-10">
             
             {/* Key Element Pointer */}
             <AnimatePresence>
@@ -223,7 +223,7 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
             </AnimatePresence>
 
             <AnimatePresence mode="wait">
-                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-10 text-center z-30">
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-4 md:px-10 text-center z-30">
                     <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl backdrop-blur-md shadow-2xl">
                         <div className="flex items-center justify-center gap-2 mb-1 opacity-40">
                             <Info size={10} className="text-primary" />
@@ -293,7 +293,7 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
         </div>
       </div>
 
-      <div className="px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+      <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Key</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Temporal Comparison</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Shifting Manifold</span></div>
@@ -302,3 +302,5 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
     </div>
   );
 }
+
+

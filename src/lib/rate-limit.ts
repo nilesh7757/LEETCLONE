@@ -1,3 +1,5 @@
+import { Redis } from "@upstash/redis";
+
 export interface RateLimitResult {
   success: boolean;
   limit: number;
@@ -5,34 +7,37 @@ export interface RateLimitResult {
   reset: number;
 }
 
-// In-memory store for environments where Redis is unavailable (like Edge)
+// Memory fallback if Upstash isn't configured
 const memoryStore = new Map<string, { count: number; reset: number }>();
 
 export async function rateLimit(
   identifier: string,
   limit: number = 10,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ): Promise<RateLimitResult> {
   const now = Date.now();
   const windowStart = now - (now % windowMs);
   const reset = windowStart + windowMs;
   const key = `ratelimit:${identifier}:${windowStart}`;
 
-  // Try to use Redis only if we are NOT in the Edge Runtime and REDIS_URL exists
-  // Middleware/Proxy runs in Edge where ioredis doesn't work.
-  if (typeof process !== "undefined" && process.env.NEXT_RUNTIME !== "edge" && process.env.REDIS_URL) {
+  // Use Upstash Redis which is fully compatible with Vercel Edge Runtime
+  if (
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN
+  ) {
     try {
-      // Dynamic import to avoid breaking Edge runtime
-      const Redis = (await import("ioredis")).default;
-      const redis = new Redis(process.env.REDIS_URL);
-      
+      const redis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+
       const pipeline = redis.pipeline();
       pipeline.incr(key);
       pipeline.pexpireat(key, reset);
       const results = await pipeline.exec();
-      
-      if (results && results[0] && results[0][1] !== null) {
-        const count = results[0][1] as number;
+
+      if (results && results.length > 0) {
+        const count = results[0] as number;
         return {
           success: count <= limit,
           limit,
@@ -41,7 +46,7 @@ export async function rateLimit(
         };
       }
     } catch (error) {
-      console.error("Redis rate limit error, falling back to memory:", error);
+      console.error("Upstash rate limit error, falling back to memory:", error);
     }
   }
 
@@ -56,7 +61,7 @@ export async function rateLimit(
   }
 
   const entry = memoryStore.get(key) || { count: 0, reset };
-  
+
   if (entry.count >= limit) {
     return {
       success: false,

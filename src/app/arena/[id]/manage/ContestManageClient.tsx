@@ -5,17 +5,15 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Rocket, ShieldCheck, Box, ChevronRight, Target, 
-  Cpu, Activity, Layers, Calendar, Clock, 
-  Settings, Lock, Globe, CheckCircle2, AlertCircle,
-  FileText, Plus, Trash2, Search, ShieldAlert, Loader2,
-  Megaphone, List, LayoutTemplate, Save, ArrowLeft, PlusCircle,
-  Wand2, Trash, X, Play, Terminal, Pencil
+  Box, Target, 
+  Cpu, Activity, Clock, 
+  Settings, Loader2,
+  Megaphone, LayoutTemplate, Save, ArrowLeft, PlusCircle,
+  Trash, Play, Terminal, Pencil, Trash2, Rocket
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import Link from "next/link";
-import ProblemForm, { ProblemFormData } from "@/features/problems/components/ProblemForm";
 
 interface ProblemUnit {
   id: string;
@@ -56,10 +54,6 @@ export default function ContestManageClient({ contestId }: { contestId: string }
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"settings" | "problems" | "announcements" | "sandbox">("settings");
   
-  // Scoped Problem Bank States
-  const [bankLoading, setBankLoading] = useState(false);
-  const [userBank, setUserBank] = useState<ProblemUnit[]>([]);
-
   // Announcement States
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newAnnouncement, setNewAnnouncement] = useState("");
@@ -68,7 +62,12 @@ export default function ContestManageClient({ contestId }: { contestId: string }
   // Sandbox States
   const [sandboxCode, setSandboxCode] = useState("");
   const [sandboxInput, setSandboxInput] = useState("");
-  const [sandboxResult, setSandboxResult] = useState<any>(null);
+  const [sandboxResult, setSandboxResult] = useState<{
+    status: string;
+    runtime?: number;
+    actual?: string;
+    error?: string;
+  } | null>(null);
   const [isSandboxRunning, setIsSandboxRunning] = useState(false);
 
   // Settings State
@@ -122,19 +121,6 @@ export default function ContestManageClient({ contestId }: { contestId: string }
     }
   }, [contestId]);
 
-  const fetchUserBank = useCallback(async () => {
-    setBankLoading(true);
-    try {
-      const { data } = await axios.get("/api/problems?tab=mine");
-      const contestProblemIds = new Set(contest?.problems.map(p => p.id));
-      setUserBank(data.problems.filter((p: any) => !contestProblemIds.has(p.id)));
-    } catch (err) {
-      toast.error("Failed to load problem bank");
-    } finally {
-      setBankLoading(false);
-    }
-  }, [contest]);
-
   useEffect(() => {
     if (authStatus === "unauthenticated") router.push("/login");
     if (authStatus === "authenticated") {
@@ -149,8 +135,12 @@ export default function ContestManageClient({ contestId }: { contestId: string }
       await axios.patch(`/api/contest/${contestId}/update`, settings);
       toast.success("Contest configuration updated");
       fetchContest();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Update failed");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.error || "Update failed");
+      } else {
+        toast.error("Update failed");
+      }
     } finally {
       setIsSavingSettings(false);
     }
@@ -171,21 +161,6 @@ export default function ContestManageClient({ contestId }: { contestId: string }
     }
   };
 
-  const handleAddToContest = async (problemId: string) => {
-    const currentProblemIds = contest?.problems.map(p => p.id) || [];
-    if (currentProblemIds.includes(problemId)) return;
-
-    try {
-      await axios.patch(`/api/contest/${contestId}/update`, {
-        problemIds: [...currentProblemIds, problemId]
-      });
-      toast.success("Problem added to contest");
-      fetchContest();
-    } catch (err) {
-      toast.error("Failed to add problem");
-    }
-  };
-
   const handleRemoveFromContest = async (problemId: string) => {
     const currentProblemIds = contest?.problems.map(p => p.id) || [];
     try {
@@ -194,8 +169,8 @@ export default function ContestManageClient({ contestId }: { contestId: string }
       });
       toast.success("Problem removed from contest");
       fetchContest();
-    } catch (err) {
-      toast.error("Failed to remove problem");
+    } catch (err: unknown) {
+      toast.error("Removal failed");
     }
   };
 
@@ -210,8 +185,12 @@ export default function ContestManageClient({ contestId }: { contestId: string }
       });
       toast.success("Contest unit established");
       fetchContest();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Creation failed");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.error || "Creation failed");
+      } else {
+        toast.error("Creation failed");
+      }
     }
   };
 
@@ -322,7 +301,7 @@ export default function ContestManageClient({ contestId }: { contestId: string }
             ].map(tab => (
                <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as "settings" | "problems" | "announcements" | "sandbox")}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                      activeTab === tab.id 
                      ? "bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 

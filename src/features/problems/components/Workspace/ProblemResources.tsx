@@ -34,7 +34,7 @@ export default function ProblemResources({ resources }: ProblemResourcesProps) {
           <Book size={24} className="text-[#262626]" />
         </div>
         <h4 className="text-white font-bold mb-2">No specialized resources</h4>
-        <p className="text-xs text-[#52525b] max-w-[200px]">Our curators haven't linked specific materials to this problem yet.</p>
+        <p className="text-xs text-[#52525b] max-w-[200px]">{"Our curators haven't linked specific materials to this problem yet."}</p>
       </div>
     );
   }

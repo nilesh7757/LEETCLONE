@@ -3,26 +3,72 @@
 import React, { useState } from "react";
 import { Check, Copy } from "lucide-react";
 
-export const CodeSnippet = ({ code, language = "cpp" }: { code: string, language?: string }) => {
+interface CodeSnippetProps {
+  code: Record<string, string | undefined>;
+  activeLine?: number;
+}
+
+export const CodeSnippet = ({ code, activeLine }: CodeSnippetProps) => {
+  // Filter out undefined implementations
+  const availableLangs = Object.keys(code).filter(lang => !!code[lang]);
+  const [selectedLang, setSelectedLang] = useState(availableLangs[0] || "");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const text = code[selectedLang];
+    if (text) {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
+  const currentCode = code[selectedLang] || "";
+  const lines = currentCode.split('\n');
+
   return (
-    <div className="rounded-2xl overflow-hidden bg-[var(--card)] group shadow-sm">
-      <div className="flex items-center justify-between px-4 py-2 bg-[var(--muted)] border-b border-[var(--border)]">
-        <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">{language}</span>
-        <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-[var(--accent)] rounded-md">
+    <div className="rounded-2xl overflow-hidden bg-[#0d1117] group shadow-2xl border border-white/5">
+      <div className="flex items-center justify-between px-6 py-3 bg-[#161b22] border-b border-white/5">
+        <div className="flex gap-4">
+          {availableLangs.map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setSelectedLang(lang)}
+              className={`text-[10px] font-bold uppercase tracking-widest transition-all ${
+                selectedLang === lang 
+                  ? "text-[var(--primary)] border-b border-[var(--primary)] pb-1" 
+                  : "text-muted-foreground/50 hover:text-muted-foreground"
+              }`}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
+        <button 
+          onClick={handleCopy} 
+          disabled={!selectedLang}
+          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-white/5 rounded-md disabled:opacity-30"
+        >
           {copied ? <Check size={14} className="text-[var(--viz-green)]" /> : <Copy size={14} />}
         </button>
       </div>
-      <div className="p-4 overflow-x-auto">
-        <pre className="text-xs font-mono leading-relaxed text-[var(--foreground)]/80">
-          <code>{code}</code>
+      <div className="p-6 overflow-x-auto custom-scrollbar">
+        <pre className="text-[13px] font-mono leading-relaxed">
+          <code>
+            {selectedLang ? lines.map((line, i) => (
+              <div 
+                key={i} 
+                className={`flex gap-6 -mx-6 px-6 transition-colors ${
+                  activeLine === i + 1 ? "bg-[var(--primary)]/10 border-l-2 border-[var(--primary)]" : ""
+                }`}
+              >
+                <span className="w-6 text-right text-white/20 select-none shrink-0">{i + 1}</span>
+                <span className={activeLine === i + 1 ? "text-white" : "text-white/70"}>{line || ' '}</span>
+              </div>
+            )) : (
+              <div className="text-white/20 italic">No implementation selected</div>
+            )}
+          </code>
         </pre>
       </div>
     </div>

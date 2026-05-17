@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutShell from "@/components/layout/LayoutShell";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
@@ -9,19 +9,14 @@ import { Toaster } from "sonner";
 import PageTransition from "@/components/layout/PageTransition"; // Import the PageTransition component
 import ActiveTracker from "@/components/ActiveTracker";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "LeetClone - Master Coding and System Design",
-  description: "A modern platform for coding contests, system design practice, and career growth.",
+  title: "LogiQuest - Solve Logic, Master the Journey",
+  description: "A premium platform for interactive coding algorithms, AI-powered interview preparation, and real-time competitive logic.",
   icons: {
     icon: "/favicon.svg",
   },
@@ -37,7 +32,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} antialiased`}
       >
         <SessionProvider session={session}>
           <ThemeProvider

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { analyzeCodeComplexity } from "@/lib/gemini";
+import { predictComplexity } from "@/lib/gemini";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
@@ -20,7 +20,9 @@ export const POST = apiHandler(async (req: Request, { params }: { params: Promis
   if (submission.userId !== session.user.id) throw new ApiError("Forbidden", 403);
 
   logger.info(`[Complexity API] Analyzing submission ${id}`);
-  const { timeComplexity, spaceComplexity } = await analyzeCodeComplexity(submission.code, submission.language);
+  
+  // Use the new, structured predictComplexity function
+  const { timeComplexity, spaceComplexity } = await predictComplexity(submission.code, submission.language);
 
   await prisma.submission.update({
     where: { id },

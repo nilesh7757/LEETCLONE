@@ -336,7 +336,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
             
             {/* LEFT: GRAPH PLAYGROUND */}
-            <div className="relative border-b lg:border-b-0 lg:border-r border-border bg-muted/5 p-8 flex flex-col items-center justify-center group/graph">
+            <div className="relative border-b lg:border-b-0 lg:border-r border-border bg-muted/5 p-4 md:p-8 flex flex-col items-center justify-center group/graph">
                 <div className="absolute top-6 left-6 flex items-center gap-2 pointer-events-none">
                     <div className="w-2 h-2 rounded-full bg-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Interaction Graph</span>
@@ -408,7 +408,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
 
             {/* RIGHT: FOREST STRUCTURE */}
-            <div className="relative bg-muted/10 p-8 flex flex-col items-center justify-center">
+            <div className="relative bg-muted/10 p-4 md:p-8 flex flex-col items-center justify-center">
                 <div className="absolute top-6 left-6 flex items-center gap-2 pointer-events-none">
                     <div className="w-2 h-2 rounded-full bg-[var(--viz-lime)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Internal Forest State</span>
@@ -545,3 +545,5 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
     </div>
   );
 }
+
+

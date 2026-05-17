@@ -15,9 +15,7 @@ export default function ExecutionAnimation({ isVisible, onComplete }: ExecutionA
   const { data: session } = useSession();
   const [activeMessage, setActiveMessage] = useState("");
 
-  const isMatrix = theme === "matrix";
-  const isDracula = theme === "dracula";
-  const isGOT = theme === "got";
+  const isBatman = theme === "batman";
 
   useEffect(() => {
     if (!isVisible) return;
@@ -28,25 +26,28 @@ export default function ExecutionAnimation({ isVisible, onComplete }: ExecutionA
     }, 6000);
 
     // Dialogue Logic
-    if (isDracula) {
+    if (isBatman) {
         const quotes = [
-            "Listen to them, children of the night. What music they make!",
-            "I am the monster that breathing men would kill. I am Dracula.",
-            "Enter freely and of your own will!",
-            "Blood is life... and it shall be mine."
+            "I'm Vengeance.",
+            "Things always get worse before they get better.",
+            "It's not just a signal; it's a warning.",
+            "The city is a powder keg, and Riddler's the match."
         ];
         const index = Math.floor(Date.now() / 1000) % quotes.length;
-        // defer to avoid cascading renders warning
         requestAnimationFrame(() => setActiveMessage(quotes[index]));
-    } else if (isMatrix) {
-        const msg = `Wake up, ${session?.user?.name || 'Neo'}... The system is yours.`;
-        requestAnimationFrame(() => setActiveMessage(msg));
-    } else if (isGOT) {
-        requestAnimationFrame(() => setActiveMessage("THE NORTH REMEMBERS. YOUR DEBT IS PAID."));
+    } else {
+        const standardMessages = [
+            "SOLVED_WITH_PRECISION",
+            "ALGORITHM_OPTIMIZED",
+            "COMPUTATIONAL_VICTORY",
+            `EXCELLENT_WORK_${session?.user?.name?.toUpperCase() || 'USER'}`
+        ];
+        const index = Math.floor(Date.now() / 1000) % standardMessages.length;
+        requestAnimationFrame(() => setActiveMessage(standardMessages[index]));
     }
 
     return () => clearTimeout(timer);
-  }, [isVisible, isDracula, isMatrix, isGOT, session?.user?.name, onComplete]);
+  }, [isVisible, isBatman, session?.user?.name, onComplete]);
 
   if (!isVisible) return null;
 
@@ -54,28 +55,19 @@ export default function ExecutionAnimation({ isVisible, onComplete }: ExecutionA
     <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center overflow-hidden">
       
       <AnimatePresence>
-        {isDracula && (
+        {isBatman && (
             <motion.div 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-red-950/20 backdrop-blur-sm"
-            />
-        )}
-        {isMatrix && (
-            <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+                className="absolute inset-0 bg-red-950/10 backdrop-blur-sm"
             />
         )}
       </AnimatePresence>
 
       <div className="absolute inset-0">
-        {isDracula && <BloodDripEffect />}
-        {isMatrix && <MatrixRainEffect />}
-        {isGOT && <SnowStormEffect />}
+        {isBatman && <BatmanRainEffect />}
+        {!isBatman && <StandardParticlesEffect />}
       </div>
 
       <motion.div
@@ -86,17 +78,16 @@ export default function ExecutionAnimation({ isVisible, onComplete }: ExecutionA
       >
         <motion.div 
             animate={{ 
-                boxShadow: isDracula ? ["0 0 20px #ff0000", "0 0 60px #ff0000", "0 0 20px #ff0000"] :
-                           isMatrix ? ["0 0 20px #00ff41", "0 0 60px #00ff41", "0 0 20px #00ff41"] :
-                           ["0 0 20px #38bdf8", "0 0 60px #38bdf8", "0 0 20px #38bdf8"]
+                boxShadow: isBatman ? ["0 0 20px #ff0000", "0 0 60px #ff0000", "0 0 20px #ff0000"] :
+                           ["0 0 20px #3b82f6", "0 0 60px #3b82f6", "0 0 20px #3b82f6"]
             }}
             transition={{ duration: 2, repeat: Infinity }}
             className={`px-12 py-6 rounded-3xl bg-black/80 border-2 backdrop-blur-xl ${
-                isDracula ? 'border-red-600' : isMatrix ? 'border-[#00ff41]' : 'border-sky-400'
+                isBatman ? 'border-red-600' : 'border-[#3b82f6]'
             }`}
         >
             <h2 className={`text-4xl md:text-6xl font-black italic tracking-tighter ${
-                isDracula ? 'text-red-600' : isMatrix ? 'text-[#00ff41] font-mono' : 'text-white font-serif'
+                isBatman ? 'text-red-600' : 'text-white'
             }`}>
                 ACCEPTED
             </h2>
@@ -106,8 +97,8 @@ export default function ExecutionAnimation({ isVisible, onComplete }: ExecutionA
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className={`mt-8 text-xl md:text-2xl text-center px-6 max-w-2xl font-medium tracking-widest leading-relaxed drop-shadow-lg ${
-                isDracula ? 'text-red-500 italic' : isMatrix ? 'text-[#00ff41] font-mono' : 'text-sky-200 font-serif'
+            className={`mt-8 text-xl md:text-2xl text-center px-6 max-w-2xl font-black uppercase tracking-[0.2em] leading-relaxed drop-shadow-lg ${
+                isBatman ? 'text-red-500 italic' : 'text-[#3b82f6]'
             }`}
         >
             {activeMessage}
@@ -118,69 +109,53 @@ export default function ExecutionAnimation({ isVisible, onComplete }: ExecutionA
   );
 }
 
-function BloodDripEffect() {
-    const drops = useMemo(() => Array.from({ length: 12 }, (_, i) => ({
-        left: `${i * 10}%`,
-        delay: i * 0.3
-    })), []);
+function StandardParticlesEffect() {
+    const [particles] = useState(() => Array.from({ length: 20 }, (_, i) => ({
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 2 + Math.random() * 4,
+        duration: 2 + Math.random() * 2,
+        delay: Math.random() * 2
+    })));
 
     return (
         <div className="absolute inset-0">
-            {drops.map((drop, i) => (
+            {particles.map((p, i) => (
                 <motion.div
                     key={i}
-                    initial={{ y: -100, height: 0 }}
-                    animate={{ y: [-100, 1000], height: [0, 400, 0] }}
-                    transition={{ duration: 4, delay: drop.delay, repeat: Infinity, ease: "easeIn" }}
-                    style={{ left: drop.left }}
-                    className="absolute w-1 bg-gradient-to-b from-red-900 to-red-600 rounded-full blur-[1px] opacity-60"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: [0, 0.5, 0], scale: [0, 1.5, 0] }}
+                    transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
+                    style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
+                    className="absolute bg-[#3b82f6] rounded-full blur-[1px]"
                 />
             ))}
         </div>
     );
 }
 
-function MatrixRainEffect() {
-    const columns = useMemo(() => Array.from({ length: 20 }, (_, i) => ({
-        duration: 2 + (i % 3),
-        delay: (i * 0.4) % 2,
-        chars: Array.from({ length: 20 }, (_, j) => String.fromCharCode(0x30A0 + ((i * 10 + j) % 96))).join('')
-    })), []);
-
-    return (
-        <div className="absolute inset-0 flex justify-around opacity-20">
-            {columns.map((col, i) => (
-                <motion.div
-                    key={i}
-                    initial={{ y: -500 }}
-                    animate={{ y: 1000 }}
-                    transition={{ duration: col.duration, repeat: Infinity, ease: "linear", delay: col.delay }}
-                    className="text-[#00ff41] font-mono text-xs [writing-mode:vertical-rl] tracking-tighter"
-                >
-                    {col.chars}
-                </motion.div>
-            ))}
-        </div>
-    );
-}
-
-function SnowStormEffect() {
-    const flakes = useMemo(() => Array.from({ length: 40 }, (_, i) => ({
-        xStart: `${(i * 2.5) % 100}%`,
-        xEnd: `${((i * 2.5) + (i % 2 === 0 ? 5 : -5)) % 100}%`,
-        duration: 2 + (i % 3),
-        delay: (i * 0.2) % 2
+function BatmanRainEffect() {
+    const drops = useMemo(() => Array.from({ length: 30 }, (_, i) => ({
+        left: `${(i * 3.33) % 100}%`,
+        duration: 0.5 + (i % 0.5),
+        delay: (i * 0.1) % 2
     })), []);
 
     return (
         <div className="absolute inset-0">
-            {flakes.map((flake, i) => (
+            <motion.div 
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-y-0 w-[500px] bg-gradient-to-r from-transparent via-red-600/10 to-transparent skew-x-[-20deg]"
+            />
+            {drops.map((drop, i) => (
                 <motion.div
                     key={i}
-                    initial={{ y: -20, x: flake.xStart, opacity: 0 }}
-                    animate={{ y: "100vh", opacity: [0, 1, 0], x: [flake.xStart, flake.xEnd] }}
-                    transition={{ duration: flake.duration, repeat: Infinity, ease: "linear", delay: flake.delay }}
-                    className="absolute w-1 h-1 bg-white rounded-full blur-[1px]"
+                    initial={{ y: -50, opacity: 0 }}
+                    animate={{ y: 1000, opacity: [0, 0.4, 0] }}
+                    transition={{ duration: drop.duration, delay: drop.delay, repeat: Infinity, ease: "linear" }}
+                    style={{ left: drop.left }}
+                    className="absolute w-[1px] h-12 bg-white/30"
                 />
             ))}
         </div>

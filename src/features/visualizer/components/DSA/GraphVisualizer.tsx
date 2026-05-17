@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, ChevronLeft, ChevronRight, 
   TrendingUp, Activity, MapPin, Cpu, RefreshCw,
-  Plus, Trash2, Edit3, Move, Check
+  Plus, Trash2, Edit3, Move, Check, Terminal
 } from "lucide-react";
 
 type Node = { id: number; x: number; y: number };
@@ -20,7 +20,7 @@ interface BFSDFSStep {
   logs: string[];
 }
 
-export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {  
+export default function GraphVisualizer({ speed = 800, isFullscreen = false }: { speed?: number, isFullscreen?: boolean }) {  
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -40,7 +40,6 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
         const { width, height } = entries[0].contentRect;
-        // defer to avoid cascading renders
         requestAnimationFrame(() => {
             setDimensions({ width, height });
             setIsMobile(width < 768);
@@ -57,7 +56,7 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
         const numNodes = dimensions.width < 768 ? 5 : 6;
         const centerX = dimensions.width / 2;
         const centerY = dimensions.height / 2;
-        const radius = Math.min(dimensions.width, dimensions.height) / 3.5;
+        const radius = Math.min(dimensions.width, dimensions.height) / (isMobile ? 4 : 3.5);
 
         const initialNodes: Node[] = [];
         for (let i = 0; i < numNodes; i++) {
@@ -83,13 +82,12 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
             initialMatrix[i+1][i] = 1;
         }
 
-        // Only use deferred update
         requestAnimationFrame(() => {
             setNodes(initialNodes);
             setMatrix(initialMatrix);
         });
     }
-  }, [dimensions, nodes.length]);
+  }, [dimensions, nodes.length, isMobile]);
 
   const resetSimulation = React.useCallback(() => {
     setIsPlaying(false);
@@ -98,11 +96,11 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
 
   const generateGraph = React.useCallback(() => {
     resetSimulation();
-    const numNodes = 6;
+    const numNodes = isMobile ? 5 : 6;
     const { width, height } = dimensions;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 3.5;
+    const radius = Math.min(width, height) / (isMobile ? 4 : 3.5);
 
     const newNodes: Node[] = [];
     for (let i = 0; i < numNodes; i++) {
@@ -129,10 +127,10 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
         newMatrix[i+1][i] = 1;
     }
     setMatrix(newMatrix);
-  }, [dimensions, resetSimulation]);
+  }, [dimensions, resetSimulation, isMobile]);
 
   const addNode = React.useCallback(() => {
-    if (nodes.length >= 12) return;
+    if (nodes.length >= (isMobile ? 8 : 12)) return;
     const newId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
     const { width, height } = dimensions;
     const newNode = {
@@ -153,7 +151,7 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
         return newMat;
     });
     resetSimulation();
-  }, [nodes, dimensions, resetSimulation]);
+  }, [nodes, dimensions, resetSimulation, isMobile]);
 
   const clearGraph = React.useCallback(() => {
     setNodes([]);
@@ -283,14 +281,16 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+    <div className="flex flex-col gap-6 h-full">
+      <div className={`p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden flex-1 flex flex-col ${isFullscreen ? "border-none shadow-none rounded-none bg-transparent" : ""}`}>
+        {!isFullscreen && (
+           <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+                style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+        )}
         
-        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
+        <div className={`flex flex-col xl:flex-row items-start xl:items-center justify-between mb-8 relative z-40 gap-6 ${isFullscreen ? "bg-[#050505]/60 p-4 rounded-2xl backdrop-blur-xl border border-white/5 shadow-2xl" : ""}`}>
           <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
+            <h2 className="text-xl md:text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
               {mode} <span className="text-[var(--muted-foreground)]/40">Traversal Explorer</span>
             </h2>
             <div className="flex items-center gap-3">
@@ -302,13 +302,13 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
              {isEditing && (
                  <>
-                    <button onClick={addNode} className="flex items-center gap-2 px-4 py-2 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+                    <button onClick={addNode} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[10px] md:text-xs font-bold text-[var(--muted-foreground)]">
                         <Plus size={14}/> Node
                     </button>
-                    <button onClick={clearGraph} className="flex items-center gap-2 px-4 py-2 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+                    <button onClick={clearGraph} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[10px] md:text-xs font-bold text-[var(--muted-foreground)]">
                         <Trash2 size={14}/> Clear
                     </button>
                      <div className="w-[1px] h-6 bg-[var(--border)] mx-1" />
@@ -324,8 +324,8 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
 
              {!isEditing && (
                 <>
-                    <button onClick={generateGraph} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Randomize"><RefreshCw size={20}/></button>
-                    <button onClick={resetSimulation} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]" title="Reset"><RotateCcw size={20}/></button>
+                    <button onClick={generateGraph} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]" title="Randomize"><RefreshCw size={18}/></button>
+                    <button onClick={resetSimulation} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]" title="Reset"><RotateCcw size={18}/></button>
                     
                     {!isPlaying ? (
                         <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
@@ -341,7 +341,7 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
           </div>
         </div>
 
-        <div className="relative min-h-[520px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair">
+        <div className={`relative flex-1 min-h-[400px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair ${isFullscreen ? "bg-transparent border-white/5" : ""}`}>
             
             <div ref={containerRef} className="absolute inset-0 w-full h-full">
                 <AnimatePresence>
@@ -357,8 +357,13 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
                     )}
                 </AnimatePresence>
 
-                <div className="absolute top-4 right-4 md:top-6 md:right-6 z-30 flex flex-col gap-3 md:gap-4 pointer-events-none max-w-[160px] md:max-w-[220px]">
-                    <div className="bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-3 md:p-4 rounded-2xl shadow-sm">
+                {/* OVERLAY BOXES: Queue and Log */}
+                <div className={`absolute z-30 flex flex-col gap-3 md:gap-4 pointer-events-none transition-all duration-700 ${
+                    isFullscreen 
+                        ? "bottom-8 right-8 flex-row-reverse items-end" 
+                        : "top-4 right-4 md:top-6 md:right-6"
+                }`}>
+                    <div className={`bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-3 md:p-4 rounded-2xl shadow-sm transition-all ${isFullscreen ? "w-64" : "max-w-[160px] md:max-w-[220px]"}`}>
                         <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-2 md:mb-3">
                              <TrendingUp size={isMobile ? 10 : 12} /> {mode === "BFS" ? "Queue" : "Stack"}
                         </span>
@@ -380,7 +385,9 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
                         </div>
                     </div>
 
-                    <div className="hidden md:flex bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm h-[200px] overflow-hidden flex flex-col">
+                    <div className={`hidden md:flex bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm overflow-hidden flex-col transition-all ${
+                        isFullscreen ? "h-32 w-80" : "h-[160px]"
+                    }`}>
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-2">
                              <Activity size={12} /> Log
                         </span>
@@ -403,7 +410,7 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
 
                 <AnimatePresence mode="wait">
                     {!isEditing && (
-                        <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full flex justify-center z-30 pointer-events-none">
+                        <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className={`absolute left-0 right-0 flex justify-center z-30 pointer-events-none transition-all ${isFullscreen ? "bottom-32" : "bottom-12"}`}>
                             <div className="px-6 py-3 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
                                 <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
                             </div>
@@ -459,9 +466,9 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
                                     scale: isA || isSelected ? 1.15 : 1,
                                     boxShadow: isA ? `0 0 30px rgba(var(--viz-cyan-rgb), 0.2)` : "none"
                                 }}
-                                className={`absolute w-12 h-12 border-2 rounded-full flex flex-col items-center justify-center font-mono shadow-xl transition-colors ${isEditing ? "cursor-grab active:cursor-grabbing" : ""}`}
+                                className={`absolute w-10 h-10 md:w-12 md:h-12 border-2 rounded-full flex flex-col items-center justify-center font-mono shadow-xl transition-colors ${isEditing ? "cursor-grab active:cursor-grabbing" : ""}`}
                             >
-                                <span className={`text-xs font-black ${isA || isSelected ? "text-black" : 'text-[var(--foreground)]'}`}>{node.id}</span>
+                                <span className={`text-[10px] md:text-xs font-black ${isA || isSelected ? "text-black" : 'text-[var(--foreground)]'}`}>{node.id}</span>
                                 {isSource && !isEditing && <div className="absolute -top-6"><MapPin size={14} className="text-[var(--viz-rose)]" /></div>}
                             </motion.div>
                         );
@@ -470,11 +477,11 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
         </div>
 
-        <div className={`mt-8 p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+        <div className={`mt-8 p-4 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"} ${isFullscreen ? "bg-[#111]/40" : ""}`}>
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
                     <Activity size={14} className="text-[var(--viz-rose)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Lemma Execution {currentIndex + 1} of {history.length}</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Lemma Execution {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronLeft size={18} /></button>
@@ -497,12 +504,16 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
       </div>
 
-      <div className="px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Expand</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Visited Node</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Next Coordinate</span></div>
-         <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Topology Engine</span></div>
-      </div>
+      {!isFullscreen && (
+         <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Expand</span></div>
+            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Visited Node</span></div>
+            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Next Coordinate</span></div>
+            <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Topology Engine</span></div>
+         </div>
+      )}
     </div>
   );
 }
+
+

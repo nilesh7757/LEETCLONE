@@ -5,7 +5,7 @@ import {
   Database, Sliders, GitPullRequest, FastForward, Link, Infinity as InfinityIcon,
   ShoppingBag, Route, MoveHorizontal, ListTree, Crown,
   FileSearch, BoxSelect, Binary, Sparkles, Layout, Terminal, TrendingUp,
-  AlertTriangle
+  AlertTriangle, Type, LayoutGrid, Hash, RefreshCw, ChevronRight, ArrowUp
 } from "lucide-react";
 
 import SortingVisualizer from "@/features/visualizer/components/DSA/SortingVisualizer";
@@ -34,6 +34,19 @@ import FibonacciVisualizer from "@/features/visualizer/components/DSA/FibonacciV
 import KnapsackVisualizer from "@/features/visualizer/components/DSA/KnapsackVisualizer";
 import SlidingWindowVisualizer from "@/features/visualizer/components/DSA/SlidingWindowVisualizer";
 import KadaneVisualizer from "@/features/visualizer/components/DSA/KadaneVisualizer";
+import LCSVisualizer from "@/features/visualizer/components/DSA/LCSVisualizer";
+import LISVisualizer from "@/features/visualizer/components/DSA/LISVisualizer";
+import EditDistanceVisualizer from "@/features/visualizer/components/DSA/EditDistanceVisualizer";
+import SCCVisualizer from "@/features/visualizer/components/DSA/SCCVisualizer";
+import LCAVisualizer from "@/features/visualizer/components/DSA/LCAVisualizer";
+import FenwickTreeVisualizer from "@/features/visualizer/components/DSA/FenwickTreeVisualizer";
+import TarjanVisualizer from "@/features/visualizer/components/DSA/TarjanVisualizer";
+import BitmaskDPVisualizer from "@/features/visualizer/components/DSA/BitmaskDPVisualizer";
+import SieveVisualizer from "@/features/visualizer/components/DSA/SieveVisualizer";
+import DigitDPVisualizer from "@/features/visualizer/components/DSA/DigitDPVisualizer";
+import SparseTableVisualizer from "@/features/visualizer/components/DSA/SparseTableVisualizer";
+import RerootingVisualizer from "@/features/visualizer/components/DSA/RerootingVisualizer";
+import BinaryLiftingVisualizer from "@/features/visualizer/components/DSA/BinaryLiftingVisualizer";
 
 import { DocSection, ComplexityCard, CodeSnippet } from "./DocComponents";
 
@@ -44,42 +57,64 @@ export const dsaCategories = [
     icon: <ArrowDownNarrowWide />,
     themeColor: "var(--viz-amber)",
     themeRGB: "var(--viz-amber-rgb)",
-    description: "Stable monotonic bubbling.",
+    description: "Simple comparison-based sorting.",
     component: (speed: number) => <SortingVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Monotonic Bubbling" icon={Activity} color="var(--viz-amber)">
-            <p>Bubble Sort is a stable, comparison-based algorithm that iteratively transforms a manifold into a monotonic sequence. It operates by repeatedly stepping through the list, comparing adjacent elements and swapping them if they are in the wrong order.</p>
-            <p>The name &quot;Bubble Sort&quot; comes from the way smaller elements &quot;bubble&quot; to the top of the list (beginning of the array) while larger elements sink to the bottom.</p>
+          <DocSection title="How it Works" icon={Activity} color="var(--viz-amber)">
+            <p>Bubble Sort is the simplest sorting algorithm that works by repeatedly swapping the adjacent elements if they are in the wrong order.</p>
+            <p>In each pass through the array, the largest unsorted element &quot;bubbles up&quot; to its correct position at the end, just like bubbles rise to the surface of water.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N²)" space="O(1)" />
-            <DocSection title="Stability Lemma" icon={Check} color="var(--viz-deep-purple)">
-              <p>Bubble sort is <strong>Stable</strong>; it preserves the relative order of equal elements. This is a critical property when sorting complex manifolds with multi-key dependencies.</p>
+            <DocSection title="Stability & Use Cases" icon={Check} color="var(--viz-deep-purple)">
+              <p>Bubble sort is <strong>Stable</strong>, meaning it preserves the relative order of equal elements. While inefficient for large datasets, it&apos;s useful for educational purposes and nearly-sorted arrays.</p>
             </DocSection>
           </div>
         </div>
-
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Swapping Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Iterate through the array multiple times. In each pass, compare adjacent elements and swap if $A[j] &gt; A[j+1]$.
-                    </p>
-                    <CodeSnippet code={`void bubbleSort(vector<int>& arr) {\n    int n = arr.size();\n    for (int i = 0; i < n - 1; i++) {\n        for (int j = 0; j < n - i - 1; j++) {\n            if (arr[j] > arr[j + 1]) {\n                swap(arr[j], arr[j + 1]);\n            }\n        }\n    }\n}`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `void bubbleSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}`,
+      "Python": `def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]`,
+      "Java": `public void bubbleSort(int[] arr) {
+    int n = arr.length;
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}`,
+      "JavaScript": `function bubbleSort(arr) {
+    const n = arr.length;
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+            }
+        }
+    }
+}`
+    }
   },
   {
     id: "SELECTION_SORT",
@@ -103,26 +138,58 @@ export const dsaCategories = [
             </DocSection>
           </div>
         </div>
-
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Selection Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Maintain `min_idx`. For each $i$ from $0$ to $n-2$, find the minimum in the range $[i+1, n-1]$ and swap it with $A[i]$.
-                    </p>
-                    <CodeSnippet code={`void selectionSort(vector<int>& arr) {\n    int n = arr.size();\n    for (int i = 0; i < n - 1; i++) {\n        int min_idx = i;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] < arr[min_idx])\n                min_idx = j;\n        }\n        if (min_idx != i)\n            swap(arr[min_idx], arr[i]);\n    }\n}`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `void selectionSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        if (min_idx != i)
+            swap(arr[min_idx], arr[i]);
+    }
+}`,
+      "Python": `def selection_sort(arr):
+    n = len(arr)
+    for i in range(n - 1):
+        min_idx = i
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_idx]:
+                min_idx = j
+        if min_idx != i:
+            arr[i], arr[min_idx] = arr[min_idx], arr[i]`,
+      "Java": `public void selectionSort(int[] arr) {
+    int n = arr.length;
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        int temp = arr[min_idx];
+        arr[min_idx] = arr[i];
+        arr[i] = temp;
+    }
+}`,
+      "JavaScript": `function selectionSort(arr) {
+    const n = arr.length;
+    for (let i = 0; i < n - 1; i++) {
+        let min_idx = i;
+        for (let j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx]) {
+                min_idx = j;
+            }
+        }
+        if (min_idx !== i) {
+            [arr[i], arr[min_idx]] = [arr[min_idx], arr[i]];
+        }
+    }
+}`
+    }
   },
   {
     id: "INSERTION_SORT",
@@ -130,42 +197,69 @@ export const dsaCategories = [
     icon: <Sliders />,
     themeColor: "var(--viz-amber)",
     themeRGB: "var(--viz-amber-rgb)",
-    description: "Online incremental sorting.",
+    description: "Builds the sorted array one item at a time.",
     component: (speed: number) => <InsertionSortVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Manifold Expansion" icon={Layers} color="var(--viz-amber)">
-            <p>Insertion Sort builds the sorted manifold <strong>One Element at a Time</strong>. It is analogous to the way most people sort a hand of playing cards.</p>
-            <p>Each new element is extracted and inserted into its correct relative position within the already sorted sub-manifold, shifting larger elements to the right to create space.</p>
+          <DocSection title="How it Works" icon={Activity} color="var(--viz-amber)">
+            <p>Insertion Sort builds the final sorted array <strong>one element at a time</strong>. It is much like the way you sort playing cards in your hands.</p>
+            <p>You take one element from the unsorted part and find its correct position in the sorted part, shifting other elements to make room.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N²)" space="O(1)" />
-            <DocSection title="Online Algorithm" icon={Zap} color="var(--viz-deep-purple)">
-              <p>Insertion Sort is an <strong>Online Algorithm</strong>; it can sort a manifold as it receives it. It is also extremely efficient for manifolds that are already substantially ordered, reaching $O(N)$ in the best case.</p>
+            <DocSection title="Efficiency" icon={Zap} color="var(--viz-deep-purple)">
+              <p>Insertion Sort is very efficient for small datasets or arrays that are already <strong>partially sorted</strong>. In the best case (already sorted), it runs in $O(N)$ time.</p>
             </DocSection>
           </div>
         </div>
-
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Insertion Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Iterate from $i=1$ to $n-1$. Pick $A[i]$ and insert it into the sorted sequence $A[0...i-1]$ by shifting elements.
-                    </p>
-                    <CodeSnippet code={`void insertionSort(vector<int>& arr) {\n    int n = arr.size();\n    for (int i = 1; i < n; i++) {\n        int key = arr[i];\n        int j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j = j - 1;\n        }\n        arr[j + 1] = key;\n    }\n}`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `void insertionSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}`,
+      "Python": `def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and key < arr[j]:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key`,
+      "Java": `public void insertionSort(int[] arr) {
+    int n = arr.length;
+    for (int i = 1; i < n; ++i) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}`,
+      "JavaScript": `function insertionSort(arr) {
+    for (let i = 1; i < arr.length; i++) {
+        let key = arr[i];
+        let j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}`
+    }
   },
   {
     id: "BINARY_SEARCH",
@@ -173,62 +267,69 @@ export const dsaCategories = [
     icon: <Search />,
     themeColor: "var(--viz-cyan)",
     themeRGB: "var(--viz-cyan-rgb)",
-    description: "O(log N) interval reduction.",
+    description: "Logarithmic search in sorted arrays.",
     component: (speed: number) => <BinarySearchVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Theoretical Basis" icon={Microscope}>
-            <p>Binary Search is the fundamental algorithm for searching sorted manifolds. It operates on the principle of <strong>Interval Reduction</strong>, where each evaluation point (the median) effectively eliminates half of the remaining search space.</p>
-            <p>Unlike linear scans that operate in 1:1 temporal correspondence with data size, Binary Search achieves <strong>Logarithmic Scaling</strong>, making it suitable for massive datasets.</p>
+          <DocSection title="How it Works" icon={Activity} color="var(--viz-cyan)">
+            <p>Binary Search finds the position of a target value within a <strong>sorted array</strong>. It works by repeatedly dividing the search interval in half.</p>
+            <p>If the value of the search key is less than the item in the middle of the interval, narrow the interval to the lower half. Otherwise, narrow it to the upper half.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N)" space="O(1)" />
-            <DocSection title="The Median Lemma" icon={Target} color="var(--viz-amber)">
-              <p>At every step, we calculate the median index m. By comparing V[m] to the target T, we define a logical boundary. If V[m] {"<"} T, the entire left sub-manifold is discarded as non-viable.</p>
+            <DocSection title="Prerequisite" icon={AlertTriangle} color="var(--viz-amber)">
+              <p>Crucially, Binary Search only works on <strong>Sorted</strong> data. If the data is not sorted, you must sort it first or use a linear search.</p>
             </DocSection>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Algorithm Steps</h4>
-                    <ul className="space-y-4 text-xs text-muted-foreground leading-relaxed font-mono">
-                        <li className="flex gap-3">
-                            <span className="text-[var(--viz-deep-purple)] font-bold">01.</span>
-                            Initialize two pointers, `low = 0` and `high = n - 1`.
-                        </li>
-                        <li className="flex gap-3">
-                            <span className="text-[var(--viz-deep-purple)] font-bold">02.</span>
-                            Loop while `low {"<="} high`. Calculate `mid = low + (high - low) / 2` to avoid overflow.
-                        </li>
-                        <li className="flex gap-3">
-                            <span className="text-[var(--viz-deep-purple)] font-bold">03.</span>
-                            Compare `arr[mid]` with `target`.
-                            <br/> - If equal, return `mid`.
-                            <br/> - If `arr[mid] {"<"} target`, ignore left half (`low = mid + 1`).
-                            <br/> - If `arr[mid] &gt; target`, ignore right half (`high = mid - 1`).
-                        </li>
-                        <li className="flex gap-3">
-                            <span className="text-[var(--viz-deep-purple)] font-bold">04.</span>
-                            If loop ends, target is not present. Return -1.
-                        </li>
-                    </ul>
-                </div>
-                
-                <CodeSnippet code={`int binarySearch(vector<int>& nums, int target) {\n    int left = 0, right = nums.size() - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        \n        if (nums[mid] == target) return mid;\n        else if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}`} />
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `int binarySearch(vector<int>& arr, int target) {
+    int low = 0, high = arr.size() - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (arr[mid] == target) return mid;
+        if (arr[mid] < target) low = mid + 1;
+        else high = mid - 1;
+    }
+    return -1;
+}`,
+      "Python": `def binary_search(arr, target):
+    low = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1`,
+      "Java": `public int binarySearch(int[] arr, int target) {
+    int low = 0, high = arr.length - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (arr[mid] == target) return mid;
+        if (arr[mid] < target) low = mid + 1;
+        else high = mid - 1;
+    }
+    return -1;
+}`,
+      "JavaScript": `function binarySearch(arr, target) {
+    let low = 0;
+    let high = arr.length - 1;
+    while (low <= high) {
+        let mid = Math.floor(low + (high - low) / 2);
+        if (arr[mid] === target) return mid;
+        if (arr[mid] < target) low = mid + 1;
+        else high = mid - 1;
+    }
+    return -1;
+}`
+    }
   },
   {
     id: "LINKED_LIST",
@@ -256,34 +357,68 @@ export const dsaCategories = [
             </DocSection>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Node Structure</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Unlike an array where `A[i]` is just a value, a Node in a Linked List is a container (struct/class) holding both the data and the navigation logic (pointer).
-                    </p>
-                    <CodeSnippet code={`struct Node {\n    int data;\n    Node* next;\n    Node(int val) : data(val), next(nullptr) {}
-};`} />
-                </div>
-                
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Traversal Logic</h4>
-                    <CodeSnippet code={`void traverse(Node* head) {\n    Node* temp = head;\n    while (temp != nullptr) {\n        cout << temp->data << " -> ";\n        temp = temp->next;\n    }\n    cout << "NULL";
-}`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `struct Node {
+    int data;
+    Node* next;
+    Node(int val) : data(val), next(nullptr) {}
+};
+
+void traverse(Node* head) {
+    Node* temp = head;
+    while (temp != nullptr) {
+        cout << temp->data << " -> ";
+        temp = temp->next;
+    }
+    cout << "NULL";
+}`,
+      "Python": `class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+def traverse(head):
+    temp = head
+    while temp:
+        print(temp.data, end=" -> ")
+        temp = temp.next
+    print("NULL")`,
+      "Java": `class Node {
+    int data;
+    Node next;
+    Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+public void traverse(Node head) {
+    Node temp = head;
+    while (temp != null) {
+        System.out.print(temp.data + " -> ");
+        temp = temp.next;
+    }
+    System.out.println("NULL");
+}`,
+      "JavaScript": `class Node {
+    constructor(data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+function traverse(head) {
+    let temp = head;
+    let result = "";
+    while (temp) {
+        result += temp.data + " -> ";
+        temp = temp.next;
+    }
+    console.log(result + "NULL");
+}`
+    }
   },
   {
     id: "GRAPH_BFS",
@@ -315,35 +450,93 @@ export const dsaCategories = [
             </div>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> BFS Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Maintain a `visited` array to prevent cycles and a `queue` for layer-by-layer processing.
-                    </p>
-                    <CodeSnippet code={`void bfs(int start, vector<vector<int>>& adj, int V) {\n    vector<bool> visited(V, false);\n    queue<int> q;\n    \n    visited[start] = true;\n    q.push(start);\n    \n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        cout << u << " ";\n        \n        for (int v : adj[u]) {\n            if (!visited[v]) {\n                visited[v] = true;\n                q.push(v);\n            }\n        }\n    }
-}`} />
-                </div>
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> DFS Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Use recursion to dive deep. Mark node as visited upon entry and explore all unvisited neighbors.
-                    </p>
-                    <CodeSnippet code={`void dfs(int u, vector<vector<int>>& adj, vector<bool>& visited) {\n    visited[u] = true;\n    cout << u << " ";\n    \n    for (int v : adj[u]) {\n        if (!visited[v]) {\n            dfs(v, adj, visited);\n        }\n    }\n}\n\n// Caller\nvector<bool> visited(V, false);\ndfs(start_node, adj, visited);`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `void bfs(int start, vector<vector<int>>& adj, int V) {
+    vector<bool> visited(V, false);
+    queue<int> q;
+    visited[start] = true;
+    q.push(start);
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}
+
+void dfs(int u, vector<vector<int>>& adj, vector<bool>& visited) {
+    visited[u] = true;
+    for (int v : adj[u]) {
+        if (!visited[v]) dfs(v, adj, visited);
+    }
+}`,
+      "Python": `from collections import deque
+
+def bfs(start, adj, V):
+    visited = [False] * V
+    q = deque([start])
+    visited[start] = True
+    while q:
+        u = q.popleft()
+        for v in adj[u]:
+            if not visited[v]:
+                visited[v] = True
+                q.append(v)
+
+def dfs(u, adj, visited):
+    visited[u] = True
+    for v in adj[u]:
+        if not visited[v]:
+            dfs(v, adj, visited)`,
+      "Java": `public void bfs(int start, List<List<Integer>> adj, int V) {
+    boolean[] visited = new boolean[V];
+    Queue<Integer> q = new LinkedList<>();
+    visited[start] = true;
+    q.add(start);
+    while (!q.isEmpty()) {
+        int u = q.poll();
+        for (int v : adj.get(u)) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.add(v);
+            }
+        }
+    }
+}
+
+public void dfs(int u, List<List<Integer>> adj, boolean[] visited) {
+    visited[u] = true;
+    for (int v : adj.get(u)) {
+        if (!visited[v]) dfs(v, adj, visited);
+    }
+}`,
+      "JavaScript": `function bfs(start, adj, V) {
+    const visited = new Array(V).fill(false);
+    const q = [start];
+    visited[start] = true;
+    while (q.length > 0) {
+        const u = q.shift();
+        for (const v of adj[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}
+
+function dfs(u, adj, visited) {
+    visited[u] = true;
+    for (const v of adj[u]) {
+        if (!visited[v]) dfs(v, adj, visited);
+    }
+}`
+    }
   },
   {
     id: "BELLMAN_FORD",
@@ -367,26 +560,78 @@ export const dsaCategories = [
             </DocSection>
           </div>
         </div>
-
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Core Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Iterate $V-1$ times through all edges $(u, v)$ with weight $w$. Update $dist[v] = min(dist[v], dist[u] + w)$.
-                    </p>
-                    <CodeSnippet code={`struct Edge { int u, v, w; };\n\nvoid bellmanFord(int V, int S, vector<Edge>& edges) {\n    vector<int> dist(V, INT_MAX);\n    dist[S] = 0;\n\n    for (int i = 1; i < V; i++) {\n        for (auto& e : edges) {\n            if (dist[e.u] != INT_MAX && dist[e.u] + e.w < dist[e.v])\n                dist[e.v] = dist[e.u] + e.w;\n        }\n    }\n\n    // Detect negative cycle\n    for (auto& e : edges) {\n        if (dist[e.u] != INT_MAX && dist[e.u] + e.w < dist[e.v])\n            cout << "Negative Cycle Detected";\n    }\n}`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `struct Edge { int u, v, w; };
+
+void bellmanFord(int V, int S, vector<Edge>& edges) {
+    vector<int> dist(V, INT_MAX);
+    dist[S] = 0;
+
+    for (int i = 1; i < V; i++) {
+        for (auto& e : edges) {
+            if (dist[e.u] != INT_MAX && dist[e.u] + e.w < dist[e.v])
+                dist[e.v] = dist[e.u] + e.w;
+        }
+    }
+
+    // Detect negative cycle
+    for (auto& e : edges) {
+        if (dist[e.u] != INT_MAX && dist[e.u] + e.w < dist[e.v])
+            cout << "Negative Cycle Detected";
+    }
+}`,
+      "Python": `def bellman_ford(V, S, edges):
+    dist = [float('inf')] * V
+    dist[S] = 0
+
+    for _ in range(V - 1):
+        for u, v, w in edges:
+            if dist[u] != float('inf') and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+
+    for u, v, w in edges:
+        if dist[u] != float('inf') and dist[u] + w < dist[v]:
+            print("Negative Cycle Detected")
+    return dist`,
+      "Java": `public void bellmanFord(int V, int S, List<Edge> edges) {
+    int[] dist = new int[V];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[S] = 0;
+
+    for (int i = 1; i < V; i++) {
+        for (Edge e : edges) {
+            if (dist[e.u] != Integer.MAX_VALUE && dist[e.u] + e.w < dist[e.v])
+                dist[e.v] = dist[e.u] + e.w;
+        }
+    }
+
+    for (Edge e : edges) {
+        if (dist[e.u] != Integer.MAX_VALUE && dist[e.u] + e.w < dist[e.v])
+            System.out.println("Negative Cycle Detected");
+    }
+}`,
+      "JavaScript": `function bellmanFord(V, S, edges) {
+    let dist = new Array(V).fill(Infinity);
+    dist[S] = 0;
+
+    for (let i = 1; i < V; i++) {
+        for (let [u, v, w] of edges) {
+            if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+
+    for (let [u, v, w] of edges) {
+        if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
+            console.log("Negative Cycle Detected");
+        }
+    }
+    return dist;
+}`
+    }
   },
   {
     id: "MST",
@@ -418,87 +663,169 @@ export const dsaCategories = [
             </div>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Prim&apos;s Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Use a Priority Queue to pick the smallest edge connected to the MST.
-                    </p>
-                    <CodeSnippet code={`int primMST(int V, vector<vector<pair<int, int>>>& adj) {\n    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;\n    vector<bool> inMST(V, false);\n    int sum = 0;\n\n    pq.push({0, 0}); // {weight, node}
-\n    while (!pq.empty()) {\n        int u = pq.top().second;\n        int w = pq.top().first;\n        pq.pop();\n\n        if (inMST[u]) continue;\n        inMST[u] = true;\n        sum += w;\n\n        for (auto& edge : adj[u]) {\n            int v = edge.first;\n            int weight = edge.second;\n            if (!inMST[v]) {\n                pq.push({weight, v});\n            }\n        }\n    }\n    return sum;
-}`} />
-                </div>
-                
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" /> Kruskal&apos;s Logic</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Sort all edges, then use DSU (Disjoint Set Union) to merge components.
-                    </p>
-                    <CodeSnippet code={`struct Edge { int u, v, weight; };\nbool compareEdges(Edge a, Edge b) { return a.weight < b.weight; }\n\nint kruskalMST(int V, vector<Edge>& edges) {\n    sort(edges.begin(), edges.end(), compareEdges);\n    DSU dsu(V);\n    int sum = 0;\n    \n    for (Edge e : edges) {\n        if (dsu.find(e.u) != dsu.find(e.v)) {\n            dsu.unite(e.u, e.v);\n            sum += e.weight;\n        }\n    }\n    return sum;
-}`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `int primMST(int V, vector<vector<pair<int, int>>>& adj) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    vector<bool> inMST(V, false);
+    int sum = 0;
+    pq.push({0, 0}); // {weight, node}
+
+    while (!pq.empty()) {
+        int u = pq.top().second, w = pq.top().first; pq.pop();
+        if (inMST[u]) continue;
+        inMST[u] = true; sum += w;
+        for (auto& edge : adj[u]) {
+            if (!inMST[edge.first]) pq.push({edge.second, edge.first});
+        }
+    }
+    return sum;
+}`,
+      "Python": `import heapq
+
+def prim_mst(V, adj):
+    pq = [(0, 0)] # (weight, node)
+    visited = [False] * V
+    total_weight = 0
+    while pq:
+        w, u = heapq.heappop(pq)
+        if visited[u]: continue
+        visited[u] = True
+        total_weight += w
+        for v, weight in adj[u]:
+            if not visited[v]:
+                heapq.heappush(pq, (weight, v))
+    return total_weight`,
+      "Java": `public int primMST(int V, List<List<int[]>> adj) {
+    PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+    boolean[] visited = new boolean[V];
+    int sum = 0;
+    pq.add(new int[]{0, 0});
+    while (!pq.isEmpty()) {
+        int[] curr = pq.poll();
+        int w = curr[0], u = curr[1];
+        if (visited[u]) continue;
+        visited[u] = true;
+        sum += w;
+        for (int[] edge : adj.get(u)) {
+            if (!visited[edge[0]]) pq.add(new int[]{edge[1], edge[0]});
+        }
+    }
+    return sum;
+}`,
+      "JavaScript": `function primMST(V, adj) {
+    const pq = new MinPriorityQueue({ priority: x => x[0] });
+    const visited = new Array(V).fill(false);
+    let sum = 0;
+    pq.enqueue([0, 0]);
+    while (!pq.isEmpty()) {
+        const [w, u] = pq.dequeue().element;
+        if (visited[u]) continue;
+        visited[u] = true;
+        sum += w;
+        for (const [v, weight] of adj[u]) {
+            if (!visited[v]) pq.enqueue([weight, v]);
+        }
+    }
+    return sum;
+}`
+    }
   },
   {
     id: "DIJKSTRA",
-    title: "Dijkstra Protocol",
+    title: "Dijkstra's Algorithm",
     icon: <Zap />,
     themeColor: "var(--viz-rose)",
     themeRGB: "var(--viz-rose-rgb)",
-    description: "Single-source shortest path.",
+    description: "Finds the shortest path from a source to all nodes.",
     component: (speed: number) => <DijkstraVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Greedy Pathfinding" icon={Target}>
-            <p>Dijkstra&apos;s Algorithm finds the <strong>Shortest Path</strong> from a source node to all other nodes in a weighted graph (with non-negative weights). It operates on the principle of <strong>Greedy Relaxation</strong>.</p>
-            <p>At each step, we visit the unvisited node with the smallest known distance from the start, guaranteeing that its distance is final.</p>
+          <DocSection title="How it Works" icon={Activity} color="var(--viz-rose)">
+            <p>Dijkstra&apos;s algorithm finds the shortest path from a starting node to all other nodes in a weighted graph. It uses a <strong>Greedy</strong> approach.</p>
+            <p>At each step, it picks the unvisited node with the smallest distance, explores its neighbors, and updates their distances if a shorter path is found. This is called <strong>Relaxation</strong>.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(E log V)" space="O(V + E)" />
-            <DocSection title="Relaxation Lemma" icon={Activity} color="var(--viz-amber)">
-              <p>For an edge $(u, v)$ with weight $w$, if the distance to $u$ plus $w$ is less than the current distance to $v$, we <strong>relax</strong> the edge: $d[v] = d[u] + w$. This strictly decreases the potential of the system.</p>
+            <DocSection title="Constraint" icon={AlertTriangle} color="var(--viz-amber)">
+              <p>Dijkstra only works for graphs with <strong>non-negative</strong> edge weights. For negative weights, use the Bellman-Ford algorithm.</p>
             </DocSection>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Algorithm Steps</h4>
-                    <ul className="space-y-4 text-xs text-muted-foreground leading-relaxed font-mono">
-                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">01.</span> Initialize `dist[]` to Infinity, `dist[source] = 0`.</li>
-                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">02.</span> Use a Priority Queue (Min-Heap) to store `{" {distance, node}"}`.</li>
-                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">03.</span> Pop the node with minimum distance. If already processed, skip.</li>
-                        <li className="flex gap-3"><span className="text-[var(--viz-deep-purple)] font-bold">04.</span> Iterate neighbors. If `dist[u] + w {"<"} dist[v]`, update `dist[v]` and push to PQ.</li>
-                    </ul>
-                </div>
-                
-                <CodeSnippet code={`vector<int> dijkstra(int V, vector<vector<pair<int, int>>>& adj, int S) {\n    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;\n    vector<int> dist(V, INT_MAX);\n\n    dist[S] = 0;\n    pq.push({0, S});\n\n    while (!pq.empty()) {\n        int d = pq.top().first;\n        int u = pq.top().second;\n        pq.pop();\n\n        if (d > dist[u]) continue;\n\n        for (auto& edge : adj[u]) {\n            int v = edge.first;\n            int weight = edge.second;\n\n            if (dist[u] + weight < dist[v]) {\n                dist[v] = dist[u] + weight;\n                pq.push({dist[v], v});\n            }\n        }\n    }\n    return dist;
-}`} />
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `vector<int> dijkstra(int V, vector<vector<pair<int, int>>>& adj, int S) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    vector<int> dist(V, INT_MAX);
+    dist[S] = 0;
+    pq.push({0, S});
+
+    while (!pq.empty()) {
+        int d = pq.top().first, u = pq.top().second; pq.pop();
+        if (d > dist[u]) continue;
+        for (auto& edge : adj[u]) {
+            if (dist[u] + edge.second < dist[edge.first]) {
+                dist[edge.first] = dist[u] + edge.second;
+                pq.push({dist[edge.first], edge.first});
+            }
+        }
+    }
+    return dist;
+}`,
+      "Python": `import heapq
+
+def dijkstra(V, adj, S):
+    pq = [(0, S)]
+    dist = [float('inf')] * V
+    dist[S] = 0
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > dist[u]: continue
+        for v, weight in adj[u]:
+            if dist[u] + weight < dist[v]:
+                dist[v] = dist[u] + weight
+                heapq.heappush(pq, (dist[v], v))
+    return dist`,
+      "Java": `public int[] dijkstra(int V, List<List<int[]>> adj, int S) {
+    PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+    int[] dist = new int[V];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[S] = 0;
+    pq.add(new int[]{0, S});
+    while (!pq.isEmpty()) {
+        int[] curr = pq.poll();
+        int d = curr[0], u = curr[1];
+        if (d > dist[u]) continue;
+        for (int[] edge : adj.get(u)) {
+            if (dist[u] + edge[1] < dist[edge[0]]) {
+                dist[edge[0]] = dist[u] + edge[1];
+                pq.add(new int[]{dist[edge[0]], edge[0]});
+            }
+        }
+    }
+    return dist;
+}`,
+      "JavaScript": `function dijkstra(V, adj, S) {
+    const dist = new Array(V).fill(Infinity);
+    dist[S] = 0;
+    const pq = new MinPriorityQueue({ priority: x => x[0] });
+    pq.enqueue([0, S]);
+    while (!pq.isEmpty()) {
+        const [d, u] = pq.dequeue().element;
+        if (d > dist[u]) continue;
+        for (const [v, weight] of adj[u]) {
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                pq.enqueue([dist[v], v]);
+            }
+        }
+    }
+    return dist;
+}`
+    }
   },
   {
     id: "STACK_QUEUE",
@@ -522,37 +849,35 @@ export const dsaCategories = [
             </DocSection>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Stack (LIFO)</h4>
-                    <CodeSnippet code={`stack<int> s;
-s.push(10); // Add to top
-s.push(20);
-int top = s.top(); // 20
-s.pop(); // Removes 20`} />
-                </div>
-                
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Queue (FIFO)</h4>
-                    <CodeSnippet code={`queue<int> q;
-q.push(10); // Add to rear
-q.push(20);
-int front = q.front(); // 10
-q.pop(); // Removes 10`} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `// Stack
+stack<int> s;
+s.push(10); int t = s.top(); s.pop();
+
+// Queue
+queue<int> q;
+q.push(10); int f = q.front(); q.pop();`,
+      "Python": `// Stack (list)
+s = []; s.append(10); t = s[-1]; s.pop()
+
+// Queue (deque)
+from collections import deque
+q = deque(); q.append(10); f = q[0]; q.popleft()`,
+      "Java": `// Stack
+Stack<Integer> s = new Stack<>();
+s.push(10); int t = s.peek(); s.pop();
+
+// Queue
+Queue<Integer> q = new LinkedList<>();
+q.add(10); int f = q.peek(); q.remove();`,
+      "JavaScript": `// Stack (array)
+let s = []; s.push(10); let t = s[s.length-1]; s.pop();
+
+// Queue (array)
+let q = []; q.push(10); let f = q.shift();`
+    }
   },
   {
     id: "QUICK_SORT",
@@ -596,8 +921,8 @@ q.pop(); // Removes 10`} />
                     </ul>
                 </div>
                 
-                <CodeSnippet code={`int partition(vector<int>& arr, int low, int high) {\n    int pivot = arr[high]; // Lomuto Pivot\n    int i = (low - 1);     // Index of smaller element\n    \n    for (int j = low; j <= high - 1; j++) {\n        // If current element is smaller than the pivot\n        if (arr[j] < pivot) {\n            i++; \n            swap(arr[i], arr[j]);\n        }\n    }\n    swap(arr[i + 1], arr[high]);\n    return (i + 1); // Return partition index\n}\n\nvoid quickSort(vector<int>& arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        \n        // Recursively sort elements before and after partition\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }
-}`} />
+                <CodeSnippet code={{ "C++": `int partition(vector<int>& arr, int low, int high) {\n    int pivot = arr[high]; // Lomuto Pivot\n    int i = (low - 1);     // Index of smaller element\n    \n    for (int j = low; j <= high - 1; j++) {\n        // If current element is smaller than the pivot\n        if (arr[j] < pivot) {\n            i++; \n            swap(arr[i], arr[j]);\n        }\n    }\n    swap(arr[i + 1], arr[high]);\n    return (i + 1); // Return partition index\n}\n\nvoid quickSort(vector<int>& arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        \n        // Recursively sort elements before and after partition\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }
+}` }} />
             </div>
         </div>
       </div>
@@ -640,14 +965,14 @@ q.pop(); // Removes 10`} />
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         The `merge` function uses a temporary array to interleave elements from two sorted halves (`left` and `right`) into a single sorted sequence.
                     </p>
-                    <CodeSnippet code={`void merge(vector<int>& arr, int l, int m, int r) {\n    int n1 = m - l + 1, n2 = r - m;\n    vector<int> L(n1), R(n2);\n    for(int i=0; i<n1; i++) L[i] = arr[l + i];\n    for(int j=0; j<n2; j++) R[j] = arr[m + 1 + j];\n\n    int i = 0, j = 0, k = l;\n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) arr[k++] = L[i++];\n        else arr[k++] = R[j++];\n    }\n    while (i < n1) arr[k++] = L[i++];\n    while (j < n2) arr[k++] = R[j++];
-}`} />
+                    <CodeSnippet code={{ "C++": `void merge(vector<int>& arr, int l, int m, int r) {\n    int n1 = m - l + 1, n2 = r - m;\n    vector<int> L(n1), R(n2);\n    for(int i=0; i<n1; i++) L[i] = arr[l + i];\n    for(int j=0; j<n2; j++) R[j] = arr[m + 1 + j];\n\n    int i = 0, j = 0, k = l;\n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) arr[k++] = L[i++];\n        else arr[k++] = R[j++];\n    }\n    while (i < n1) arr[k++] = L[i++];\n    while (j < n2) arr[k++] = R[j++];
+}` }} />
                 </div>
                 
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Recursive Driver</h4>
-                    <CodeSnippet code={`void mergeSort(vector<int>& arr, int l, int r) {\n    if (l >= r) return;\n    int m = l + (r - l) / 2;\n    mergeSort(arr, l, m);\n    mergeSort(arr, m + 1, r);\n    merge(arr, l, m, r);
-}`} />
+                    <CodeSnippet code={{ "C++": `void mergeSort(vector<int>& arr, int l, int r) {\n    if (l >= r) return;\n    int m = l + (r - l) / 2;\n    mergeSort(arr, l, m);\n    mergeSort(arr, m + 1, r);\n    merge(arr, l, m, r);
+}` }} />
                 </div>
             </div>
         </div>
@@ -691,22 +1016,22 @@ q.pop(); // Removes 10`} />
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Navigate the tree by comparing `val` with `root-&gt;val`. Go left if smaller, right if larger.
                     </p>
-                    <CodeSnippet code={`TreeNode* search(TreeNode* root, int val) {\n    if (root == nullptr || root->val == val) return root;\n    \n    if (val < root->val) 
+                    <CodeSnippet code={{ "C++": `TreeNode* search(TreeNode* root, int val) {\n    if (root == nullptr || root->val == val) return root;\n    \n    if (val < root->val) 
         return search(root->left, val);
         
     return search(root->right, val);
-}`} />
+}` }} />
                 </div>
                 
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Insert Logic</h4>
-                    <CodeSnippet code={`TreeNode* insert(TreeNode* root, int val) {\n    if (!root) return new TreeNode(val);\n    \n    if (val < root->val)
+                    <CodeSnippet code={{ "C++": `TreeNode* insert(TreeNode* root, int val) {\n    if (!root) return new TreeNode(val);\n    \n    if (val < root->val)
         root->left = insert(root->left, val);
     else if (val > root->val)
         root->right = insert(root->right, val);
         
     return root;
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -747,17 +1072,17 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-lavender)]" /> Trie Node</h4>
-                    <CodeSnippet code={`struct TrieNode {\n    TrieNode* children[26];\n    bool isEndOfWord;\n    \n    TrieNode() {\n        isEndOfWord = false;\n        for (int i = 0; i < 26; i++) 
+                    <CodeSnippet code={{ "C++": `struct TrieNode {\n    TrieNode* children[26];\n    bool isEndOfWord;\n    \n    TrieNode() {\n        isEndOfWord = false;\n        for (int i = 0; i < 26; i++) 
             children[i] = nullptr;
     }
-};`} />
+};` }} />
                 </div>
                 
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Insertion</h4>
-                    <CodeSnippet code={`void insert(string word) {\n    TrieNode* curr = root;\n    for (char c : word) {\n        int idx = c - 'a';\n        if (!curr->children[idx])
+                    <CodeSnippet code={{ "C++": `void insert(string word) {\n    TrieNode* curr = root;\n    for (char c : word) {\n        int idx = c - 'a';\n        if (!curr->children[idx])
             curr->children[idx] = new TrieNode();\n        curr = curr->children[idx];\n    }\n    curr->isEndOfWord = true;
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -801,16 +1126,16 @@ q.pop(); // Removes 10`} />
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         After inserting at the end, swap with parent if the heap property is violated. Repeat until root.
                     </p>
-                    <CodeSnippet code={`void heapifyUp(int i) {\n    while (i > 0) {\n        int p = (i - 1) / 2;\n        if (heap[i] < heap[p]) {\n            swap(heap[i], heap[p]);\n            i = p;\n        } else break;
+                    <CodeSnippet code={{ "C++": `void heapifyUp(int i) {\n    while (i > 0) {\n        int p = (i - 1) / 2;\n        if (heap[i] < heap[p]) {\n            swap(heap[i], heap[p]);\n            i = p;\n        } else break;
     }
-}`} />
+}` }} />
                 </div>
                 
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Heapify Down (Extract)</h4>
-                    <CodeSnippet code={`void heapifyDown(int i) {\n    int smallest = i;\n    int l = 2*i + 1, r = 2*i + 2;\n    \n    if (l < n && heap[l] < heap[smallest]) smallest = l;\n    if (r < n && heap[r] < heap[smallest]) smallest = r;\n    \n    if (smallest != i) {\n        swap(heap[i], heap[smallest]);\n        heapifyDown(smallest);
+                    <CodeSnippet code={{ "C++": `void heapifyDown(int i) {\n    int smallest = i;\n    int l = 2*i + 1, r = 2*i + 2;\n    \n    if (l < n && heap[l] < heap[smallest]) smallest = l;\n    if (r < n && heap[r] < heap[smallest]) smallest = r;\n    \n    if (smallest != i) {\n        swap(heap[i], heap[smallest]);\n        heapifyDown(smallest);
     }
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -851,15 +1176,15 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Build (Recursive)</h4>
-                    <CodeSnippet code={`void build(int node, int start, int end) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(2*node, start, mid);\n        build(2*node+1, mid+1, end);\n        tree[node] = tree[2*node] + tree[2*node+1];\n    }
-}`} />
+                    <CodeSnippet code={{ "C++": `void build(int node, int start, int end) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(2*node, start, mid);\n        build(2*node+1, mid+1, end);\n        tree[node] = tree[2*node] + tree[2*node+1];\n    }
+}` }} />
                 </div>
                 
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Range Query</h4>
-                    <CodeSnippet code={`int query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) return 0;\n    if (l <= start && end <= r) return tree[node];\n    \n    int mid = (start + end) / 2;\n    return query(2*node, start, mid, l, r) + 
+                    <CodeSnippet code={{ "C++": `int query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) return 0;\n    if (l <= start && end <= r) return tree[node];\n    \n    int mid = (start + end) / 2;\n    return query(2*node, start, mid, l, r) + 
            query(2*node+1, mid+1, end, l, r);
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -902,15 +1227,15 @@ q.pop(); // Removes 10`} />
                     <p className="text-xs text-muted-foreground leading-relaxed font-mono">
                         Compute the Longest Prefix Suffix (LPS) array to determine jump distances.
                     </p>
-                    <CodeSnippet code={`vector<int> computeLPS(string P) {\n    int m = P.length();\n    vector<int> lps(m, 0);\n    int len = 0, i = 1;\n    while (i < m) {\n        if (P[i] == P[len]) lps[i++] = ++len;\n        else if (len != 0) len = lps[len-1];\n        else lps[i++] = 0;\n    }\n    return lps;
-}`} />
+                    <CodeSnippet code={{ "C++": `vector<int> computeLPS(string P) {\n    int m = P.length();\n    vector<int> lps(m, 0);\n    int len = 0, i = 1;\n    while (i < m) {\n        if (P[i] == P[len]) lps[i++] = ++len;\n        else if (len != 0) len = lps[len-1];\n        else lps[i++] = 0;\n    }\n    return lps;
+}` }} />
                 </div>
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Matching Logic</h4>
-                    <CodeSnippet code={`void KMPSearch(string pat, string txt) {\n    int M = pat.length();\n    int N = txt.length();\n    vector<int> lps = computeLPS(pat);\n    int i = 0, j = 0;\n    while (i < N) {\n        if (pat[j] == txt[i]) { j++; i++; }\n        if (j == M) {\n            cout << "Found at " << i - j;
+                    <CodeSnippet code={{ "C++": `void KMPSearch(string pat, string txt) {\n    int M = pat.length();\n    int N = txt.length();\n    vector<int> lps = computeLPS(pat);\n    int i = 0, j = 0;\n    while (i < N) {\n        if (pat[j] == txt[i]) { j++; i++; }\n        if (j == M) {\n            cout << "Found at " << i - j;
             j = lps[j - 1];\n        } else if (i < N && pat[j] != txt[i]) {\n            if (j != 0) j = lps[j - 1];\n            else i++;\n        }
     }
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -949,14 +1274,14 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Find with Compression</h4>
-                    <CodeSnippet code={`int find(int i) {\n    if (parent[i] == i)
+                    <CodeSnippet code={{ "C++": `int find(int i) {\n    if (parent[i] == i)
         return i;
     return parent[i] = find(parent[i]);
-}`} />
+}` }} />
                 </div>
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Union by Rank</h4>
-                    <CodeSnippet code={`void unite(int i, int j) {\n    int root_i = find(i);
+                    <CodeSnippet code={{ "C++": `void unite(int i, int j) {\n    int root_i = find(i);
     int root_j = find(j);
     if (root_i != root_j) {
         if (rank[root_i] < rank[root_j])
@@ -965,7 +1290,7 @@ q.pop(); // Removes 10`} />
         if (rank[root_i] == rank[root_j])
             rank[root_i]++;
     }
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -1005,10 +1330,10 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Recursive Memoization</h4>
-                    <CodeSnippet code={`int fib(int n, vector<int>& memo) {\n    if (n <= 1) return n;
+                    <CodeSnippet code={{ "C++": `int fib(int n, vector<int>& memo) {\n    if (n <= 1) return n;
     if (memo[n] != -1) return memo[n];
     return memo[n] = fib(n-1, memo) + fib(n-2, memo);
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -1021,96 +1346,39 @@ q.pop(); // Removes 10`} />
     icon: <ShoppingBag />,
     themeColor: "var(--viz-deep-purple)",
     themeRGB: "var(--viz-deep-purple-rgb)",
-    description: "Optimal binary decision manifold.",
+    description: "Maximizing value under a weight limit.",
     component: (speed: number) => <KnapsackVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
-        {/* New Structured Explanation Section */}
-        <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-deep-purple)">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="space-y-4">
-                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
-                            Operational Logic
-                        </h5>
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                            The algorithm utilizes <strong>Optimal Substructure</strong>. It solves the problem by breaking it into smaller sub-capacities and sub-sets of items, building a global solution from local optima.
-                        </p>
-                        <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
-                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">01.</span> Sort items by index</li>
-                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">02.</span> Binary decision: Take vs Leave</li>
-                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">03.</span> Memorize sub-problem results</li>
-                        </ul>
-                    </div>
-                    
-                    <div className="space-y-4">
-                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
-                            Algorithm Output
-                        </h5>
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                            The output is a <strong>Value Optimization Matrix</strong>. The bottom-right cell contains the maximum possible value that can be squeezed into the knapsack under the weight constraint.
-                        </p>
-                        <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[var(--viz-cyan)] text-center">
-                            Table[N][W] = Max Value
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
-                            Your Expectations
-                        </h5>
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                            Watch the &quot;Dependency Arrows&quot;. When calculating a cell, the visualizer will highlight two previous states: the cell directly above (Exclude) and the cell shifted left by the item&apos;s weight (Include).
-                        </p>
-                    </div>
-                </div>
-            </DocSection>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Combinatorial Optimization" icon={Database}>
-            <p>The 0/1 Knapsack problem asks to maximize the total value of items in a knapsack of capacity $W$. Each item can either be taken (1) or left (0).</p>
-            <p>This is a classic <strong>NP-Hard</strong> problem that is solved in pseudo-polynomial time using Dynamic Programming.</p>
+          <DocSection title="How it Works" icon={Activity} color="var(--viz-deep-purple)">
+            <p>The 0/1 Knapsack problem is about choosing a subset of items to maximize total value without exceeding a weight limit. &quot;0/1&quot; means you must either take an item fully or leave it.</p>
+            <p>It uses <strong>Dynamic Programming</strong> to build a table where each cell represents the maximum value for a given number of items and weight capacity.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N * W)" space="O(N * W)" />
-            <DocSection title="Decision Boundary" icon={Binary} color="var(--viz-amber)">
-              <p>At each item $i$ and capacity $w$, we have a binary choice: </p>
-              <ul className="text-xs space-y-2 text-muted-foreground font-mono">
-                  <li><strong className="text-[var(--viz-rose)]">Exclude:</strong> Inherit value from $dp[i-1][w]$</li>
-                  <li><strong className="text-[var(--viz-deep-purple)]">Include:</strong> Add $val[i]$ to $dp[i-1][w-wt[i]]$</li>
-              </ul>
+            <DocSection title="The Decision" icon={Check} color="var(--viz-amber)">
+              <p>For each item, we decide: <strong>Is it better to include it or exclude it?</strong> If we include it, we add its value and reduce the remaining capacity. We pick the maximum of these two choices.</p>
             </DocSection>
           </div>
         </div>
-        
+
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Tutorial & Recurrence</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8">
                 <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> The Recurrence Relation</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono bg-muted/30 p-4 rounded-xl border border-border">
-                        if wt[i] {"<="} w:
-                        <br/>&nbsp;&nbsp;dp[i][w] = max(val[i] + dp[i-1][w-wt[i]], dp[i-1][w])
-                        <br/>else:
-                        <br/>&nbsp;&nbsp;dp[i][w] = dp[i-1][w]
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                        The state $dp[i][w]$ represents the maximum value attainable using a subset of the first $i$ items with a total weight not exceeding $w$.
-                    </p>
-                </div>
-                
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> 3. Implementation (C++)</h4>
-                    <CodeSnippet code={`int knapSack(int W, vector<int>& wt, vector<int>& val, int n) {\n    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));\n\n    for (int i = 1; i <= n; i++) {\n        for (int w = 0; w <= W; w++) {\n            if (wt[i - 1] <= w)
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Implementation</h4>
+                    <CodeSnippet code={{
+                      "C++": `int knapSack(int W, vector<int>& wt, vector<int>& val, int n) {
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            if (wt[i - 1] <= w)
                 dp[i][w] = max(val[i - 1] + dp[i - 1][w - wt[i - 1]], 
                                dp[i - 1][w]);
             else
@@ -1118,7 +1386,45 @@ q.pop(); // Removes 10`} />
         }
     }
     return dp[n][W];
-}`} />
+}`,
+                      "Python": `def knapsack(W, wt, val, n):
+    dp = [[0 for _ in range(W + 1)] for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        for w in range(W + 1):
+            if wt[i-1] <= w:
+                dp[i][w] = max(val[i-1] + dp[i-1][w-wt[i-1]], 
+                               dp[i-1][w])
+            else:
+                dp[i][w] = dp[i-1][w]
+    return dp[n][W]`,
+                      "Java": `public int knapSack(int W, int[] wt, int[] val, int n) {
+    int[][] dp = new int[n + 1][W + 1];
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            if (wt[i - 1] <= w)
+                dp[i][w] = Math.max(val[i - 1] + dp[i - 1][w - wt[i - 1]], 
+                                    dp[i - 1][w]);
+            else
+                dp[i][w] = dp[i - 1][w];
+        }
+    }
+    return dp[n][W];
+}`,
+                      "JavaScript": `function knapSack(W, wt, val, n) {
+    let dp = Array(n + 1).fill().map(() => Array(W + 1).fill(0));
+    for (let i = 1; i <= n; i++) {
+        for (let w = 0; w <= W; w++) {
+            if (wt[i - 1] <= w) {
+                dp[i][w] = Math.max(val[i - 1] + dp[i - 1][w - wt[i - 1]], 
+                                    dp[i - 1][w]);
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+    return dp[n][W];
+}`
+                    }} />
                 </div>
             </div>
         </div>
@@ -1221,12 +1527,12 @@ q.pop(); // Removes 10`} />
                 
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> 3. Standard C++ Implementation</h4>
-                    <CodeSnippet code={`void floydWarshall(int V, vector<vector<int>>& graph) {\n    vector<vector<int>> dist = graph;\n\n    for (int k = 0; k < V; k++) {\n        for (int i = 0; i < V; i++) {\n            for (int j = 0; j < V; j++) {\n                // If i->k and k->j paths exist\n                if (dist[i][k] != INF && dist[k][j] != INF) {\n                    if (dist[i][k] + dist[k][j] < dist[i][j]) {\n                        dist[i][j] = dist[i][k] + dist[k][j];\n                    }\n                }
+                    <CodeSnippet code={{ "C++": `void floydWarshall(int V, vector<vector<int>>& graph) {\n    vector<vector<int>> dist = graph;\n\n    for (int k = 0; k < V; k++) {\n        for (int i = 0; i < V; i++) {\n            for (int j = 0; j < V; j++) {\n                // If i->k and k->j paths exist\n                if (dist[i][k] != INF && dist[k][j] != INF) {\n                    if (dist[i][k] + dist[k][j] < dist[i][j]) {\n                        dist[i][j] = dist[i][k] + dist[k][j];\n                    }\n                }
             }
         }
     }
     // Result: dist[i][j] contains shortest path i to j
-}`} />
+}` }} />
                 </div>
             </div>
 
@@ -1272,7 +1578,7 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Dynamic Window</h4>
-                    <CodeSnippet code={`int maxSubArrayLen(int target, vector<int>& nums) {\n    int left = 0, curr = 0, ans = 0;
+                    <CodeSnippet code={{ "C++": `int maxSubArrayLen(int target, vector<int>& nums) {\n    int left = 0, curr = 0, ans = 0;
     for (int right = 0; right < nums.size(); right++) {
         curr += nums[right];
         while (curr >= target) {
@@ -1281,7 +1587,7 @@ q.pop(); // Removes 10`} />
         }
     }
     return ans;
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -1321,7 +1627,7 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Kahn&apos;s Algorithm (BFS)</h4>
-                    <CodeSnippet code={`vector<int> kahn(int V, vector<vector<int>>& adj) {\n    vector<int> indegree(V, 0);
+                    <CodeSnippet code={{ "C++": `vector<int> kahn(int V, vector<vector<int>>& adj) {\n    vector<int> indegree(V, 0);
     for (int u = 0; u < V; u++)
         for (int v : adj[u]) indegree[v]++;
         
@@ -1337,7 +1643,7 @@ q.pop(); // Removes 10`} />
             if (--indegree[v] == 0) q.push(v);
     }
     return result;
-}`} />
+}` }} />
                 </div>
             </div>
         </div>
@@ -1424,14 +1730,14 @@ q.pop(); // Removes 10`} />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         This function checks the three primary attack vectors: the row to the left, and both upper/lower left diagonals.
                     </p>
-                    <CodeSnippet code={`bool isSafe(int row, int col, vector<string>& board, int n) {\n    // Row check\n    for (int i = 0; i < col; i++)\n        if (board[row][i] == 'Q') return false;\n\n    // Upper diagonal\n    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--)\n        if (board[i][j] == 'Q') return false;\n\n    // Lower diagonal\n    for (int i = row, j = col; i < n && j >= 0; i++, j++)\n        if (board[i][j] == 'Q') return false;\n\n    return true;\n}`} />
+                    <CodeSnippet code={{ "C++": `bool isSafe(int row, int col, vector<string>& board, int n) {\n    // Row check\n    for (int i = 0; i < col; i++)\n        if (board[row][i] == 'Q') return false;\n\n    // Upper diagonal\n    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--)\n        if (board[i][j] == 'Q') return false;\n\n    // Lower diagonal\n    for (int i = row, j = col; i < n && j >= 0; i++, j++)\n        if (board[i][j] == 'Q') return false;\n\n    return true;\n}` }} />
                 </div>
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Core Recursive Solver</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         The solver iterates through every row in the current column, attempting a placement and recursing.
                     </p>
-                    <CodeSnippet code={`void solve(int col, vector<string>& board, vector<vector<string>>& ans, int n) {\n    if (col == n) {\n        ans.push_back(board);\n        return;\n    }\n    for (int row = 0; row < n; row++) {\n        if (isSafe(row, col, board, n)) {\n            board[row][col] = 'Q';\n            solve(col + 1, board, ans, n);\n            board[row][col] = '.'; // Backtrack\n        }\n    }\n}`} />
+                    <CodeSnippet code={{ "C++": `void solve(int col, vector<string>& board, vector<vector<string>>& ans, int n) {\n    if (col == n) {\n        ans.push_back(board);\n        return;\n    }\n    for (int row = 0; row < n; row++) {\n        if (isSafe(row, col, board, n)) {\n            board[row][col] = 'Q';\n            solve(col + 1, board, ans, n);\n            board[row][col] = '.'; // Backtrack\n        }\n    }\n}` }} />
                 </div>
             </div>
         </div>
@@ -1516,15 +1822,15 @@ q.pop(); // Removes 10`} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Pre-Order</h4>
-                    <CodeSnippet code={`void preOrder(Node* root) {\n    if (!root) return;\n    cout << root->val << " ";\n    preOrder(root->left);\n    preOrder(root->right);\n}`} />
+                    <CodeSnippet code={{ "C++": `void preOrder(Node* root) {\n    if (!root) return;\n    cout << root->val << " ";\n    preOrder(root->left);\n    preOrder(root->right);\n}` }} />
                 </div>
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> In-Order</h4>
-                    <CodeSnippet code={`void inOrder(Node* root) {\n    if (!root) return;\n    inOrder(root->left);\n    cout << root->val << " ";\n    inOrder(root->right);\n}`} />
+                    <CodeSnippet code={{ "C++": `void inOrder(Node* root) {\n    if (!root) return;\n    inOrder(root->left);\n    cout << root->val << " ";\n    inOrder(root->right);\n}` }} />
                 </div>
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Post-Order</h4>
-                    <CodeSnippet code={`void postOrder(Node* root) {\n    if (!root) return;\n    postOrder(root->left);\n    postOrder(root->right);\n    cout << root->val << " ";\n}`} />
+                    <CodeSnippet code={{ "C++": `void postOrder(Node* root) {\n    if (!root) return;\n    postOrder(root->left);\n    postOrder(root->right);\n    cout << root->val << " ";\n}` }} />
                 </div>
             </div>
         </div>
@@ -1614,27 +1920,1305 @@ q.pop(); // Removes 10`} />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         Iterate through the array, maintaining `curr` (local potential) and `best` (global optimum). If the potential collapses below zero, we restart from the next manifold cell.
                     </p>
-                    <CodeSnippet code={`long long maxSubarraySum(int arr[], int n) {\n    long long best = -1e18, curr = 0;\n\n    for (int i = 0; i < n; i++) {\n        curr += arr[i];\n\n        if (curr > best) \n            best = curr;\n\n        if (curr < 0) \n            curr = 0;\n    }\n    return best;\n}`} />
+                    <CodeSnippet code={{ "C++": `long long maxSubarraySum(int arr[], int n) {\n    long long best = -1e18, curr = 0;\n\n    for (int i = 0; i < n; i++) {\n        curr += arr[i];\n\n        if (curr > best) \n            best = curr;\n\n        if (curr < 0) \n            curr = 0;\n    }\n    return best;\n}` }} />
                 </div>
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> DP Variation</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         This variation handles cases where all elements are negative by explicitly choosing between the current element and the sum of the current element plus the previous local optimum.
                     </p>
-                    <CodeSnippet code={`int maxSubarraySum(vector<int>& nums) {\n    int best = nums[0];\n    int curr = nums[0];\n\n    for (int i = 1; i < nums.size(); i++) {\n        curr = max(nums[i], curr + nums[i]);\n        best = max(best, curr);\n    }\n    return best;\n}`} />
+                    <CodeSnippet code={{ "C++": `int maxSubarraySum(vector<int>& nums) {\n    int best = nums[0];\n    int curr = nums[0];\n\n    for (int i = 1; i < nums.size(); i++) {\n        curr = max(nums[i], curr + nums[i]);\n        best = max(best, curr);\n    }\n    return best;\n}` }} />
                 </div>
             </div>
         </div>
       </div>
     )
   },
+  {
+    id: "LCS",
+    title: "Longest Common Subsequence",
+    icon: <Type />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "Multi-sequence alignment manifold.",
+    component: (speed: number) => <LCSVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Operational Logic
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            LCS finds the longest sequence that appears in both strings in the same relative order. It uses a 2D DP table where $dp[i][j]$ is the LCS of $S1[0..i-1]$ and $S2[0..j-1]$.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
+                            Match Strategy
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            When characters match, we extend the LCS found excluding both characters: $1 + dp[i-1][j-1]$.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-purple)]" />
+                            Mismatch Strategy
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            On mismatch, we take the maximum from excluding either character: $max(dp[i-1][j], dp[i][j-1])$.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Optimal Substructure" icon={Database}>
+            <p>LCS is fundamental for file comparison (diff), bioinformatics (DNA alignment), and version control systems.</p>
+            <p>It demonstrates how a complex global alignment can be built from local character-by-character decisions.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(M * N)" space="O(M * N)" />
+            <DocSection title="State Transition" icon={GitBranch} color="var(--viz-amber)">
+              <p className="font-mono text-xs">
+                if S1[i-1] == S2[j-1]:<br/>
+                &nbsp;&nbsp;dp[i][j] = 1 + dp[i-1][j-1]<br/>
+                else:<br/>
+                &nbsp;&nbsp;dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CodeSnippet code={{ "C++": `int lcs(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));\n\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1])\n                dp[i][j] = 1 + dp[i-1][j-1];\n            else\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}` }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "LIS",
+    title: "Longest Increasing Subsequence",
+    icon: <TrendingUp />,
+    themeColor: "var(--viz-deep-purple)",
+    themeRGB: "var(--viz-deep-purple-rgb)",
+    description: "Monotonic sequence optimization.",
+    component: (speed: number) => <LISVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-deep-purple)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
+                            Operational Logic
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            LIS finds the longest subsequence where elements are in strictly increasing order. For each element $i$, we look back at all previous elements $j &lt; i$ to see which one can extend the subsequence the most.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            State Definition
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            $dp[i]$ is the length of the LIS ending exactly at index $i$. Initially, $dp[i] = 1$ for all $i$.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Transition Lemma
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            $dp[i] = 1 + max(dp[j])$ for all $j &lt; i$ where $A[j] &lt; A[i]$. If no such $j$ exists, $dp[i] = 1$.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Sequential Dependency" icon={Database}>
+            <p>LIS is a classic DP problem that illustrates how to build a global optimum by referencing multiple previous states, unlike Kadane which only looks at the immediate predecessor.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(N²)" space="O(N)" />
+            <DocSection title="Optimal Solution" icon={Zap} color="var(--viz-rose)">
+              <p>While the standard DP is $O(N^2)$, LIS can be solved in $O(N log N)$ using a combination of Binary Search and a dynamic array (Patient Sorting).</p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CodeSnippet code={{ "C++": `int lis(vector<int>& nums) {\n    int n = nums.size();\n    vector<int> dp(n, 1);\n    int maxLIS = 1;\n\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            if (nums[j] < nums[i])\n                dp[i] = max(dp[i], dp[j] + 1);\n        }\n        maxLIS = max(maxLIS, dp[i]);\n    }\n    return maxLIS;\n}` }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "EDIT_DISTANCE",
+    title: "Edit Distance",
+    icon: <Type />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "Levenshtein transformation manifold.",
+    component: (speed: number) => <EditDistanceVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Operational Logic
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Edit Distance measures how many operations (Insert, Delete, Replace) are needed to transform one string into another. It builds a global solution from 3 possible local edits.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
+                            The 3 Edits
+                        </h5>
+                        <ul className="text-[10px] space-y-1 font-mono text-muted-foreground list-none">
+                            <li className="flex gap-2"><span className="text-[var(--viz-cyan)]">Insert:</span> Inherit from Left + 1</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-rose)]">Delete:</span> Inherit from Top + 1</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-amber)]">Replace:</span> Inherit from Diagonal + 1</li>
+                        </ul>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Match Invariant
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            If characters match, no cost is added. We inherit the diagonal value directly: $dp[i][j] = dp[i-1][j-1]$.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Similarity Metric" icon={Database}>
+            <p>Levenshtein distance is the industry standard for fuzzy search, spell checking, and measuring DNA similarity.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(M * N)" space="O(M * N)" />
+            <DocSection title="State Transition" icon={GitBranch} color="var(--viz-amber)">
+              <p className="font-mono text-[10px]">
+                if S1[i-1] == S2[j-1]:<br/>
+                &nbsp;&nbsp;dp[i][j] = dp[i-1][j-1]<br/>
+                else:<br/>
+                &nbsp;&nbsp;dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CodeSnippet code={{ "C++": `int minDistance(string word1, string word2) {\n    int m = word1.size(), n = word2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1));\n    for (int i = 0; i <= m; i++) dp[i][0] = i;\n    for (int j = 0; j <= n; j++) dp[0][j] = j;\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (word1[i-1] == word2[j-1])\n                dp[i][j] = dp[i-1][j-1];\n            else\n                dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});\n        }\n    }\n    return dp[m][n];\n}` }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "SCC",
+    title: "Kosaraju's SCC",
+    icon: <Share2 />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "Strongly Connected Components.",
+    component: (speed: number) => <SCCVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-rose)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-rose)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" />
+                            Pass 1: Finishing Time
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Run DFS on the original graph. Push nodes to a stack based on their finishing times. This captures the topological order of the condensation graph.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Pass 2: Transpose
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Reverse all edges in the graph. This doesn&apos;t change the SCCs but prevents DFS from &quot;leaking&quot; into other components.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Pass 3: Component DFS
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Pop from stack and run DFS on reversed graph. Each DFS traversal identifies one Strongly Connected Component.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Connectivity Theory" icon={Network}>
+            <p>A Strongly Connected Component is a maximal sub-graph where every node is reachable from every other node in that sub-graph.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(V + E)" space="O(V)" />
+            <DocSection title="Why Two Passes?" icon={Zap} color="var(--viz-amber)">
+              <p>The first pass sorts nodes by their &quot;sink&quot; potential. The second pass (on the reverse graph) ensures that DFS can only stay within an SCC because the escape edges to other components are now pointing inwards.</p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CodeSnippet code={{ "C++": `void dfs1(int u, vector<int> adj[], vector<bool>& vis, stack<int>& st) {\n    vis[u] = true;\n    for(int v : adj[u]) if(!vis[v]) dfs1(v, adj, vis, st);\n    st.push(u);\n}\n\nvoid dfs2(int u, vector<int> rev[], vector<bool>& vis) {\n    vis[u] = true;\n    for(int v : rev[u]) if(!vis[v]) dfs2(v, rev, vis);\n}\n\nvoid kosaraju(int V, vector<int> adj[]) {\n    stack<int> st; vector<bool> vis(V, false);\n    for(int i=0; i<V; i++) if(!vis[i]) dfs1(i, adj, vis, st);\n    \n    vector<int> rev[V];\n    for(int u=0; u<V; u++) for(int v : adj[u]) rev[v].push_back(u);\n    \n    fill(vis.begin(), vis.end(), false);\n    while(!st.empty()) {\n        int u = st.top(); st.pop();\n        if(!vis[u]) { dfs2(u, rev, vis); /* Found SCC */ }\n    }\n}` }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "LCA",
+    title: "Lowest Common Ancestor",
+    icon: <GitBranch />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "Hierarchical path convergence.",
+    component: (speed: number) => <LCAVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Hierarchical Search
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            LCA identifies the deepest node that is an ancestor to both targets. In our visualizer, we trace paths from root to targets and find their last shared junction.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
+                            Path Matching
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            By comparing root-to-node paths, the LCA is the point where the paths diverge. 
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Binary Lifting
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            While this visualizer uses path tracing, production CP uses <strong>Binary Lifting</strong> for $O(log N)$ queries after $O(N log N)$ preprocessing.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Tree Distance Metric" icon={Database}>
+            <p>LCA is vital for calculating the distance between two nodes: $Dist(u, v) = Depth(u) + Depth(v) - 2 \cdot Depth(LCA(u, v))$.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(N) or O(log N)" space="O(N)" />
+            <DocSection title="State Transition" icon={GitBranch} color="var(--viz-amber)">
+              <p className="font-mono text-[10px]">
+                Path(u) = [root, ..., LCA, ..., u]<br/>
+                Path(v) = [root, ..., LCA, ..., v]<br/>
+                LCA = Last index where Path(u)[i] == Path(v)[i]
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 gap-8">
+                <CodeSnippet code={{
+                  "C++": `Node* findLCA(Node* root, int n1, int n2) {
+    if (!root) return nullptr;
+    if (root->data == n1 || root->data == n2) return root;
+
+    Node* left = findLCA(root->left, n1, n2);
+    Node* right = findLCA(root->right, n1, n2);
+
+    if (left && right) return root;
+    return (left != nullptr) ? left : right;
+}`,
+                  "Python": `def findLCA(root, n1, n2):
+    if not root: return None
+    if root.data == n1 or root.data == n2: return root
+
+    left = findLCA(root.left, n1, n2)
+    right = findLCA(root.right, n1, n2)
+
+    if left and right: return root
+    return left if left else right`,
+                  "Java": `public Node findLCA(Node root, int n1, int n2) {
+    if (root == null) return null;
+    if (root.data == n1 || root.data == n2) return root;
+
+    Node left = findLCA(root.left, n1, n2);
+    Node right = findLCA(root.right, n1, n2);
+
+    if (left != null && right != null) return root;
+    return (left != null) ? left : right;
+}`,
+                  "JavaScript": `function findLCA(root, n1, n2) {
+    if (!root) return null;
+    if (root.data === n1 || root.data === n2) return root;
+
+    const left = findLCA(root.left, n1, n2);
+    const right = findLCA(root.right, n1, n2);
+
+    if (left && right) return root;
+    return left ? left : right;
+}`
+                }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "FENWICK",
+    title: "Fenwick Tree (BIT)",
+    icon: <LayoutGrid />,
+    themeColor: "var(--viz-amber)",
+    themeRGB: "var(--viz-amber-rgb)",
+    description: "Efficient range sum management.",
+    component: (speed: number) => <FenwickTreeVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-amber)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Binary Structure
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Fenwick trees use the binary representation of indices to store partial sums. Each node $i$ stores the sum of a range whose length is the Least Significant Bit (LSB) of $i$.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            LSB Trick
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            The operation <code>i & -i</code> extracts the lowest set bit, which dictates the parent/child navigation in the tree structure.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-rose)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" />
+                            Prefix Power
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Querying the prefix sum up to $i$ takes $O(log N)$ by jumping back using the LSB. Updates work similarly by jumping forward.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Memory Efficiency" icon={Database}>
+            <p>Unlike Segment Trees which require $4N$ space, Fenwick Trees use exactly $N+1$ space. They are the standard for 1D range queries in CP.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(log N)" space="O(N)" />
+            <DocSection title="Update Transition" icon={Zap} color="var(--viz-amber)">
+              <p className="font-mono text-[10px]">
+                void update(int i, int val):<br/>
+                &nbsp;&nbsp;for (; i {"<="} n; i += i & -i)<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;bit[i] += val;
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CodeSnippet code={{ "C++": `void update(int i, int delta) {\n    for (; i <= n; i += i & -i)\n        bit[i] += delta;\n}\n\nint query(int i) {\n    int sum = 0;\n    for (; i > 0; i -= i & -i)\n        sum += bit[i];\n    return sum;\n}` }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "TARJAN",
+    title: "Tarjan's (Bridges/AP)",
+    icon: <AlertTriangle />,
+    themeColor: "var(--viz-rose)",
+    themeRGB: "var(--viz-rose-rgb)",
+    description: "Graph connectivity protocol.",
+    component: (speed: number) => <TarjanVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-rose)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-rose)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" />
+                            Discovery Time
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            We track the order in which nodes are visited (<code>tin</code>). This creates a temporal baseline for the graph traversal.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Low-Link Value
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            <code>low[u]</code> is the smallest <code>tin</code> reachable from <code>u</code> in the DFS tree using back-edges.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Connectivity Check
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            If a neighbor $v$ cannot reach $u$ or any ancestor ($low[v] {" > "} tin[u]$), then the edge $u-v$ is a <strong>Bridge</strong>.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Network Criticality" icon={Network}>
+            <p>Tarjan&apos;s algorithm identifies Articulation Points and Bridges in a single DFS pass. These are critical components whose failure would partition the network.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(V + E)" space="O(V)" />
+            <DocSection title="AP Condition" icon={Zap} color="var(--viz-amber)">
+              <p className="font-mono text-[10px]">
+                {"// For non-root node u:"}<br/>
+                if (any child v has low[v] {" >= "} tin[u])<br/>
+                &nbsp;&nbsp;u is an Articulation Point
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <div>
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] flex-1 bg-border" />
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />C++ Implementation</h3>
+                <div className="h-[1px] flex-1 bg-border" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CodeSnippet code={{ "C++": `void dfs(int u, int p = -1) {\n    vis[u] = true;\n    tin[u] = low[u] = timer++;\n    for (int v : adj[u]) {\n        if (v == p) continue;\n        if (vis[v]) low[u] = min(low[u], tin[v]);\n        else {\n            dfs(v, u);\n            low[u] = min(low[u], low[v]);\n            if (low[v] > tin[u]) bridges.push_back({u, v});\n        }\n    }\n}` }} />
+            </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: "BITMASK_DP",
+    title: "Bitmask DP",
+    icon: <Binary />,
+    themeColor: "var(--viz-purple)",
+    themeRGB: "var(--viz-purple-rgb)",
+    description: "Exponential state mapping.",
+    component: (speed: number) => <BitmaskDPVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="The State-Space Challenge" icon={Database}>
+            <p>Bitmask DP is used when we need to track a <strong>subset</strong> of items we&apos;ve already used or visited. Instead of an array, we use the bits of an integer as a compact &quot;checklist&quot;.</p>
+            <p>This allows us to solve problems that would otherwise require $O(N!)$ permutations in $O(2^N \cdot N^k)$ time, making it the standard for NP-Hard problems like TSP on small datasets.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(2^N * N²)" space="O(2^N * N)" />
+            <DocSection title="Bitwise Toolkit" icon={Zap} color="var(--viz-purple)">
+              <ul className="space-y-2 list-none text-[10px] font-mono">
+                <li><span className="text-[var(--viz-rose)]">Check:</span> <code>(mask {">>"} i) & 1</code></li>
+                <li><span className="text-[var(--viz-cyan)]">Add:</span> <code>mask | (1 {"<<"} i)</code></li>
+                <li><span className="text-[var(--viz-amber)]">Size:</span> <code>__builtin_popcount(mask)</code></li>
+              </ul>
+            </DocSection>
+          </div>
+        </div>
+
+        <DocSection title="Practice Problems" icon={Hash} color="var(--viz-purple)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <a href="https://cses.fi/problemset/task/1690" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Hamiltonian Flights</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-purple)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Count the number of ways to visit every city exactly once. Classic TSP variation.</p>
+            </a>
+            <a href="https://cses.fi/problemset/task/1653" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Elevator Ride</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-purple)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Pack people into minimum elevator trips. Tests your subset transition logic.</p>
+            </a>
+          </div>
+        </DocSection>
+      </div>
+    ),
+    codeImplementations: {
+      "C++ (TSP)": `int n, dist[20][20];
+    int dp[1 << 20][20];
+
+    int solve(int mask, int u) {
+    if (mask == (1 << n) - 1) return 0; // All visited
+    if (dp[mask][u] != -1) return dp[mask][u];
+
+    int res = 1e9;
+    for (int v = 0; v < n; v++) {
+        // If v is not visited (bit v is 0)
+        if (!((mask >> v) & 1)) {
+            res = min(res, dist[u][v] + solve(mask | (1 << v), v));
+        }
+    }
+    return dp[mask][u] = res;
+    }`,
+      "Python (TSP)": `def solve(mask, u):
+    if mask == (1 << n) - 1:
+        return 0
+    if (mask, u) in memo:
+        return memo[(mask, u)]
+
+    res = float('inf')
+    for v in range(n):
+        if not (mask & (1 << v)):
+            res = min(res, dist[u][v] + solve(mask | (1 << v), v))
+
+    memo[(mask, u)] = res
+    return res`,
+      "Java (TSP)": `int solve(int mask, int u) {
+    if (mask == (1 << n) - 1) return 0;
+    if (dp[mask][u] != -1) return dp[mask][u];
+
+    int res = (int)1e9;
+    for (int v = 0; v < n; v++) {
+        if (((mask >> v) & 1) == 0) {
+            res = Math.min(res, dist[u][v] + solve(mask | (1 << v), v));
+        }
+    }
+    return dp[mask][u] = res;
+    }`
+    }
+    },  {
+    id: "SIEVE",
+    title: "Sieve of Eratosthenes",
+    icon: <Binary />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "Prime number extraction.",
+    component: (speed: number) => <SieveVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Prime Discovery
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Starting from 2, if a number is still marked as prime, it is truly prime. We then eliminate all its multiples.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
+                            Iterative Elimination
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            For a prime $p$, we start marking from $p^2$, $p^2+p$, $p^2+2p$, and so on as composite.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Upper Bound
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            {"We only need to iterate $p$ up to $\\sqrt{N}$ to eliminate all composite numbers."}
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Number Theory" icon={Database}>
+            <p>{"Sieve is the most efficient way to precompute primes for multiple queries. It transforms $O(N\\sqrt{N})$ primality testing into $O(N log log N)$."}</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(N log log N)" space="O(N)" />
+            <DocSection title="Elimination Logic" icon={Zap} color="var(--viz-rose)">
+              <p className="font-mono text-[10px]">
+                if (isPrime[p]):<br/>
+                &nbsp;&nbsp;for (int i = p*p; i {" <= "} n; i += p)<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;isPrime[i] = false;
+              </p>
+            </DocSection>
+          </div>
+        </div>
+      </div>
+    ),
+    codeImplementations: {
+      "C++": `vector<bool> sieve(int n) {
+    vector<bool> isPrime(n + 1, true);
+    isPrime[0] = isPrime[1] = false;
+    for (int p = 2; p * p <= n; p++) {
+        if (isPrime[p]) {
+            for (int i = p * p; i <= n; i += p)
+                isPrime[i] = false;
+        }
+    }
+    return isPrime;
+}`,
+      "Python": `def sieve(n):
+    is_prime = [True] * (n + 1)
+    is_prime[0] = is_prime[1] = False
+    for p in range(2, int(n**0.5) + 1):
+        if is_prime[p]:
+            for i in range(p * p, n + 1, p):
+                is_prime[i] = False
+    return is_prime`,
+      "Java": `public boolean[] sieve(int n) {
+    boolean[] isPrime = new boolean[n + 1];
+    Arrays.fill(isPrime, true);
+    isPrime[0] = isPrime[1] = false;
+    for (int p = 2; p * p <= n; p++) {
+        if (isPrime[p]) {
+            for (int i = p * p; i <= n; i += p)
+                isPrime[i] = false;
+        }
+    }
+    return isPrime;
+}`,
+      "JavaScript": `function sieve(n) {
+    const isPrime = new Array(n + 1).fill(true);
+    isPrime[0] = isPrime[1] = false;
+    for (let p = 2; p * p <= n; p++) {
+        if (isPrime[p]) {
+            for (let i = p * p; i <= n; i += p)
+                isPrime[i] = false;
+        }
+    }
+    return isPrime;
+}`
+    }
+  },
+  {
+    id: "DIGIT_DP",
+    title: "Digit DP",
+    icon: <Hash />,
+    themeColor: "var(--viz-amber)",
+    themeRGB: "var(--viz-amber-rgb)",
+    description: "Range counting protocol.",
+    component: (speed: number) => <DigitDPVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-amber)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            Positional State
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            We process the number digit by digit from left to right. The state is usually <code>(index, tight_constraint, running_property)</code>.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Tight Constraint
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            A boolean flag that tracks if we are restricted by the digits of the upper bound $N$. If <code>tight</code> is true, current digit can&apos;t exceed $N[i]$.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-rose)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" />
+                            Memoization
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            We cache results for each state, collapsing the search from $O(N)$ to $O(log N \cdot properties)$.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Numerical Analysis" icon={Database}>
+            <p>Digit DP is the standard protocol for counting integers in a range $[L, R]$ that satisfy a specific digit-based property (e.g., sum of digits, prime frequency, or non-adjacent matches).</p>
+            <p>It transforms a massive $O(R)$ search space into a logarithmic $O(\log R)$ state space by processing digits positionally.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(log N * States)" space="O(log N * States)" />
+            <DocSection title="The Tight Invariant" icon={Zap} color="var(--viz-amber)">
+              <p className="text-[10px] leading-relaxed">
+                If <code>tight</code> is true, we are restricted by the prefix of $N$. The next digit $d$ must be $\leq N[idx]$. If we pick $d {"<"} N[idx]$, <code>tight</code> becomes false for all subsequent positions, granting us &quot;free range&quot; $[0, 9]$.
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <DocSection title="Practice Problems" icon={Hash} color="var(--viz-amber)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <a href="https://cses.fi/problemset/task/2220" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Counting Numbers</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-amber)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Count numbers where no two adjacent digits are the same. A classic CSES Digit DP task.</p>
+            </a>
+            <a href="https://leetcode.com/problems/numbers-at-most-n-given-digit-set/" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Numbers At Most N</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-amber)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Construct numbers using a specific subset of digits. Excellent for practicing tight constraints.</p>
+            </a>
+          </div>
+        </DocSection>
+      </div>
+    ),
+    codeImplementations: {
+      "C++": `long long dp[20][2][200];
+long long solve(string& s, int idx, bool tight, int sum) {
+    if (idx == s.size()) return sum == target;
+    if (dp[idx][tight][sum] != -1) return dp[idx][tight][sum];
+
+    long long res = 0;
+    int limit = tight ? (s[idx] - '0') : 9;
+    for (int d = 0; d <= limit; d++) {
+        res += solve(s, idx + 1, tight && (d == limit), sum + d);
+    }
+    return dp[idx][tight][sum] = res;
+}`,
+      "Python": `def solve(s, idx, tight, current_sum):
+    if idx == len(s):
+        return 1 if current_sum == target else 0
+    state = (idx, tight, current_sum)
+    if state in memo: return memo[state]
+
+    res = 0
+    limit = int(s[idx]) if tight else 9
+    for d in range(limit + 1):
+        res += solve(s, idx + 1, tight and (d == limit), current_sum + d)
+    
+    memo[state] = res
+    return res`,
+      "Java": `long[][][] dp;
+long solve(String s, int idx, boolean tight, int sum) {
+    if (idx == s.length()) return sum == target ? 1 : 0;
+    int t = tight ? 1 : 0;
+    if (dp[idx][t][sum] != -1) return dp[idx][t][sum];
+
+    long res = 0;
+    int limit = tight ? (s.charAt(idx) - '0') : 9;
+    for (int d = 0; d <= limit; d++) {
+        res += solve(s, idx + 1, tight && (d == limit), sum + d);
+    }
+    return dp[idx][t][sum] = res;
+}`,
+      "JavaScript": `function solve(s, idx, tight, sum) {
+    if (idx === s.length) return sum === target ? 1 : 0;
+    const key = \`\${idx}-\${tight}-\${sum}\`;
+    if (memo.has(key)) return memo.get(key);
+
+    let res = 0;
+    const limit = tight ? parseInt(s[idx]) : 9;
+    for (let d = 0; d <= limit; d++) {
+        res += solve(s, idx + 1, tight && (d === limit), sum + d);
+    }
+    memo.set(key, res);
+    return res;
+}`
+    }
+  },
+  {
+    id: "SPARSE_TABLE",
+    title: "Sparse Table",
+    icon: <Layers />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "O(1) Range Minimum Queries.",
+    component: (speed: number) => <SparseTableVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 gap-8">
+            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
+                            Doubling Concept
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            We precompute answers for all ranges of length $2^k$. This allows us to represent any range length as a sum of powers of 2.
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
+                            Idempotent Query
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            For RMQ, we can cover $[L, R]$ with two overlapping ranges of length $2^j$. Since $min(x, x) = x$, overlap doesn&apos;t hurt.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
+                            O(1) Speed
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                            Because only two table lookups are needed, queries are constant time, making it faster than Segment Trees for static data.
+                        </p>
+                    </div>
+                </div>
+            </DocSection>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="Static Range Power" icon={Database}>
+            <p>Sparse Tables are elite for <strong>Static RMQ</strong> and <strong>LCA</strong> (via Euler Tour). Unlike Segment Trees, they do not support updates, but they offer true $O(1)$ query time after an $O(N \log N)$ precomputation.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(1) Query" space="O(N log N)" />
+            <DocSection title="Build Recurrence" icon={Zap} color="var(--viz-amber)">
+              <p className="font-mono text-[10px]">
+                st[j][i] = min(<br/>
+                &nbsp;&nbsp;st[j-1][i], <br/>
+                &nbsp;&nbsp;st[j-1][i + (1 {" << "} (j-1))]<br/>
+                )
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <DocSection title="Practice Problems" icon={Hash} color="var(--viz-cyan)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <a href="https://cses.fi/problemset/task/1647" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Static Range Minimum Queries</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-cyan)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Standard RMQ on a static array. Perfect for Sparse Table implementation.</p>
+            </a>
+            <a href="https://codeforces.com/contest/1547/problem/F" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Array Stabilization (GCD)</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-cyan)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Advanced application: Sparse Table for Range GCD queries.</p>
+            </a>
+          </div>
+        </DocSection>
+      </div>
+    ),
+    codeImplementations: {
+      "C++": `void build(int n, int arr[]) {
+    for (int i = 0; i < n; i++) st[0][i] = arr[i];
+    for (int j = 1; j <= K; j++)
+        for (int i = 0; i + (1 << j) <= n; i++)
+            st[j][i] = min(st[j-1][i], st[j-1][i + (1 << (j-1))]);
+}
+
+int query(int L, int R) {
+    int j = log2_floor[R - L + 1];
+    return min(st[j][L], st[j][R - (1 << j) + 1]);
+}`,
+      "Python": `def build(n, arr):
+    st = [[0] * n for _ in range(K + 1)]
+    st[0] = arr[:]
+    for j in range(1, K + 1):
+        for i in range(n - (1 << j) + 1):
+            st[j][i] = min(st[j-1][i], st[j-1][i + (1 << (j-1))])
+    return st
+
+def query(st, L, R):
+    j = (R - L + 1).bit_length() - 1
+    return min(st[j][L], st[j][R - (1 << j) + 1])`,
+      "Java": `void build(int n, int[] arr) {
+    for (int i = 0; i < n; i++) st[0][i] = arr[i];
+    for (int j = 1; j <= K; j++) {
+        for (int i = 0; i + (1 << j) <= n; i++) {
+            st[j][i] = Math.min(st[j-1][i], st[j-1][i + (1 << (j-1))]);
+        }
+    }
+}
+
+int query(int L, int R) {
+    int j = log[R - L + 1];
+    return Math.min(st[j][L], st[j][R - (1 << j) + 1]);
+}`,
+      "JavaScript": `function build(n, arr) {
+    const st = Array.from({ length: K + 1 }, () => new Array(n).fill(0));
+    for (let i = 0; i < n; i++) st[0][i] = arr[i];
+    for (let j = 1; j <= K; j++) {
+        for (let i = 0; i + (1 << j) <= n; i++) {
+            st[j][i] = Math.min(st[j-1][i], st[j-1][i + (1 << (j-1))]);
+        }
+    }
+    return st;
+}
+
+function query(st, L, R) {
+    const j = Math.floor(Math.log2(R - L + 1));
+    return Math.min(st[j][L], st[j][R - (1 << j) + 1]);
+}`
+    }
+  },
+  {
+    id: "REROOTING",
+    title: "Tree Rerooting",
+    icon: <RefreshCw />,
+    themeColor: "var(--viz-purple)",
+    themeRGB: "var(--viz-purple-rgb)",
+    description: "Global tree DP in O(N).",
+    component: (speed: number) => <RerootingVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="The Rerooting Concept" icon={Activity} color="var(--viz-purple)">
+            <p>Tree Rerooting DP (or All-Root DP) is a powerful technique to compute an answer for <strong>every node</strong> as a potential root in $O(N)$ time.</p>
+            <p>A naive approach would take $O(N^2)$ by running a full DFS from every node. Rerooting uses two passes to reuse results: one to aggregate subtree data, and another to propagate global data down from parents.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(N)" space="O(N)" />
+            <DocSection title="The Two Passes" icon={Layers} color="var(--viz-cyan)">
+              <ul className="space-y-2 list-none text-xs">
+                <li><strong className="text-[var(--viz-cyan)]">1. Bottom-Up:</strong> Aggregate subtree information (e.g., sum of distances) for a fixed root.</li>
+                <li><strong className="text-[var(--viz-rose)]">2. Top-Down:</strong> Transition the root from parent $u$ to child $v$ by adjusting the aggregated values.</li>
+              </ul>
+            </DocSection>
+          </div>
+        </div>
+
+        <DocSection title="Practice Problems" icon={Hash} color="var(--viz-purple)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <a href="https://cses.fi/problemset/task/1132" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Tree Distances I</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-purple)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Compute the maximum distance to any other node for every node.</p>
+            </a>
+            <a href="https://cses.fi/problemset/task/1133" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Tree Distances II</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-purple)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Compute the sum of distances to all other nodes for every node.</p>
+            </a>
+          </div>
+        </DocSection>
+      </div>
+    ),
+    codeImplementations: {
+      "DFS (C++)": `// Pass 1: Compute subtree sizes and distance sums
+void dfs1(int u, int p) {
+    sz[u] = 1; dist[u] = 0;
+    for (int v : adj[u]) {
+        if (v == p) continue;
+        dfs1(v, u);
+        sz[u] += sz[v];
+        dist[u] += dist[v] + sz[v];
+    }
+}
+
+// Pass 2: Reroot to compute global answers
+void dfs2(int u, int p) {
+    ans[u] = dist[u]; // Start with current aggregate
+    for (int v : adj[u]) {
+        if (v == p) continue;
+        
+        // Save current values
+        long long old_u_dist = dist[u], old_u_sz = sz[u];
+        long long old_v_dist = dist[v], old_v_sz = sz[v];
+
+        // Reroot u -> v:
+        // 1. Detach v from u
+        dist[u] -= (dist[v] + sz[v]);
+        sz[u] -= sz[v];
+        // 2. Attach u to v
+        sz[v] += sz[u];
+        dist[v] += (dist[u] + sz[u]);
+
+        dfs2(v, u);
+
+        // Backtrack
+        dist[u] = old_u_dist; sz[u] = old_u_sz;
+        dist[v] = old_v_dist; sz[v] = old_v_sz;
+    }
+}`,
+      "BFS (C++)": `// Iterative Rerooting (Avoids Recursion Depth)
+void iterativeRerooting(int n) {
+    vector<int> order;
+    queue<int> q;
+    q.push(1);
+    parent[1] = 0;
+    while(!q.empty()) {
+        int u = q.front(); q.pop();
+        order.push_back(u);
+        for(int v : adj[u]) {
+            if(v != parent[u]) {
+                parent[v] = u;
+                q.push(v);
+            }
+        }
+    }
+
+    // Pass 1: Bottom-up (Reversed BFS order)
+    for(int i = n-1; i >= 0; i--) {
+        int u = order[i];
+        sz[u] = 1; dist[u] = 0;
+        for(int v : adj[u]) {
+            if(v != parent[u]) {
+                sz[u] += sz[v];
+                dist[u] += dist[v] + sz[v];
+            }
+        }
+    }
+
+    // Pass 2: Top-down (BFS order)
+    ans[1] = dist[1];
+    for(int u : order) {
+        for(int v : adj[u]) {
+            if(v == parent[u]) continue;
+            // Transition: ans[v] = ans[u] - sz[v] + (n - sz[v])
+            ans[v] = ans[u] - sz[v] + (n - sz[v]);
+        }
+    }
+}`,
+      "Python (DFS)": `def dfs1(u, p):
+    size[u] = 1
+    dist[u] = 0
+    for v in adj[u]:
+        if v == p: continue
+        dfs1(v, u)
+        size[u] += size[v]
+        dist[u] += dist[v] + size[v]
+
+def dfs2(u, p):
+    ans[u] = dist[u]
+    for v in adj[u]:
+        if v == p: continue
+        # Reroot u -> v
+        ans[v] = ans[u] - size[v] + (n - size[v])
+        dfs2(v, u)`
+    }
+  },
+  {
+    id: "BINARY_LIFTING",
+    title: "Binary Lifting",
+    icon: <ArrowUp />,
+    themeColor: "var(--viz-cyan)",
+    themeRGB: "var(--viz-cyan-rgb)",
+    description: "O(log N) tree path jumps.",
+    component: (speed: number) => <BinaryLiftingVisualizer speed={speed} />,
+    detailedDocs: (
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="The Power of 2 Jumps" icon={Zap}>
+            <p>Binary Lifting precomputes the $2^k$-th ancestor for every node. Any distance $K$ can be decomposed into powers of 2 (e.g., $13 = 8 + 4 + 1$).</p>
+            <p>Instead of climbing a tree one by one ($O(N)$), we &quot;jump&quot; up the levels in $O(\log N)$ steps. This is the foundation for efficient LCA and path queries.</p>
+          </DocSection>
+          <div className="space-y-8">
+            <ComplexityCard time="O(log N) Query" space="O(N log N)" />
+            <DocSection title="Table Recurrence" icon={Database} color="var(--viz-cyan)">
+              <p className="font-mono text-[10px]">
+                {/* up[u][k] is 2^k-th ancestor of u */}<br/>
+                up[u][k] = up[ up[u][k-1] ][k-1]
+              </p>
+            </DocSection>
+          </div>
+        </div>
+
+        <DocSection title="Practice Problems" icon={Hash} color="var(--viz-cyan)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <a href="https://cses.fi/problemset/task/1687" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Company Queries I</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-cyan)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Find the K-th boss (ancestor) of an employee in $O(\log N)$.</p>
+            </a>
+            <a href="https://cses.fi/problemset/task/1688" target="_blank" rel="noopener noreferrer" className="p-4 bg-[var(--muted)] border border-[var(--border)] rounded-2xl hover:bg-[var(--accent)] transition-colors group">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Company Queries II (LCA)</span>
+                <ChevronRight size={16} className="text-[var(--muted-foreground)] group-hover:text-[var(--viz-cyan)]" />
+              </div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Find the lowest common boss of two employees using Binary Lifting.</p>
+            </a>
+          </div>
+        </DocSection>
+      </div>
+    ),
+    codeImplementations: {
+      "C++": `int up[MAXN][LOGN];
+
+// 1. Precompute table: O(N log N)
+void precompute(int n) {
+    for (int k = 1; k < LOGN; k++) {
+        for (int i = 1; i <= n; i++) {
+            if (up[i][k-1] != -1)
+                up[i][k] = up[up[i][k-1]][k-1];
+        }
+    }
+}
+
+// 2. Query K-th ancestor: O(log N)
+int getKthAncestor(int u, int k) {
+    for (int i = 0; i < LOGN; i++) {
+        if ((k >> i) & 1) {
+            u = up[u][i];
+            if (u == -1) break;
+        }
+    }
+    return u;
+}`,
+      "Python": `def precompute():
+    for k in range(1, LOGN):
+        for i in range(1, n + 1):
+            mid = up[i][k-1]
+            if mid != -1:
+                up[i][k] = up[mid][k-1]
+
+def get_kth_ancestor(u, k):
+    for i in range(LOGN):
+        if (k >> i) & 1:
+            u = up[u][i]
+            if u == -1: break
+    return u`,
+      "Java": `void precompute(int n) {
+    for (int k = 1; k < LOGN; k++) {
+        for (int i = 1; i <= n; i++) {
+            int mid = up[i][k - 1];
+            if (mid != -1) {
+                up[i][k] = up[mid][k - 1];
+            }
+        }
+    }
+}
+
+int getKthAncestor(int u, int k) {
+    for (int i = 0; i < LOGN; i++) {
+        if (((k >> i) & 1) == 1) {
+            u = up[u][i];
+            if (u == -1) break;
+        }
+    }
+    return u;
+}`
+    }
+  },
 ];
 
+;
 
-
-
-
-
-
-
+;
 

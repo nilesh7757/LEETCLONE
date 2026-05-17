@@ -48,9 +48,7 @@ export const POST = apiHandler(async (req: Request) => {
   Return ONLY JSON: { "score": 0-100, "feedback": "Brief critique" }`;
 
   try {
-    const responseText = await runAI("Evaluate this interview answer.", systemPrompt, true);
-    const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-    const evaluation = JSON.parse(cleanJson);
+    const evaluation = await runAI("Evaluate this interview answer.", systemPrompt, true) as { score: number, feedback: string };
 
     // 2. Append to answers array
     const currentAnswers = (interview.answers as unknown as InterviewAnswer[]) || [];

@@ -108,7 +108,7 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
 
   return (
     <div className="flex flex-col gap-6 font-sans">
-      <div className="p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col border border-[var(--border)]">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col border border-[var(--border)]">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
         
@@ -262,10 +262,12 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
       </div>
 
       {/* Legend */}
-      <div className="px-10 py-6 bg-muted/10  rounded-[2.5rem] border border-border/20 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+      <div className="px-4 md:px-10 py-6 bg-muted/10  rounded-[2.5rem] border border-border/20 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Pivot Pointer</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Optimal State</span></div>
       </div>
     </div>
   );
 }
+
+

@@ -112,7 +112,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
   };
 
   return (
-    <div className="p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+    <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
       {/* Grid Backdrop */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
            style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -168,7 +168,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Chessboard Container */}
-        <div className="lg:col-span-3 relative aspect-square max-w-[500px] mx-auto w-full bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex items-center justify-center p-6">
+        <div className="lg:col-span-3 relative aspect-square max-w-[800px] mx-auto w-full bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex items-center justify-center p-6">
           
           {/* Logic Step Badge */}
           <AnimatePresence>
@@ -318,7 +318,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
       </div>
 
       {/* Legend */}
-      <div className="mt-8 px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+      <div className="mt-8 px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-deep-purple)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive Probe</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Safe Placement</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Conflict Detected</span></div>
@@ -327,3 +327,5 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
     </div>
   );
 }
+
+

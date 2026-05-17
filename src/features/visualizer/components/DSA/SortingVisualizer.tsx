@@ -152,8 +152,8 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
   const currentStep = history[currentIndex] || { nodes: initialData, explanation: "Initializing...", activeStep: null, comparisonRange: null };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
+    <div className="flex flex-col gap-6 h-full">
+      <div className={`p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden flex-1 flex flex-col`}>
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         
@@ -178,7 +178,7 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
           </div>
         </div>
 
-        <div className="relative min-h-[480px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-2xl flex flex-col items-center justify-center px-10">
+        <div className="relative min-h-[480px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-2xl flex flex-col items-center justify-center px-4 md:px-10">
             {currentStep.activeStep && (
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-amber)]/10 border border-[var(--viz-amber)]/30 rounded-full z-30 shadow-lg pointer-events-none">
                     <Sparkles size={12} className="text-[var(--viz-amber)]" />
@@ -187,7 +187,7 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
             )}
 
             <AnimatePresence mode="wait">
-                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-10 text-center z-30 pointer-events-none">
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[500px] px-4 md:px-10 text-center z-30 pointer-events-none">
                     <div className="p-4 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-2xl">
                         <div className="flex items-center justify-center gap-2 mb-1 opacity-40">
                             <Info size={10} className="text-[var(--primary)]" />
@@ -254,7 +254,7 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
         </div>
       </div>
 
-      <div className="px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex items-center justify-center gap-12">
+      <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex items-center justify-center gap-12">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Scanning Manifold</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Displacement</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Ordered Manifold</span></div>
@@ -262,3 +262,5 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
     </div>
   );
 }
+
+

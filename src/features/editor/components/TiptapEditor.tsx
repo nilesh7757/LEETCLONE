@@ -8,13 +8,19 @@ import Image from '@tiptap/extension-image'; // Import the Image extension
 import { DrawingExtension } from './DrawingExtension';
 import Toolbar from './TiptapToolbar'; // Will create this next
 
+import Placeholder from '@tiptap/extension-placeholder';
+
 interface TiptapEditorProps {
-  description: string;
+  description?: string;
+  content?: string;
   onChange: (richText: string) => void;
   editable?: boolean;
+  placeholder?: string;
 }
 
-const TiptapEditor = ({ description, onChange, editable = true }: TiptapEditorProps) => {
+const TiptapEditor = ({ description, content, onChange, editable = true, placeholder }: TiptapEditorProps) => {
+  const initialContent = content || description || "";
+  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -33,9 +39,12 @@ const TiptapEditor = ({ description, onChange, editable = true }: TiptapEditorPr
         inline: true,
         allowBase64: true, // Allow base64 images, useful for drag/drop or clipboard
       }),
+      Placeholder.configure({
+        placeholder: placeholder || 'Start typing...',
+      }),
       DrawingExtension,
     ],
-    content: description,
+    content: initialContent,
     immediatelyRender: false, // Added to prevent SSR hydration mismatches
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());

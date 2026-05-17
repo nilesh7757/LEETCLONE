@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Search, ChevronRight, 
-  Trash2, Rocket, Terminal,
-  LayoutTemplate, Code2, Binary, Fingerprint, Zap,
-  CheckCircle2, AlertCircle, RefreshCcw, LayoutGrid
+  Terminal,
+  LayoutTemplate, Zap,
+  AlertCircle, RefreshCcw, LayoutGrid
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -201,7 +201,7 @@ export default function ArchitectDashboard() {
                </div>
                <h3 className="text-xl font-bold text-white mb-2">No Drafts Found</h3>
                <p className="text-sm text-[#52525b] mb-10 max-w-xs mx-auto">
-                  You haven't initialized any problem packages yet. Ready to build something great?
+                  {"You haven't initialized any problem packages yet. Ready to build something great?"}
                </p>
                <button 
                   onClick={initializeProblem}

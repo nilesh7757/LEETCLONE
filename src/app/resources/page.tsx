@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
-import ResourceCard, { ResourceType } from "@/features/academy/components/ResourceCard";
+import ResourceCard, { ResourceType, Resource } from "@/features/academy/components/ResourceCard";
 
 const TOPICS = [
   "All", "Arrays", "Linked Lists", "Strings", "Trees", 
@@ -27,7 +27,7 @@ const TYPES: { label: string; value: ResourceType | "ALL" }[] = [
 ];
 
 export default function ResourcesPage() {
-  const [resources, setResources] = useState<any[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -39,7 +39,7 @@ export default function ResourcesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      let url = "/api/resources";
+      const url = "/api/resources";
       const params = new URLSearchParams();
       if (selectedTopic !== "All") params.append("topic", selectedTopic);
       if (selectedType !== "ALL") params.append("type", selectedType);
