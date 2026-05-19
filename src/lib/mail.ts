@@ -1,13 +1,14 @@
 import nodemailer from "nodemailer";
+import { logger } from "./logger";
 
 export async function sendOtpEmail(email: string, otp: string) {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.log("========================================");
-    console.log(`[DEV MODE] OTP for ${email}: ${otp}`);
-    console.log("========================================");
-    console.warn("SMTP credentials not found. OTP logged to console.");
+    logger.info("========================================");
+    logger.info(`[DEV MODE] OTP for ${email}: ${otp}`);
+    logger.info("========================================");
+    logger.warn("SMTP credentials not found. OTP logged to console.");
     return;
   }
 
@@ -42,9 +43,9 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const resetLink = `${appUrl}/reset-password?token=${token}`;
 
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.log("========================================");
-    console.log(`[DEV MODE] Password Reset for ${email}: ${resetLink}`);
-    console.log("========================================");
+    logger.info("========================================");
+    logger.info(`[DEV MODE] Password Reset for ${email}: ${resetLink}`);
+    logger.info("========================================");
     return;
   }
 
@@ -79,7 +80,7 @@ export async function sendStudyReminderEmail(email: string, planTitle: string, p
   const appUrl = NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.log(`[DEV MODE] Study Reminder for ${email}: Keep up the work on ${planTitle}! Current progress: ${progress}%`);
+    logger.info(`[DEV MODE] Study Reminder for ${email}: Keep up the work on ${planTitle}! Current progress: ${progress}%`);
     return;
   }
 

@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { logger } from "./logger";
 
 export interface RateLimitResult {
   success: boolean;
@@ -46,7 +47,7 @@ export async function rateLimit(
         };
       }
     } catch (error) {
-      console.error("Upstash rate limit error, falling back to memory:", error);
+      logger.error("Upstash rate limit error, falling back to memory:", error);
     }
   }
 

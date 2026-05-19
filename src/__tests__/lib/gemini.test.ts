@@ -27,8 +27,8 @@ describe('gemini.ts (AI Services)', () => {
         const originalEnv = process.env;
         process.env = { ...originalEnv, GEMINI_API_KEY: '', GROQ_API_KEY: '', NVIDIA_API_KEY: '', HF_API_KEY: '' };
         
-        const { auditAndAnalyze: testAudit } = await import('@/lib/gemini');
-        await expect(testAudit('code', 'js', 'title', 'desc')).rejects.toThrow('No AI API Keys configured.');
+        const { runAI } = await import('@/lib/gemini');
+        await expect(runAI('test')).rejects.toThrow('No AI API Keys configured.');
         
         process.env = originalEnv;
     });
