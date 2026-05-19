@@ -80,7 +80,7 @@ export const POST = apiHandler(async (req: Request) => {
         userId,
         topic: sanitizedTopic,
         difficulty,
-        questions: interviewData.questions as unknown,
+        questions: interviewData.questions as any,
         status: "ONGOING"
       }
     });

@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 import Link from "next/link";
+import { ProblemFormData } from "@/features/problems/components/ProblemForm";
 
 interface ProblemUnit {
   id: string;
