@@ -18,6 +18,7 @@ class Logger {
   }
 
   error(message: string, ...args: unknown[]) {
+    if (process.env.NODE_ENV === "test") return;
     console.error(this.formatMessage("error", message, ...args));
   }
 
