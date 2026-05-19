@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { generatePersonalizedStudyPlan } from "@/lib/services/studyPlanGenerator";
 import { logger } from "@/lib/logger";
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const session = await auth();
     if (!session?.user?.id) {

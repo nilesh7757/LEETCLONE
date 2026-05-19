@@ -38,7 +38,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     return NextResponse.json({ problem });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -66,7 +66,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     });
 
     return NextResponse.json({ message: "Unit destroyed successfully" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to destroy unit" }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -80,7 +81,7 @@ export const POST = apiHandler(async (req: Request) => {
         userId,
         topic: sanitizedTopic,
         difficulty,
-        questions: interviewData.questions as any,
+        questions: interviewData.questions as unknown as Prisma.InputJsonValue,
         status: "ONGOING"
       }
     });

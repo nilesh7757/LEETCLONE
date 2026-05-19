@@ -24,7 +24,6 @@ export async function POST(req: Request) {
     }
 
     const now = new Date();
-    const contestStartTime = new Date(contest.startTime);
     const contestEndTime = new Date(contest.endTime);
 
     if (contest.status === "ENDED") {

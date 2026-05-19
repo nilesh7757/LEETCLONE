@@ -23,7 +23,7 @@ interface Stats {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -62,9 +62,9 @@ export async function POST(req: Request) {
               publicRepos: ghRes.data.public_repos,
               followers: ghRes.data.followers,
             };
-          } catch (e) {}
-        }
-      })(),
+          } catch {}
+          }
+          })(),
 
       // 2. Codeforces
       (async () => {
@@ -85,9 +85,9 @@ export async function POST(req: Request) {
                 stats.consistency.recentSolved7Days += recent.length;
               }
             }
-          } catch (e) {}
-        }
-      })(),
+          } catch {}
+          }
+          })(),
 
       // 3. LeetCode
       (async () => {
@@ -113,11 +113,11 @@ export async function POST(req: Request) {
               try {
                 const calendar = JSON.parse(userData.userCalendar.submissionCalendar);
                 Object.keys(calendar).forEach(ts => { if (parseInt(ts) > sevenDaysAgoSeconds) stats.consistency.recentSolved7Days += calendar[ts]; });
-              } catch (e) {}
-            }
-          } catch (e) {}
-        }
-      })(),
+              } catch {}
+              }
+              } catch {}
+              }
+              })(),
 
       // 4. CodeChef (Public API / Scraping simulation)
       (async () => {
@@ -129,9 +129,9 @@ export async function POST(req: Request) {
               rating: ccRes.data.currentRating || 0,
               stars: ccRes.data.stars || "1*",
             };
-          } catch (e) {}
-        }
-      })(),
+          } catch {}
+          }
+          })(),
 
       // 5. Atcoder
       (async () => {
@@ -142,9 +142,9 @@ export async function POST(req: Request) {
               rating: acRes.data.rating || 0,
               maxRating: acRes.data.highest_rating || 0,
             };
-          } catch (e) {}
-        }
-      })()
+          } catch {}
+          }
+          })(),
     ]);
 
     // Calculate Consistency Status
@@ -214,3 +214,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to synchronize profile" }, { status: 500 });
   }
 }
+

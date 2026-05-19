@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { executeCode, TestInputOutput } from "@/lib/codeExecution";
+import { TestInputOutput } from "@/lib/codeExecution";
 import { ProblemType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";

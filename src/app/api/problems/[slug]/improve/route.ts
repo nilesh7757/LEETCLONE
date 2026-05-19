@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -78,8 +79,8 @@ export const POST = apiHandler(async (req: Request, { params }: { params: Promis
         difficulty: updatedData.difficulty,
         category: updatedData.category,
         pattern: updatedData.pattern,
-        testSets: updatedData.testSets as any,
-        blueprint: updatedData.blueprint as any,
+        testSets: updatedData.testSets as unknown as Prisma.InputJsonValue,
+        blueprint: updatedData.blueprint as unknown as Prisma.InputJsonValue,
         referenceSolution: updatedData.referenceSolution,
         lastAiFeedback: feedback,
         isVerified: false, 

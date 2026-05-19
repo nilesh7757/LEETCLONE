@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/lib/api-handler";
 
-export const GET = apiHandler(async (req: Request) => {
-  const { searchParams } = new URL(req.url);
-  const filter = searchParams.get("filter") || "ALL";
-
+export const GET = apiHandler(async () => {
   const now = new Date();
 
   const contests = await prisma.contest.findMany({
