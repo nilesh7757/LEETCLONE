@@ -1,4 +1,5 @@
 import { sendOtpEmail, sendPasswordResetEmail, sendStudyReminderEmail } from '@/lib/mail';
+import { logger } from '@/lib/logger';
 import nodemailer from 'nodemailer';
 
 jest.mock('nodemailer');
@@ -28,7 +29,7 @@ describe('mail.ts', () => {
 
   it('should log to console and return if SMTP credentials missing', async () => {
     delete process.env.SMTP_HOST;
-    const logSpy = jest.spyOn(console, 'log').mockImplementation();
+    const logSpy = jest.spyOn(logger, 'info').mockImplementation();
 
     await sendOtpEmail('test@user.com', '123456');
 
