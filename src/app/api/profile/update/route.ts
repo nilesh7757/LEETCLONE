@@ -15,7 +15,7 @@ export const PUT = apiHandler(async (req: Request) => {
   const body = await req.json();
   const validation = profileUpdateSchema.safeParse(body);
   if (!validation.success) {
-    throw new ApiError(validation.error.errors[0].message, 400);
+    throw new ApiError(validation.error.issues[0].message, 400);
   }
 
   const { name, bio, website, description, image, skills } = validation.data;

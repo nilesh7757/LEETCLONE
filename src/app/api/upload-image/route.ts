@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinaryConfig';
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 
-export const POST = apiHandler(async (req: NextRequest) => {
+export const POST = apiHandler(async (req: Request) => {
   const formData = await req.formData();
   const file = formData.get('image') as File | null;
 

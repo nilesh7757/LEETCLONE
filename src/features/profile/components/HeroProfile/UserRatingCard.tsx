@@ -35,17 +35,19 @@ const getValueColor = (val: number, ring: string) => {
 
 function FloatingParticles({ count = 15 }: { count?: number }) {
   const [ready, setReady] = useState(false);
-  const particles = useMemo(() =>
-    Array.from({ length: count }, (_, i) => ({
+  const [particles, setParticles] = useState<{ id: number; x: number; size: number; duration: number; delay: number; targetY: number }[]>([]);
+
+  useEffect(() => {
+    setParticles(Array.from({ length: count }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       size: 1.5 + Math.random() * 2.5,
       duration: 4 + Math.random() * 6,
       delay: Math.random() * 5,
       targetY: -(350 + Math.random() * 250),
-    })), [count]);
-
-  useEffect(() => { setReady(true); }, []);
+    })));
+    setReady(true);
+  }, [count]);
 
   if (!ready) return <div className="absolute inset-0 pointer-events-none overflow-hidden z-20" />;
 
@@ -173,14 +175,14 @@ export default function UserRatingCard({ user, stats }: UserRatingCardProps) {
     setIsDownloading(true);
     setDownloadType("PNG");
     try {
-      const dataUrl = await htmlToImage.toPng(cardRef.current, {
+      const dataUrl = await htmlToImage.toPng(cardRef.current, ({
         quality: 1,
         pixelRatio: 4,
         useCORS: true,
         cacheBust: true,
         backgroundColor: "#0d0d14",
         style: captureStyle,
-      });
+      } as any));
       const link = document.createElement('a');
       link.download = `${user?.name || 'player'}-card.png`;
       link.href = dataUrl;
@@ -278,7 +280,7 @@ export default function UserRatingCard({ user, stats }: UserRatingCardProps) {
   const topCategories = useMemo(() => {
     const entries = Object.entries(cat);
     return entries
-      .sort(([, a], [, b]) => b - a)
+      .sort(([, a]: [string, unknown], [, b]: [string, unknown]) => (b as number) - (a as number))
       .slice(0, 3)
       .map(([name, val]) => ({ name: name.length > 12 ? name.slice(0, 12) : name, value: getStat(name) }));
   }, [cat, getStat]);

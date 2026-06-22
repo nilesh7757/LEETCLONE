@@ -20,12 +20,12 @@ declare module 'gifshot' {
     textXCoordinate?: number;
     textYCoordinate?: number;
     progressCallback?: (progress: number) => void;
-    completeCallback?: (obj: { image: string; cameraStream: any; error: boolean; errorCode: string; errorMsg: string }) => void;
+    completeCallback?: (obj: { image: string; cameraStream: MediaStream | null; error: boolean; errorCode: string; errorMsg: string }) => void;
   }
 
   export function createGIF(
     options: Options,
-    callback: (obj: { image: string; cameraStream: any; error: boolean; errorCode: string; errorMsg: string }) => void
+    callback: (obj: { image: string; cameraStream: MediaStream | null; error: boolean; errorCode: string; errorMsg: string }) => void
   ): void;
 
   export function stopVideoStreaming(): void;

@@ -121,6 +121,7 @@ async function broadcastLeaderboardUpdate(contestId: string) {
   const userFirstSolves: Record<string, Record<string, Date>> = {};
   
   allAcceptedSubmissions.forEach(sub => {
+      if (!sub.userId) return;
       if (!userFirstSolves[sub.userId]) {
           userFirstSolves[sub.userId] = {};
       }

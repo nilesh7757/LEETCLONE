@@ -316,6 +316,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
         <FollowsModal userId={user.id} type={activeModal} onClose={() => setActiveModal(null)} />
       )}
     </div>
+    </div>
   );
 }
 

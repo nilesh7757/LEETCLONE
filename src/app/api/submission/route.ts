@@ -67,7 +67,7 @@ export const POST = apiHandler(async (req: Request) => {
   const body = await req.json();
   const validation = submissionSchema.safeParse(body);
   if (!validation.success) {
-    throw new ApiError(validation.error.errors[0].message, 400);
+    throw new ApiError(validation.error.issues[0].message, 400);
   }
   
   const { code, language, problemId } = validation.data;
