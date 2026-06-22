@@ -103,7 +103,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
           setAnnouncements(prev => [data.announcement, ...prev]);
           toast.info("New Announcement", {
              description: data.announcement.message,
-             icon: <Megaphone className="text-[#3b82f6]" size={16} />,
+             icon: <Megaphone className="text-[var(--primary)]" size={16} />,
              duration: 10000
           });
         }
@@ -186,8 +186,8 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                 </div>
              )}
           </div>
-          <h1 className="text-5xl font-black tracking-tight text-white uppercase italic">{contest.title}</h1>
-          <p className="text-sm text-[#52525b] max-w-2xl leading-relaxed">{contest.description}</p>
+          <h1 className="text-5xl font-black tracking-tight text-[var(--foreground)] uppercase italic">{contest.title}</h1>
+          <p className="text-sm text-[var(--muted-foreground)] max-w-2xl leading-relaxed">{contest.description}</p>
         </div>
 
         <div className="flex flex-col items-end gap-6">
@@ -195,7 +195,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
           {isCreator && (
              <Link 
                 href={`/arena/${contest.id}/manage`}
-                className="flex items-center gap-3 px-6 py-3 bg-[#3b82f6]/10 border border-[#3b82f6]/20 rounded-2xl text-[#3b82f6] hover:bg-[#3b82f6]/20 transition-all group"
+                className="flex items-center gap-3 px-6 py-3 bg-[var(--primary)]/10 border border-[var(--primary)]/20 rounded-2xl text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-all group"
              >
                 <Settings size={18} className="group-hover:rotate-90 transition-transform duration-500" />
                 <div className="flex flex-col items-start">
@@ -206,22 +206,22 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
              </Link>
           )}
 
-          <div className="flex items-center gap-8 bg-[#111] border border-white/5 p-6 rounded-[2rem]">
+          <div className="flex items-center gap-8 bg-[var(--card)] border border-[var(--border)] p-6 rounded-[2rem]">
             <div className="flex flex-col items-center">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#52525b] mb-1">Time Remaining</span>
-              <div className="flex items-center gap-2 text-2xl font-black font-mono text-white">
-                <Clock size={20} className="text-[#3b82f6]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-1">Time Remaining</span>
+              <div className="flex items-center gap-2 text-2xl font-black font-mono text-[var(--foreground)]">
+                <Clock size={20} className="text-[var(--primary)]" />
                 {timeLeft}
               </div>
             </div>
             
-            <div className="h-10 w-px bg-white/5" />
+            <div className="h-10 w-px bg-[var(--border)]" />
 
             {!isRegistered ? (
                <button 
                   onClick={handleRegister}
                   disabled={isRegistering}
-                  className="px-8 py-3 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#f59e0b] hover:text-white transition-all disabled:opacity-50"
+                  className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#f59e0b] hover:text-white transition-all disabled:opacity-50"
                >
                  {isRegistering ? "Processing..." : "Join Arena"}
                </button>
@@ -235,7 +235,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
       </div>
 
       {/* 2. NAVIGATION TABS */}
-      <div className="flex items-center gap-2 mb-8 bg-white/5 p-1 rounded-2xl w-fit">
+      <div className="flex items-center gap-2 mb-8 bg-[var(--foreground)]/5 p-1 rounded-2xl w-fit">
         {[
           { id: "problems", label: "Contest Units", icon: List },
           { id: "leaderboard", label: "Rankings", icon: Trophy },
@@ -245,13 +245,13 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
             key={tab.id}
             onClick={() => setActiveTab(tab.id as "problems" | "leaderboard" | "announcements")}
             className={`flex items-center gap-3 px-6 py-3 rounded-xl transition-all duration-300 relative ${
-              activeTab === tab.id ? "bg-white text-black" : "text-[#52525b] hover:text-white"
+              activeTab === tab.id ? "bg-[var(--foreground)] text-[var(--background)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
           >
             <tab.icon size={16} />
             <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
             {tab.id === "announcements" && announcements.length > 0 && (
-               <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#3b82f6] rounded-full text-[8px] font-bold flex items-center justify-center text-white border-2 border-black">
+               <div className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--primary)] rounded-full text-[8px] font-bold flex items-center justify-center text-[var(--foreground)] border-2 border-[var(--background)]">
                   {announcements.length}
                </div>
             )}
@@ -281,28 +281,28 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                          <Link 
                             href={isLocked ? "#" : `/problems/${problem.slug}?contestId=${contest.id}`}
                             className={`flex items-center justify-between p-6 rounded-2xl border transition-all duration-300 ${
-                               isLocked ? "bg-white/[0.01] border-white/5 opacity-50 cursor-not-allowed" : "bg-[#111] border-white/5 hover:border-[#3b82f6]/30"
+                               isLocked ? "bg-[var(--foreground)]/[0.01] border-[var(--border)] opacity-50 cursor-not-allowed" : "bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)]/30"
                             }`}
                          >
                             <div className="flex items-center gap-6">
-                               <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center shrink-0">
-                                  <span className="text-sm font-bold text-[#52525b] group-hover:text-white transition-colors">{String.fromCharCode(65 + index)}</span>
+                               <div className="w-10 h-10 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center shrink-0">
+                                  <span className="text-sm font-bold text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">{String.fromCharCode(65 + index)}</span>
                                </div>
                                <div className="space-y-1">
-                                  <h3 className="text-xl font-bold tracking-tight text-white group-hover:text-[#3b82f6] transition-colors">{problem.title}</h3>
+                                  <h3 className="text-xl font-bold tracking-tight text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">{problem.title}</h3>
                                   <div className="flex items-center gap-3">
                                      <span className={`text-[8px] font-bold uppercase tracking-widest ${
                                         problem.difficulty === 'Easy' ? 'text-green-500' : problem.difficulty === 'Medium' ? 'text-amber-500' : 'text-rose-500'
                                      }`}>{problem.difficulty}</span>
-                                     <span className="text-[9px] font-mono text-[#262626] uppercase tracking-widest">{problem.category}</span>
+                                     <span className="text-[9px] font-mono text-[var(--muted-foreground)] uppercase tracking-widest">{problem.category}</span>
                                   </div>
                                </div>
                             </div>
                             
                             {isLocked ? (
-                               <Lock className="text-[#262626]" size={18} />
+                               <Lock className="text-[var(--muted-foreground)]" size={18} />
                             ) : (
-                               <ChevronRight className="text-[#262626] group-hover:text-[#3b82f6] transition-all" size={20} />
+                               <ChevronRight className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-all" size={20} />
                             )}
                          </Link>
                       </div>
@@ -315,47 +315,47 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                className="max-w-4xl bg-[#111] border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl"
+                className="max-w-4xl bg-[var(--card)] border border-[var(--border)] rounded-[2rem] overflow-hidden shadow-2xl"
              >
                 <div className="overflow-x-auto">
                    <table className="w-full text-left">
                          <thead>
-                            <tr className="border-b border-white/5 text-[9px] text-[#262626] font-bold uppercase tracking-widest">
+                            <tr className="border-b border-[var(--border)] text-[9px] text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
                                <th className="px-8 py-5">Rank</th>
                                <th className="px-8 py-5">User</th>
                                <th className="px-8 py-5 text-right">Score</th>
                                <th className="px-8 py-5 text-right">Penalty</th>
                             </tr>
                          </thead>
-                         <tbody className="divide-y divide-white/5">
+                         <tbody className="divide-y divide-[var(--border)]">
                             {leaderboard.length === 0 ? (
                                <tr>
                                   <td colSpan={4} className="px-8 py-20 text-center">
-                                     <p className="text-[10px] font-mono uppercase tracking-widest text-[#52525b] animate-pulse">Standings will be updated soon...</p>
+                                     <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)] animate-pulse">Standings will be updated soon...</p>
                                   </td>
                                </tr>
                             ) : (
                                leaderboard.map((entry) => (
-                                  <tr key={entry.user.id} className="group hover:bg-white/[0.01] transition-all">
+                                  <tr key={entry.user.id} className="group hover:bg-[var(--foreground)]/[0.01] transition-all">
                                      <td className="px-8 py-4">
                                         <span className={`text-sm font-bold font-mono ${
                                            entry.rank === 1 ? "text-amber-500" :
                                            entry.rank === 2 ? "text-slate-400" :
-                                           entry.rank === 3 ? "text-amber-700" : "text-[#52525b]"
+                                           entry.rank === 3 ? "text-amber-700" : "text-[var(--muted-foreground)]"
                                         }`}>#{entry.rank}</span>
                                      </td>
                                      <td className="px-8 py-4">
                                         <Link href={`/profile/${entry.user.id}`} className="flex items-center gap-3 group/user">
-                                           <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/5 overflow-hidden flex items-center justify-center relative">
-                                              {entry.user.image ? <Image src={entry.user.image} alt="" fill className="object-cover" /> : <User className="w-4 h-4 text-[#262626]" />}
+                                           <div className="w-8 h-8 rounded-lg bg-[var(--foreground)]/5 border border-[var(--border)] overflow-hidden flex items-center justify-center relative">
+                                              {entry.user.image ? <Image src={entry.user.image} alt="" fill className="object-cover" /> : <User className="w-4 h-4 text-[var(--muted-foreground)]" />}
                                            </div>
-                                           <span className="text-sm font-bold text-white group-hover/user:text-[#3b82f6] transition-colors">{entry.user.name || "Unknown"}</span>
+                                           <span className="text-sm font-bold text-[var(--foreground)] group-hover/user:text-[var(--primary)] transition-colors">{entry.user.name || "Unknown"}</span>
                                         </Link>
                                      </td>
-                                     <td className="px-8 py-4 text-right font-mono text-lg font-bold text-[#3b82f6]">
+                                     <td className="px-8 py-4 text-right font-mono text-lg font-bold text-[var(--primary)]">
                                         {entry.score}
                                      </td>
-                                     <td className="px-8 py-4 text-right font-mono text-xs text-[#52525b]">
+                                     <td className="px-8 py-4 text-right font-mono text-xs text-[var(--muted-foreground)]">
                                         {entry.totalPenalty}m
                                      </td>
                                   </tr>
@@ -374,21 +374,21 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                className="max-w-4xl space-y-4"
              >
                 {announcements.length === 0 ? (
-                   <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                      <Megaphone size={32} className="mx-auto mb-4 text-[#262626]" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-[#52525b]">No transmissions recorded for this Arena.</p>
+                   <div className="py-24 text-center border-2 border-dashed border-[var(--border)] rounded-[2rem]">
+                      <Megaphone size={32} className="mx-auto mb-4 text-[var(--muted-foreground)]" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">No transmissions recorded for this Arena.</p>
                    </div>
                 ) : (
                    announcements.map(a => (
-                      <div key={a.id} className="p-8 bg-[#111] border border-white/5 rounded-3xl group hover:border-[#3b82f6]/30 transition-all">
+                      <div key={a.id} className="p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl group hover:border-[var(--primary)]/30 transition-all">
                          <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
-                               <Megaphone size={14} className="text-[#3b82f6]" />
-                               <span className="text-[10px] font-black uppercase tracking-widest text-[#3b82f6]">Transmission Recieved</span>
+                               <Megaphone size={14} className="text-[var(--primary)]" />
+                               <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Transmission Recieved</span>
                             </div>
-                            <span className="text-[9px] font-mono text-[#262626]">{new Date(a.createdAt).toLocaleString()}</span>
+                            <span className="text-[9px] font-mono text-[var(--muted-foreground)]">{new Date(a.createdAt).toLocaleString()}</span>
                          </div>
-                         <p className="text-sm text-[#e1e1e1] leading-relaxed group-hover:text-white transition-colors">{a.message}</p>
+                         <p className="text-sm text-[var(--foreground)] leading-relaxed group-hover:text-[var(--foreground)] transition-colors">{a.message}</p>
                       </div>
                    ))
                 )}

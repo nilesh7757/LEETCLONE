@@ -2,6 +2,7 @@ import { runAI } from "./gemini";
 import { executeCode, TestInputOutput } from "./codeExecution";
 import { ProblemType } from "@prisma/client";
 import { logger } from "./logger";
+import { detectLanguage } from "./utils";
 
 export interface GeneratedTestSet {
   examples: TestInputOutput[];
@@ -20,13 +21,6 @@ export async function generateTestCases(
   passedLanguage?: string,
 ): Promise<GeneratedTestSet> {
   
-  function detectLanguage(src: string): string {
-    if (src.includes("def ") || src.includes("import sys")) return "python";
-    if (src.includes("#include") || src.includes("std::")) return "cpp";
-    if (src.includes("public class ") || src.includes("System.out.println")) return "java";
-    return "javascript";
-  }
-
   const language = passedLanguage || detectLanguage(referenceSolution);
   
   logger.info(`[TEST_CASE_GEN] Generating test cases for: ${problemTitle} using ${language}`);

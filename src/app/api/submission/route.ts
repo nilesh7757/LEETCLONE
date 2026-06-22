@@ -10,6 +10,7 @@ import { logger } from "@/lib/logger";
 import { updateUserStreak } from "@/lib/services/streak";
 import { processContestScoring } from "@/lib/services/contest";
 import { executionQueue, queueEvents } from "@/lib/queue";
+import { submissionSchema } from "@/lib/validations";
 
 // Ensure socket is connected
 socketClient.connect();
@@ -63,8 +64,14 @@ export const POST = apiHandler(async (req: Request) => {
   }
   const userId = session.user.id;
 
-  const { code, language, problemId, type } = await req.json();
-  logger.info(`[SUBMISSION] Start Submission for: ${problemId}, type: ${type}`);
+  const body = await req.json();
+  const validation = submissionSchema.safeParse(body);
+  if (!validation.success) {
+    throw new ApiError(validation.error.errors[0].message, 400);
+  }
+  
+  const { code, language, problemId } = validation.data;
+  logger.info(`[SUBMISSION] Start Submission for: ${problemId}`);
 
   // 1. Fetch the problem
   const problem = await prisma.problem.findUnique({

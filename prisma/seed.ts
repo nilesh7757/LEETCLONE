@@ -258,6 +258,72 @@ if __name__ == "__main__":
         type: ProblemType.CODING,
     },
     {
+      title: "Binary Search",
+      slug: "binary-search",
+      difficulty: "Medium",
+      category: "Binary Search",
+      description: `
+<h1>Binary Search</h1>
+<p>Given an array of integers <code>nums</code> sorted in ascending order, and an integer <code>target</code>, write a function to search <code>target</code> in <code>nums</code>. If <code>target</code> exists, return its index. Otherwise, return <code>-1</code>.</p>
+<p>You must write an algorithm with <code>O(log n)</code> runtime complexity.</p>
+
+<h2>Example 1:</h2>
+<pre>
+Input: nums = [-1,0,3,5,9,12], target = 9
+Output: 4
+Explanation: 9 exists in nums and its index is 4.
+</pre>
+
+<h2>Example 2:</h2>
+<pre>
+Input: nums = [-1,0,3,5,9,12], target = 2
+Output: -1
+Explanation: 2 does not exist in nums so return -1.
+</pre>
+
+<h2>Constraints:</h2>
+<ul>
+  <li><code>1 ≤ nums.length ≤ 10<sup>4</sup></code></li>
+  <li><code>-10<sup>4</sup> < nums[i] < 10<sup>4</sup></code></li>
+  <li>All the integers in <code>nums</code> are <strong>unique</strong>.</li>
+  <li><code>nums</code> is sorted in ascending order.</li>
+  <li><code>-10<sup>4</sup> < target < 10<sup>4</sup></code></li>
+</ul>
+      `,
+      testSets: [
+        { input: "6\n-1 0 3 5 9 12\n9", expectedOutput: "4", isExample: true },
+        { input: "6\n-1 0 3 5 9 12\n2", expectedOutput: "-1", isExample: true },
+        { input: "1\n5\n5", expectedOutput: "0", isExample: false },
+        { input: "1\n5\n-5", expectedOutput: "-1", isExample: false },
+        { input: "4\n1 3 5 7\n3", expectedOutput: "1", isExample: false },
+        { input: "4\n1 3 5 7\n8", expectedOutput: "-1", isExample: false }
+      ],
+      referenceSolution: `
+import sys
+
+def search(nums: list[int], target: int) -> int:
+    l, r = 0, len(nums) - 1
+    while l <= r:
+        mid = (l + r) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            l = mid + 1
+        else:
+            r = mid - 1
+    return -1
+
+if __name__ == "__main__":
+    lines = sys.stdin.readlines()
+    if len(lines) >= 3:
+        n = int(lines[0].strip())
+        nums = list(map(int, lines[1].split()))
+        target = int(lines[2].strip())
+        print(search(nums, target))
+      `.trim(),
+      type: ProblemType.CODING,
+    },
+    {
         title: "Weird Algorithm",
         slug: "weird-algorithm",
         difficulty: "Easy",

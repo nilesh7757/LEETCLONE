@@ -99,22 +99,42 @@ async function broadcastLeaderboardUpdate(contestId: string) {
     },
   });
 
-  // Fetch all first AC submissions for every user in this contest to calculate accurate penalty
-  const leaderboardData = await Promise.all(contestRegistrations.map(async (reg) => {
-      const firstSolves = await prisma.submission.findMany({
-          where: {
-              userId: reg.userId,
-              status: "Accepted",
-              problem: { contests: { some: { id: contestId } } },
-              createdAt: { gte: contest.startTime, lte: contest.endTime }
-          },
-          orderBy: { createdAt: "asc" },
-          distinct: ['problemId']
-      });
+  if (contestRegistrations.length === 0) {
+      socket.emit("leaderboard_update", { contestId, leaderboard: [] });
+      return;
+  }
 
-      const totalPenalty = firstSolves.reduce((acc, sub) => {
-          // Time since contest start in minutes
-          const solveTime = Math.floor((sub.createdAt.getTime() - contest.startTime.getTime()) / 60000);
+  const participantIds = contestRegistrations.map(reg => reg.userId);
+
+  // OPTIMIZED: Fetch all first AC submissions for ALL users in this contest in one go
+  const allAcceptedSubmissions = await prisma.submission.findMany({
+      where: {
+          userId: { in: participantIds },
+          status: "Accepted",
+          problem: { contests: { some: { id: contestId } } },
+          createdAt: { gte: contest.startTime, lte: contest.endTime }
+      },
+      orderBy: { createdAt: "asc" }
+  });
+
+  // Group by userId and pick the first AC for each problemId
+  const userFirstSolves: Record<string, Record<string, Date>> = {};
+  
+  allAcceptedSubmissions.forEach(sub => {
+      if (!userFirstSolves[sub.userId]) {
+          userFirstSolves[sub.userId] = {};
+      }
+      // Since they are ordered by createdAt ASC, the first one we see is the earliest
+      if (!userFirstSolves[sub.userId][sub.problemId]) {
+          userFirstSolves[sub.userId][sub.problemId] = sub.createdAt;
+      }
+  });
+
+  const leaderboardData = contestRegistrations.map((reg) => {
+      const firstSolves = userFirstSolves[reg.userId] || {};
+      
+      const totalPenalty = Object.values(firstSolves).reduce((acc, createdAt) => {
+          const solveTime = Math.floor((createdAt.getTime() - contest.startTime.getTime()) / 60000);
           return acc + Math.max(0, solveTime); 
       }, 0);
 
@@ -122,7 +142,7 @@ async function broadcastLeaderboardUpdate(contestId: string) {
           reg,
           totalPenalty
       };
-  }));
+  });
 
   // Sort: Higher Score -> Lower Penalty
   leaderboardData.sort((a, b) => {

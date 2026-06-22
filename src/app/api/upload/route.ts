@@ -1,49 +1,31 @@
-import { v2 as cloudinary } from "cloudinary";
+import cloudinary from "@/lib/cloudinaryConfig";
 import { NextResponse } from "next/server";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
 
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+export const POST = apiHandler(async (req: Request) => {
+  const formData = await req.formData();
+  const file = formData.get("file") as File;
 
-export async function POST(req: Request) {
-  try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-    }
-
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    return new Promise<NextResponse>((resolve) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: "logiquest-avatars", // Optional: organize uploads in a folder
-        },
-        (error, result) => {
-          if (error) {
-            console.error("Cloudinary upload error:", error);
-            resolve(
-              NextResponse.json(
-                { error: "Image upload failed" },
-                { status: 500 }
-              )
-            );
-          } else {
-            resolve(NextResponse.json({ url: result?.secure_url }));
-          }
-        }
-      ).end(buffer);
-    });
-  } catch (error) {
-    console.error("Upload handler error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  if (!file) {
+    throw new ApiError("No file uploaded", 400);
   }
-}
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  return new Promise<NextResponse>((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      {
+        folder: "logiquest-avatars", // Optional: organize uploads in a folder
+      },
+      (error, result) => {
+        if (error) {
+          reject(new ApiError("Image upload failed", 500));
+        } else {
+          resolve(NextResponse.json({ url: result?.secure_url }));
+        }
+      }
+    ).end(buffer);
+  });
+});

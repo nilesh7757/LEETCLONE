@@ -1,38 +1,36 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
+import { profileUpdateSchema } from "@/lib/validations";
 
-export async function PUT(req: Request) {
+export const PUT = apiHandler(async (req: Request) => {
   const session = await auth();
 
   if (!session || !session.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw new ApiError("Unauthorized", 401);
   }
 
-  try {
-    const data = await req.json();
-    console.log("Updating profile for:", session.user.email, "Data:", data);
-
-    const { name, bio, website, description, image, skills } = data;
-
-    const updatedUser = await prisma.user.update({
-      where: { email: session.user.email as string },
-      data: {
-        name,
-        bio,
-        website,
-        description,
-        image,
-        skills: Array.isArray(skills) ? skills : undefined,
-      },
-    });
-
-    return NextResponse.json(updatedUser);
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    return NextResponse.json(
-      { error: "Failed to update profile", details: String(error) },
-      { status: 500 }
-    );
+  const body = await req.json();
+  const validation = profileUpdateSchema.safeParse(body);
+  if (!validation.success) {
+    throw new ApiError(validation.error.errors[0].message, 400);
   }
-}
+
+  const { name, bio, website, description, image, skills } = validation.data;
+
+  const updatedUser = await prisma.user.update({
+    where: { email: session.user.email as string },
+    data: {
+      name,
+      bio,
+      website,
+      description,
+      image,
+      skills: Array.isArray(skills) ? skills : undefined,
+    },
+  });
+
+  return NextResponse.json(updatedUser);
+});

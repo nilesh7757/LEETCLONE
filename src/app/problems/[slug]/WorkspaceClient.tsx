@@ -110,33 +110,33 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-[#050505] text-[#e1e1e1] overflow-hidden font-sans">
+    <div className="flex flex-col h-[100dvh] bg-[var(--background)] text-[var(--foreground)] overflow-hidden font-sans">
       <ExecutionAnimation 
         isVisible={showSuccessAnimation} 
         onComplete={() => setShowSuccessAnimation(false)} 
       />
 
       {/* PRO STUDIO HEADER */}
-      <header className="h-[52px] border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between px-4 shrink-0 z-[60] shadow-sm">
+      <header className="h-[52px] border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shrink-0 z-[60] shadow-sm">
          <div className="flex items-center gap-6">
-            <Link href="/problems" className="p-1.5 hover:bg-white/5 rounded-lg transition-all text-[#a1a1aa] hover:text-white group">
+            <Link href="/problems" className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] group">
                <ChevronLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
             </Link>
             <div className="flex items-center gap-3 text-[14px]">
-               <span className="text-[#52525b] font-medium tracking-tight">Problems</span>
-               <span className="text-[#262626] font-light">/</span>
-               <span className="text-[#f5f5f5] font-bold tracking-tight">{problem.title}</span>
+               <span className="text-[var(--muted-foreground)] font-medium tracking-tight">Problems</span>
+               <span className="text-[var(--muted-foreground)] font-light opacity-30">/</span>
+               <span className="text-[var(--foreground)] font-bold tracking-tight">{problem.title}</span>
             </div>
          </div>
 
          <div className="flex items-center gap-4">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
-               solvedToday ? "bg-orange-500/10 text-orange-500 border-orange-500/20" : "bg-white/5 text-[#52525b] border-transparent"
+               solvedToday ? "bg-orange-500/10 text-orange-500 border-orange-500/20" : "bg-[var(--foreground)]/5 text-[var(--muted-foreground)] border-transparent"
             }`}>
                <Flame size={14} className={solvedToday ? "fill-orange-500" : ""} />
                <span className="text-[12px] font-black">{streak}</span>
             </div>
-            <div className="w-px h-4 bg-white/10" />
+            <div className="w-px h-4 bg-[var(--border)]" />
             <NotificationBell />
             <ThemeToggle />
          </div>
@@ -152,13 +152,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             gutterSize={2}
             gutter={() => {
                 const gutter = document.createElement('div');
-                gutter.className = 'w-[2px] bg-black hover:bg-[#3b82f6]/40 transition-all cursor-col-resize z-50';
+                gutter.className = 'w-[2px] bg-[var(--background)] hover:bg-[var(--primary)]/40 transition-all cursor-col-resize z-50';
                 return gutter;
             }}
             >
             {/* LEFT PANEL: CONTENT */}
-            <div className="flex flex-col h-full bg-[#09090b] overflow-hidden min-h-0 border-r border-white/5">
-                <div className="flex items-center px-4 border-b border-white/5 h-[44px] shrink-0 gap-6 bg-[#0a0a0a]">
+            <div className="flex flex-col h-full bg-[var(--card)] overflow-hidden min-h-0 border-r border-[var(--border)]">
+                <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)]">
                     {([
                     { id: 'description', label: 'Description', icon: Info },
                     { id: 'resources', label: 'Resources', icon: Library },
@@ -170,19 +170,19 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
                         className={`relative h-full text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 px-1 ${
-                            activeTab === t.id ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"
+                            activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         }`}
                     >
-                        <t.icon size={14} className={activeTab === t.id ? "text-[#3b82f6]" : ""} />
+                        <t.icon size={14} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
                         {t.label}
                         {activeTab === t.id && (
-                            <motion.div layoutId="left-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#3b82f6] shadow-[0_0_12px_rgba(59,130,246,0.5)]" />
+                            <motion.div layoutId="left-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)] shadow-[0_0_12px_rgba(143,68,240,0.5)]" />
                         )}
                     </button>
                     ))}
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#09090b]">
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[var(--card)]">
                     <div className="p-8 max-w-4xl mx-auto">
                     {activeTab === 'description' && <ProblemDescription description={problem.description} examples={examples} />}
                     {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
@@ -192,7 +192,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                 <div 
                                 key={i} 
                                 onClick={() => setSelectedSubmission(sub)}
-                                className="flex items-center justify-between p-5 rounded-2xl border border-white/5 bg-[#111111]/50 hover:bg-[#111111] hover:border-white/10 transition-all cursor-pointer group"
+                                className="flex items-center justify-between p-5 rounded-2xl border border-[var(--border)] bg-[var(--foreground)]/[0.02] hover:bg-[var(--foreground)]/[0.05] transition-all cursor-pointer group"
                                 >
                                 <div className="flex items-center gap-4">
                                     <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
@@ -200,10 +200,10 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                     </div>
                                     <div>
                                         <div className="text-[14px] font-bold tracking-tight">{sub.status}</div>
-                                        <div className="text-[10px] text-[#52525b] uppercase font-black tracking-widest mt-0.5">{new Date(sub.createdAt).toLocaleDateString()}</div>
+                                        <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-0.5">{new Date(sub.createdAt).toLocaleDateString()}</div>
                                     </div>
                                 </div>
-                                <div className="text-right font-mono text-[12px] font-bold text-[#52525b] group-hover:text-[#a1a1aa] transition-colors">{sub.runtime}ms</div>
+                                <div className="text-right font-mono text-[12px] font-bold text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">{sub.runtime}ms</div>
                                 </div>
                             ))}
                         </div>
@@ -215,7 +215,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             </div>
 
             {/* RIGHT PANEL: IDE */}
-            <div className="flex flex-col h-full bg-[#050505] overflow-hidden min-h-0">
+            <div className="flex flex-col h-full bg-[var(--background)] overflow-hidden min-h-0">
                 <Split
                     direction="vertical"
                     sizes={[65, 35]}
@@ -223,17 +223,17 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     gutterSize={2}
                     gutter={() => {
                     const gutter = document.createElement('div');
-                    gutter.className = 'h-[2px] bg-black hover:bg-[#3b82f6]/40 transition-all cursor-row-resize z-50';
+                    gutter.className = 'h-[2px] bg-[var(--background)] hover:bg-[var(--primary)]/40 transition-all cursor-row-resize z-50';
                     return gutter;
                     }}
                     className="flex-1 flex flex-col min-h-0"
                 >
                     {/* TOP: EDITOR */}
-                    <div className="flex flex-col h-full overflow-hidden min-h-0 bg-[#0a0a0a]">
-                    <div className="h-[44px] border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between px-4 shrink-0">
+                    <div className="flex flex-col h-full overflow-hidden min-h-0 bg-[var(--card)]">
+                    <div className="h-[44px] border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shrink-0">
                         <div className="flex items-center gap-2">
-                            <Code2 size={14} className="text-[#3b82f6]" />
-                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#52525b]">Code Workbench</div>
+                            <Code2 size={14} className="text-[var(--primary)]" />
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Code Workbench</div>
                         </div>
                         <div className="flex items-center gap-3">
                             <EditorPanel
@@ -247,7 +247,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             />
                         </div>
                     </div>
-                    <div className="flex-1 min-h-0 bg-[#09090b]">
+                    <div className="flex-1 min-h-0 bg-[var(--card)]">
                         <EditorPanel
                             isEditorOnly
                             code={code}
@@ -261,7 +261,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     </div>
 
                     {/* BOTTOM: CONSOLE */}
-                    <div className="flex flex-col h-full bg-[#09090b] overflow-hidden min-h-0 border-t border-white/5 shadow-2xl">
+                    <div className="flex flex-col h-full bg-[var(--card)] overflow-hidden min-h-0 border-t border-[var(--border)] shadow-2xl">
                     <ConsolePanel
                         consoleTab={consoleTab}
                         setConsoleTab={setConsoleTab}
@@ -284,8 +284,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         </div>
 
         {/* MOBILE WORKSPACE (READ-ONLY) */}
-        <div className="md:hidden flex flex-col h-full bg-[#09090b] overflow-hidden">
-            <div className="flex items-center px-4 border-b border-white/5 h-[44px] shrink-0 gap-6 bg-[#0a0a0a] overflow-x-auto no-scrollbar">
+        <div className="md:hidden flex flex-col h-full bg-[var(--card)] overflow-hidden">
+            <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)] overflow-x-auto no-scrollbar">
                 {([
                     { id: 'description', label: 'Description', icon: Info },
                     { id: 'resources', label: 'Resources', icon: Library },
@@ -297,13 +297,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
                         className={`relative h-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 px-1 shrink-0 ${
-                            activeTab === t.id ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"
+                            activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         }`}
                     >
-                        <t.icon size={13} className={activeTab === t.id ? "text-[#3b82f6]" : ""} />
+                        <t.icon size={13} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
                         {t.label}
                         {activeTab === t.id && (
-                            <motion.div layoutId="mobile-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#3b82f6]" />
+                            <motion.div layoutId="mobile-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)]" />
                         )}
                     </button>
                 ))}
@@ -318,7 +318,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             <div 
                                 key={i} 
                                 onClick={() => setSelectedSubmission(sub)}
-                                className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-[#111111]/50"
+                                className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
@@ -326,10 +326,10 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                     </div>
                                     <div>
                                         <div className="text-[13px] font-bold">{sub.status}</div>
-                                        <div className="text-[9px] text-[#52525b] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
+                                        <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
                                     </div>
                                 </div>
-                                <div className="font-mono text-[11px] text-[#52525b]">{sub.runtime}ms</div>
+                                <div className="font-mono text-[11px] text-[var(--muted-foreground)]">{sub.runtime}ms</div>
                             </div>
                         ))}
                     </div>
@@ -338,7 +338,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                 {activeTab === 'ai' && <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />}
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 bg-[#3b82f6] text-white py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest z-50">
+            <div className="absolute bottom-0 left-0 right-0 bg-[var(--primary)] text-[var(--foreground)] py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest z-50">
                 💻 Switch to a desktop to code & submit
             </div>
         </div>
@@ -354,8 +354,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
       `}</style>
     </div>
   );

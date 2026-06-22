@@ -1,84 +1,82 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { apiHandler } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-error";
 
-export async function GET(req: Request) {
+export const GET = apiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const problemId = searchParams.get("problemId");
 
-  if (!problemId) return NextResponse.json({ error: "Missing problemId" }, { status: 400 });
-
-  try {
-    // Fetch all comments for the problem (flat list)
-    // We will rebuild the tree on the client side
-    const comments = await prisma.comment.findMany({
-      where: { problemId },
-      include: {
-        user: { 
-          select: { id: true, name: true, image: true } 
-        },
-        votes: true
-      },
-      orderBy: { createdAt: "asc" }
-    });
-
-    return NextResponse.json({ comments });
-  } catch (error) {
-    console.error("Failed to fetch comments:", error);
-    return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
+  if (!problemId) {
+    throw new ApiError("Missing problemId", 400);
   }
-}
 
-export async function POST(req: Request) {
+  // Fetch all comments for the problem (flat list)
+  // We will rebuild the tree on the client side
+  const comments = await prisma.comment.findMany({
+    where: { problemId },
+    include: {
+      user: { 
+        select: { id: true, name: true, image: true } 
+      },
+      votes: true
+    },
+    orderBy: { createdAt: "asc" }
+  });
+
+  return NextResponse.json({ comments });
+});
+
+export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user) {
+    throw new ApiError("Unauthorized", 401);
+  }
 
-  try {
-    const { problemId, content, parentId } = await req.json();
+  const { problemId, content, parentId } = await req.json();
 
-    if (!content || !problemId) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (!content || !problemId) {
+    throw new ApiError("Missing fields", 400);
+  }
 
-    const comment = await prisma.comment.create({
-      data: {
-        content,
-        problemId,
-        userId: session.user.id,
-        parentId: parentId || null
-      },
-      include: {
-        user: { select: { id: true, name: true, image: true } },
-        votes: true
-      }
+  const comment = await prisma.comment.create({
+    data: {
+      content,
+      problemId,
+      userId: session.user.id,
+      parentId: parentId || null
+    },
+    include: {
+      user: { select: { id: true, name: true, image: true } },
+      votes: true
+    }
+  });
+
+  let notification = null;
+
+  // Notification Logic
+  if (parentId) {
+    const parentComment = await prisma.comment.findUnique({
+      where: { id: parentId },
+      select: { userId: true }
     });
 
-    let notification = null;
-
-    // Notification Logic
-    if (parentId) {
-      const parentComment = await prisma.comment.findUnique({
-        where: { id: parentId },
-        select: { userId: true }
+    if (parentComment && parentComment.userId !== session.user.id) {
+      notification = await prisma.notification.create({
+        data: {
+          type: "COMMENT_REPLY",
+          userId: parentComment.userId, // Recipient
+          senderId: session.user.id,
+          message: `${session.user.name || "Someone"} replied to your comment.`,
+          link: `/problems/${problemId}`, // TODO: Add deep link to comment
+        },
+        include: {
+          sender: { select: { id: true, name: true, image: true } }
+        }
       });
-
-      if (parentComment && parentComment.userId !== session.user.id) {
-        notification = await prisma.notification.create({
-          data: {
-            type: "COMMENT_REPLY",
-            userId: parentComment.userId, // Recipient
-            senderId: session.user.id,
-            message: `${session.user.name || "Someone"} replied to your comment.`,
-            link: `/problems/${problemId}`, // TODO: Add deep link to comment
-          },
-          include: {
-            sender: { select: { id: true, name: true, image: true } }
-          }
-        });
-      }
     }
-
-    return NextResponse.json({ comment, notification });
-  } catch (error) {
-    console.error("Failed to post comment:", error);
-    return NextResponse.json({ error: "Failed to post comment" }, { status: 500 });
   }
-}
+
+  return NextResponse.json({ comment, notification });
+});

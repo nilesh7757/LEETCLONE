@@ -101,6 +101,13 @@
   --viz-red-rgb: 244, 63, 94;
   --viz-purple: #8b5cf6;
   --viz-purple-rgb: 139, 92, 246;
+
+  --viz-lime-rgb: 132, 204, 22;
+  --viz-lavender-rgb: 168, 85, 247;
+  --viz-cyan-rgb: 6, 182, 212;
+  --viz-rose-rgb: 244, 63, 94;
+  --viz-amber-rgb: 245, 158, 11;
+  --viz-deep-purple-rgb: 126, 34, 206;
 }
 
 [data-theme='cream'] {
@@ -139,6 +146,13 @@
   --viz-red-rgb: 230, 176, 170;
   --viz-purple: #D7BDE2;
   --viz-purple-rgb: 215, 189, 226;
+
+  --viz-lime-rgb: 148, 173, 78;
+  --viz-lavender-rgb: 215, 189, 226;
+  --viz-cyan-rgb: 127, 179, 213;
+  --viz-rose-rgb: 230, 176, 170;
+  --viz-amber-rgb: 247, 220, 111;
+  --viz-deep-purple-rgb: 139, 92, 246;
 }
 
 [data-theme='batman'] {
@@ -179,11 +193,17 @@
   --viz-purple-rgb: 26, 26, 26;
 
   --viz-lime: #ff0000;
+  --viz-lime-rgb: 255, 0, 0;
   --viz-lavender: #666666;
+  --viz-lavender-rgb: 102, 102, 102;
   --viz-cyan: #ff0000;
+  --viz-cyan-rgb: 255, 0, 0;
   --viz-rose: #ff0000;
+  --viz-rose-rgb: 255, 0, 0;
   --viz-amber: #ff0000;
+  --viz-amber-rgb: 255, 0, 0;
   --viz-deep-purple: #1a1a1a;
+  --viz-deep-purple-rgb: 26, 26, 26;
 
   --viz-emerald: #ff0000;
   --viz-emerald-rgb: 255, 0, 0;
@@ -252,28 +272,6 @@ body::before {
 }
 
 .remote-cursor {
-  position: relative;
-  border-left: 2px solid;
-  margin-left: -1px;
-}
-.remote-cursor::after {
-  content: attr(data-name);
-  position: absolute;
-  top: -18px;
-  left: -2px;
-  font-size: 10px;
-  color: white;
-  background-color: inherit;
-  padding: 1px 4px;
-  border-radius: 4px;
-  white-space: nowrap;
-  pointer-events: none;
-  font-family: sans-serif;
-  font-weight: bold;
-  opacity: 0.8;
-  z-index: 10;
-}
-te-cursor {
   position: relative;
   border-left: 2px solid;
   margin-left: -1px;

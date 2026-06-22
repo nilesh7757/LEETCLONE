@@ -16,6 +16,8 @@ declare module "next-auth" {
       leetcodeUsername?: string | null;
       codeforcesUsername?: string | null;
       devPowerLevel?: number;
+      countryCode?: string | null;
+      avatarId?: string | null;
       aiProfileFeedback?: string | null;
       description?: string | null;
     } & DefaultSession["user"];
@@ -29,6 +31,8 @@ declare module "next-auth" {
     leetcodeUsername?: string | null;
     codeforcesUsername?: string | null;
     devPowerLevel?: number;
+    countryCode?: string | null;
+    avatarId?: string | null;
     aiProfileFeedback?: string | null;
     description?: string | null;
   }
@@ -64,6 +68,8 @@ export const authConfig = {
       if (token?.leetcodeUsername) session.user.leetcodeUsername = token.leetcodeUsername as string;
       if (token?.codeforcesUsername) session.user.codeforcesUsername = token.codeforcesUsername as string;
       if (token?.devPowerLevel !== undefined) session.user.devPowerLevel = token.devPowerLevel as number;
+      if (token?.countryCode) session.user.countryCode = token.countryCode as string;
+      if (token?.avatarId) session.user.avatarId = token.avatarId as string;
       if (token?.aiProfileFeedback) session.user.aiProfileFeedback = token.aiProfileFeedback as string;
       if (token?.description) session.user.description = token.description as string;
       

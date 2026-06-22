@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import FollowsModal from "@/features/profile/components/Profile/FollowsModal";
 import { io, Socket } from "socket.io-client";
 import SkillRadar from "@/features/profile/components/HeroProfile/SkillRadar";
+import UserRatingCard from "@/features/profile/components/HeroProfile/UserRatingCard";
 
 import Image from 'next/image';
 
@@ -68,6 +69,8 @@ interface PublicProfileClientProps {
     leetcodeUsername?: string | null;
     codeforcesUsername?: string | null;
     devPowerLevel?: number;
+    countryCode?: string | null;
+    avatarId?: string | null;
     aiProfileFeedback?: string | null;
     externalStats?: any;
   };
@@ -192,17 +195,6 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
             animate={{ opacity: 1, scale: 1 }}
             className="lg:col-span-4 space-y-6"
           >
-            <div className="p-8 rounded-[3rem] bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/20 shadow-xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                    <Rocket size={80} className="text-blue-400" />
-                </div>
-                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400 mb-2">Dev Power Level</h3>
-                <div className="text-6xl font-black tracking-tighter mb-4">{user.devPowerLevel || 0}</div>
-                <div className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full inline-block text-blue-400">
-                    {user.description || "UNRANKED_CANDIDATE"}
-                </div>
-            </div>
-
             <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden flex flex-col justify-center min-h-[200px]">
                 <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-3 flex items-center gap-2">
                     <Sparkles size={14} className="text-amber-500" /> Neural Coach Assessment
@@ -288,15 +280,11 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
             </div>
           </motion.div>
 
-          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-4 gap-6">
-                <StatCapsule label="Low Level" count={stats?.user?.solvedEasy || 0} color="#10b981" icon={Target} />
-                <StatCapsule label="Mid Level" count={stats?.user?.solvedMedium || 0} color="#f59e0b" icon={Zap} />
-                <StatCapsule label="High Level" count={stats?.user?.solvedHard || 0} color="#ef4444" icon={Award} />
-                <div className="p-8 rounded-[2.5rem] bg-[var(--card)] border border-[var(--border)] shadow-xl overflow-hidden flex flex-col justify-center">
-                    <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-4">Neural Mastery</h4>
-                    <SkillRadar stats={stats?.user?.categoryStats || {}} theme={theme} />
-                </div>
+          <div className="lg:col-span-12 flex justify-center py-8">
+                <UserRatingCard user={user} stats={stats} />
           </div>
+
+          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-4 gap-6">
 
           <motion.div className="lg:col-span-12 p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl overflow-hidden">
                 <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-8 flex items-center gap-2">

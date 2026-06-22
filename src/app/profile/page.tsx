@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   UserCircle, LogOut, Camera, Save, Loader2, 
-  TrendingUp, Calendar, 
+  TrendingUp, Calendar, Trophy,
   Award, X, Sparkles, Zap, Rocket,
   Github, CheckCircle2, AlertCircle
 } from "lucide-react";
@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useTheme } from "next-themes";
 import SkillRadar from "@/features/profile/components/HeroProfile/SkillRadar";
+import UserRatingCard from "@/features/profile/components/HeroProfile/UserRatingCard";
 
 import Image from "next/image";
 
@@ -104,6 +105,7 @@ export default function ProfilePage() {
     codeforcesUsername: "",
     codechefUsername: "",
     atcoderUsername: "",
+    countryCode: "",
   });
 
   const [skillInput, setSkillInput] = useState("");
@@ -134,6 +136,7 @@ export default function ProfilePage() {
         codeforcesUsername: user.codeforcesUsername || "",
         codechefUsername: user.codechefUsername || "",
         atcoderUsername: user.atcoderUsername || "",
+        countryCode: (user as any).countryCode || "IN",
       });
       fetchStats(user.id);
     }
@@ -504,6 +507,7 @@ export default function ProfilePage() {
                             )}
                         </div>
                     </div>
+
                 </div>
             </div>
           </motion.div>
@@ -513,38 +517,7 @@ export default function ProfilePage() {
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-7 xl:col-span-8 space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-8 rounded-[3rem] bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/20 shadow-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                        <Rocket size={80} className="text-blue-400" />
-                    </div>
-                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400 mb-2">Dev Power Level</h3>
-                    <motion.div 
-                        key={powerLevel}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="text-7xl font-black tracking-tighter mb-4"
-                    >
-                        {powerLevel}
-                    </motion.div>
-                    <div className="flex flex-wrap gap-2 items-center">
-                        <div className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full inline-block text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                            {devTitle || "UNRANKED_CANDIDATE"}
-                        </div>
-                        {externalStats?.consistency && (
-                            <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border flex items-center gap-1.5 ${
-                                externalStats.consistency.status === 'ELITE_MOMENTUM' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' :
-                                externalStats.consistency.status === 'STEADY' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
-                                externalStats.consistency.status === 'INCONSISTENT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                                'bg-red-500/10 border-red-500/20 text-red-400 animate-pulse'
-                            }`}>
-                                <Zap size={10} fill="currentColor" />
-                                {externalStats.consistency.status.replace('_', ' ')}: {externalStats.consistency.recentSolved7Days} SOLVED (7D)
-                            </div>
-                        )}
-                    </div>
-                </div>
-
+            <div className="grid grid-cols-1 gap-6">
                 <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden flex flex-col justify-center">
                     <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-3 flex items-center gap-2">
                         <Sparkles size={14} className="text-amber-500" /> Neural Coach Assessment
@@ -561,6 +534,10 @@ export default function ProfilePage() {
                         </motion.p>
                     </AnimatePresence>
                 </div>
+            </div>
+
+            <div className="flex justify-center w-full my-8">
+                <UserRatingCard user={session?.user} stats={stats} />
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -589,7 +566,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
                 <div className="h-[250px] w-full">
-                    {!loadingStats && stats && (
+                    {!loadingStats && stats && stats.ratingHistory.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={stats.ratingHistory}>
                                 <defs>
@@ -604,7 +581,12 @@ export default function ProfilePage() {
                                 <Area type="monotone" dataKey="rating" stroke="var(--viz-cyan)" strokeWidth={4} fill="url(#ratingP)" />
                             </AreaChart>
                         </ResponsiveContainer>
-                    )}
+                    ) : !loadingStats && stats ? (
+                        <div className="h-full flex flex-col items-center justify-center text-[var(--muted-foreground)]">
+                            <TrendingUp size={32} className="opacity-20 mb-3" />
+                            <span className="text-[11px] font-semibold uppercase tracking-widest">Compete in contests to build your trajectory</span>
+                        </div>
+                    ) : null}
                 </div>
             </div>
 

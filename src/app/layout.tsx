@@ -39,6 +39,7 @@ export default async function RootLayout({
             attribute="data-theme"
             defaultTheme="dark"
             enableSystem
+            themes={["light", "dark", "cream", "batman", "system"]}
             disableTransitionOnChange
           >
             <ActiveTracker />

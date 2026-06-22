@@ -269,6 +269,8 @@ model User {
   codeforcesUsername    String?
   codechefUsername      String?
   atcoderUsername       String?
+  countryCode           String?                   @default("IN")
+  avatarId              String?                   @default("av-1")
   devPowerLevel         Int                       @default(0)
   aiProfileFeedback     String?
   externalStats         Json?

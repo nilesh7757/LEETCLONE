@@ -83,7 +83,7 @@ export default function BugSniper() {
     setSelectedLine(null);
   };
 
-  const endGame = async () => {
+  const endGame = useCallback(async () => {
     setGameState("ENDED");
     if (timerRef.current) clearInterval(timerRef.current);
     
@@ -92,8 +92,10 @@ export default function BugSniper() {
         gameId: "BUG_SNIPER",
         score: score
       });
-    } catch (error) {}
-  };
+    } catch (error) {
+      console.error("Failed to save score", error);
+    }
+  }, [score]);
 
   useEffect(() => {
     if (gameState === "PLAYING" && timeLeft > 0) {
@@ -101,10 +103,12 @@ export default function BugSniper() {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      setTimeout(() => endGame(), 0);
+      setTimeout(() => {
+        void endGame();
+      }, 0);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [gameState, timeLeft]);
+  }, [gameState, timeLeft, endGame]);
 
   const handleLineClick = (line: number) => {
     if (gameState !== "PLAYING") return;
@@ -134,12 +138,12 @@ export default function BugSniper() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col p-6 md:p-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col p-6 md:p-12 relative overflow-hidden">
       
       <div className="max-w-5xl mx-auto w-full relative z-10 flex-1 flex flex-col">
         {/* NAV */}
         <div className="flex justify-between items-center mb-8 shrink-0">
-          <Link href="/arcade" className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
+          <Link href="/arcade" className="p-3 bg-[var(--foreground)]/5 rounded-2xl hover:bg-[var(--foreground)]/10 transition-all border border-[var(--border)]">
             <ArrowLeft size={20} />
           </Link>
           <div className="flex items-center gap-3">
@@ -150,12 +154,12 @@ export default function BugSniper() {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-                <div className="text-[9px] font-black uppercase tracking-widest text-[#52525b]">Time_Remaining</div>
+                <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Time_Remaining</div>
                 <div className={`text-2xl font-black font-mono ${timeLeft < 10 ? 'text-red-500 animate-pulse' : ''}`}>{timeLeft}s</div>
             </div>
-            <div className="w-px h-8 bg-white/10" />
+            <div className="w-px h-8 bg-[var(--foreground)]/10" />
             <div className="text-right">
-                <div className="text-[9px] font-black uppercase tracking-widest text-[#52525b]">Eliminations</div>
+                <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Eliminations</div>
                 <div className="text-2xl font-black font-mono text-emerald-500">{score}</div>
             </div>
           </div>
@@ -171,13 +175,13 @@ export default function BugSniper() {
             >
                <div className="relative">
                   <div className="absolute inset-0 bg-red-500/20 blur-[100px] rounded-full" />
-                  <div className="w-32 h-32 bg-[#0a0a0a] border-4 border-red-500/30 rounded-full flex items-center justify-center relative z-10">
+                  <div className="w-32 h-32 bg-[var(--card)] border-4 border-red-500/30 rounded-full flex items-center justify-center relative z-10">
                      <Bug size={60} className="text-red-500" />
                   </div>
                </div>
                <div className="space-y-4">
                   <h1 className="text-6xl font-black tracking-tighter uppercase italic">Seek & Destroy</h1>
-                  <p className="text-[#a1a1aa] max-w-md mx-auto leading-relaxed">
+                  <p className="text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
                     Identify the bug in each code snippet. Click the line containing the error. Precision is rewarded; false positives cost time.
                   </p>
                </div>
@@ -185,7 +189,7 @@ export default function BugSniper() {
                 onClick={startGame}
                 className="group relative px-12 py-5 bg-red-600 text-white font-black uppercase tracking-[0.4em] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-all hover:scale-105 active:scale-95"
                >
-                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                 <div className="absolute inset-0 bg-[var(--foreground)]/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                  <span className="relative flex items-center gap-3">Engage Target <Crosshair size={20} /></span>
                </button>
             </motion.div>
@@ -198,18 +202,18 @@ export default function BugSniper() {
               animate={{ opacity: 1 }}
               className="flex-1 flex flex-col gap-6"
             >
-              <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl overflow-hidden flex-1 relative flex flex-col">
-                <div className="px-6 py-4 bg-[#111] border-b border-white/5 flex justify-between items-center">
+              <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden flex-1 relative flex flex-col">
+                <div className="px-6 py-4 bg-[var(--card)] border-b border-[var(--border)] flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-red-500/50" />
                         <div className="w-3 h-3 rounded-full bg-amber-500/50" />
                         <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
-                        <span className="ml-4 text-[10px] font-black uppercase tracking-widest text-[#52525b]">{BUGS[currentIdx].language} {"//"} {BUGS[currentIdx].title}</span>
+                        <span className="ml-4 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">{BUGS[currentIdx].language} {"//"} {BUGS[currentIdx].title}</span>
                     </div>
                     <div className="text-[10px] font-black text-red-500/50 italic tracking-widest">MALFUNCTION_DETECTED</div>
                 </div>
                 
-                <div className="flex-1 relative bg-[#09090b]">
+                <div className="flex-1 relative bg-[var(--card)]">
                    <Editor
                      height="100%"
                      theme="vs-dark"
@@ -257,13 +261,13 @@ export default function BugSniper() {
                    </AnimatePresence>
                 </div>
 
-                <div className="p-6 bg-[#0a0a0a] border-t border-white/5 flex gap-4">
+                <div className="p-6 bg-[var(--card)] border-t border-[var(--border)] flex gap-4">
                    <div className="p-3 bg-red-500/5 rounded-xl text-red-500">
                       <Search size={18} />
                    </div>
                    <div className="flex-1">
-                      <div className="text-[9px] font-black uppercase tracking-widest text-[#52525b] mb-1">Intelligence_Report</div>
-                      <p className="text-sm font-medium text-[#a1a1aa] italic">{BUGS[currentIdx].hint}</p>
+                      <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1">Intelligence_Report</div>
+                      <p className="text-sm font-medium text-[var(--muted-foreground)] italic">{BUGS[currentIdx].hint}</p>
                    </div>
                 </div>
               </div>
@@ -280,7 +284,7 @@ export default function BugSniper() {
                <Trophy size={80} className="text-amber-500 drop-shadow-[0_0_30px_rgba(245,158,11,0.5)]" />
                <div className="space-y-4">
                   <h1 className="text-6xl font-black tracking-tighter uppercase">Extraction Complete</h1>
-                  <p className="text-[#a1a1aa] text-lg font-medium">Final Score: <span className="text-white font-black">{score} AP</span></p>
+                  <p className="text-[var(--muted-foreground)] text-lg font-medium">Final Score: <span className="text-[var(--foreground)] font-black">{score} AP</span></p>
                </div>
                <div className="flex flex-col gap-4 w-full max-w-xs mx-auto">
                   <button 
@@ -289,7 +293,7 @@ export default function BugSniper() {
                   >
                     <RotateCcw size={18} /> Restart Operation
                   </button>
-                  <Link href="/arcade" className="w-full py-4 bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-3">
+                  <Link href="/arcade" className="w-full py-4 bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--foreground)] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[var(--foreground)]/10 transition-all flex items-center justify-center gap-3">
                     Back to Command Center
                   </Link>
                </div>

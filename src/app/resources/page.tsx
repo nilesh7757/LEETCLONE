@@ -64,7 +64,7 @@ export default function ResourcesPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#020202] text-[#e1e1e1] font-sans selection:bg-[#3b82f6]/30 pb-20 overflow-x-hidden">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--primary)]/30 pb-20 overflow-x-hidden">
       <div className="max-w-[1400px] mx-auto px-6 py-12 lg:py-16">
         
         {/* HEADER */}
@@ -75,10 +75,10 @@ export default function ResourcesPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-3"
               >
-                 <div className="p-2.5 bg-[#3b82f6]/10 rounded-xl text-[#3b82f6] border border-[#3b82f6]/20">
+                 <div className="p-2.5 bg-[var(--primary)]/10 rounded-xl text-[var(--primary)] border border-[var(--primary)]/20">
                     <GraduationCap size={20} />
                  </div>
-                 <span className="text-[10px] font-black tracking-[0.3em] text-[#52525b] uppercase font-mono">Cognitive Repository</span>
+                 <span className="text-[10px] font-black tracking-[0.3em] text-[var(--muted-foreground)] uppercase font-mono">Cognitive Repository</span>
               </motion.div>
               
               <motion.div
@@ -86,10 +86,10 @@ export default function ResourcesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <h1 className="text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-                  Knowledge <span className="text-[#3b82f6]">Vault</span>
+                <h1 className="text-5xl font-extrabold tracking-tight text-[var(--foreground)] mb-4 leading-tight">
+                  Knowledge <span className="text-[var(--primary)]">Vault</span>
                 </h1>
-                <p className="text-base text-[#71717a] leading-relaxed max-w-xl">
+                <p className="text-base text-[var(--muted-foreground)] leading-relaxed max-w-xl">
                   A curated aggregation of high-fidelity learning materials. Access premier 
                   content from industry-leading creators across the algorithmic landscape.
                 </p>
@@ -97,31 +97,31 @@ export default function ResourcesPage() {
            </div>
 
            {/* DECORATIVE BLOBS */}
-           <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#3b82f6]/5 blur-[120px] rounded-full pointer-events-none" />
+           <div className="absolute -top-24 -left-24 w-96 h-96 bg-[var(--primary)]/5 blur-[120px] rounded-full pointer-events-none" />
         </div>
 
         {/* CONTROLS */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-12">
             {/* Search */}
             <div className="relative w-full lg:w-96 group">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3f3f46] group-focus-within:text-[#3b82f6] transition-colors" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] group-focus-within:text-[var(--primary)] transition-colors" />
                 <input 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search the vault..."
-                    className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl py-3.5 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-[#3b82f6]/40 focus:bg-[#0c0c0c] transition-all placeholder:text-[#3f3f46]"
+                    className="w-full bg-[var(--card)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-6 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]/40 focus:bg-[var(--background)] transition-all placeholder:text-[var(--muted-foreground)]"
                 />
             </div>
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-               <div className="p-1 bg-[#0a0a0a] border border-white/5 rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar">
+               <div className="p-1 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar">
                   {TYPES.map(t => (
                       <button
                         key={t.value}
                         onClick={() => setSelectedType(t.value)}
                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                            selectedType === t.value ? "bg-white text-black shadow-lg" : "text-[#52525b] hover:text-white"
+                            selectedType === t.value ? "bg-[var(--foreground)] text-[var(--background)] shadow-lg" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         }`}
                       >
                         {t.label}
@@ -133,7 +133,7 @@ export default function ResourcesPage() {
 
         {/* TOPIC CHIPS */}
         <div className="flex items-center gap-3 mb-12 overflow-x-auto no-scrollbar pb-2">
-            <div className="flex items-center gap-2 mr-4 text-[9px] font-black uppercase tracking-widest text-[#262626]">
+            <div className="flex items-center gap-2 mr-4 text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/30">
                 <Filter size={12} /> Topics
             </div>
             {TOPICS.map(topic => (
@@ -142,8 +142,8 @@ export default function ResourcesPage() {
                     onClick={() => setSelectedTopic(topic)}
                     className={`px-5 py-2 rounded-full text-[10px] font-bold transition-all border whitespace-nowrap ${
                         selectedTopic === topic 
-                        ? "bg-[#3b82f6]/10 border-[#3b82f6]/30 text-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                        : "bg-[#0a0a0a] border-white/5 text-[#52525b] hover:border-white/10 hover:text-[#a1a1aa]"
+                        ? "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)] shadow-[0_0_20px_rgba(var(--viz-blue-rgb),0.1)]" 
+                        : "bg-[var(--card)] border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--border-strong)] hover:text-[var(--foreground)]"
                     }`}
                 >
                     {topic}
@@ -168,14 +168,14 @@ export default function ResourcesPage() {
                  key="error" 
                  initial={{ opacity: 0, scale: 0.98 }} 
                  animate={{ opacity: 1, scale: 1 }}
-                 className="py-32 text-center rounded-[3rem] bg-[#0a0a0a] border border-white/5 border-dashed"
+                 className="py-32 text-center rounded-[3rem] bg-[var(--card)] border border-[var(--border)] border-dashed"
                >
-                  <AlertCircle className="w-16 h-16 text-rose-500/20 mx-auto mb-8" />
-                  <h3 className="text-xl font-bold text-white mb-4">Registry Offline</h3>
-                  <p className="text-sm text-[#52525b] max-w-sm mx-auto mb-10">{error}</p>
+                  <AlertCircle className="w-16 h-16 text-[var(--viz-red)]/40 mx-auto mb-8" />
+                  <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">Registry Offline</h3>
+                  <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto mb-10">{error}</p>
                   <button 
                     onClick={fetchResources}
-                    className="inline-flex items-center gap-2 px-10 py-4 bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-[#3b82f6] hover:text-white transition-all active:scale-95 shadow-xl shadow-white/5"
+                    className="inline-flex items-center gap-2 px-10 py-4 bg-[var(--foreground)] text-[var(--background)] font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] transition-all active:scale-95 shadow-xl shadow-[var(--foreground)]/5"
                   >
                     <RotateCcw size={16} /> Retry Sync
                   </button>
@@ -185,11 +185,11 @@ export default function ResourcesPage() {
                  key="empty" 
                  initial={{ opacity: 0, y: 10 }} 
                  animate={{ opacity: 1, y: 0 }}
-                 className="py-40 text-center rounded-[3rem] bg-[#0a0a0a] border border-white/5 border-dashed"
+                 className="py-40 text-center rounded-[3rem] bg-[var(--card)] border border-[var(--border)] border-dashed"
                >
-                  <Library className="w-20 h-20 text-[#1a1a1a] mx-auto mb-8" />
-                  <h3 className="text-2xl font-bold text-white mb-4 uppercase tracking-tighter">No Materials Found</h3>
-                  <p className="text-sm text-[#52525b] max-w-xs mx-auto">
+                  <Library className="w-20 h-20 text-[var(--muted-foreground)]/10 mx-auto mb-8" />
+                  <h3 className="text-2xl font-bold text-[var(--foreground)] mb-4 uppercase tracking-tighter">No Materials Found</h3>
+                  <p className="text-sm text-[var(--muted-foreground)] max-w-xs mx-auto">
                     No resources matched your current filter criteria. Try expanding your search or clearing filters.
                   </p>
                </motion.div>
@@ -218,19 +218,19 @@ export default function ResourcesPage() {
 
 function SkeletonLoader() {
     return (
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 h-[320px] flex flex-col">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 h-[320px] flex flex-col">
             <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-white/5 rounded-xl animate-pulse" />
-                <div className="w-16 h-5 bg-white/5 rounded-lg animate-pulse" />
+                <div className="w-12 h-12 bg-[var(--foreground)]/5 rounded-xl animate-pulse" />
+                <div className="w-16 h-5 bg-[var(--foreground)]/5 rounded-lg animate-pulse" />
             </div>
             <div className="space-y-4 mb-8">
-                <div className="w-3/4 h-7 bg-white/5 rounded-xl animate-pulse" />
-                <div className="w-1/2 h-4 bg-white/5 rounded-lg animate-pulse" />
-                <div className="w-full h-12 bg-white/5 rounded-xl animate-pulse" />
+                <div className="w-3/4 h-7 bg-[var(--foreground)]/5 rounded-xl animate-pulse" />
+                <div className="w-1/2 h-4 bg-[var(--foreground)]/5 rounded-lg animate-pulse" />
+                <div className="w-full h-12 bg-[var(--foreground)]/5 rounded-xl animate-pulse" />
             </div>
-            <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                <div className="w-20 h-3 bg-white/5 rounded-full animate-pulse" />
-                <div className="w-12 h-3 bg-white/5 rounded-full animate-pulse" />
+            <div className="mt-auto pt-6 border-t border-[var(--border)] flex items-center justify-between">
+                <div className="w-20 h-3 bg-[var(--foreground)]/5 rounded-full animate-pulse" />
+                <div className="w-12 h-3 bg-[var(--foreground)]/5 rounded-full animate-pulse" />
             </div>
         </div>
     );

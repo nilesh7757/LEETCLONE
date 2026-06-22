@@ -181,10 +181,10 @@ export default function ForgeWorkbench() {
   };
 
   if (loading) return (
-     <main className="h-screen bg-[#0a0a0a] flex items-center justify-center font-mono">
+     <main className="h-screen bg-[var(--background)] flex items-center justify-center font-mono">
         <div className="flex flex-col items-center gap-4">
-           <div className="w-10 h-10 border-2 border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin" />
-           <p className="text-[10px] uppercase tracking-widest text-[#52525b]">Loading Package...</p>
+           <div className="w-10 h-10 border-2 border-[var(--primary)]/20 border-t-[var(--primary)] rounded-full animate-spin" />
+           <p className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)]">Loading Package...</p>
         </div>
      </main>
   );
@@ -193,43 +193,43 @@ export default function ForgeWorkbench() {
   const isTester = collaborators.some(c => c.userId === session?.user?.id && c.role === 'TESTER');
 
   return (
-    <main className="flex flex-col h-screen bg-[#0a0a0a] overflow-hidden">
+    <main className="flex flex-col h-screen bg-[var(--background)] overflow-hidden">
       {/* FORGE TOOLBAR */}
-      <div className="h-10 bg-black border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-[60]">
+      <div className="h-10 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between px-6 shrink-0 z-[60]">
          <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
                <div className={`w-1.5 h-1.5 rounded-full ${
-                  telemetry.verificationStatus === 'STABLE' ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" : 
-                  telemetry.verificationStatus === 'VETTING' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" : "bg-white/20"
+                  telemetry.verificationStatus === 'STABLE' ? "bg-[var(--viz-green)] shadow-[0_0_8px_rgba(var(--viz-green-rgb),0.4)]" : 
+                  telemetry.verificationStatus === 'VETTING' ? "bg-[var(--viz-gold)] shadow-[0_0_8px_rgba(var(--viz-gold-rgb),0.4)]" : "bg-[var(--foreground)]/20"
                }`} />
-               <span className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Status: {telemetry.verificationStatus}</span>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Status: {telemetry.verificationStatus}</span>
             </div>
             
-            <div className="h-3 w-px bg-white/5" />
+            <div className="h-3 w-px bg-[var(--border)]" />
             
-            <button onClick={() => setIsCollabModalOpen(true)} className="flex items-center gap-2 text-[10px] font-bold text-[#52525b] uppercase hover:text-white transition-all">
+            <button onClick={() => setIsCollabModalOpen(true)} className="flex items-center gap-2 text-[10px] font-bold text-[var(--muted-foreground)] uppercase hover:text-[var(--foreground)] transition-all">
                <Users size={12} />
                Collaborators: {collaborators.length + 1}
             </button>
 
-            <div className="h-3 w-px bg-white/5" />
+            <div className="h-3 w-px bg-[var(--border)]" />
 
             <div className="flex items-center gap-4">
                {isOwner && telemetry.verificationStatus === 'DRAFT' && (
-                  <button onClick={() => updateStatus('VETTING')} className="text-[9px] font-bold text-[#3b82f6] uppercase tracking-widest hover:underline">Submit for Vetting</button>
+                  <button onClick={() => updateStatus('VETTING')} className="text-[9px] font-bold text-[var(--primary)] uppercase tracking-widest hover:underline">Submit for Vetting</button>
                )}
                {(isOwner || isTester) && telemetry.verificationStatus === 'VETTING' && (
-                  <button onClick={() => updateStatus('STABLE')} className="text-[9px] font-bold text-green-500 uppercase tracking-widest hover:underline">Mark as Stable</button>
+                  <button onClick={() => updateStatus('STABLE')} className="text-[9px] font-bold text-[var(--viz-green)] uppercase tracking-widest hover:underline">Mark as Stable</button>
                )}
                {telemetry.verificationStatus !== 'DRAFT' && isOwner && (
-                  <button onClick={() => updateStatus('DRAFT')} className="text-[9px] font-bold text-[#52525b] uppercase tracking-widest hover:underline">Revert to Draft</button>
+                  <button onClick={() => updateStatus('DRAFT')} className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest hover:underline">Revert to Draft</button>
                )}
             </div>
          </div>
          
          <div className="flex items-center gap-4">
             {/* Toolbar actions now exclusively for status and collaboration */}
-            <div className="text-[9px] font-mono text-[#262626] uppercase tracking-widest">Workbench Session Active</div>
+            <div className="text-[9px] font-mono text-[var(--muted-foreground)]/30 uppercase tracking-widest">Workbench Session Active</div>
          </div>
       </div>
 
@@ -248,62 +248,62 @@ export default function ForgeWorkbench() {
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                <motion.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                  className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden text-white"
+                  className="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden text-[var(--foreground)]"
                >
-                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                  <div className="p-6 border-b border-[var(--border)] flex items-center justify-between">
                      <div className="flex items-center gap-3">
-                        <Users size={18} className="text-[#3b82f6]" />
+                        <Users size={18} className="text-[var(--primary)]" />
                         <h3 className="text-sm font-bold">Collaborators</h3>
                      </div>
-                     <button onClick={() => setIsCollabModalOpen(false)} className="p-1 hover:bg-white/5 rounded text-[#52525b] hover:text-white"><X size={18} /></button>
+                     <button onClick={() => setIsCollabModalOpen(false)} className="p-1 hover:bg-[var(--foreground)]/5 rounded text-[var(--muted-foreground)] hover:text-[var(--foreground)]"><X size={18} /></button>
                   </div>
 
                   <div className="p-6 space-y-6">
                      {isOwner && (
                         <div className="space-y-3">
-                           <label className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Add Collaborator</label>
+                           <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Add Collaborator</label>
                            <div className="flex gap-2">
                               <input 
                                  type="email" value={newCollabEmail} onChange={(e) => setNewCollabEmail(e.target.value)}
                                  placeholder="user@example.com"
-                                 className="flex-1 bg-black border border-white/5 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[#3b82f6]/50"
+                                 className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[var(--primary)]/50"
                               />
                               <select 
                                  value={collabRole} onChange={(e) => setCollabRole(e.target.value)}
-                                 className="bg-black border border-white/5 rounded-xl px-3 text-[10px] font-bold uppercase outline-none"
+                                 className="bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 text-[10px] font-bold uppercase outline-none"
                               >
                                  <option value="SETTER">Setter</option>
                                  <option value="TESTER">Tester</option>
                               </select>
-                              <button onClick={addCollaborator} className="px-4 bg-white text-black rounded-xl hover:bg-[#3b82f6] hover:text-white transition-all"><UserPlus size={16} /></button>
+                              <button onClick={addCollaborator} className="px-4 bg-[var(--foreground)] text-[var(--background)] rounded-xl hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] transition-all"><UserPlus size={16} /></button>
                            </div>
                         </div>
                      )}
 
                      <div className="space-y-3">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Active Team</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Active Team</label>
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                           <div className="p-3 bg-white/[0.03] border border-white/5 rounded-xl flex items-center justify-between">
+                           <div className="p-3 bg-[var(--foreground)]/[0.03] border border-[var(--border)] rounded-xl flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                 <div className="w-7 h-7 rounded bg-[#3b82f6]/10 flex items-center justify-center text-[10px] font-bold text-[#3b82f6]">ME</div>
+                                 <div className="w-7 h-7 rounded bg-[var(--primary)]/10 flex items-center justify-center text-[10px] font-bold text-[var(--primary)]">ME</div>
                                  <div className="flex flex-col">
                                     <span className="text-xs font-bold">Project Owner</span>
                                  </div>
                               </div>
-                              <span className="text-[8px] font-bold uppercase tracking-widest text-[#3b82f6]">Owner</span>
+                              <span className="text-[8px] font-bold uppercase tracking-widest text-[var(--primary)]">Owner</span>
                            </div>
 
                            {collaborators.map(c => (
-                              <div key={c.id} className="p-3 bg-white/[0.01] border border-white/5 rounded-xl flex items-center justify-between">
+                              <div key={c.id} className="p-3 bg-[var(--foreground)]/[0.01] border border-[var(--border)] rounded-xl flex items-center justify-between">
                                  <div className="flex items-center gap-3">
-                                    <div className="w-7 h-7 rounded bg-white/5 flex items-center justify-center text-[10px] font-bold text-[#52525b]">{c.user.name?.slice(0, 2).toUpperCase()}</div>
+                                    <div className="w-7 h-7 rounded bg-[var(--foreground)]/5 flex items-center justify-center text-[10px] font-bold text-[var(--muted-foreground)]">{c.user.name?.slice(0, 2).toUpperCase()}</div>
                                     <div className="flex flex-col">
                                        <span className="text-xs font-bold">{c.user.name}</span>
-                                       <span className="text-[9px] text-[#52525b]">{c.user.email}</span>
+                                       <span className="text-[9px] text-[var(--muted-foreground)]">{c.user.email}</span>
                                     </div>
                                  </div>
                                  <div className="flex items-center gap-3">
-                                    <span className="text-[8px] font-bold uppercase tracking-widest text-[#52525b]">{c.role}</span>
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">{c.role}</span>
                                     {isOwner && (
                                        <button onClick={() => removeCollaborator(c.id)} className="text-rose-500/40 hover:text-rose-500"><Trash2 size={12} /></button>
                                     )}

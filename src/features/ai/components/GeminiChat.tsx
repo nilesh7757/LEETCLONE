@@ -74,6 +74,7 @@ export default function GeminiChat({
         const { data } = await axios.post("/api/gemini/chat", {
           messages: messages.map(m => ({ role: m.role, parts: [{ text: m.text }] })),
           context: {
+            problemId,
             problemTitle,
             problemDescription,
             code,
@@ -95,7 +96,7 @@ export default function GeminiChat({
     }, 45000); 
 
     return () => clearInterval(interval);
-  }, [isInterviewMode, code, messages, isLoading, problemDescription, problemTitle, language, testCases, speak]);
+  }, [isInterviewMode, problemId, code, messages, isLoading, problemDescription, problemTitle, language, testCases, speak]);
 
   // Initialize cooldown from localStorage
   useEffect(() => {
@@ -218,6 +219,7 @@ export default function GeminiChat({
         body: JSON.stringify({
           messages: apiMessages,
           context: {
+            problemId,
             problemTitle,
             problemDescription, 
             code,

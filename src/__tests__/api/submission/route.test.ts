@@ -53,7 +53,7 @@ const mockedExecuteCode = executeCode as jest.Mock
 
 describe('Submission API (POST)', () => {
   const userId = 'user-123'
-  const problemId = 'prob-456'
+  const problemId = '123e4567-e89b-12d3-a456-426614174000'
 
   beforeEach(() => {
     jest.clearAllMocks()

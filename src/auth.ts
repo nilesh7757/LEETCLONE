@@ -65,6 +65,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if ("leetcodeUsername" in user) token.leetcodeUsername = user.leetcodeUsername as string;
         if ("codeforcesUsername" in user) token.codeforcesUsername = user.codeforcesUsername as string;
         if ("devPowerLevel" in user) token.devPowerLevel = user.devPowerLevel as number;
+        if ("countryCode" in user) token.countryCode = user.countryCode as string;
+        if ("avatarId" in user) token.avatarId = user.avatarId as string;
       }
 
       if (token.sub && (!token.role || token.devPowerLevel === undefined)) {
@@ -74,7 +76,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             select: { 
               role: true, streak: true, name: true, image: true,
               arcadePoints: true, githubUsername: true, leetcodeUsername: true,
-              codeforcesUsername: true, devPowerLevel: true
+              codeforcesUsername: true, devPowerLevel: true, countryCode: true,
+              avatarId: true
             },
           });
           if (dbUser) {
@@ -87,6 +90,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.leetcodeUsername = dbUser.leetcodeUsername;
             token.codeforcesUsername = dbUser.codeforcesUsername;
             token.devPowerLevel = dbUser.devPowerLevel;
+            token.countryCode = dbUser.countryCode;
+            token.avatarId = dbUser.avatarId;
           }
         } catch (error) {
           console.error("JWT Callback Error:", error);
@@ -103,6 +108,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (session.leetcodeUsername !== undefined) token.leetcodeUsername = session.leetcodeUsername;
         if (session.codeforcesUsername !== undefined) token.codeforcesUsername = session.codeforcesUsername;
         if (session.devPowerLevel !== undefined) token.devPowerLevel = session.devPowerLevel;
+        if (session.countryCode !== undefined) token.countryCode = session.countryCode;
+        if (session.avatarId !== undefined) token.avatarId = session.avatarId;
       }
       return token;
     },

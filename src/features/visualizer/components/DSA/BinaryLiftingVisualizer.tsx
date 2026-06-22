@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  RotateCcw, ChevronLeft, ChevronRight, Zap, 
-  Binary, Database, Cpu, Calculator, ArrowUp, ArrowRight, Settings2, Search, Network
+  RotateCcw, Zap, 
+  Binary, Database, Cpu, Calculator, ArrowUp, ArrowRight, Settings2, Search
 } from "lucide-react";
 
 interface Step {
@@ -23,6 +23,16 @@ interface Step {
   tableState?: (number | null)[][];
 }
 
+const PARENT = [-1, 0, 0, 1, 1, 2, 2, 3, 4, 5];
+const N = 10;
+
+const NODES = [
+  { id: 0, x: 250, y: 50 },
+  { id: 1, x: 150, y: 120 }, { id: 2, x: 350, y: 120 },
+  { id: 3, x: 100, y: 200 }, { id: 4, x: 200, y: 200 }, { id: 5, x: 300, y: 200 }, { id: 6, x: 400, y: 200 },
+  { id: 7, x: 80, y: 280 }, { id: 8, x: 220, y: 280 }, { id: 9, x: 320, y: 280 }
+];
+
 export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: number }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -30,27 +40,24 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
   const [startNode, setStartNode] = useState(7);
   const [viewMode, setViewMode] = useState<"PRECOMPUTE" | "QUERY">("PRECOMPUTE");
 
-  const parent = [-1, 0, 0, 1, 1, 2, 2, 3, 4, 5];
-  const n = 10;
-  
   // Real up table for final query use
   const finalUp = useMemo(() => {
-    const table = Array.from({ length: n }, () => new Array(4).fill(-1));
-    for (let i = 0; i < n; i++) table[i][0] = parent[i];
+    const table = Array.from({ length: N }, () => new Array(4).fill(-1));
+    for (let i = 0; i < N; i++) table[i][0] = PARENT[i];
     for (let k = 1; k < 4; k++) {
-      for (let i = 0; i < n; i++) {
+      for (let i = 0; i < N; i++) {
         if (table[i][k-1] !== -1) table[i][k] = table[table[i][k-1]][k-1];
       }
     }
     return table;
-  }, [parent, n]);
+  }, []);
 
   const precomputeHistory = useMemo(() => {
     const steps: Step[] = [];
-    const table: (number | null)[][] = Array.from({ length: n }, () => new Array(4).fill(null));
+    const table: (number | null)[][] = Array.from({ length: N }, () => new Array(4).fill(null));
     
     // Step 0: Initialize with parents (k=0)
-    for (let i = 0; i < n; i++) table[i][0] = parent[i];
+    for (let i = 0; i < N; i++) table[i][0] = PARENT[i];
     
     steps.push({
       activeNode: -1, targetNode: null, k: 0, jumpSize: 1, message: "Phase 1: Initialize k=0 with direct parents. This is our base case.",
@@ -58,7 +65,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
     });
 
     for (let k = 1; k < 4; k++) {
-      for (let u = 0; u < n; u++) {
+      for (let u = 0; u < N; u++) {
         const mid = table[u][k-1];
         const target = mid !== null && mid !== -1 ? table[mid][k-1] : -1;
         
@@ -94,7 +101,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
       }
     }
     return steps;
-  }, [parent, n]);
+  }, []);
 
   const queryHistory = useMemo(() => {
     const steps: Step[] = [];
@@ -133,7 +140,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
     return steps;
   }, [startNode, targetK, finalUp]);
 
-  const history = viewMode === "PRECOMPUTE" ? precomputeHistory : queryHistory;
+  const history = useMemo(() => (viewMode === "PRECOMPUTE" ? precomputeHistory : queryHistory), [viewMode, precomputeHistory, queryHistory]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -148,14 +155,6 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
   }, [isPlaying, history.length, speed]);
 
   const step = history[currentIndex] || history[0];
-
-  const nodes = [
-    { id: 0, x: 250, y: 50 },
-    { id: 1, x: 150, y: 120 }, { id: 2, x: 350, y: 120 },
-    { id: 3, x: 100, y: 200 }, { id: 4, x: 200, y: 200 }, { id: 5, x: 300, y: 200 }, { id: 6, x: 400, y: 200 },
-    { id: 7, x: 80, y: 280 }, { id: 8, x: 220, y: 280 }, { id: 9, x: 320, y: 280 }
-  ];
-
   const currentTable = step.tableState || finalUp;
 
   return (
@@ -269,7 +268,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
                                 </tr>
                             </thead>
                             <tbody>
-                                {nodes.map(node => (
+                                {NODES.map(node => (
                                     <tr key={node.id} className={step.activeNode === node.id ? "bg-[var(--viz-cyan)]/5" : ""}>
                                         <td className={`p-1 border-b border-border/20 font-bold ${step.activeNode === node.id ? "text-[var(--viz-cyan)]" : ""}`}>{node.id}</td>
                                         {[0, 1, 2, 3].map(k => {
@@ -317,10 +316,10 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
                                 <polygon points="0 0, 10 3.5, 0 7" fill="var(--viz-amber)" />
                             </marker>
                         </defs>
-                        {parent.map((p, i) => {
+                        {PARENT.map((p, i) => {
                             if (p === -1) return null;
-                            const start = nodes.find(n => n.id === i)!;
-                            const end = nodes.find(n => n.id === p)!;
+                            const start = NODES.find(n => n.id === i)!;
+                            const end = NODES.find(n => n.id === p)!;
                             return <line key={i} x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke="var(--border)" strokeWidth="1" opacity="0.2" />;
                         })}
                         
@@ -331,7 +330,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
                                     {step.midNode !== undefined && step.midNode !== -1 && (
                                         <motion.path
                                             initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
-                                            d={`M ${nodes[step.activeNode].x} ${nodes[step.activeNode].y} Q ${nodes[step.activeNode].x-30} ${(nodes[step.activeNode].y + nodes[step.midNode!].y)/2} ${nodes[step.midNode!].x} ${nodes[step.midNode!].y}`}
+                                            d={`M ${NODES[step.activeNode].x} ${NODES[step.activeNode].y} Q ${NODES[step.activeNode].x-30} ${(NODES[step.activeNode].y + NODES[step.midNode!].y)/2} ${NODES[step.midNode!].x} ${NODES[step.midNode!].y}`}
                                             fill="none" stroke="var(--viz-amber)" strokeWidth="2" strokeDasharray="4 2"
                                             markerEnd="url(#arrow-amber)"
                                         />
@@ -339,7 +338,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
                                     {step.midNode !== undefined && step.midNode !== -1 && step.targetNode !== null && step.targetNode !== -1 && (
                                         <motion.path
                                             initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
-                                            d={`M ${nodes[step.midNode!].x} ${nodes[step.midNode!].y} Q ${nodes[step.midNode!].x-20} ${(nodes[step.midNode!].y + nodes[step.targetNode!].y)/2} ${nodes[step.targetNode!].x} ${nodes[step.targetNode!].y}`}
+                                            d={`M ${NODES[step.midNode!].x} ${NODES[step.midNode!].y} Q ${NODES[step.midNode!].x-20} ${(NODES[step.midNode!].y + NODES[step.targetNode!].y)/2} ${NODES[step.targetNode!].x} ${NODES[step.targetNode!].y}`}
                                             fill="none" stroke="var(--viz-cyan)" strokeWidth="2"
                                             markerEnd="url(#arrow-cyan)"
                                         />
@@ -352,16 +351,16 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
                                 <motion.path
                                     key={`qjump-${currentIndex}`}
                                     initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                                    d={`M ${nodes.find(n => n.id === step.activeNode)!.x} ${nodes.find(n => n.id === step.activeNode)!.y} 
-                                       Q ${nodes.find(n => n.id === step.activeNode)!.x-40} ${(nodes.find(n => n.id === step.activeNode)!.y + nodes.find(n => n.id === step.targetNode)!.y)/2} 
-                                         ${nodes.find(n => n.id === step.targetNode)!.x} ${nodes.find(n => n.id === step.targetNode)!.y}`}
+                                    d={`M ${NODES.find(n => n.id === step.activeNode)!.x} ${NODES.find(n => n.id === step.activeNode)!.y} 
+                                       Q ${NODES.find(n => n.id === step.activeNode)!.x-40} ${(NODES.find(n => n.id === step.activeNode)!.y + NODES.find(n => n.id === step.targetNode)!.y)/2} 
+                                         ${NODES.find(n => n.id === step.targetNode)!.x} ${NODES.find(n => n.id === step.targetNode)!.y}`}
                                     fill="none" stroke="var(--viz-cyan)" strokeWidth="3" markerEnd="url(#arrow-cyan)"
                                 />
                             )}
                         </AnimatePresence>
                     </svg>
 
-                    {nodes.map((node) => {
+                    {NODES.map((node) => {
                         const isU = step.activeNode === node.id;
                         const isMid = step.midNode === node.id;
                         const isTarget = step.targetNode === node.id;
@@ -425,5 +424,3 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
     </div>
   );
 }
-
-

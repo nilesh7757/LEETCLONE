@@ -117,7 +117,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="min-h-screen w-full bg-[#020202] text-[#e1e1e1] font-sans selection:bg-[#3b82f6]/30 overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--primary)]/30 overflow-x-hidden">
       
       {/* 1. BACKGROUND ARCHITECTURE */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -133,8 +133,8 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
             }} 
          />
          {/* Atmospheric Glows */}
-         <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-[#3b82f6]/5 rounded-full blur-[160px]" />
-         <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#a855f7]/5 rounded-full blur-[140px]" />
+         <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-[var(--primary)]/5 rounded-full blur-[160px]" />
+         <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-[var(--viz-purple)]/5 rounded-full blur-[140px]" />
       </div>
       
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 relative z-10"> 
@@ -143,17 +143,17 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-16">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-               <div className="p-2 bg-[#3b82f6]/10 rounded-lg text-[#3b82f6]">
+               <div className="p-2 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
                   <Sparkles size={20} />
                </div>
-               <span className="text-[10px] font-bold tracking-widest text-[#52525b] uppercase">Algorithm Repository</span>
+               <span className="text-[10px] font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Algorithm Repository</span>
             </div>
 
             <div className="space-y-2">
-               <h1 className="text-5xl font-bold tracking-tight text-white">
-                 Problem <span className="text-[#3b82f6]">Set</span>
+               <h1 className="text-5xl font-bold tracking-tight text-[var(--foreground)]">
+                 Problem <span className="text-[var(--primary)]">Set</span>
                </h1>
-               <p className="text-lg text-[#a1a1aa] max-w-2xl font-normal leading-relaxed">
+               <p className="text-lg text-[var(--muted-foreground)] max-w-2xl font-normal leading-relaxed">
                  Explore a collection of curated coding challenges. Practice, learn, and master algorithmic patterns.
                </p>
             </div>
@@ -161,21 +161,21 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
 
           {/* 3. STATS */}
           <div className="flex gap-4">
-             <div className="p-6 bg-[#111] border border-white/5 rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-300">
+             <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[var(--primary)]/30 transition-all duration-300">
                 <div className="flex justify-between items-center relative z-10">
-                   <span className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Total Problems</span>
-                   <Target className="w-3.5 h-3.5 text-[#3b82f6] opacity-40 group-hover:opacity-100 transition-all" />
+                   <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Total Problems</span>
+                   <Target className="w-3.5 h-3.5 text-[var(--primary)] opacity-40 group-hover:opacity-100 transition-all" />
                 </div>
-                <div className="text-4xl font-bold text-white tabular-nums group-hover:text-[#3b82f6] transition-colors">{stats.totalProblems}</div>
+                <div className="text-4xl font-bold text-[var(--foreground)] tabular-nums group-hover:text-[var(--primary)] transition-colors">{stats.totalProblems}</div>
              </div>
 
              {userId && (
-                <div className="p-6 bg-[#111] border border-white/5 rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[#22c55e]/30 transition-all duration-300">
+                <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[var(--viz-green)]/30 transition-all duration-300">
                    <div className="flex justify-between items-center relative z-10">
-                      <span className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Solved</span>
-                      <Trophy className="w-3.5 h-3.5 text-[#22c55e] opacity-40 group-hover:opacity-100 transition-all" />
+                      <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Solved</span>
+                      <Trophy className="w-3.5 h-3.5 text-[var(--viz-green)] opacity-40 group-hover:opacity-100 transition-all" />
                    </div>
-                   <div className="text-4xl font-bold text-[#22c55e] tabular-nums">{stats.solvedCount}</div>
+                   <div className="text-4xl font-bold text-[var(--viz-green)] tabular-nums">{stats.solvedCount}</div>
                 </div>
              )}
           </div>
@@ -188,16 +188,16 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
           <div className="lg:col-span-3 space-y-10">
             <div className="space-y-3">
                <div className="flex items-center gap-2 px-1">
-                  <div className="w-1 h-1 rounded-full bg-[#3b82f6]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Daily Challenge</span>
+                  <div className="w-1 h-1 rounded-full bg-[var(--primary)]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Daily Challenge</span>
                </div>
                <DailyProblemCard />
             </div>
 
             <div className="lg:sticky lg:top-12 space-y-3">
                <div className="flex items-center gap-2 px-1">
-                  <div className="w-1 h-1 rounded-full bg-[#a855f7]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#52525b]">Filters</span>
+                  <div className="w-1 h-1 rounded-full bg-[var(--viz-purple)]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Filters</span>
                </div>
                <ProblemFilters />
             </div>
@@ -205,7 +205,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
 
           {/* MAIN TABLE */}
           <div className="lg:col-span-9">             
-             <div className="bg-[#111] border border-white/5 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+             <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 shadow-2xl relative overflow-hidden">
                 <ProblemTable 
                    problems={problemsWithStatus} 
                    totalPages={totalPages} 

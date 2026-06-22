@@ -5,10 +5,10 @@ import Logo from "@/components/ui/Logo";
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#080808]">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--background)]">
       {/* Background Ambience */}
       <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#8F44F0]/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[var(--primary)]/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative flex flex-col items-center">
@@ -33,10 +33,10 @@ export default function Loading() {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="absolute inset-0 bg-[#8F44F0] rounded-full blur-2xl -z-10"
+            className="absolute inset-0 bg-[var(--primary)] rounded-full blur-2xl -z-10"
           />
           
-          <Logo className="w-16 h-16 text-[#8F44F0]" />
+          <Logo className="w-16 h-16 text-[var(--primary)]" />
         </motion.div>
 
         {/* Text and Progress Bar */}
@@ -45,12 +45,12 @@ export default function Loading() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-xl font-bold tracking-tighter text-white"
+            className="text-xl font-bold tracking-tighter text-[var(--foreground)]"
           >
             LogiQuest
           </motion.h2>
           
-          <div className="w-48 h-[2px] bg-white/5 rounded-full overflow-hidden relative">
+          <div className="w-48 h-[2px] bg-[var(--foreground)]/5 rounded-full overflow-hidden relative">
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: "100%" }}
@@ -59,7 +59,7 @@ export default function Loading() {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-[#8F44F0] to-transparent"
+              className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent"
             />
           </div>
           
@@ -67,7 +67,7 @@ export default function Loading() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold"
+            className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)] font-bold"
           >
             Initializing Logic Grid
           </motion.p>

@@ -25,6 +25,8 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       leetcodeUsername: true,
       codeforcesUsername: true,
       devPowerLevel: true,
+      countryCode: true,
+      avatarId: true,
       aiProfileFeedback: true,
       externalStats: true
     }

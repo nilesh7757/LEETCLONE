@@ -7,7 +7,7 @@ RUN apk add --no-cache libc6-compat openssl g++ build-base python3 sqlite
 # Stage 1: Install dependencies
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci
+RUN npm config set legacy-peer-deps true && npm ci
 
 # Stage 2: Build the application
 FROM base AS builder
