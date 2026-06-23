@@ -45,6 +45,7 @@ export const authConfig = {
   session: {
     strategy: "jwt",
   },
+  trustHost: true,
   secret: process.env.AUTH_SECRET || "development-secret-key-at-least-32-chars-long-!",
   callbacks: {
     async session({ session, token }) {
