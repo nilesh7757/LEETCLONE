@@ -33,21 +33,25 @@ const getValueColor = (val: number, ring: string) => {
   return "#f87171";
 };
 
+function lcg(seed: number) {
+  let s = seed | 0;
+  return () => { s = (s * 1664525 + 1013904223) | 0; return ((s >>> 0) / 4294967296); };
+}
+
 function FloatingParticles({ count = 15 }: { count?: number }) {
   const [ready, setReady] = useState(false);
-  const [particles, setParticles] = useState<{ id: number; x: number; size: number; duration: number; delay: number; targetY: number }[]>([]);
-
-  useEffect(() => {
-    setParticles(Array.from({ length: count }, (_, i) => ({
+  const rng = useMemo(() => lcg(123456789), []);
+  const particles = useMemo(() =>
+    Array.from({ length: count }, (_, i) => ({
       id: i,
-      x: Math.random() * 100,
-      size: 1.5 + Math.random() * 2.5,
-      duration: 4 + Math.random() * 6,
-      delay: Math.random() * 5,
-      targetY: -(350 + Math.random() * 250),
-    })));
-    setReady(true);
-  }, [count]);
+      x: rng() * 100,
+      size: 1.5 + rng() * 2.5,
+      duration: 4 + rng() * 6,
+      delay: rng() * 5,
+      targetY: -(350 + rng() * 250),
+    })), [count, rng]);
+
+  useEffect(() => { setReady(true); /* eslint-disable-line react-hooks/set-state-in-effect */ }, []);
 
   if (!ready) return <div className="absolute inset-0 pointer-events-none overflow-hidden z-20" />;
 
@@ -182,7 +186,7 @@ export default function UserRatingCard({ user, stats }: UserRatingCardProps) {
         cacheBust: true,
         backgroundColor: "#0d0d14",
         style: captureStyle,
-      } as any));
+      } as Record<string, unknown>));
       const link = document.createElement('a');
       link.download = `${user?.name || 'player'}-card.png`;
       link.href = dataUrl;
