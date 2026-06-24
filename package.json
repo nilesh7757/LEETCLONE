@@ -8,7 +8,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "socket": "node server.js",
-    "worker": "npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' src/lib/worker.ts",
+    "worker": "tsx src/lib/worker.ts",
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -66,8 +66,7 @@
     "tailwind-merge": "^3.4.0",
     "use-debounce": "^10.0.6",
     "zod": "^4.3.6",
-    "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "tsx": "^4.19.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -90,6 +89,7 @@
     "jest-mock-extended": "^4.0.1",
     "node-mocks-http": "^1.17.2",
     "tailwindcss": "^4",
+    "typescript": "^5",
     "whatwg-fetch": "^3.6.20"
   }
 }
