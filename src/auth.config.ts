@@ -47,6 +47,17 @@ export const authConfig = {
   },
   trustHost: true,
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "development-secret-key-at-least-32-chars-long-!",
+  logger: {
+    error(error) {
+      console.error("[NEXT-AUTH ERROR]", error);
+    },
+    warn(code) {
+      console.warn("[NEXT-AUTH WARN]", code);
+    },
+    debug(code) {
+      console.log("[NEXT-AUTH DEBUG]", code);
+    },
+  },
   callbacks: {
     async session({ session, token }) {
       if (token?.sub) {
