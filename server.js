@@ -14,7 +14,11 @@ const io = new Server(httpServer, {
   },
 });
 
-const pubClient = new Redis(redisUrl);
+const redisOptions = redisUrl.startsWith("rediss://")
+  ? { tls: { rejectUnauthorized: false } }
+  : {};
+
+const pubClient = new Redis(redisUrl, redisOptions);
 const subClient = pubClient.duplicate();
 
 pubClient.on("error", (err) => {
