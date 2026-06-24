@@ -13,12 +13,10 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import NotificationBell from "@/components/ui/NotificationBell";
 import Link from "next/link";
 import DiscussionSection from "@/features/problems/components/Discussion/DiscussionSection";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import GeminiChat from "@/features/ai/components/GeminiChat";      
-import { getStarterCode } from "@/lib/starterCode";
 
 // New Workspace Components
 import { useWorkspace } from "@/features/problems/components/Workspace/useWorkspace";
@@ -82,13 +80,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     submissions,
     selectedSubmission, setSelectedSubmission,
     activeTab, setActiveTab,
-    setConsoleOpen,
     consoleTab, setConsoleTab,
     activeTestCaseId, setActiveTestCaseId,
     handleRun, handleSubmit, handleAddTestCase, updateTestCase, removeTestCase,
     fetchSubmissions,
     streak,
-    solvedToday
+    solvedToday,
+    resetCode
   } = useWorkspace(problem, examples);
 
   useEffect(() => {
@@ -244,6 +242,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                 onSubmit={handleSubmit}
                                 isRunning={isRunning}
                                 isSubmitting={isSubmitting}
+                                onReset={resetCode}
                             />
                         </div>
                     </div>

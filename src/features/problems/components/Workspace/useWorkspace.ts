@@ -281,5 +281,15 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
     fetchSubmissions,
     streak,
     solvedToday,
+    resetCode: useCallback(() => {
+      const draftKey = `draft_${problem.id}_${language}`;
+      localStorage.removeItem(draftKey);
+      const defaultCode =
+        problem.type === "SQL"
+          ? "SELECT * FROM Users;"
+          : getStarterCode(language);
+      setCode(defaultCode);
+      toast.success("Code reset to starter template");
+    }, [problem.id, problem.type, language]),
   };
 }

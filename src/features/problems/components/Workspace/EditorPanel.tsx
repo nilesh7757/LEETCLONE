@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { Editor, Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { 
-  ChevronDown, Check, Code2, Play, Send, Loader2
+  ChevronDown, Check, Play, Send, Loader2, RotateCcw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { languages } from "@/lib/starterCode";
@@ -24,6 +24,7 @@ interface EditorPanelProps {
   isEditorOnly?: boolean;
   onRun?: (parseAndSetMarkers: (msg: string) => void) => void;
   onSubmit?: () => void;
+  onReset?: () => void;
   isRunning?: boolean;
   isSubmitting?: boolean;
   isLoggedIn?: boolean;
@@ -31,7 +32,7 @@ interface EditorPanelProps {
 export default function EditorPanel({ 
   code = "", setCode = () => {}, language, setLanguage, 
   onMount,
-  isToolbarOnly, onRun, onSubmit, isRunning, isSubmitting
+  isToolbarOnly, onRun, onSubmit, onReset, isRunning, isSubmitting
 }: EditorPanelProps) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -117,6 +118,20 @@ export default function EditorPanel({
          </div>
 
          <div className="w-px h-4 bg-white/5 mx-1" />
+
+         {onReset && (
+            <>
+               <button 
+                  onClick={onReset}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-white hover:bg-white/5 transition-all active:scale-95 group"
+                  title="Reset code to starter template"
+               >
+                  <RotateCcw size={13} className="text-[#eab308] group-hover:rotate-[-45deg] transition-transform duration-300" />
+                  Reset
+               </button>
+               <div className="w-px h-4 bg-white/5 mx-1" />
+            </>
+         )}
 
          <button 
             onClick={() => onRun && onRun(parseAndSetMarkers)}
