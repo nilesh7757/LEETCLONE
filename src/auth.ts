@@ -5,7 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
-const AUTH_SECRET = process.env.AUTH_SECRET || "default_auth_secret_for_development_purposes";
+const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "development-secret-key-at-least-32-chars-long-!";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,

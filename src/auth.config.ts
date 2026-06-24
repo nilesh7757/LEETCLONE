@@ -46,7 +46,7 @@ export const authConfig = {
     strategy: "jwt",
   },
   trustHost: true,
-  secret: process.env.AUTH_SECRET || "development-secret-key-at-least-32-chars-long-!",
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "development-secret-key-at-least-32-chars-long-!",
   callbacks: {
     async session({ session, token }) {
       if (token?.sub) {
