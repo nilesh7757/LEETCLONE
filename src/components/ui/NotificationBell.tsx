@@ -48,7 +48,7 @@ export default function NotificationBell() {
     fetchNotifications();
 
     // Socket Connection
-    const socketUrl = "http://localhost:3001";
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
     socket = io(socketUrl, {
       transports: ["websocket"],
     });

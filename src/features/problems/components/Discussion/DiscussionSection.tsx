@@ -98,7 +98,7 @@ export default function DiscussionSection({ problemId }: DiscussionSectionProps)
 
   // Initialize Socket.io
   useEffect(() => {
-    const socketUrl = "http://localhost:3001"; 
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001"; 
     
     socket = io(socketUrl, {
       transports: ["websocket"], 

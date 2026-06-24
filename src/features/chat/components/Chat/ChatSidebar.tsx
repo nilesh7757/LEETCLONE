@@ -39,7 +39,7 @@ export default function ChatSidebar() {
     fetchConversations();
     
     if (session?.user?.id) {
-      const socketUrl = "http://localhost:3001";
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
       socket = io(socketUrl, { transports: ["websocket"] });
 
       socket.on("connect", () => {

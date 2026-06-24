@@ -87,7 +87,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
   const [activeModal, setActiveModal] = useState<"followers" | "following" | null>(null);
 
   useEffect(() => {
-    socket = io("http://localhost:3001", { transports: ["websocket"] });
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001", { transports: ["websocket"] });
     return () => { socket.disconnect(); };
   }, []);
 
