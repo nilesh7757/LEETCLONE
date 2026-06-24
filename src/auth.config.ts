@@ -49,7 +49,13 @@ export const authConfig = {
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "development-secret-key-at-least-32-chars-long-!",
   logger: {
     error(error) {
-      console.error("[NEXT-AUTH ERROR]", error);
+      console.error("[NEXT-AUTH ERROR] Full error:", error);
+      if (error && typeof error === 'object') {
+        console.error("[NEXT-AUTH ERROR DETAILS]:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        if ('cause' in error && error.cause) {
+          console.error("[NEXT-AUTH ERROR CAUSE]:", JSON.stringify(error.cause, Object.getOwnPropertyNames(error.cause), 2));
+        }
+      }
     },
     warn(code) {
       console.warn("[NEXT-AUTH WARN]", code);
