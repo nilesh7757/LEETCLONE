@@ -65,9 +65,9 @@
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
+    "tsx": "^4.19.1",
     "use-debounce": "^10.0.6",
-    "zod": "^4.3.6",
-    "tsx": "^4.19.1"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -90,6 +90,7 @@
     "jest-mock-extended": "^4.0.1",
     "node-mocks-http": "^1.17.2",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "whatwg-fetch": "^3.6.20"
   }
