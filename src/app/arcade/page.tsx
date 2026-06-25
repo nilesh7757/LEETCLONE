@@ -5,7 +5,7 @@ import {
   Zap, Target, Code2, Layout, 
   Trophy, Star, Play, Lock, 
   Gamepad2, Sparkles, Rocket,
-  User, Medal
+  User, Medal, Activity
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -37,6 +37,19 @@ const GAMES = [
     difficulty: "Medium",
     points: "100 AP",
     href: "/arcade/bug-sniper",
+    status: "READY"
+  },
+  {
+    id: "system-monitor",
+    title: "System Design HUD",
+    description: "Monitor LEETCLONE's decoupled web, WebSockets, Redis, and workers, and simulate load spikes.",
+    icon: Activity,
+    color: "text-purple-400",
+    bg: "bg-purple-400/10",
+    border: "border-purple-400/20",
+    difficulty: "Advanced",
+    points: "Telemetry",
+    href: "/arcade/system-monitor",
     status: "READY"
   },
   {
