@@ -153,6 +153,8 @@ export default function InterviewPage({
             toast.error("Microphone access denied. Please allow microphone permissions in your browser or type your answer instead.");
           } else if (errorType === "no-speech") {
             toast.info("No speech detected. Please speak into your microphone.");
+          } else if (errorType === "network") {
+            toast.error("Speech recognition network error. The browser's transcription service is unreachable. Please try a different browser (like Google Chrome) or type your answer instead.");
           } else if (errorType === "aborted") {
             // Quietly handle user manual stop or browser abort
           } else {
