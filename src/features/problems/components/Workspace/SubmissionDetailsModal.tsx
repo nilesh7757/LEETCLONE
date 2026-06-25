@@ -90,16 +90,44 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Case #{i + 1}</span>
                           <span className={`text-[10px] font-black uppercase tracking-widest ${res.status === 'Accepted' ? 'text-[var(--viz-green)]' : 'text-[var(--viz-red)]'}`}>{res.status}</span>
                         </div>
+                        
+                        {/* Display Input (Test Case) */}
+                        {res.input !== undefined && res.input !== null && (
+                          <div className="space-y-1">
+                            <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Input</span>
+                            <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">{String(res.input)}</pre>
+                          </div>
+                        )}
+
                         {res.status !== 'Accepted' && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
                             <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-[var(--muted-foreground)]">Expected</span>
-                              <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono">{typeof res.expectedOutput === 'string' ? res.expectedOutput : JSON.stringify(res.expectedOutput)}</pre>
+                              <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Expected</span>
+                              <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono">
+                                {res.expected !== undefined 
+                                  ? (typeof res.expected === 'string' ? res.expected : JSON.stringify(res.expected))
+                                  : (res.expectedOutput !== undefined 
+                                      ? (typeof res.expectedOutput === 'string' ? res.expectedOutput : JSON.stringify(res.expectedOutput))
+                                      : "N/A")}
+                              </pre>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-[var(--muted-foreground)]">Actual</span>
-                              <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono text-red-400">{typeof res.actualOutput === 'string' ? res.actualOutput : JSON.stringify(res.actualOutput)}</pre>
+                              <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Actual</span>
+                              <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono text-red-400">
+                                {res.actual !== undefined 
+                                  ? (typeof res.actual === 'string' ? res.actual : JSON.stringify(res.actual))
+                                  : (res.actualOutput !== undefined 
+                                      ? (typeof res.actualOutput === 'string' ? res.actualOutput : JSON.stringify(res.actualOutput))
+                                      : "N/A")}
+                              </pre>
                             </div>
+                          </div>
+                        )}
+
+                        {res.error && (
+                          <div className="space-y-1">
+                            <span className="text-[9px] font-bold text-[var(--viz-red)] uppercase tracking-wider">Error Details</span>
+                            <pre className="p-3 bg-red-950/20 text-red-400 border border-red-950/30 rounded-lg text-xs font-mono whitespace-pre-wrap">{res.error}</pre>
                           </div>
                         )}
                       </div>

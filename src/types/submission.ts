@@ -1,7 +1,11 @@
 export interface TestCaseResult {
   status: string;
-  expectedOutput: string | object;
-  actualOutput: string | object;
+  expectedOutput?: string | object;
+  actualOutput?: string | object;
+  expected?: string | object;
+  actual?: string | object;
+  input?: string;
+  error?: string;
   runtime: number;
 }
 
