@@ -78,8 +78,14 @@ export const GET = apiHandler(async () => {
   try {
     const workers = await executionQueue.getWorkers();
     isWorkerOnline = workers.length > 0;
-    jobCounts = await executionQueue.getJobCounts("wait", "active", "completed", "failed");
-    queueSize = jobCounts.wait + jobCounts.active;
+    const rawCounts = await executionQueue.getJobCounts("wait", "active", "completed", "failed");
+    jobCounts = {
+      waiting: rawCounts.wait || 0,
+      active: rawCounts.active || 0,
+      completed: rawCounts.completed || 0,
+      failed: rawCounts.failed || 0,
+    };
+    queueSize = jobCounts.waiting + jobCounts.active;
   } catch (err) {
     logger.warn("[Monitor] BullMQ queue check failed:", err);
   }
