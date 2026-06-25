@@ -32,6 +32,9 @@ const CHALLENGES = [
 const OPTIONS = ["O(1)", "O(log N)", "O(N)", "O(N log N)", "O(N²)", "O(V + E)", "O(2^N)", "O(N!)"];
 
 export default function BigOBlitz() {
+  const [challenges, setChallenges] = useState<typeof CHALLENGES>(CHALLENGES);
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -40,6 +43,25 @@ export default function BigOBlitz() {
   const [highScore, setScoreState] = useState(0);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchAiChallenges = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.post("/api/arcade/generate", { gameId: "BLITZ" });
+      if (res.data && Array.isArray(res.data.challenges) && res.data.challenges.length > 0) {
+        setChallenges(res.data.challenges);
+        setIsAiGenerated(true);
+      }
+    } catch (err) {
+      console.warn("Bypassed AI question generation, using local cache", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAiChallenges();
+  }, [fetchAiChallenges]);
 
   const startGame = () => {
     setScore(0);
@@ -61,7 +83,10 @@ export default function BigOBlitz() {
     } catch (error) {
       console.error("Failed to save score", error);
     }
-  }, [score]);
+
+    // Pre-fetch a fresh batch of challenges in the background for the next run
+    void fetchAiChallenges();
+  }, [score, fetchAiChallenges]);
 
   useEffect(() => {
     if (gameState === "PLAYING" && timeLeft > 0) {
@@ -79,12 +104,12 @@ export default function BigOBlitz() {
   const handleAnswer = (option: string) => {
     if (gameState !== "PLAYING") return;
 
-    if (option === CHALLENGES[currentIdx].complexity) {
+    if (option === challenges[currentIdx]?.complexity) {
       setScore(s => s + 10);
       setFeedback("CORRECT");
       setTimeout(() => {
         setFeedback(null);
-        setCurrentIdx((prev) => (prev + 1) % CHALLENGES.length);
+        setCurrentIdx((prev) => (prev + 1) % challenges.length);
       }, 300);
     } else {
       setTimeLeft(t => Math.max(0, t - 3));
@@ -130,6 +155,11 @@ export default function BigOBlitz() {
                  <Zap size={80} className="text-amber-400 relative z-10 mx-auto" fill="currentColor" />
               </div>
               <div>
+                {isAiGenerated && (
+                  <div className="flex items-center justify-center gap-1.5 text-xs text-purple-400 font-bold uppercase tracking-widest animate-pulse mb-3">
+                    <Sparkles size={14} /> AI-Generated Session
+                  </div>
+                )}
                 <h1 className="text-4xl font-black tracking-tighter mb-4 uppercase">Ready for a Speedrun?</h1>
                 <p className="text-[var(--muted-foreground)] font-medium max-w-sm mx-auto leading-relaxed">
                   Match 15 algorithms with their Big-O complexity. Each wrong answer costs 3 seconds!
@@ -137,9 +167,10 @@ export default function BigOBlitz() {
               </div>
               <button 
                 onClick={startGame}
-                className="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.3em] rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                disabled={isLoading}
+                className="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.3em] rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] disabled:opacity-50"
               >
-                Start Mission
+                {isLoading ? "Generating Mission..." : "Start Mission"}
               </button>
             </motion.div>
           )}
@@ -185,7 +216,7 @@ export default function BigOBlitz() {
                 }`}
               >
                 <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--muted-foreground)] mb-4">Challenge Node</div>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight">{CHALLENGES[currentIdx].algorithm}</h2>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight">{challenges[currentIdx]?.algorithm}</h2>
               </motion.div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

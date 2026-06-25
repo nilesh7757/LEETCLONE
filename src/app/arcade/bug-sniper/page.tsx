@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Target, Timer, Trophy, RotateCcw, 
   ArrowLeft, Bug, Search, CheckCircle2,
-  Crosshair, XCircle
+  Crosshair, XCircle, Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -66,6 +66,9 @@ const BUGS = [
 ];
 
 export default function BugSniper() {
+  const [bugs, setBugs] = useState<typeof BUGS>(BUGS);
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(45);
@@ -74,6 +77,25 @@ export default function BugSniper() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchAiBugs = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.post("/api/arcade/generate", { gameId: "BUG_SNIPER" });
+      if (res.data && Array.isArray(res.data.bugs) && res.data.bugs.length > 0) {
+        setBugs(res.data.bugs);
+        setIsAiGenerated(true);
+      }
+    } catch (err) {
+      console.warn("Bypassed AI bug generation, using local cache", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAiBugs();
+  }, [fetchAiBugs]);
 
   const startGame = () => {
     setScore(0);
@@ -95,7 +117,10 @@ export default function BugSniper() {
     } catch (error) {
       console.error("Failed to save score", error);
     }
-  }, [score]);
+
+    // Pre-fetch next round in background
+    void fetchAiBugs();
+  }, [score, fetchAiBugs]);
 
   useEffect(() => {
     if (gameState === "PLAYING" && timeLeft > 0) {
@@ -114,14 +139,14 @@ export default function BugSniper() {
     if (gameState !== "PLAYING") return;
     
     setSelectedLine(line);
-    if (line === BUGS[currentIdx].bugLine) {
+    if (line === bugs[currentIdx]?.bugLine) {
       setIsCorrect(true);
       setScore(s => s + 50);
       toast.success("BUG_ELIMINATED", { icon: <Crosshair className="text-emerald-500" /> });
       setTimeout(() => {
         setIsCorrect(null);
         setSelectedLine(null);
-        if (currentIdx + 1 < BUGS.length) {
+        if (currentIdx + 1 < bugs.length) {
           setCurrentIdx(prev => prev + 1);
         } else {
           endGame();
@@ -180,6 +205,11 @@ export default function BugSniper() {
                   </div>
                </div>
                <div className="space-y-4">
+                  {isAiGenerated && (
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-purple-400 font-bold uppercase tracking-widest animate-pulse mb-1">
+                      <Sparkles size={14} /> AI-Generated Targets
+                    </div>
+                  )}
                   <h1 className="text-6xl font-black tracking-tighter uppercase italic">Seek & Destroy</h1>
                   <p className="text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
                     Identify the bug in each code snippet. Click the line containing the error. Precision is rewarded; false positives cost time.
@@ -187,10 +217,13 @@ export default function BugSniper() {
                </div>
                <button 
                 onClick={startGame}
-                className="group relative px-12 py-5 bg-red-600 text-white font-black uppercase tracking-[0.4em] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-all hover:scale-105 active:scale-95"
+                disabled={isLoading}
+                className="group relative px-12 py-5 bg-red-600 text-white font-black uppercase tracking-[0.4em] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                >
                  <div className="absolute inset-0 bg-[var(--foreground)]/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                 <span className="relative flex items-center gap-3">Engage Target <Crosshair size={20} /></span>
+                 <span className="relative flex items-center gap-3">
+                   {isLoading ? "Locking on Targets..." : "Engage Target"} <Crosshair size={20} />
+                 </span>
                </button>
             </motion.div>
           )}
@@ -208,7 +241,7 @@ export default function BugSniper() {
                         <div className="w-3 h-3 rounded-full bg-red-500/50" />
                         <div className="w-3 h-3 rounded-full bg-amber-500/50" />
                         <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
-                        <span className="ml-4 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">{BUGS[currentIdx].language} {"//"} {BUGS[currentIdx].title}</span>
+                        <span className="ml-4 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">{bugs[currentIdx]?.language} {"//"} {bugs[currentIdx]?.title}</span>
                     </div>
                     <div className="text-[10px] font-black text-red-500/50 italic tracking-widest">MALFUNCTION_DETECTED</div>
                 </div>
@@ -217,8 +250,8 @@ export default function BugSniper() {
                    <Editor
                      height="100%"
                      theme="vs-dark"
-                     language={BUGS[currentIdx].language}
-                     value={BUGS[currentIdx].code}
+                     language={bugs[currentIdx]?.language}
+                     value={bugs[currentIdx]?.code}
                      options={{
                        readOnly: true,
                        fontSize: 16,
@@ -267,7 +300,7 @@ export default function BugSniper() {
                    </div>
                    <div className="flex-1">
                       <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1">Intelligence_Report</div>
-                      <p className="text-sm font-medium text-[var(--muted-foreground)] italic">{BUGS[currentIdx].hint}</p>
+                      <p className="text-sm font-medium text-[var(--muted-foreground)] italic">{bugs[currentIdx]?.hint}</p>
                    </div>
                 </div>
               </div>
