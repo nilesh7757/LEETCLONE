@@ -16,7 +16,8 @@ import {
   LayoutTemplate,
   Gamepad2,
   Shield,
-  GraduationCap
+  GraduationCap,
+  BrainCircuit
 } from "lucide-react";
 import Logo from "../ui/Logo";
 import { useSession } from "next-auth/react";
@@ -74,6 +75,7 @@ export default function Sidebar() {
     { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)" },
     { label: "Architect", href: "/architect", icon: LayoutTemplate, color: "var(--viz-purple)" },
     { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)" },
+    { label: "CS Core", href: "/cs-core", icon: BrainCircuit, color: "var(--viz-gold)" },
     { label: "Academy", href: "/resources", icon: GraduationCap, color: "var(--viz-blue)" },
     { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)" },
     { label: "Arena", href: "/arena", icon: Rocket, color: "var(--viz-gold)" },

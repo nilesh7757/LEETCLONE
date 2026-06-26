@@ -142,7 +142,7 @@ export default function SystemMonitor() {
               Distributed <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Monitor Room</span>
             </h1>
             <p className="text-neutral-500 text-xs font-semibold">
-              Live telemetry of LEETCLONE's microservices and asynchronous task pipelines.
+              Live telemetry of LEETCLONE&apos;s microservices and asynchronous task pipelines.
             </p>
           </div>
 

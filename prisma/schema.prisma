@@ -298,6 +298,8 @@ model User {
   ratingHistory         UserRatingHistory[]
   arcadeScores          ArcadeScore[]
   siegePlans            SiegePlan[]
+  resumeReviews         ResumeReview[]
+  dailyBeserkLogs       DailyBeserkLog[]
   following             User[]                    @relation("UserFollows")
   followedBy            User[]                    @relation("UserFollows")
   problemCollaborations ProblemCollaborator[]
@@ -550,6 +552,8 @@ enum ProblemType {
   SYSTEM_DESIGN
   SQL
   READING
+  APTITUDE
+  CS_CORE
 }
 
 model SiegePlan {
@@ -585,3 +589,35 @@ model LearningResource {
   problems    Problem[]
 }
 
+model ResumeReview {
+  id             String   @id @default(uuid())
+  userId         String
+  resumeUrl      String?
+  githubUrl      String?
+  projectsData   Json?    // Extracted projects
+  atsScore       Int?
+  feedback       String?
+  roadmap        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DailyBeserkLog {
+  id           String   @id @default(uuid())
+  userId       String
+  date         DateTime @default(now())
+  targetCp     Int      @default(3)
+  completedCp  Int      @default(0)
+  targetDsa    Int      @default(3)
+  completedDsa Int      @default(0)
+  csTopic      String?
+  csCompleted  Boolean  @default(false)
+  penalty      Int      @default(0) // Logic penalty or pushups
+  status       String   @default("PENDING") // PENDING, WON, FAILED
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}

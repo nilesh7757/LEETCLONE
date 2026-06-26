@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, Code2, BookOpen, MonitorPlay, Trophy, PenTool, LineChart, Globe, MessageSquare, ShieldAlert, UserCircle, LogOut, Gamepad2, Shield, GraduationCap } from "lucide-react";
+import { Menu, X, Code2, BookOpen, MonitorPlay, Trophy, PenTool, LineChart, Globe, MessageSquare, ShieldAlert, UserCircle, LogOut, Gamepad2, Shield, GraduationCap, BrainCircuit } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "../ui/Logo";
@@ -53,6 +53,7 @@ export default function MobileNav() {
   const navItems = [
     { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
     { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)", rgb: "var(--viz-purple-rgb)" },
+    { label: "CS Core", href: "/cs-core", icon: BrainCircuit, color: "var(--viz-gold)", rgb: "var(--viz-gold-rgb)" },
     { label: "Academy", href: "/resources", icon: GraduationCap, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
     { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)", rgb: "var(--viz-red-rgb)" },
     { label: "Contest", href: "/contest", icon: Trophy, color: "var(--viz-gold)", rgb: "var(--viz-gold-rgb)" },
