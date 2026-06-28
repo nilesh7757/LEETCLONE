@@ -44,6 +44,7 @@ model Problem {
   verificationStatus String               @default("STABLE") // STABLE, UNSTABLE, VETTING
   verifiedSolutions  Json                 @default("[]") // Store metadata about different language solutions verified
   resources          LearningResource[]
+  companies          String[]             @default([])
 
   @@index([creatorId])
   @@index([difficulty, category, isPublic])

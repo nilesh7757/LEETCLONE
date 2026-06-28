@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import LiquidSlideshow from "@/components/LiquidSlideshow";
 
 // Card Tier definition type
 type CardTier = "bronze" | "silver" | "gold" | "inform" | "icon" | "toty";
@@ -26,7 +27,10 @@ export default function Hero() {
 
   // Platform stats counter
   const [activeUsers, setActiveUsers] = useState(1420);
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const interval = setInterval(() => {
       setActiveUsers(prev => prev + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3));
     }, 4500);
@@ -88,7 +92,7 @@ export default function Hero() {
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-black text-[#8F44F0] flex items-center gap-1.5">
-                  {activeUsers}
+                  {mounted ? activeUsers : 1420}
                   <span className="w-2.5 h-2.5 rounded-full bg-[#4ade80] inline-block animate-pulse" />
                 </div>
                 <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Live Online</div>
@@ -103,56 +107,8 @@ export default function Hero() {
           {/* Right Column - Unified Glassmorphic IDE Showcase Panel */}
           <div className="lg:col-span-5 flex items-center justify-center relative min-h-[380px] w-full max-w-lg lg:mx-0 mx-auto">
             <div className="absolute -inset-10 bg-[#8F44F0]/10 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse" />
-            <div className="w-full bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md relative font-mono text-[11px] leading-relaxed select-none">
-              {/* Tab header */}
-              <div className="flex items-center justify-between bg-white/[0.02] border-b border-white/5 px-4 py-2.5">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-red-500/40" />
-                  <div className="w-2 h-2 rounded-full bg-yellow-500/40" />
-                  <div className="w-2 h-2 rounded-full bg-green-500/40" />
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[#8F44F0] font-black border-b-2 border-[#8F44F0] px-2 py-0.5 text-[9px] uppercase tracking-wider">binary_search.cpp</span>
-                  <span className="text-[#52525b] px-2 py-0.5 text-[9px] uppercase tracking-wider hidden sm:inline">streak_tracker.rs</span>
-                  <span className="text-[#52525b] px-2 py-0.5 text-[9px] uppercase tracking-wider hidden sm:inline">db.sql</span>
-                </div>
-              </div>
-              
-              {/* Workspace layout */}
-              <div className="flex divide-x divide-white/5 h-48">
-                {/* File explorer sidebar */}
-                <div className="w-1/4 p-3 bg-black/20 text-[#52525b] space-y-2 hidden sm:block">
-                  <div className="text-[9px] font-black uppercase text-[#a1a1aa] tracking-widest mb-2">Workspace</div>
-                  <div className="text-white font-bold">↳ Problems</div>
-                  <div className="pl-3 text-purple-400 font-bold">↳ Search.cpp</div>
-                  <div className="pl-3">↳ TwoSum.rs</div>
-                </div>
-                
-                {/* Code Area */}
-                <div className="flex-1 p-4 bg-black/40 text-[#a1a1aa] overflow-y-auto custom-scrollbar text-left">
-                  <div className="space-y-1">
-                    <div><span className="text-[#8F44F0]">int</span> <span className="text-blue-400">binarySearch</span>(<span className="text-[#8F44F0]">vector</span>&lt;<span className="text-[#8F44F0]">int</span>&gt;&amp; nums, <span className="text-[#8F44F0]">int</span> target) &#123;</div>
-                    <div className="pl-3"><span className="text-[#8F44F0]">int</span> l = 0, r = nums.size() - 1;</div>
-                    <div className="pl-3"><span className="text-yellow-500">while</span> (l &lt;= r) &#123;</div>
-                    <div className="pl-6"><span className="text-[#8F44F0]">int</span> m = l + (r-l)/2;</div>
-                    <div className="pl-6"><span className="text-yellow-500">if</span> (nums[m] == target) <span className="text-purple-400">return</span> m;</div>
-                    <div className="pl-3">&#125;</div>
-                    <div className="pl-3"><span className="text-purple-400">return</span> -1;</div>
-                    <div>&#125;</div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Terminal / Sandbox Output */}
-              <div className="bg-black/80 border-t border-white/5 p-3 flex flex-col gap-1 text-[10px] text-left">
-                <div className="flex justify-between items-center text-[#52525b]">
-                  <span>$ ./run_solution --testcase=all</span>
-                  <span className="text-green-400 font-bold flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-ping" />ACCEPTED</span>
-                </div>
-                <div className="text-white font-bold flex items-center gap-1.5 mt-1">
-                  <span>Status: 4/4 cases passed (12ms | 14.1MB)</span>
-                </div>
-              </div>
+            <div className="w-full h-full min-h-[380px] bg-[#0e0e11] rounded-3xl shadow-2xl overflow-hidden relative">
+              <LiquidSlideshow />
             </div>
           </div>
 

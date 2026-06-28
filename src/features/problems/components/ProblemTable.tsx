@@ -11,6 +11,7 @@ interface Problem {
   slug: string;
   difficulty: string;
   category: string;
+  companies?: string[];
   isSolved?: boolean;
   isAttempted?: boolean;
 }
@@ -117,6 +118,23 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                                  <div className="w-1 h-1 rounded-full bg-[#3b82f6]" />
                                  <span className="font-mono text-[9px] font-bold uppercase tracking-widest">{problem.category}</span>
                               </div>
+                              {problem.companies && problem.companies.length > 0 && (
+                                 <>
+                                    <div className="h-3 w-px bg-white/5" />
+                                    <div className="flex items-center gap-2">
+                                      {problem.companies.slice(0, 3).map(company => (
+                                        <span key={company} className="px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold text-[#a1a1aa] uppercase tracking-widest border border-white/10">
+                                          {company}
+                                        </span>
+                                      ))}
+                                      {problem.companies.length > 3 && (
+                                        <span className="text-[9px] font-bold text-[#52525b] uppercase tracking-widest">
+                                          +{problem.companies.length - 3}
+                                        </span>
+                                      )}
+                                    </div>
+                                 </>
+                              )}
                            </div>
                         </div>
                      </div>
