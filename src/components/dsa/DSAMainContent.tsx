@@ -47,12 +47,15 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
   const [activeTab, setActiveTab] = React.useState<"viz" | "docs" | "code">("viz");
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const vizContainerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = React.useState(1);
   
   const themeColor = selectedCategory.themeColor || "#3b82f6";
   const themeRGB = selectedCategory.themeRGB || "59, 130, 246";
 
   React.useEffect(() => {
     setActiveTab("viz");
+    setScale(1);
   }, [selectedCategory.id]);
 
   // Sync state with browser fullscreen changes
@@ -63,6 +66,32 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  React.useEffect(() => {
+    if (!wrapperRef.current || isFullscreen) return;
+    
+    const handleResize = () => {
+      if (wrapperRef.current) {
+        const width = wrapperRef.current.getBoundingClientRect().width;
+        const targetWidth = 760;
+        if (width < targetWidth) {
+          setScale(width / targetWidth);
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    handleResize();
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(wrapperRef.current);
+    
+    window.addEventListener("resize", handleResize);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [isFullscreen, activeTab, selectedCategory.id]);
 
   const toggleFullscreen = async () => {
     if (!vizContainerRef.current) return;
@@ -87,9 +116,8 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
   const VisualizationStage = (
     <div 
       ref={vizContainerRef}
-      className={`w-full relative bg-[#020202] rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl transition-all duration-500 ${
-        isFullscreen ? "h-screen rounded-none border-none p-0" : "min-h-[580px]"
-      }`}
+      style={isFullscreen ? {} : { minHeight: `${580 * scale}px` }}
+      className="w-full relative bg-[#020202] rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl transition-all duration-500"
     >
       {/* HUD Elements */}
       <div className="absolute top-8 left-8 flex items-center gap-3 z-20 pointer-events-none opacity-40">
@@ -98,7 +126,7 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
       </div>
       
       <div className="absolute top-8 right-8 flex items-center gap-4 z-20">
-         <div className="flex gap-6 pointer-events-none opacity-20 mr-4">
+         <div className="flex gap-6 pointer-events-none opacity-20 mr-4 font-sans">
             <div className="flex flex-col items-end">
                <span className="text-[8px] font-black uppercase text-[#52525b] tracking-widest">Render Layer</span>
                <span className="text-[10px] font-mono text-white">GL-Core_04</span>
@@ -111,7 +139,7 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
 
          <button 
             onClick={toggleFullscreen}
-            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all backdrop-blur-xl group"
+            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all backdrop-blur-xl group cursor-pointer"
             title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen (F11 style)"}
          >
             {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} className="group-hover:scale-110 transition-transform" />}
@@ -127,8 +155,22 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
       <div className={`transition-all duration-700 ${isFullscreen ? "h-full flex items-center justify-center pt-10" : "p-2 md:p-4"}`}>
          <ErrorBoundary name={selectedCategory.title} key={selectedCategory.id}>
             <ClientOnly>
-               <div className="w-full h-full">
-                  {selectedCategory.component(animationSpeed, isFullscreen)}
+               <div ref={wrapperRef} className="w-full flex justify-center items-center overflow-hidden">
+                  <div 
+                     style={isFullscreen ? { width: "100%", height: "100%" } : {
+                        transform: `scale(${scale})`,
+                        transformOrigin: "center center",
+                        width: "760px",
+                        height: `${500 * scale}px`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        transition: "transform 0.15s ease-out"
+                     }}
+                  >
+                     {selectedCategory.component(animationSpeed, isFullscreen)}
+                  </div>
                </div>
             </ClientOnly>
          </ErrorBoundary>
@@ -209,17 +251,17 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
 
       {/* Footer Info */}
       {!isFullscreen && (
-         <div className="flex items-center justify-between p-8 bg-white/[0.02] rounded-[2.5rem] border border-white/5">
-            <div className="flex items-center gap-6">
-               <div className="w-12 h-12 rounded-xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20">
-                  <Cpu size={24} />
+         <div className="flex flex-col sm:flex-row items-center justify-between p-4 px-6 bg-white/[0.02] border border-white/5 rounded-2xl gap-4">
+            <div className="flex items-center gap-4">
+               <div className="w-9 h-9 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shrink-0">
+                  <Cpu size={18} />
                </div>
                <div>
-                  <h4 className="text-lg font-bold text-white tracking-tight">Practice Module</h4>
-                  <p className="text-xs text-[#52525b] mt-1 tracking-wide">Solve algorithmic challenges related to {selectedCategory.title}.</p>
+                  <h4 className="text-xs font-bold text-white tracking-tight">Practice Module</h4>
+                  <p className="text-[10px] text-[#52525b] mt-0.5 tracking-wide">Solve algorithmic challenges related to {selectedCategory.title}.</p>
                </div>
             </div>
-            <button className="px-8 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl active:scale-95">
+            <button className="w-full sm:w-auto px-5 py-2 bg-white text-black hover:bg-[#3b82f6] hover:text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer">
                Initiate Training
             </button>
          </div>
