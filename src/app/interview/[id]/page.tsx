@@ -112,6 +112,7 @@ export default function InterviewPage({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const recordingSessionStartAnswerRef = useRef("");
 
   // Initialize Speech Synthesis and Speech Recognition
   useEffect(() => {
@@ -131,14 +132,19 @@ export default function InterviewPage({
         
         rec.onresult = (event: SpeechRecognitionEvent) => {
           let finalTranscript = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
+          let interimTranscript = "";
+          for (let i = 0; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
             }
           }
-          if (finalTranscript) {
-            setCurrentAnswer(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + finalTranscript);
-          }
+          
+          const base = recordingSessionStartAnswerRef.current;
+          const merged = base + (base && !base.endsWith(" ") ? " " : "") + finalTranscript + interimTranscript;
+          setCurrentAnswer(merged);
         };
 
         rec.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -223,6 +229,8 @@ export default function InterviewPage({
       toast.error("Speech recognition is not supported in this browser.");
       return;
     }
+
+    recordingSessionStartAnswerRef.current = currentAnswer;
 
     // In automated test environments (where navigator.webdriver is true), we check 
     // permissions proactively to prevent calling start() and generating uncaught console errors.
