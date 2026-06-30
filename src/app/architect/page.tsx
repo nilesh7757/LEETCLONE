@@ -85,60 +85,37 @@ export default function ArchitectDashboard() {
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--primary)]/30 pb-20 overflow-x-hidden">
       <div className="max-w-[1400px] mx-auto px-6 py-12 lg:py-16"> 
         
-        {/* HEADER SECTION */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative">
-          <div className="space-y-6 max-w-2xl">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3"
-            >
-               <div className="p-2.5 bg-[var(--primary)]/10 rounded-xl text-[var(--primary)] border border-[var(--primary)]/20">
-                  <LayoutGrid size={20} />
-               </div>
-               <span className="text-[10px] font-black tracking-[0.3em] text-[var(--muted-foreground)] uppercase">Architect Dashboard</span>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h1 className="text-5xl font-extrabold tracking-tight text-[var(--foreground)] mb-4">
-                Problem <span className="text-[var(--primary)] italic">Architect</span>
-              </h1>
-              <p className="text-base text-[var(--muted-foreground)] leading-relaxed">
-                Forge high-performance algorithmic challenges. Design constraints, verify solutions, 
-                and publish your problems to the global registry.
-              </p>
-            </motion.div>
+        {/* COMPACT DASHBOARD HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-[var(--border)]/40 relative">
+          <div className="flex items-center gap-3">
+             <div className="p-1.5 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
+                <LayoutGrid size={14} />
+             </div>
+             <h1 className="text-lg font-black tracking-tight text-[var(--foreground)]">
+               Problem Architect
+             </h1>
+             <span className="text-[10px] font-mono bg-[var(--foreground)]/5 border border-[var(--border)] px-2 py-0.5 rounded-md text-[var(--muted-foreground)]">
+               {drafts.length} Drafts
+             </span>
           </div>
 
-          <motion.div 
-             initial={{ opacity: 0, scale: 0.95 }}
-             animate={{ opacity: 1, scale: 1 }}
-             transition={{ delay: 0.2 }}
-             className="flex flex-wrap items-center gap-4"
-          >
+          <div className="flex items-center gap-2">
             <Link
               href="/studio"
-              className="flex items-center gap-2.5 px-6 py-3.5 bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--foreground)] rounded-2xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-[var(--foreground)]/10 hover:border-[var(--border-strong)] active:scale-95"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--foreground)] rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all hover:bg-[var(--foreground)]/10 active:scale-95"
             >
-              <LayoutTemplate className="w-4 h-4 text-[var(--primary)]" />
+              <LayoutTemplate className="w-3.5 h-3.5 text-[var(--primary)]" />
               Creator Studio
             </Link>
 
             <button
               onClick={initializeProblem}
-              className="flex items-center gap-2.5 px-8 py-3.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-2xl font-bold text-xs uppercase tracking-widest transition-all hover:opacity-90 shadow-xl shadow-[var(--primary)]/20 active:scale-95 group"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all hover:opacity-90 shadow-sm active:scale-95 group cursor-pointer"
             >
-              <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
+              <Plus className="w-3.5 h-3.5 transition-transform group-hover:rotate-90" />
               Create Problem
             </button>
-          </motion.div>
-
-          {/* BACKGROUND GLOW */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[var(--primary)]/5 blur-[120px] rounded-full pointer-events-none" />
+          </div>
         </div>
 
         {/* SEARCH & FILTERS */}

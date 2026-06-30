@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { languages } from "@/lib/starterCode";
+import { useTheme } from "next-themes";
 
 interface EditorPanelProps {
   code?: string;
@@ -30,7 +31,7 @@ interface EditorPanelProps {
   isLoggedIn?: boolean;
 }
 export default function EditorPanel({ 
-  code = "", setCode = () => {}, language, setLanguage, 
+  code = "", setCode = () => {}, language, setLanguage, theme,
   onMount,
   isToolbarOnly, onRun, onSubmit, onReset, isRunning, isSubmitting
 }: EditorPanelProps) {
@@ -38,6 +39,7 @@ export default function EditorPanel({
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const internalEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const internalMonacoRef = useRef<Monaco | null>(null);
+  const { resolvedTheme } = useTheme();
 
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     internalEditorRef.current = editor;
@@ -80,6 +82,16 @@ export default function EditorPanel({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Determine Monaco editor theme
+  const getEditorTheme = () => {
+    if (theme) return theme;
+    if (resolvedTheme === "light" || resolvedTheme === "cream") {
+      return "light";
+    }
+    return "vs-dark";
+  };
+  const editorTheme = getEditorTheme();
+
   if (isToolbarOnly) {
     return (
       <div className="flex items-center gap-2">
@@ -97,15 +109,15 @@ export default function EditorPanel({
                      initial={{ opacity: 0, scale: 0.95, y: 5 }}
                      animate={{ opacity: 1, scale: 1, y: 0 }}
                      exit={{ opacity: 0, scale: 0.95, y: 5 }}
-                     className="absolute top-full right-0 mt-2 w-52 bg-[#111111] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] p-1.5 backdrop-blur-xl"
+                     className="absolute top-full right-0 mt-2 w-52 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-[100] p-1.5 backdrop-blur-xl"
                   >
-                     <div className="text-[9px] font-black text-[#3b82f6] uppercase tracking-[0.2em] px-3 py-2 border-b border-white/5 mb-1">Select Runtime</div>
+                     <div className="text-[9px] font-black text-[#3b82f6] uppercase tracking-[0.2em] px-3 py-2 border-b border-[var(--border)] mb-1">Select Runtime</div>
                      {languages.map(l => (
                         <button 
                            key={l.value}
                            onClick={() => { setLanguage(l.value); setIsLangOpen(false); }}
                            className={`w-full text-left px-3 py-2.5 rounded-lg text-[12px] flex items-center justify-between transition-all group ${
-                              language === l.value ? "bg-[#3b82f6]/10 text-[#3b82f6] font-bold" : "text-[#52525b] hover:text-white hover:bg-white/5"
+                              language === l.value ? "bg-[#3b82f6]/10 text-[#3b82f6] font-bold" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
                            }`}
                         >
                            {l.label}
@@ -160,7 +172,7 @@ export default function EditorPanel({
         <Editor
           height="100%"
           language={language}
-          theme="vs-dark"
+          theme={editorTheme}
           value={code}
           onChange={(val) => setCode(val || "")}
           options={{

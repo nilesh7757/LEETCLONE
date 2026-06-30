@@ -191,7 +191,7 @@ int main() {
   // Upsert Learning Resource for Problem 1
   const resource1Id = "striver-dijkstra-destinations-resource";
   const resource1Title = "Striver's Dijkstra Shortest Paths - takeUforward";
-  const resource1Url = "https://takeuforward.org/data-structure/g-40-number-of-ways-to-arrive-at-destination";
+  const resource1Url = "https://takeuforward.org/graph/g-40-number-of-ways-to-arrive-at-destination/";
 
   console.log("Upserting Learning Resource 1...");
   const res1 = await prisma.learningResource.upsert({

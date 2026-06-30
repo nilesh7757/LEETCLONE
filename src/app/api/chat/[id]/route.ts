@@ -87,3 +87,34 @@ export const POST = apiHandler(async (req: Request, { params }: { params: Promis
 
   return NextResponse.json({ message });
 });
+
+// DELETE: Clear all messages in a conversation
+export const DELETE = apiHandler(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
+  const session = await auth();
+  if (!session || !session.user) {
+    throw new ApiError("Unauthorized", 401);
+  }
+
+  const { id } = await params;
+
+  // Verify participation
+  const participation = await prisma.conversationParticipant.findUnique({
+    where: {
+      userId_conversationId: {
+        userId: session.user.id,
+        conversationId: id
+      }
+    }
+  });
+
+  if (!participation) {
+    throw new ApiError("Forbidden", 403);
+  }
+
+  // Delete all messages in the conversation
+  await prisma.message.deleteMany({
+    where: { conversationId: id }
+  });
+
+  return NextResponse.json({ success: true });
+});

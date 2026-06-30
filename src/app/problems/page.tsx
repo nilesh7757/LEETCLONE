@@ -139,46 +139,41 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 relative z-10"> 
       
-        {/* 2. DASHBOARD HEADER */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-16">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-               <div className="p-2 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
-                  <Sparkles size={20} />
-               </div>
-               <span className="text-[10px] font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Algorithm Repository</span>
-            </div>
-
-            <div className="space-y-2">
-               <h1 className="text-5xl font-bold tracking-tight text-[var(--foreground)]">
-                 Problem <span className="text-[var(--primary)]">Set</span>
-               </h1>
-               <p className="text-lg text-[var(--muted-foreground)] max-w-2xl font-normal leading-relaxed">
-                 Explore a collection of curated coding challenges. Practice, learn, and master algorithmic patterns.
-               </p>
-            </div>
-          </div>
-
-          {/* 3. STATS */}
-          <div className="flex gap-4">
-             <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[var(--primary)]/30 transition-all duration-300">
-                <div className="flex justify-between items-center relative z-10">
-                   <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Total Problems</span>
-                   <Target className="w-3.5 h-3.5 text-[var(--primary)] opacity-40 group-hover:opacity-100 transition-all" />
-                </div>
-                <div className="text-4xl font-bold text-[var(--foreground)] tabular-nums group-hover:text-[var(--primary)] transition-colors">{stats.totalProblems}</div>
+        {/* 2. DASHBOARD HEADER & STATS (REFINED & COMPACTED) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-[var(--border)]/40">
+          <div className="flex items-center gap-3">
+             <div className="p-1.5 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
+                <Trophy size={14} />
              </div>
-
-             {userId && (
-                <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl flex flex-col gap-2 min-w-[180px] shadow-2xl relative overflow-hidden group hover:border-[var(--viz-green)]/30 transition-all duration-300">
-                   <div className="flex justify-between items-center relative z-10">
-                      <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Solved</span>
-                      <Trophy className="w-3.5 h-3.5 text-[var(--viz-green)] opacity-40 group-hover:opacity-100 transition-all" />
-                   </div>
-                   <div className="text-4xl font-bold text-[var(--viz-green)] tabular-nums">{stats.solvedCount}</div>
-                </div>
-             )}
+             <h1 className="text-lg font-black tracking-tight text-[var(--foreground)]">
+               Problem Set
+             </h1>
+             <span className="text-[10px] font-mono bg-[var(--foreground)]/5 border border-[var(--border)] px-2 py-0.5 rounded-md text-[var(--muted-foreground)]">
+               {stats.totalProblems} Challenges
+             </span>
           </div>
+
+          {userId && (
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-[9px] font-black text-[var(--muted-foreground)]/50 uppercase tracking-widest">Progress</span>
+                <div className="text-sm font-black font-mono text-[var(--foreground)]">
+                  <span className="text-emerald-500">{stats.solvedCount}</span>
+                  <span className="text-[var(--muted-foreground)]/40 mx-1">/</span>
+                  <span>{stats.totalProblems}</span>
+                  <span className="text-[10px] text-[var(--muted-foreground)]/60 font-medium ml-1.5">
+                    ({Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100)}%)
+                  </span>
+                </div>
+              </div>
+              <div className="w-32 h-1.5 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full" 
+                  style={{ width: `${(stats.solvedCount / Math.max(1, stats.totalProblems)) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 4. MAIN CONTENT GRID */}

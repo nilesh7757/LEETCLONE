@@ -173,16 +173,21 @@ export const POST = apiHandler(async (_req: Request) => {
   // AI Feedback
   const aiPrompt = `
     Analyze these developer stats:
-    - GitHub: ${stats.github ? `${stats.github.publicRepos} repos` : "No"}
-    - LeetCode: ${stats.leetcode ? `${stats.leetcode.totalSolved} solved` : "No"}
-    - Codeforces: ${stats.codeforces ? `${stats.codeforces.rating} rating` : "No"}
-    - CodeChef: ${stats.codechef ? `${stats.codechef.rating} rating` : "No"}
-    - Atcoder: ${stats.atcoder ? `${stats.atcoder.rating} rating` : "No"}
+    - GitHub: ${stats.github ? `${stats.github.publicRepos} repos, ${stats.github.followers} followers` : "No profile linked"}
+    - LeetCode: ${stats.leetcode ? `${stats.leetcode.totalSolved} solved` : "No profile linked"}
+    - Codeforces: ${stats.codeforces ? `${stats.codeforces.rating} rating (${stats.codeforces.rank})` : "No profile linked"}
+    - CodeChef: ${stats.codechef ? `${stats.codechef.rating} rating (${stats.codechef.stars})` : "No profile linked"}
+    - Atcoder: ${stats.atcoder ? `${stats.atcoder.rating} rating` : "No profile linked"}
     - RECENT_ACTIVITY: ${totalRecent} problems in 7 days (${stats.consistency.status})
     
     Unified Power Level: ${finalPowerLevel}
     
-    Provide tactical placement advice. Be harsh if activity is low.
+    Provide concrete, tactical placement advice.
+    You MUST analyze each connected platform (GitHub, LeetCode, Codeforces, CodeChef, AtCoder) individually and mention a specific, actionable goal for EACH platform. For example:
+    - For GitHub: Specify a repository type or contribution target.
+    - For LeetCode: Recommend a specific topic/difficulty target (e.g. Medium Backtracking).
+    - For Codeforces: Recommend a specific rating bracket/tag to solve (e.g. 1200-1400 Constructive Algorithms).
+    Be extremely direct, technical, and developer-centric. Be harsh if activity is low.
     Respond in JSON with "advice" (string) and "powerLevelName" (RPG title).
   `;
 

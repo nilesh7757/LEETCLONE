@@ -3,12 +3,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 import axios from "axios";
-import { Send, UserCircle, Paperclip, Loader2, MoreVertical, Phone, Video, ChevronLeft, CheckCheck } from "lucide-react";
+import { 
+  Send, UserCircle, Paperclip, Loader2, MoreVertical, 
+  ChevronLeft, Check, CheckCheck, Trash, MoreHorizontal 
+} from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-
 import Image from "next/image";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -19,10 +22,13 @@ interface User {
 
 interface Message {
   id: string;
-  content: string;
+  content: string | null;
   senderId: string;
   createdAt: string | Date;
   type: string;
+  isDeletedForEveryone?: boolean;
+  deletedForUsers?: string;
+  status?: string;
 }
 
 interface ChatClientProps {
@@ -41,6 +47,9 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
   const scrollRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -60,6 +69,26 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     }
   }, [conversationId, scrollToBottom]);
 
+  const markAsSeen = useCallback(async () => {
+    if (!messages.length) return;
+    const unseenIds = messages
+      .filter(m => m.senderId !== currentUser.id && m.status !== "SEEN" && !m.isDeletedForEveryone)
+      .map(m => m.id);
+
+    if (unseenIds.length > 0) {
+      try {
+        await axios.post(`/api/chat/${conversationId}/seen`, { messageIds: unseenIds });
+        socket?.emit("messages_seen", { conversationId, senderId: currentUser.id });
+      } catch (err) {
+        console.error("Failed to mark as seen:", err);
+      }
+    }
+  }, [messages, conversationId, currentUser.id, socket]);
+
+  useEffect(() => {
+    markAsSeen();
+  }, [messages, markAsSeen]);
+
   // Initialize Socket
   useEffect(() => {
     const newSocket = ClientIO(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001");
@@ -67,9 +96,8 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
 
     newSocket.on("connect", () => {
       newSocket.emit("join_conversation", conversationId);
-      newSocket.emit("join_user", currentUser.id); // Join personal room for status updates
+      newSocket.emit("join_user", currentUser.id);
       
-      // Get initial online status
       newSocket.emit("get_online_users", (onlineUserIds: string[]) => {
         if (otherUser && onlineUserIds.includes(otherUser.id)) {
           setIsOnline(true);
@@ -80,6 +108,22 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     newSocket.on("new_message", (message: Message) => {
       setMessages((prev) => [...prev, message]);
       scrollToBottom();
+    });
+
+    newSocket.on("message_deleted", ({ messageId }: { messageId: string }) => {
+      setMessages((prev) => prev.map(m => m.id === messageId ? { ...m, isDeletedForEveryone: true, content: "This message was deleted" } : m));
+    });
+
+    newSocket.on("messages_seen", ({ conversationId: room }: { conversationId: string }) => {
+      if (room === conversationId) {
+        setMessages((prev) => prev.map(m => m.senderId === currentUser.id ? { ...m, status: "SEEN" } : m));
+      }
+    });
+
+    newSocket.on("chat_cleared", ({ conversationId: room }: { conversationId: string }) => {
+      if (room === conversationId) {
+        setMessages([]);
+      }
     });
 
     newSocket.on("user_online", ({ userId }: { userId: string }) => {
@@ -116,13 +160,14 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
             type: "TEXT"
         });
         
-        // Add to local list
-        setMessages((prev) => [...prev, data.message]);
+        const initialStatus = isOnline ? "RECEIVED" : "SENT";
+        const messageWithStatus = { ...data.message, status: initialStatus };
+
+        setMessages((prev) => [...prev, messageWithStatus]);
         
-        // Emit to server so it broadcasts to others
         socket?.emit("send_message", { 
           conversationId, 
-          message: data.message,
+          message: messageWithStatus,
           recipientIds 
         });
         
@@ -135,27 +180,66 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     }
   };
 
+  const clearChat = async () => {
+    try {
+      await axios.delete(`/api/chat/${conversationId}`);
+      setMessages([]);
+      setIsHeaderMenuOpen(false);
+      socket?.emit("clear_chat", { conversationId, recipientIds });
+      toast.success("Chat history cleared");
+    } catch (err) {
+      toast.error("Failed to clear chat");
+    }
+  };
+
+  const deleteMessage = async (messageId: string, type: 'me' | 'everyone') => {
+    try {
+      await axios.delete(`/api/chat/messages/${messageId}?type=${type}`);
+      setActiveMenuId(null);
+      
+      if (type === 'everyone') {
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDeletedForEveryone: true, content: "This message was deleted" } : m));
+        socket?.emit("delete_message", { conversationId, messageId, recipientIds });
+      } else {
+        setMessages(prev => prev.filter(m => m.id !== messageId));
+      }
+      toast.success("Message deleted");
+    } catch (err) {
+      toast.error("Failed to delete message");
+    }
+  };
+
+  useEffect(() => {
+    const handleClose = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".header-menu-trigger") && !target.closest(".header-menu")) {
+        setIsHeaderMenuOpen(false);
+      }
+      if (!target.closest(".message-menu-trigger") && !target.closest(".message-menu")) {
+        setActiveMenuId(null);
+      }
+    };
+    document.addEventListener("click", handleClose);
+    return () => document.removeEventListener("click", handleClose);
+  }, []);
+
+  const visibleMessages = messages.filter(msg => {
+    const deletedUsers = msg.deletedForUsers ? msg.deletedForUsers.split(",") : [];
+    return !deletedUsers.includes(currentUser.id);
+  });
+
   return (
     <div className="flex flex-col h-full relative overflow-hidden bg-[var(--background)]">
-      {/* Deep Space Atmosphere */}
-      <div className="absolute inset-0 pointer-events-none">
-         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[var(--viz-purple)]/5 rounded-full blur-[120px] opacity-50" />
-         <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[var(--viz-cyan)]/5 rounded-full blur-[120px] opacity-50" />
-      </div>
-
-      {/* Holographic Header */}
-      <div className="h-20 px-6 flex items-center justify-between bg-[var(--card)]/30 backdrop-blur-xl border-b border-white/5 relative z-20 shrink-0">
-        <div className="flex items-center gap-4">
-            <Link href="/chat" className="p-2 rounded-full hover:bg-white/5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors md:hidden">
-                <ChevronLeft size={20} />
+      {/* Header bar */}
+      <div className="h-16 px-5 flex items-center justify-between bg-[var(--card)]/80 backdrop-blur-md border-b border-[var(--border)] relative z-20 shrink-0">
+        <div className="flex items-center gap-3">
+            <Link href="/chat" className="p-1.5 rounded-full hover:bg-[var(--foreground)]/5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors md:hidden">
+                <ChevronLeft size={18} />
             </Link>
             
-            <Link href={`/profile/${otherUser?.id}`} className="group flex items-center gap-4 relative">
+            <Link href={`/profile/${otherUser?.id}`} className="group flex items-center gap-3 relative">
                 <div className="relative shrink-0">
-                    {/* Ring Pulse for Online */}
-                    {isOnline && <div className="absolute inset-[-4px] rounded-full border border-[var(--viz-emerald)]/30 animate-ping opacity-50" />}
-                    
-                    <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all relative ${isOnline ? "border-[var(--viz-emerald)]" : "border-white/10 group-hover:border-[var(--viz-cyan)]"}`}>
+                    <div className={`w-9 h-9 rounded-full overflow-hidden border transition-all relative ${isOnline ? "border-emerald-500" : "border-[var(--border)] group-hover:border-[var(--primary)]"}`}>
                         {otherUser?.image ? (
                             <Image 
                                 src={otherUser.image} 
@@ -165,75 +249,133 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
-                                <UserCircle className="w-6 h-6 text-[var(--muted-foreground)]" />
+                                <UserCircle className="w-5 h-5 text-[var(--muted-foreground)]" />
                             </div>
                         )}
                     </div>
                     {isOnline && (
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[var(--viz-emerald)] border-2 border-[var(--card)] rounded-full shadow-[0_0_10px_var(--viz-emerald)]" />
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[var(--card)] rounded-full animate-pulse" />
                     )}
                 </div>
                 
                 <div>
-                    <h2 className="font-bold text-lg text-[var(--foreground)] tracking-tight group-hover:text-[var(--viz-cyan)] transition-colors">{otherUser?.name || "Unknown Entity"}</h2>
-                    <div className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-[var(--viz-emerald)] shadow-[0_0_8px_var(--viz-emerald)]" : "bg-[var(--muted-foreground)]/30"}`} />
-                        <p className="text-xs font-mono font-medium text-[var(--muted-foreground)]">
-                            {isOnline ? "SIGNAL ACTIVE" : lastActive ? `LAST SIGNAL: ${formatDistanceToNow(lastActive, { addSuffix: true }).toUpperCase()}` : "OFFLINE"}
+                    <h2 className="font-bold text-sm text-[var(--foreground)] tracking-tight group-hover:text-[var(--primary)] transition-colors">{otherUser?.name || "User"}</h2>
+                    <div className="flex items-center gap-1.5">
+                        <span className={`w-1 h-1 rounded-full ${isOnline ? "bg-emerald-500" : "bg-[var(--muted-foreground)]/30"}`} />
+                        <p className="text-[10px] font-bold text-[var(--muted-foreground)]/65">
+                            {isOnline ? "ONLINE" : lastActive ? `ACTIVE ${formatDistanceToNow(lastActive, { addSuffix: true }).toUpperCase()}` : "OFFLINE"}
                         </p>
                     </div>
                 </div>
             </Link>
         </div>
 
-        <div className="flex items-center gap-2">
-            <button className="p-2.5 rounded-xl hover:bg-white/5 text-[var(--muted-foreground)] hover:text-[var(--viz-cyan)] transition-colors">
-                <Phone size={18} />
+        <div className="flex items-center gap-1.5 relative">
+            <button 
+              onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)} 
+              className="header-menu-trigger p-2 rounded-lg hover:bg-[var(--foreground)]/5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
+            >
+                <MoreVertical size={16} />
             </button>
-            <button className="p-2.5 rounded-xl hover:bg-white/5 text-[var(--muted-foreground)] hover:text-[var(--viz-purple)] transition-colors">
-                <Video size={18} />
-            </button>
-            <button className="p-2.5 rounded-xl hover:bg-white/5 text-[var(--muted-foreground)] transition-colors">
-                <MoreVertical size={18} />
-            </button>
+            
+            {isHeaderMenuOpen && (
+              <div className="header-menu absolute right-0 top-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl p-1.5 flex flex-col gap-1 w-40 text-xs font-semibold z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <button 
+                    onClick={clearChat} 
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-left text-red-500 hover:bg-red-500/10 w-full cursor-pointer border-none bg-transparent"
+                  >
+                      <Trash size={14} /> Clear Chat
+                  </button>
+              </div>
+            )}
         </div>
       </div>
 
       {/* Messages Stream */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 relative z-10">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 relative z-10">
         {loading ? (
             <div className="flex justify-center mt-20">
-                <Loader2 className="w-10 h-10 animate-spin text-[var(--viz-cyan)]" />
+                <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
+            </div>
+        ) : visibleMessages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-[var(--muted-foreground)]/40 text-xs font-semibold">
+                No conversation history. Start typing below...
             </div>
         ) : (
             <AnimatePresence initial={false}>
-                {messages.map((msg, idx) => {
+                {visibleMessages.map((msg, idx) => {
                     const isMe = msg.senderId === currentUser.id;
-                    const isSequence = idx > 0 && messages[idx - 1].senderId === msg.senderId;
+                    const isSequence = idx > 0 && visibleMessages[idx - 1].senderId === msg.senderId;
+                    const isDeleted = msg.isDeletedForEveryone;
 
                     return (
                         <motion.div 
                             key={msg.id || idx} 
-                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className={`flex ${isMe ? "justify-end" : "justify-start"} ${isSequence ? "mt-1" : "mt-4"}`}
+                            transition={{ duration: 0.15 }}
+                            className={`flex ${isMe ? "justify-end" : "justify-start"} ${isSequence ? "mt-0.5" : "mt-3"}`}
                         >
-                            <div className={`relative max-w-[75%] md:max-w-[60%] px-5 py-3 shadow-lg backdrop-blur-sm group ${
+                            <div className={`relative max-w-[70%] md:max-w-[55%] px-4 py-2.5 shadow-sm group ${
                                 isMe 
-                                ? "bg-gradient-to-br from-[var(--viz-cyan)] to-[var(--viz-blue)] text-black rounded-[1.5rem] rounded-tr-sm" 
-                                : "bg-[var(--card)]/40 border border-white/5 text-[var(--foreground)] rounded-[1.5rem] rounded-tl-sm hover:border-[var(--viz-purple)]/30 transition-colors"
+                                ? "bg-[var(--primary)] text-[var(--primary-foreground)] rounded-2xl rounded-tr-sm" 
+                                : "bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] rounded-2xl rounded-tl-sm"
                             }`}>
-                                <p className={`text-sm leading-relaxed ${isMe ? "font-semibold" : "font-medium"}`}>{msg.content}</p>
+                                <p className={`text-xs leading-relaxed ${isDeleted ? 'italic text-opacity-50' : 'font-semibold'}`}>
+                                    {isDeleted ? "This message was deleted" : msg.content}
+                                </p>
                                 
-                                <div className={`flex items-center justify-end gap-1 mt-1 opacity-60 ${isMe ? "text-black/70" : "text-[var(--muted-foreground)]"}`}>
-                                    <span className="text-[9px] font-mono font-bold tracking-widest">
+                                <div className={`flex items-center justify-end gap-1 mt-1 opacity-60 ${isMe ? "text-[var(--primary-foreground)]/80" : "text-[var(--muted-foreground)]"}`}>
+                                    <span className="text-[8px] font-mono font-bold tracking-wider">
                                         {format(new Date(msg.createdAt), "HH:mm")}
                                     </span>
-                                    {isMe && (
-                                        <CheckCheck size={12} strokeWidth={3} />
+                                    {isMe && !isDeleted && (
+                                        <span className="flex items-center">
+                                            {msg.status === "SEEN" ? (
+                                                <span title="Seen"><CheckCheck size={10} strokeWidth={3} className="text-emerald-500" /></span>
+                                            ) : msg.status === "RECEIVED" ? (
+                                                <span title="Received"><CheckCheck size={10} strokeWidth={3} className="text-slate-400" /></span>
+                                            ) : (
+                                                <span title="Sent (Not received)"><Check size={10} strokeWidth={3} className="text-slate-400" /></span>
+                                            )}
+                                        </span>
                                     )}
                                 </div>
+
+                                {/* Hover Dropdown Menu for Message Actions */}
+                                {!isDeleted && (
+                                    <div className="absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                                        <button 
+                                            type="button"
+                                            onClick={() => setActiveMenuId(activeMenuId === msg.id ? null : msg.id)}
+                                            className="message-menu-trigger p-1 rounded-full bg-[var(--card)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] shadow-sm cursor-pointer"
+                                        >
+                                            <MoreHorizontal size={10} />
+                                        </button>
+                                        {activeMenuId === msg.id && (
+                                            <div 
+                                                className="message-menu absolute right-0 top-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg p-1 flex flex-col gap-0.5 w-36 text-[10px] font-bold z-40 animate-in fade-in zoom-in-95 duration-100"
+                                            >
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => deleteMessage(msg.id, 'me')} 
+                                                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-left text-[var(--muted-foreground)] hover:bg-[var(--foreground)]/5 w-full cursor-pointer border-none bg-transparent"
+                                                >
+                                                    <Trash size={10} /> Delete for me
+                                                </button>
+                                                {isMe && (
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => deleteMessage(msg.id, 'everyone')} 
+                                                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-left text-red-500 hover:bg-red-500/10 w-full cursor-pointer border-none bg-transparent"
+                                                    >
+                                                        <Trash size={10} /> Delete for everyone
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     );
@@ -243,34 +385,34 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
         <div ref={scrollRef} />
       </div>
 
-      {/* Control Deck Input */}
-      <div className="p-4 bg-transparent relative z-20">
+      {/* Message Input deck */}
+      <div className="p-3 bg-transparent relative z-20">
         <form 
             onSubmit={handleSend} 
-            className="flex items-end gap-3 p-2 bg-[var(--card)]/60 backdrop-blur-2xl border border-white/5 rounded-[2rem] shadow-2xl relative group focus-within:border-[var(--viz-cyan)]/30 transition-colors"
+            className="flex items-center gap-2 p-1.5 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm relative group focus-within:border-[var(--primary)]/50 transition-colors"
         >
             <button 
                 type="button" 
-                className="p-3 mb-1 text-[var(--muted-foreground)] hover:text-[var(--viz-purple)] hover:bg-[var(--viz-purple)]/10 rounded-full transition-all"
-                title="Data Link"
+                className="p-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 rounded-xl transition-all"
+                title="Attach file"
             >
-                <Paperclip className="w-5 h-5" />
+                <Paperclip className="w-4 h-4" />
             </button>
             
             <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Initialize transmission..."
-                className="flex-1 bg-transparent border-none px-2 py-4 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/50 focus:ring-0 max-h-32 font-medium"
+                placeholder="Type a message..."
+                className="flex-1 bg-transparent border-none px-2 py-2 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/50 focus:ring-0 outline-none max-h-32 font-medium"
             />
             
             <button 
                 type="submit" 
                 disabled={!newMessage.trim() || sending}
-                className="p-3 mb-1 bg-[var(--foreground)] text-[var(--background)] rounded-full hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(var(--foreground-rgb),0.2)]"
+                className="p-2 bg-[var(--foreground)] text-[var(--background)] rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
             >
-                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>
         </form>
       </div>

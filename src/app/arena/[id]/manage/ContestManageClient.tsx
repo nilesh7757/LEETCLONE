@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 import Link from "next/link";
-import { ProblemFormData } from "@/features/problems/components/ProblemForm";
+import ProblemForm, { ProblemFormData } from "@/features/problems/components/ProblemForm";
 
 interface ProblemUnit {
   id: string;
@@ -59,6 +59,11 @@ export default function ContestManageClient({ contestId }: { contestId: string }
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newAnnouncement, setNewAnnouncement] = useState("");
   const [isBroadcasting, setIsBroadcasting] = useState(false);
+
+  // Inline Problem Editing States
+  const [editingProblemId, setEditingProblemId] = useState<string | null>(null);
+  const [editingProblemData, setEditingProblemData] = useState<any>(null);
+  const [loadingProblem, setLoadingProblem] = useState(false);
 
   // Sandbox States
   const [sandboxCode, setSandboxCode] = useState("");
@@ -206,6 +211,31 @@ export default function ContestManageClient({ contestId }: { contestId: string }
     }
   };
 
+  const startEditingProblem = async (problemId: string) => {
+    try {
+      setLoadingProblem(true);
+      const { data } = await axios.get(`/api/problems/id/${problemId}`);
+      setEditingProblemId(problemId);
+      setEditingProblemData(data);
+    } catch (err) {
+      toast.error("Failed to fetch problem data");
+    } finally {
+      setLoadingProblem(false);
+    }
+  };
+
+  const handleSaveProblem = async (problemId: string, formData: ProblemFormData) => {
+    try {
+      await axios.patch(`/api/problems/id/${problemId}/update`, formData);
+      toast.success("Problem saved successfully");
+      setEditingProblemId(null);
+      setEditingProblemData(null);
+      fetchContest();
+    } catch (err) {
+      toast.error("Failed to save problem");
+    }
+  };
+
   const initializeNewProblem = async () => {
     try {
        const { data } = await axios.post("/api/problems/create", {
@@ -223,7 +253,22 @@ export default function ContestManageClient({ contestId }: { contestId: string }
           isPublic: false,
           contestId: contestId
        });
-       router.push(`/architect/id/${data.id}`);
+       toast.success("Problem initialized");
+       await fetchContest();
+       setEditingProblemId(data.id);
+       setEditingProblemData({
+          title: "Untitled Problem",
+          slug: `contest-${contestId}-${Date.now()}`,
+          difficulty: "Easy",
+          category: "General",
+          description: "Problem statement here...",
+          examplesInput: [],
+          testCasesInput: [],
+          referenceSolution: "// write your solution",
+          language: "javascript",
+          timeLimit: 2000,
+          memoryLimit: 256,
+       });
     } catch (err) {
        toast.error("Failed to initialize problem");
     }
@@ -456,85 +501,120 @@ export default function ContestManageClient({ contestId }: { contestId: string }
                {activeTab === 'problems' && (
                   <motion.div 
                      key="problems" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-                     className="space-y-12"
+                     className="space-y-6"
                   >
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
-                              <Target size={20} />
-                           </div>
-                           <div className="flex flex-col">
-                              <h2 className="text-2xl font-black uppercase tracking-tight text-[var(--foreground)]">Contest Problems</h2>
-                              <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">{contest?.problems.length} Problems Added</span>
-                           </div>
+                     {loadingProblem ? (
+                        <div className="py-24 flex flex-col items-center justify-center gap-4">
+                           <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+                           <p className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] font-bold">Synchronizing Problem Template...</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                           <Link 
-                              href="/studio"
-                              className="px-6 py-2.5 bg-[var(--foreground)]/5 border border-[var(--border)] hover:border-[var(--primary)]/30 text-[var(--muted-foreground)] hover:text-[var(--foreground)] rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-2"
-                           >
-                              <Box size={14} /> Add from Studio
-                           </Link>
-                           <button 
-                              onClick={initializeNewProblem}
-                              className="px-6 py-2.5 bg-[var(--primary)] text-[var(--foreground)] rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#2563eb] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
-                           >
-                              <PlusCircle size={14} /> Create New Problem
-                           </button>
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-1 gap-3">
-                        {contest?.problems.length === 0 ? (
-                           <div className="py-24 text-center border-2 border-dashed border-[var(--border)] rounded-[2rem]">
-                              <div className="w-12 h-12 rounded-2xl bg-[var(--foreground)]/5 flex items-center justify-center mx-auto mb-4 text-[#262626]">
-                                 <LayoutTemplate size={24} />
-                              </div>
-                              <p className="text-[11px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">No problems assigned to this contest yet.</p>
-                           </div>
-                        ) : (
-                           contest?.problems.map((problem, index) => (
-                              <div 
-                                 key={problem.id}
-                                 className="group flex items-center justify-between p-6 bg-[var(--foreground)]/2 border border-[var(--border)] hover:border-[var(--primary)]/30 rounded-2xl transition-all duration-300"
+                     ) : editingProblemId && editingProblemData ? (
+                        <div className="space-y-6">
+                           <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
+                              <button 
+                                 onClick={() => {
+                                    setEditingProblemId(null);
+                                    setEditingProblemData(null);
+                                 }}
+                                 className="px-4 py-2 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl text-xs font-bold uppercase tracking-widest hover:text-[var(--foreground)] transition-all flex items-center gap-2 cursor-pointer border-none"
                               >
-                                 <div className="flex items-center gap-6">
-                                    <div className="w-10 h-10 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[11px] font-black text-[var(--muted-foreground)] group-hover:text-[var(--primary)]">
-                                       {String.fromCharCode(65 + index)}
+                                 <ArrowLeft size={14} /> Back to Contest Problems
+                              </button>
+                           </div>
+                           <ProblemForm 
+                              problemId={editingProblemId}
+                              initialData={editingProblemData}
+                              isEditing={true}
+                              onSubmit={async (data) => {
+                                 await handleSaveProblem(editingProblemId, data);
+                              }}
+                           />
+                        </div>
+                     ) : (
+                        <>
+                           <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
+                                    <Target size={20} />
+                                 </div>
+                                 <div className="flex flex-col">
+                                    <h2 className="text-2xl font-black uppercase tracking-tight text-[var(--foreground)]">Contest Problems</h2>
+                                    <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">{contest?.problems.length} Problems Added</span>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                 <Link 
+                                    href="/studio"
+                                    className="px-6 py-2.5 bg-[var(--foreground)]/5 border border-[var(--border)] hover:border-[var(--primary)]/30 text-[var(--muted-foreground)] hover:text-[var(--foreground)] rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-2"
+                                 >
+                                    <Box size={14} /> Add from Studio
+                                 </Link>
+                                 <button 
+                                    onClick={initializeNewProblem}
+                                    className="px-6 py-2.5 bg-[var(--primary)] text-[var(--foreground)] rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#2563eb] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.2)] cursor-pointer"
+                                 >
+                                    <PlusCircle size={14} /> Create New Problem
+                                 </button>
+                              </div>
+                           </div>
+
+                           <div className="grid grid-cols-1 gap-3">
+                              {contest?.problems.length === 0 ? (
+                                 <div className="py-24 text-center border-2 border-dashed border-[var(--border)] rounded-[2rem]">
+                                    <div className="w-12 h-12 rounded-2xl bg-[var(--foreground)]/5 flex items-center justify-center mx-auto mb-4 text-[#262626]">
+                                       <LayoutTemplate size={24} />
                                     </div>
-                                    <div className="flex flex-col">
-                                       <h3 className="text-lg font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">{problem.title}</h3>
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">No problems assigned to this contest yet.</p>
+                                 </div>
+                              ) : (
+                                 contest?.problems.map((problem, index) => (
+                                    <div 
+                                       key={problem.id}
+                                       className="group flex items-center justify-between p-6 bg-[var(--foreground)]/2 border border-[var(--border)] hover:border-[var(--primary)]/30 rounded-2xl transition-all duration-300"
+                                     >
+                                       <div className="flex items-center gap-6">
+                                          <div className="w-10 h-10 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[11px] font-black text-[var(--muted-foreground)] group-hover:text-[var(--primary)]">
+                                             {String.fromCharCode(65 + index)}
+                                          </div>
+                                          <div className="flex flex-col">
+                                             <h3 className="text-lg font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">{problem.title}</h3>
+                                             <div className="flex items-center gap-3">
+                                                <span className={`text-[8px] font-black uppercase tracking-widest ${
+                                                   problem.difficulty === 'Easy' ? 'text-green-500' : problem.difficulty === 'Medium' ? 'text-amber-500' : 'text-rose-500'
+                                                }`}>{problem.difficulty}</span>
+                                                <span className="text-[9px] font-mono text-[#262626] uppercase tracking-widest">{problem.category}</span>
+                                             </div>
+                                          </div>
+                                       </div>
                                        <div className="flex items-center gap-3">
-                                          <span className={`text-[8px] font-black uppercase tracking-widest ${
-                                             problem.difficulty === 'Easy' ? 'text-green-500' : problem.difficulty === 'Medium' ? 'text-amber-500' : 'text-rose-500'
-                                          }`}>{problem.difficulty}</span>
-                                          <span className="text-[9px] font-mono text-[#262626] uppercase tracking-widest">{problem.category}</span>
+                                          <button 
+                                             onClick={() => startEditingProblem(problem.id)} 
+                                             className="p-3 bg-[var(--foreground)]/5 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--primary)]/20 transition-all border border-transparent hover:border-[var(--primary)]/20 cursor-pointer" 
+                                             title="Edit Problem"
+                                          >
+                                             <Pencil size={16} />
+                                          </button>
+                                          <button 
+                                             onClick={() => handleRemoveFromContest(problem.id)}
+                                             className="p-3 bg-[var(--foreground)]/5 rounded-xl text-[var(--muted-foreground)] hover:text-amber-500 hover:bg-amber-500/10 transition-all border border-transparent hover:border-amber-500/20 cursor-pointer"
+                                             title="Remove from Contest"
+                                          >
+                                             <Trash size={16} />
+                                          </button>
+                                          <button 
+                                             onClick={() => handleDestroyProblem(problem.id)}
+                                             className="p-3 bg-[var(--foreground)]/5 rounded-xl text-[var(--muted-foreground)] hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20 cursor-pointer"
+                                             title="Delete Permanently"
+                                          >
+                                             <Trash2 size={16} />
+                                          </button>
                                        </div>
                                     </div>
-                                 </div>
-                                 <div className="flex items-center gap-3">
-                                    <Link href={`/architect/id/${problem.id}`} className="p-3 bg-[var(--foreground)]/5 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--primary)]/20 transition-all border border-transparent hover:border-[var(--primary)]/20" title="Edit Problem">
-                                       <Pencil size={16} />
-                                    </Link>
-                                    <button 
-                                       onClick={() => handleRemoveFromContest(problem.id)}
-                                       className="p-3 bg-[var(--foreground)]/5 rounded-xl text-[var(--muted-foreground)] hover:text-amber-500 hover:bg-amber-500/10 transition-all border border-transparent hover:border-amber-500/20"
-                                       title="Remove from Contest"
-                                    >
-                                       <Trash size={16} />
-                                    </button>
-                                    <button 
-                                       onClick={() => handleDestroyProblem(problem.id)}
-                                       className="p-3 bg-[var(--foreground)]/5 rounded-xl text-[var(--muted-foreground)] hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20"
-                                       title="Delete Permanently"
-                                    >
-                                       <Trash2 size={16} />
-                                    </button>
-                                 </div>
-                              </div>
-                           ))
-                        )}
-                     </div>
+                                 ))
+                              )}
+                           </div>
+                        </>
+                     )}
                   </motion.div>
                )}
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, ArrowRight, Code2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Play, AlertCircle, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Problem {
@@ -24,19 +24,13 @@ interface ProblemTableProps {
 
 const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
   const config = {
-    Easy: { color: "#22c55e", bg: "rgba(34, 197, 94, 0.1)" },
-    Medium: { color: "#f59e0b", bg: "rgba(245, 158, 11, 0.1)" },
-    Hard: { color: "#ef4444", bg: "rgba(239, 68, 68, 0.1)" },
-  }[difficulty] || { color: "#52525b", bg: "rgba(82, 82, 91, 0.1)" };
+    Easy: { color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    Medium: { color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
+    Hard: { color: "text-red-500", bg: "bg-red-500/10 border-red-500/20" },
+  }[difficulty] || { color: "text-[var(--muted-foreground)]", bg: "bg-[var(--foreground)]/5 border-[var(--border)]" };
 
   return (
-    <span 
-        className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/5 backdrop-blur-md"
-        style={{ 
-            color: config.color,
-            backgroundColor: config.bg,
-        }}
-    >
+    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${config.bg} ${config.color}`}>
       {difficulty}
     </span>
   );
@@ -55,141 +49,117 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
 
   if (problems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-40 text-center rounded-3xl bg-white/[0.01] border border-dashed border-white/5 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.02] bg-grid-pattern pointer-events-none" />
-        <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-8 border border-white/5 rotate-12 transition-transform duration-500">
-          <Code2 className="w-10 h-10 text-[#52525b]" />
-        </div>
-        <h3 className="text-3xl font-bold tracking-tighter text-white">No Problems Found</h3>
-        <p className="text-[10px] text-[#52525b] mt-4 font-bold uppercase tracking-widest">Try adjusting your filters.</p>
+      <div className="flex flex-col items-center justify-center py-20 text-center rounded-3xl bg-[var(--foreground)]/[0.01] border border-dashed border-[var(--border)] relative overflow-hidden">
+        <HelpCircle className="w-10 h-10 text-[var(--muted-foreground)]/30 mb-4" />
+        <h3 className="text-xl font-bold tracking-tight">No Problems Found</h3>
+        <p className="text-xs text-[var(--muted-foreground)] mt-2">Try adjusting your active filters.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-12">
-      <div className="grid grid-cols-1 gap-4">
-        {problems.map((problem, idx) => (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.03 }}
-            key={problem.id}
-            className="group relative"
-          >
-            <Link href={`/problems/${problem.slug}`} className="block">
-               <div className="relative bg-white/[0.02] border border-white/5 hover:border-[#3b82f6]/30 rounded-2xl p-6 transition-all duration-500 hover:bg-white/[0.04] overflow-hidden group/card shadow-xl">
-                  {/* Status Glow */}
-                  {problem.isSolved && (
-                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#22c55e]/40 to-transparent" />
+    <div className="space-y-8 select-none">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--border)] pb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/60">
+              <th className="py-4 pl-4 w-[60px]">Status</th>
+              <th className="py-4">Title</th>
+              <th className="py-4 w-[120px]">Difficulty</th>
+              <th className="py-4 w-[160px]">Category</th>
+              <th className="py-4 w-[120px] text-right pr-4">Acceptance</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[var(--border)]/40">
+            {problems.map((problem, idx) => (
+              <tr 
+                key={problem.id}
+                className="group hover:bg-[var(--foreground)]/[0.02] transition-colors"
+              >
+                {/* Status Column */}
+                <td className="py-4 pl-4">
+                  {problem.isSolved ? (
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-500" title="Solved">
+                      <Check size={11} strokeWidth={3} />
+                    </div>
+                  ) : problem.isAttempted ? (
+                    <div className="w-5 h-5 rounded-full bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-500" title="Attempted">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)]/30 group-hover:border-[var(--primary)]/30 group-hover:text-[var(--primary)] transition-colors">
+                      <span className="w-1 h-1 rounded-full bg-transparent group-hover:bg-[var(--primary)]/40" />
+                    </div>
                   )}
-                  
-                  {/* Side Accent Bar */}
-                  <div className={`absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full transition-all duration-500 ${
-                     problem.isSolved ? "bg-[#22c55e]" : 
-                     problem.isAttempted ? "bg-[#f59e0b]" : 
-                     "bg-transparent group-hover/card:bg-[#3b82f6]/40"
-                  }`} />
+                </td>
 
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
-                     <div className="flex-1 flex gap-6 items-center">
-                        <div className="hidden sm:flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-[#020202] border border-white/5 shrink-0 group-hover/card:border-[#3b82f6]/20 transition-colors">
-                           <span className="text-[8px] font-bold text-[#262626] uppercase mb-1">No.</span>
-                           <span className="text-[14px] font-mono font-bold text-[#52525b] group-hover/card:text-white transition-colors">{String(idx + 1 + (currentPage - 1) * 12).padStart(3, '0')}</span>
-                        </div>
+                {/* Title Column */}
+                <td className="py-4 pr-4">
+                  <Link href={`/problems/${problem.slug}`} className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-[var(--muted-foreground)]/40 group-hover:text-[var(--primary)]/60 transition-colors">
+                      {String(idx + 1 + (currentPage - 1) * 12).padStart(3, '0')}.
+                    </span>
+                    <span className="font-bold text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors tracking-tight">
+                      {problem.title}
+                    </span>
+                    {problem.companies && problem.companies.length > 0 && (
+                      <div className="hidden lg:flex items-center gap-1">
+                        {problem.companies.slice(0, 2).map(company => (
+                          <span key={company} className="px-1.5 py-0.5 rounded-md bg-[var(--foreground)]/5 text-[8px] font-extrabold text-[var(--muted-foreground)]/70 uppercase tracking-widest border border-[var(--border)]">
+                            {company}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </Link>
+                </td>
 
-                        <div className="space-y-3">
-                           <div className="flex items-center gap-4 flex-wrap">
-                              <h3 className="text-2xl font-bold tracking-tight text-white group-hover/card:text-[#3b82f6] transition-all">
-                                 {problem.title}
-                              </h3>
-                              
-                              {problem.isSolved && (
-                                 <div className="flex items-center gap-2 text-[#22c55e] text-[9px] font-bold uppercase tracking-widest bg-[#22c55e]/5 px-3 py-1 rounded-full border border-[#22c55e]/10">
-                                    <Check size={12} strokeWidth={3} /> Solved
-                                 </div>
-                              )}
-                           </div>
+                {/* Difficulty Column */}
+                <td className="py-4">
+                  <DifficultyBadge difficulty={problem.difficulty} />
+                </td>
 
-                           <div className="flex items-center gap-5 text-sm text-[#52525b]">
-                              <DifficultyBadge difficulty={problem.difficulty} />
-                              <div className="h-3 w-px bg-white/5" />
-                              <div className="flex items-center gap-2">
-                                 <div className="w-1 h-1 rounded-full bg-[#3b82f6]" />
-                                 <span className="font-mono text-[9px] font-bold uppercase tracking-widest">{problem.category}</span>
-                              </div>
-                              {problem.companies && problem.companies.length > 0 && (
-                                 <>
-                                    <div className="h-3 w-px bg-white/5" />
-                                    <div className="flex items-center gap-2">
-                                      {problem.companies.slice(0, 3).map(company => (
-                                        <span key={company} className="px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold text-[#a1a1aa] uppercase tracking-widest border border-white/10">
-                                          {company}
-                                        </span>
-                                      ))}
-                                      {problem.companies.length > 3 && (
-                                        <span className="text-[9px] font-bold text-[#52525b] uppercase tracking-widest">
-                                          +{problem.companies.length - 3}
-                                        </span>
-                                      )}
-                                    </div>
-                                 </>
-                              )}
-                           </div>
-                        </div>
-                     </div>
+                {/* Category Column */}
+                <td className="py-4">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]/80">
+                    {problem.category}
+                  </span>
+                </td>
 
-                     <div className="flex items-center gap-8">
-                        {/* Meta Stats */}
-                        <div className="hidden xl:flex gap-10">
-                           <div className="flex flex-col items-end">
-                              <span className="text-[8px] font-bold uppercase text-[#262626] tracking-widest">Acceptance</span>
-                              <span className="text-xs font-mono text-[#52525b]">84.2%</span>
-                           </div>
-                           <div className="flex flex-col items-end">
-                              <span className="text-[8px] font-bold uppercase text-[#262626] tracking-widest">Memory</span>
-                              <span className="text-xs font-mono text-[#52525b]">256MB</span>
-                           </div>
-                        </div>
-
-                        <div className="group-hover/card:translate-x-2 transition-transform duration-500 text-[#3b82f6]/40 group-hover/card:text-[#3b82f6]">
-                           <ArrowRight size={24} strokeWidth={1} />
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </Link>
-          </motion.div>
-        ))}
+                {/* Acceptance Column */}
+                <td className="py-4 pr-4 text-right">
+                  <span className="font-mono text-xs font-semibold text-[var(--muted-foreground)]">
+                    84.2%
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-12 pt-12">
-           <button
-             onClick={() => handlePageChange(currentPage - 1)}
-             disabled={currentPage === 1}
-             className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[#52525b] hover:text-[#3b82f6] hover:bg-white/5 disabled:opacity-20 disabled:pointer-events-none transition-all group"
-           >
-             <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-           </button>
-           
-           <div className="flex flex-col items-center gap-2">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[#262626]">Page</span>
-              <div className="text-xl font-bold text-white flex items-center gap-3">
-                 <span className="text-[#3b82f6]">{currentPage}</span>
-                 <span className="text-white/10 text-xs">/</span>
-                 <span className="text-[#52525b] text-base">{totalPages}</span>
-              </div>
-           </div>
-           
-           <button
-             onClick={() => handlePageChange(currentPage + 1)}
-             disabled={currentPage === totalPages}
-             className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[#52525b] hover:text-[#3b82f6] hover:bg-white/5 disabled:opacity-20 disabled:pointer-events-none transition-all group"
-           >
-             <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-           </button>
+        <div className="flex justify-center items-center gap-8 pt-6 border-t border-[var(--border)]/20">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2.5 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--foreground)]/10 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer group"
+          >
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+          
+          <div className="text-xs font-semibold text-[var(--muted-foreground)] font-mono">
+            Page <span className="text-[var(--primary)] font-bold">{currentPage}</span> / <span className="text-[var(--foreground)]">{totalPages}</span>
+          </div>
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2.5 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--foreground)]/10 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer group"
+          >
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+          </button>
         </div>
       )}
     </div>

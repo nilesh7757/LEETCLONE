@@ -182,7 +182,16 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar bg-[var(--card)]">
                     <div className="p-8 max-w-4xl mx-auto">
-                    {activeTab === 'description' && <ProblemDescription description={problem.description} examples={examples} />}
+                    {activeTab === 'description' && (
+                      <ProblemDescription 
+                        description={problem.description} 
+                        examples={examples} 
+                        difficulty={problem.difficulty}
+                        category={problem.category}
+                        timeLimit={problem.timeLimit}
+                        memoryLimit={problem.memoryLimit}
+                      />
+                    )}
                     {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
                     {activeTab === 'submissions' && (
                         <div className="space-y-3">
@@ -309,7 +318,16 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 pb-20">
-                {activeTab === 'description' && <ProblemDescription description={problem.description} examples={examples} />}
+                {activeTab === 'description' && (
+                  <ProblemDescription 
+                    description={problem.description} 
+                    examples={examples} 
+                    difficulty={problem.difficulty}
+                    category={problem.category}
+                    timeLimit={problem.timeLimit}
+                    memoryLimit={problem.memoryLimit}
+                  />
+                )}
                 {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
                 {activeTab === 'submissions' && (
                     <div className="space-y-3">

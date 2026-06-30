@@ -17,7 +17,9 @@ import {
   Gamepad2,
   Shield,
   GraduationCap,
-  BrainCircuit
+  BrainCircuit,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 import Logo from "../ui/Logo";
 import { useSession } from "next-auth/react";
@@ -34,9 +36,10 @@ interface SidebarItemProps {
   href: string;
   isActive?: boolean;
   color?: string; // Optional icon color override
+  isCollapsed?: boolean;
 }
 
-function SidebarItem({ icon: Icon, label, href, isActive, color }: SidebarItemProps) {
+function SidebarItem({ icon: Icon, label, href, isActive, color, isCollapsed }: SidebarItemProps) {
   const activeColor = color || "var(--primary)";
   const activeColorRGB = activeColor.includes("viz-blue") ? "var(--viz-blue-rgb)" : 
                         activeColor.includes("viz-purple") ? "var(--viz-purple-rgb)" :
@@ -47,8 +50,10 @@ function SidebarItem({ icon: Icon, label, href, isActive, color }: SidebarItemPr
   return (
     <Link
       href={href}
+      title={isCollapsed ? label : undefined}
       className={classNames(
-        "group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200",
+        "group flex items-center rounded-lg transition-all duration-300 py-2.5 text-sm font-medium",
+        isCollapsed ? "px-[22px]" : "px-4",
         isActive 
           ? `text-[var(--foreground)]` 
           : "text-[var(--foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
@@ -59,21 +64,33 @@ function SidebarItem({ icon: Icon, label, href, isActive, color }: SidebarItemPr
       } : {}}
     >
       <Icon 
-        className="w-5 h-5 transition-colors" 
+        className="w-5 h-5 transition-colors shrink-0" 
         style={{ color: isActive ? activeColor : undefined }}
       />
-      <span style={{ color: isActive ? activeColor : undefined }}>{label}</span>
+      <span 
+        className={classNames(
+          "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden text-ellipsis",
+          isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+        )}
+        style={isActive ? { color: activeColor } : {}}
+      >
+        {label}
+      </span>
     </Link>
   );
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  isCollapsed?: boolean;
+  toggleCollapse?: () => void;
+}
+
+export default function Sidebar({ isCollapsed = false, toggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
   const navItems = [
     { label: "Problems", href: "/problems", icon: Code2, color: "var(--viz-blue)" },
-    { label: "Architect", href: "/architect", icon: LayoutTemplate, color: "var(--viz-purple)" },
     { label: "Study Plans", href: "/study-plans", icon: BookOpen, color: "var(--viz-purple)" },
     { label: "CS Core", href: "/cs-core", icon: BrainCircuit, color: "var(--viz-gold)" },
     { label: "Academy", href: "/resources", icon: GraduationCap, color: "var(--viz-blue)" },
@@ -88,24 +105,48 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 h-screen bg-[var(--background)] flex flex-col fixed left-0 top-0 z-50">
+    <aside className={classNames(
+      "h-screen bg-[var(--background)] flex flex-col fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out border-r border-[var(--border)]",
+      isCollapsed ? "w-20" : "w-64"
+    )}>
       
       {/* Header / Logo */}
-      <div className="p-6 pb-2">
-        <Link href="/" className="flex items-center gap-2 mb-8 group">
-          <Logo className="w-8 h-8 transition-transform group-hover:scale-110" />
-          <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">LogiQuest</span>
-        </Link>
+      <div className={classNames(
+        "p-4 pb-2 flex flex-col gap-6 transition-all duration-300", 
+        isCollapsed ? "px-[16px] items-center" : "px-4"
+      )}>
+        <div className="flex items-center justify-between w-full">
+          <Link href="/" className="flex items-center group" title={isCollapsed ? "LogiQuest" : undefined}>
+            <Logo className="w-8 h-8 transition-transform group-hover:scale-110 shrink-0" />
+            <span className={classNames(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden text-xl font-bold tracking-tight text-[var(--foreground)]",
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-2"
+            )}>
+              LogiQuest
+            </span>
+          </Link>
+        </div>
         
-        {/* Search Bar */}
-        <UserSearch className="w-full" />
+        {/* Search Bar - hidden on collapse */}
+        <div className={classNames(
+          "transition-all duration-300 overflow-hidden w-full",
+          isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-12 opacity-100"
+        )}>
+          <UserSearch className="w-full" />
+        </div>
       </div>
 
       {/* Main Navigation */}
-      <div className="flex-1 overflow-y-auto px-4 space-y-1 mt-4">
+      <div className={classNames(
+        "flex-1 overflow-y-auto space-y-1 mt-2 transition-all duration-300", 
+        isCollapsed ? "px-2" : "px-4"
+      )}>
         
         {/* Section: Practice */}
-        <div className="text-xs font-semibold text-[var(--foreground)]/40 uppercase tracking-wider mb-2 mt-2 px-2">
+        <div className={classNames(
+          "transition-all duration-300 overflow-hidden text-xs font-semibold text-[var(--foreground)]/40 uppercase tracking-wider mb-2 mt-2 px-2 whitespace-nowrap",
+          isCollapsed ? "max-h-0 opacity-0" : "max-h-6 opacity-100"
+        )}>
           Platform
         </div>
         
@@ -114,6 +155,7 @@ export default function Sidebar() {
             key={item.href}
             {...item}
             isActive={pathname.startsWith(item.href)}
+            isCollapsed={isCollapsed}
           />
         ))}
 
@@ -126,40 +168,75 @@ export default function Sidebar() {
                 icon={ShieldAlert} 
                 isActive={pathname.startsWith("/admin")}
                 color="text-red-500"
+                isCollapsed={isCollapsed}
             />
            </>
         )}
       </div>
 
-      {/* Footer Section: User Profile */}
-      <div className="p-4 bg-[var(--background)]">
+      {/* Footer Section: User Profile & Collapse */}
+      <div className={classNames(
+        "p-4 bg-[var(--background)] flex flex-col gap-2 border-t border-[var(--border)] transition-all duration-300",
+        isCollapsed ? "px-2" : "px-4"
+      )}>
+        {toggleCollapse && (
+          <button 
+            onClick={toggleCollapse} 
+            className={classNames(
+              "flex items-center rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-all duration-300 py-2.5 w-full",
+              isCollapsed ? "px-[14px]" : "px-4"
+            )}
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isCollapsed ? <PanelLeftOpen className="w-5 h-5 shrink-0 text-[var(--primary)]" /> : <PanelLeftClose className="w-5 h-5 shrink-0" />}
+            <span className={classNames(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden text-sm font-medium",
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+            )}>
+              Collapse
+            </span>
+          </button>
+        )}
+        
         {status === "authenticated" && session.user ? (
-          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer group relative">
-             <Link href="/profile" className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center justify-start rounded-xl hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer group relative p-1">
+             <Link href="/profile" className="flex items-center min-w-0 w-full">
                 {session.user.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={session.user.image} alt="" className="w-9 h-9 rounded-full bg-[var(--foreground)]/10 object-cover" />
+                    <img src={session.user.image} alt="" className="w-9 h-9 rounded-full bg-[var(--foreground)]/10 object-cover shrink-0" />
                 ) : (
-                    <UserCircle className="w-9 h-9 text-[var(--foreground)]/50" />
+                    <UserCircle className="w-9 h-9 text-[var(--foreground)]/50 shrink-0" />
                 )}
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate">
-                        {session.user.name || "User"}
-                    </p>
-                    <p className="text-xs text-[var(--foreground)]/50 truncate">
-                        View Profile
-                    </p>
+                <div className={classNames(
+                  "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden flex flex-col justify-center",
+                  isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+                )}>
+                  <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                      {session.user.name || "User"}
+                  </p>
+                  <p className="text-xs text-[var(--foreground)]/50 truncate">
+                      View Profile
+                  </p>
                 </div>
              </Link>
           </div>
         ) : (
            <div className="space-y-2">
-               <Link href="/login" className="flex items-center justify-center w-full py-2 text-sm font-medium text-[var(--foreground)] bg-[var(--foreground)]/5 rounded-lg hover:bg-[var(--foreground)]/10 transition-colors">
-                  Log In
+               <Link 
+                  href="/login" 
+                  className={classNames(
+                    "flex items-center rounded-lg bg-[var(--foreground)]/5 text-[var(--foreground)] hover:bg-[var(--foreground)]/10 transition-all duration-300 py-2 text-sm font-medium",
+                    isCollapsed ? "px-[14px] justify-center" : "px-4 justify-center"
+                  )} 
+                  title={isCollapsed ? "Log In" : undefined}
+               >
+                  {isCollapsed ? <UserCircle className="w-5 h-5 shrink-0" /> : "Log In"}
                </Link>
-               <Link href="/signup" className="flex items-center justify-center w-full py-2 text-sm font-medium text-[var(--background)] bg-[var(--foreground)] rounded-lg hover:opacity-90 transition-opacity">
-                  Sign Up
-               </Link>
+               {!isCollapsed && (
+                 <Link href="/signup" className="flex items-center justify-center w-full py-2 text-sm font-medium text-[var(--background)] bg-[var(--foreground)] rounded-lg hover:opacity-90 transition-opacity">
+                    Sign Up
+                 </Link>
+               )}
            </div>
         )}
       </div>

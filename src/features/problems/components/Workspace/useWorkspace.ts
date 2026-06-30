@@ -146,6 +146,8 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         type: problem.type,
         language,
         testCases: sanitizedTestCases,
+      }, {
+        timeout: 15000 // Prevent UI freezing if API hangs
       });
 
       setResults(data.results);
@@ -169,9 +171,10 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        toast.error(
-          "Execution Error: " + (err.response?.data?.error || err.message),
-        );
+        const errorMsg = err.code === "ECONNABORTED" 
+          ? "Request timed out. Please try again."
+          : (err.response?.data?.error || err.message);
+        toast.error("Execution Error: " + errorMsg);
       } else {
         toast.error("Execution Error");
       }
@@ -188,6 +191,8 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         code,
         type: problem.type,
         language,
+      }, {
+        timeout: 20000 // Prevent UI freezing if submission hangs
       });
 
       if (data.submission.status === "Accepted") {

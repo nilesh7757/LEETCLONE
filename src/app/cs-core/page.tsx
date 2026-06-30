@@ -43,7 +43,7 @@ const CS_DOMAINS = [
     icon: <Network className="w-6 h-6 text-purple-500" />,
     description: "How the world connects. OSI, TCP/IP, and Network Protocols.",
     resources: [
-      { name: "Gate Smashers CN Playlist", url: "https://www.youtube.com/playlist?list=PLxCzCOWd7aiGFBD2-2joCpWHEhOPTdUcg", type: "video" }
+      { name: "Gate Smashers CN Playlist", url: "https://www.youtube.com/playlist?list=PLxCzCOWd7aiGFBD2-2joCpWOLUrDLvVV_", type: "video" }
     ],
     topics: [
       { id: "osi-model", title: "OSI vs TCP/IP Model" },

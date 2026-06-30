@@ -5,7 +5,7 @@ import {
   Zap, Target, Code2, Layout, 
   Trophy, Star, Play, Lock, 
   Gamepad2, Sparkles, Rocket,
-  User, Medal, Activity
+  User, Medal, Activity, Keyboard, HelpCircle
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -40,43 +40,30 @@ const GAMES = [
     status: "READY"
   },
   {
-    id: "system-monitor",
-    title: "System Design HUD",
-    description: "Monitor LEETCLONE's decoupled web, WebSockets, Redis, and workers, and simulate load spikes.",
-    icon: Activity,
+    id: "code-typer",
+    title: "Syntax Racer",
+    description: "Type common coding pattern syntax blocks as fast as possible to verify your WPM.",
+    icon: Keyboard,
     color: "text-purple-400",
     bg: "bg-purple-400/10",
     border: "border-purple-400/20",
-    difficulty: "Advanced",
-    points: "Telemetry",
-    href: "/arcade/system-monitor",
+    difficulty: "Easy",
+    points: "100 AP",
+    href: "/arcade/code-typer",
     status: "READY"
   },
   {
-    id: "clash",
-    title: "Code Clash",
-    description: "1v1 real-time race to solve standard algorithmic patterns.",
-    icon: Code2,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    difficulty: "Hard",
-    points: "250 AP",
-    href: "/arcade/clash",
-    status: "DEVELOPING"
-  },
-  {
-    id: "architect",
-    title: "Architecture Builder",
-    description: "Drag-and-drop components to build a system that scales to 1M users.",
-    icon: Layout,
+    id: "binary-guess",
+    title: "Binary Node Guess",
+    description: "Locate a target value between 1 and 100 in 7 guesses or fewer using binary search logic.",
+    icon: HelpCircle,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
-    difficulty: "Expert",
-    points: "500 AP",
-    href: "/arcade/architect",
-    status: "DEVELOPING"
+    difficulty: "Easy",
+    points: "100 AP",
+    href: "/arcade/binary-guess",
+    status: "READY"
   }
 ];
 

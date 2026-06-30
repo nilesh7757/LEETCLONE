@@ -13,7 +13,7 @@ import {
   PlusCircle, Trash2, FileText, LayoutTemplate, SlidersHorizontal, 
   Save, Code2, ChevronDown, CheckCircle, Loader2, 
   RotateCcw, Target, ShieldAlert,
-  Zap, ChevronRight, CheckCircle2, ChevronLeft, Play, Upload
+  Zap, ChevronRight, CheckCircle2, ChevronLeft, Play, Upload, Users
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { languages, getStarterCode } from "@/lib/starterCode";
@@ -57,6 +57,10 @@ interface ProblemFormProps {
   problemId?: string; // Add problemId for verification
   hideHeader?: boolean;
   onlyTab?: "meta" | "context" | "setup" | "intel";
+  verificationStatus?: string;
+  onUpdateStatus?: (status: string) => void;
+  collaboratorsCount?: number;
+  onCollabClick?: () => void;
 }
 
 const difficulties = ["Easy", "Medium", "Hard"];
@@ -64,7 +68,8 @@ const categories = ["Arrays", "Strings", "Trees", "Graphs", "Dynamic Programming
 
 export default function ProblemForm({ 
   initialData, onSubmit, isEditing = false, contestId, problemId,
-  hideHeader = false, onlyTab 
+  hideHeader = false, onlyTab,
+  verificationStatus, onUpdateStatus, collaboratorsCount, onCollabClick
 }: ProblemFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,17 +135,23 @@ export default function ProblemForm({
 
   const runVerification = async () => {
     const currentCode = getValues("referenceSolution");
-    const currentTests = getValues("testCasesInput");
+    const currentExamples = getValues("examplesInput") || [];
+    const currentTests = getValues("testCasesInput") || [];
     
     if (!currentCode) {
       toast.error("Reference solution required for verification");
       return;
     }
 
-    if (!currentTests || currentTests.length === 0) {
-      toast.error("Add at least one test case before verifying");
+    if (currentExamples.length === 0 && currentTests.length === 0) {
+      toast.error("Add at least one example or test case before verifying");
       return;
     }
+
+    const combinedTests = [
+      ...currentExamples.map(tc => ({ ...tc, isExample: true })),
+      ...currentTests.map(tc => ({ ...tc, isExample: false }))
+    ];
 
     const finalLang = detectLanguage(currentCode);
     setIsVerifying(true);
@@ -151,7 +162,7 @@ export default function ProblemForm({
         problemId: problemId,
         code: currentCode,
         language: finalLang,
-        testCases: currentTests,
+        testCases: combinedTests,
         type: getValues("problemType") || "CODING",
         isOutputGeneration: true 
       });
@@ -167,7 +178,6 @@ export default function ProblemForm({
         setValue("examplesInput", updatedExamples);
 
         const updatedTestCases = getValues("testCasesInput").map((tc, idx) => {
-          // data.results contains example results first, then hidden test case results
           const res = data.results[getValues("examplesInput").length + idx] as { actual?: string };
           return res && res.actual ? { ...tc, output: res.actual } : tc;
         });
@@ -246,25 +256,54 @@ export default function ProblemForm({
       
       {/* 1. FORGE HEADER */}
       {!hideHeader && (
-        <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-6 shrink-0 z-50 shadow-2xl">
+        <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-6 shrink-0 z-50 shadow-sm">
            <div className="flex items-center gap-6">
               <button onClick={() => router.back()} className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
                  <ChevronLeft size={18} />
               </button>
               <div className="flex items-center gap-3">
-                 <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center border border-[var(--primary)]/20">
+                 <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center border border-[var(--primary)]/20 animate-pulse">
                     <LayoutTemplate size={16} className="text-[var(--primary)]" />
                  </div>
-                 <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--foreground)]">Problem Editor</span>
+                 <span className="text-[11px] font-black uppercase tracking-widest text-[var(--foreground)]">Problem Editor</span>
               </div>
-              <div className="h-4 w-px bg-[var(--border)]" />
-              <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--muted-foreground)]">
-                 <span>EDITOR</span>
-                 <ChevronRight size={10} />
-                 <span className="text-[var(--muted-foreground)]/80 uppercase">{isEditing ? "Edit" : "New"} Problem</span>
-                 <ChevronRight size={10} />
-                 <span className="text-[var(--foreground)] font-bold">{problemTitle || "UNTITLED"}</span>
-              </div>
+
+              {verificationStatus && (
+                 <>
+                    <div className="h-4 w-px bg-[var(--border)]" />
+                    <div className="flex items-center gap-2 select-none">
+                       <div className={`w-1.5 h-1.5 rounded-full ${
+                          verificationStatus === 'STABLE' ? "bg-[var(--viz-green)] shadow-[0_0_8px_rgba(34,197,94,0.4)]" : 
+                          verificationStatus === 'VETTING' ? "bg-[var(--viz-gold)] shadow-[0_0_8px_rgba(245,158,11,0.4)]" : "bg-[var(--foreground)]/20"
+                       }`} />
+                       <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Status: {verificationStatus}</span>
+                       
+                       {onUpdateStatus && (
+                          <div className="flex items-center gap-2 ml-1">
+                             {verificationStatus === 'DRAFT' && (
+                                <button type="button" onClick={() => onUpdateStatus('VETTING')} className="text-[9px] font-black text-[var(--primary)] uppercase tracking-widest hover:underline ml-1">Submit for Vetting</button>
+                             )}
+                             {verificationStatus === 'VETTING' && (
+                                <button type="button" onClick={() => onUpdateStatus('STABLE')} className="text-[9px] font-black text-emerald-500 uppercase tracking-widest hover:underline ml-1">Mark as Stable</button>
+                             )}
+                             {verificationStatus !== 'DRAFT' && (
+                                <button type="button" onClick={() => onUpdateStatus('DRAFT')} className="text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-widest hover:underline ml-1">Revert to Draft</button>
+                             )}
+                          </div>
+                       )}
+                    </div>
+                 </>
+              )}
+
+              {collaboratorsCount !== undefined && onCollabClick && (
+                 <>
+                    <div className="h-4 w-px bg-[var(--border)]" />
+                    <button type="button" onClick={onCollabClick} className="flex items-center gap-2 text-[10px] font-black text-[var(--muted-foreground)] uppercase hover:text-[var(--foreground)] transition-all">
+                       <Users size={12} className="text-[var(--primary)]" />
+                       Team: {collaboratorsCount}
+                    </button>
+                 </>
+              )}
            </div>
 
            <div className="flex items-center gap-4">
@@ -272,7 +311,7 @@ export default function ProblemForm({
                  type="button"
                  onClick={runVerification}
                  disabled={isVerifying}
-                 className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-lg flex items-center gap-2 transition-all hover:bg-[var(--foreground)]/5 disabled:opacity-50"
+                 className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-lg flex items-center gap-2 transition-all hover:bg-[var(--foreground)]/5 disabled:opacity-50 cursor-pointer"
               >
                  {isVerifying ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
                  Verify Suite
@@ -288,7 +327,7 @@ export default function ProblemForm({
                  type="button"
                  onClick={handleSubmit(handleFormSubmit)}
                  disabled={isSubmitting}
-                 className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--background)] bg-[var(--foreground)] rounded-lg flex items-center gap-2 transition-all hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] active:scale-95 disabled:opacity-50"
+                 className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--background)] bg-[var(--foreground)] rounded-lg flex items-center gap-2 transition-all hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                  {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : isEditing ? <Save size={14} /> : <PlusCircle size={14} />}
                  {isEditing ? "Save Changes" : "Create Package"}

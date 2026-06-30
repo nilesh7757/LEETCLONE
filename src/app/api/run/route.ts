@@ -52,7 +52,11 @@ export const POST = apiHandler(async (req: Request) => {
   let finalTestCases: TestInputOutput[] = [];
 
   if (testCases && Array.isArray(testCases) && testCases.length > 0) {
-    finalTestCases = testCases;
+    finalTestCases = testCases.map(tc => ({
+      input: typeof tc === 'string' ? tc : (tc.input || ""),
+      expectedOutput: typeof tc === 'string' ? "" : (tc.expectedOutput || tc.output || ""),
+      isExample: typeof tc === 'string' ? false : (tc.isExample ?? false)
+    }));
   } else if (problem) {
     let allTestSets: TestInputOutput[] = [];
     if (Array.isArray(problem.testSets)) {

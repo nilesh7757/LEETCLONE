@@ -194,51 +194,16 @@ export default function ForgeWorkbench() {
 
   return (
     <main className="flex flex-col h-screen bg-[var(--background)] overflow-hidden">
-      {/* FORGE TOOLBAR */}
-      <div className="h-10 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between px-6 shrink-0 z-[60]">
-         <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-               <div className={`w-1.5 h-1.5 rounded-full ${
-                  telemetry.verificationStatus === 'STABLE' ? "bg-[var(--viz-green)] shadow-[0_0_8px_rgba(var(--viz-green-rgb),0.4)]" : 
-                  telemetry.verificationStatus === 'VETTING' ? "bg-[var(--viz-gold)] shadow-[0_0_8px_rgba(var(--viz-gold-rgb),0.4)]" : "bg-[var(--foreground)]/20"
-               }`} />
-               <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Status: {telemetry.verificationStatus}</span>
-            </div>
-            
-            <div className="h-3 w-px bg-[var(--border)]" />
-            
-            <button onClick={() => setIsCollabModalOpen(true)} className="flex items-center gap-2 text-[10px] font-bold text-[var(--muted-foreground)] uppercase hover:text-[var(--foreground)] transition-all">
-               <Users size={12} />
-               Collaborators: {collaborators.length + 1}
-            </button>
-
-            <div className="h-3 w-px bg-[var(--border)]" />
-
-            <div className="flex items-center gap-4">
-               {isOwner && telemetry.verificationStatus === 'DRAFT' && (
-                  <button onClick={() => updateStatus('VETTING')} className="text-[9px] font-bold text-[var(--primary)] uppercase tracking-widest hover:underline">Submit for Vetting</button>
-               )}
-               {(isOwner || isTester) && telemetry.verificationStatus === 'VETTING' && (
-                  <button onClick={() => updateStatus('STABLE')} className="text-[9px] font-bold text-[var(--viz-green)] uppercase tracking-widest hover:underline">Mark as Stable</button>
-               )}
-               {telemetry.verificationStatus !== 'DRAFT' && isOwner && (
-                  <button onClick={() => updateStatus('DRAFT')} className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest hover:underline">Revert to Draft</button>
-               )}
-            </div>
-         </div>
-         
-         <div className="flex items-center gap-4">
-            {/* Toolbar actions now exclusively for status and collaboration */}
-            <div className="text-[9px] font-mono text-[var(--muted-foreground)]/30 uppercase tracking-widest">Workbench Session Active</div>
-         </div>
-      </div>
-
       <div className="flex-1 overflow-hidden relative">
         <ProblemForm 
            initialData={problem!} 
            onSubmit={handleUpdate} 
            isEditing={true}
            problemId={id}
+           verificationStatus={telemetry.verificationStatus}
+           onUpdateStatus={updateStatus}
+           collaboratorsCount={collaborators.length + 1}
+           onCollabClick={() => setIsCollabModalOpen(true)}
         />
       </div>
 

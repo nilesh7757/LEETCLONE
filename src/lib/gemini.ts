@@ -246,7 +246,7 @@ export async function predictComplexity(code: string, language: string): Promise
 export const analyzeCodeComplexity = predictComplexity;
 
 export async function* chatWithAIStream(
-  messages: { parts: { text: string }[] }[],
+  messages: { role: string; parts: { text: string }[] }[],
   context: {
     problemTitle: string;
     problemDescription: string;
@@ -271,7 +271,7 @@ export async function evaluateSystemDesign(question: string, answer: string): Pr
 }
 
 export async function chatWithAI(
-  messages: { parts: { text: string }[] }[],
+  messages: { role: string; parts: { text: string }[] }[],
   context: { 
     problemTitle: string; 
     problemDescription: string; 
@@ -281,10 +281,43 @@ export async function chatWithAI(
     testCases?: unknown[];
   }
 ): Promise<string> {
+  const mode = context.isInterviewMode ? "Interviewer" : "Socratic Tutor";
+  
   const systemPrompt = context.isInterviewMode 
-    ? `You are an Interviewer. Problem: ${context.problemTitle}.`
-    : `You are a Socratic Tutor. Problem: ${context.problemTitle}.`;
+    ? `You are an expert technical interviewer conducting a coding interview. The problem is: "${context.problemTitle}".
+Description:
+${context.problemDescription}
 
-  const userPrompt = `Student Code: ${context.code}\n\nStudent: ${messages[messages.length-1]?.parts[0]?.text}`;
+STRICT GUIDELINES:
+1. NEVER write or give the direct code solution, copy-pasteable answers, or full algorithms.
+2. Respond like a professional software engineering interviewer (keep it interactive, ask about edge cases, time/space complexity).
+3. If the candidate is stuck, offer subtle, conceptual hints instead of giving the answer.
+4. Keep answers relatively concise and encourage them to explain their thought process.`
+    : `You are a helpful Socratic coding tutor assisting a student with the problem: "${context.problemTitle}".
+Description:
+${context.problemDescription}
+
+STRICT GUIDELINES:
+1. NEVER give the candidate direct code solutions, copy-pasteable code, or write the algorithm for them.
+2. If they ask for the solution or code, explain the logic conceptually and ask guiding questions to lead them to the answer.
+3. Help them debug by pointing out the general area or logic error in their code rather than telling them exactly what to write.
+4. You may provide short, high-level pseudocode if they are completely stuck, but never full implementations in any language.
+5. Keep your tone encouraging and educational.`;
+
+  // Include up to 6 recent messages to maintain conversational context
+  const historySlice = messages.slice(-6);
+  const formattedHistory = historySlice.map(msg => {
+    const sender = msg.role === 'model' ? mode : "Student";
+    return `${sender}: ${msg.parts[0]?.text || ""}`;
+  }).join("\n");
+
+  const userPrompt = `Student's Current Code:
+\`\`\`${context.language || 'code'}
+${context.code || '// No code written yet'}
+\`\`\`
+
+Conversation History:
+${formattedHistory}`;
+
   return await runAI(userPrompt, systemPrompt) as string;
 }

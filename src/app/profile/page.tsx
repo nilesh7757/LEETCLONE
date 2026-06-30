@@ -18,7 +18,6 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { useTheme } from "next-themes";
 import SkillRadar from "@/features/profile/components/HeroProfile/SkillRadar";
 import UserRatingCard from "@/features/profile/components/HeroProfile/UserRatingCard";
-
 import Image from "next/image";
 
 const ActivityCalendar = dynamic(() => import("react-activity-calendar").then(mod => {
@@ -82,7 +81,6 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<PerformanceStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // Local overrides for immediate UI update after sync
   const [localOmniData, setLocalOmniData] = useState<{
     powerLevel?: number;
     advice?: string;
@@ -160,10 +158,7 @@ export default function ProfilePage() {
     if (e) e.preventDefault();
     setLoading(true);
     try {
-      // 1. Save general profile
       await axios.put("/api/profile/update", formData);
-      
-      // 2. Save usernames
       await axios.put("/api/profile/update-omni-usernames", {
         githubUsername: formData.githubUsername,
         leetcodeUsername: formData.leetcodeUsername,
@@ -172,7 +167,6 @@ export default function ProfilePage() {
         atcoderUsername: formData.atcoderUsername,
       });
 
-      // 3. Force update session
       await update({
         ...session?.user,
         ...formData
@@ -189,7 +183,6 @@ export default function ProfilePage() {
   };
 
   const handleSyncOmni = async () => {
-    // PRE-SYNC: Automatically save the current usernames
     setSyncing(true);
     const saveSuccess = await handleUpdate();
     if (!saveSuccess) {
@@ -200,7 +193,6 @@ export default function ProfilePage() {
     try {
       const { data } = await axios.post("/api/profile/sync-omni");
       
-      // Update local state for immediate feedback
       setLocalOmniData({
         powerLevel: data.powerLevel,
         advice: data.advice,
@@ -211,7 +203,6 @@ export default function ProfilePage() {
         codeforcesUsername: formData.codeforcesUsername
       });
 
-      // Refresh session one more time with full synced data
       await update({
           ...session?.user,
           devPowerLevel: data.powerLevel,
@@ -262,10 +253,9 @@ export default function ProfilePage() {
   const ratingValue = stats?.user?.rating || 1500;
   const arcadePoints = (session?.user as SessionUser)?.arcadePoints || 0;
   
-  // Logic for display: Prefer local synced data, then session data, then default 0
-  const powerLevel = localOmniData?.powerLevel ?? (session?.user as SessionUser)?.devPowerLevel ?? 0;
   const aiFeedback = localOmniData?.advice ?? (session?.user as SessionUser)?.aiProfileFeedback;
-  const devTitle = localOmniData?.description ?? (session?.user as any)?.description;
+  const devTitle = localOmniData?.description ?? (session?.user as any)?.description ?? "Code Rookie";
+  const powerLevel = localOmniData?.powerLevel ?? (session?.user as SessionUser)?.devPowerLevel ?? 0;
   const externalStats = localOmniData?.externalStats ?? (session?.user as any)?.externalStats;
 
   const isPlatformConnected = (platform: 'github' | 'leetcode' | 'codeforces' | 'codechef' | 'atcoder') => {
@@ -287,285 +277,296 @@ export default function ProfilePage() {
   else { rankColor = "var(--viz-slate)"; rankTitle = "Newbie"; }
 
   return (
-    <div className={`min-h-screen w-full relative pb-20 overflow-x-hidden pt-8 transition-colors duration-500`}>
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <div className="min-h-screen w-full relative pb-12 overflow-x-hidden pt-6 select-none bg-[var(--background)]">
+      <div className="max-w-[1600px] mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
+          {/* LEFT COLUMN: IDENTITY PROFILE & platforms GRID */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-5 xl:col-span-4 space-y-6"
           >
-            <div className={`p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-2xl relative overflow-hidden`}>
+            {/* AVATAR & BASIC DETAILS CARD */}
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[var(--primary)]/5 to-transparent rounded-bl-full pointer-events-none" />
+                
                 <div className="flex flex-col items-center">
-                    <div className="relative mb-8 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                        <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse opacity-20 bg-cyan-400`} />
-                        <div className={`w-32 h-32 rounded-full p-1 bg-gradient-to-tr relative z-10 from-cyan-400 to-purple-500`}>
-                            <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--background)] bg-[var(--card)] relative">
+                    <div className="relative mb-6 group cursor-pointer animate-pulse" onClick={() => fileInputRef.current?.click()}>
+                        <div className="absolute inset-0 rounded-full blur-xl opacity-25 bg-[var(--primary)]" />
+                        <div className="w-24 h-24 rounded-full p-0.5 bg-gradient-to-tr relative z-10 from-[var(--primary)] to-[var(--viz-cyan)]">
+                            <div className="w-full h-full rounded-full overflow-hidden border-2 border-[var(--background)] bg-[var(--card)] relative">
                                 {formData.image ? (
                                     <Image src={formData.image} alt="Profile" fill className="object-cover group-hover:opacity-50 transition-all" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[var(--muted)]"><UserCircle className="w-16 h-16 text-[var(--muted-foreground)]" /></div>
+                                    <div className="w-full h-full flex items-center justify-center bg-[var(--muted)]"><UserCircle className="w-12 h-12 text-[var(--muted-foreground)]" /></div>
                                 )}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100"><Camera className="w-8 h-8 text-white" /></div>
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100"><Camera className="w-6 h-6 text-white" /></div>
                             </div>
                         </div>
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-lg flex items-center gap-2 whitespace-nowrap z-20">
-                            <Award size={14} style={{ color: rankColor }} />
-                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: rankColor }}>{rankTitle}</span>
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-md flex items-center gap-1.5 whitespace-nowrap z-20">
+                            <Award size={10} style={{ color: rankColor }} />
+                            <span className="text-[8px] font-black uppercase tracking-widest" style={{ color: rankColor }}>{rankTitle}</span>
                         </div>
                     </div>
 
-                    <div className={`mb-8 flex items-center gap-3`}>
-                        <h2 className="text-3xl font-black tracking-tighter">{formData.name || "UNIDENTIFIED_USER"}</h2>
+                    <div className="text-center space-y-1 mb-6">
+                        <h2 className="text-2xl font-black tracking-tight">{formData.name || "UNIDENTIFIED_USER"}</h2>
+                        <div className="flex items-center justify-center gap-1.5">
+                           <span className="text-[9px] font-black font-mono px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 uppercase">
+                              PL {powerLevel}
+                           </span>
+                           <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                              {devTitle}
+                           </span>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleUpdate} className="w-full space-y-6">
-                        <div className="space-y-4">
-                            <div className="group">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1 block">Identity_Alias</label>
-                                <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-transparent border-b border-[var(--border)] py-2 text-[var(--foreground)] font-bold focus:border-[var(--primary)] outline-none transition-all" />
+                    <form onSubmit={handleUpdate} className="w-full space-y-4">
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/60 mb-1 block ml-0.5">Identity_Alias</label>
+                                <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs text-[var(--foreground)] focus:border-[var(--primary)]/50 outline-none transition-all font-bold" />
                             </div>
-                            <div className="group">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1 block">Neural_Bio</label>
-                                <input type="text" value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-transparent border-b border-[var(--border)] py-2 text-[var(--foreground)] focus:border-[var(--primary)] outline-none transition-all" />
+                            <div>
+                                <label className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/60 mb-1 block ml-0.5">Neural_Bio</label>
+                                <input type="text" value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs text-[var(--foreground)] focus:border-[var(--primary)]/50 outline-none transition-all" />
                             </div>
                         </div>
                         
-                        <div className="pt-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 block">Matrix_Skills</label>
-                            <div className="flex flex-wrap gap-2 mb-4">
+                        <div>
+                            <label className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/60 mb-2 block ml-0.5">Matrix_Skills</label>
+                            <div className="flex flex-wrap gap-1 mb-2">
                                 {formData.skills.map((skill) => (
-                                    <span key={skill} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-lg text-xs font-bold border border-[var(--primary)]/20">
+                                    <span key={skill} className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-lg text-[9px] font-black uppercase border border-[var(--primary)]/20">
                                         {skill}
-                                        <button type="button" onClick={() => removeSkill(skill)}><X size={12} /></button>
+                                        <button type="button" onClick={() => removeSkill(skill)}><X size={10} /></button>
                                     </span>
                                 ))}
                             </div>
                             <div className="flex gap-2">
-                                <input type="text" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())} className="flex-1 px-4 py-2 rounded-xl bg-[var(--background)]/50 border border-[var(--border)] text-sm outline-none focus:border-[var(--primary)]" placeholder="Inject Skill..." />
-                                <button type="button" onClick={addSkill} className="p-3 bg-[var(--background)] border border-[var(--border)] rounded-xl text-[var(--primary)] hover:border-[var(--primary)]"><Sparkles size={16} /></button>
+                                <input type="text" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())} className="flex-1 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs outline-none focus:border-[var(--primary)]/50" placeholder="Inject Skill..." />
+                                <button type="button" onClick={addSkill} className="p-2 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-lg text-[var(--primary)] hover:border-[var(--primary)]/40 transition-all cursor-pointer"><Sparkles size={12} /></button>
                             </div>
                         </div>
 
-                        <div className="pt-4 flex gap-3">
-                            <button type="submit" disabled={loading} className="flex-1 py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2">
-                                {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Commit Identity
+                        <div className="pt-2 flex gap-2">
+                            <button type="submit" disabled={loading} className="flex-1 py-2.5 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-bold text-[9px] uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                                {loading ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Save Profile
                             </button>
-                            <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl hover:bg-red-500/20 transition-all">
-                                <LogOut size={18} />
+                            <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="p-2.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all cursor-pointer">
+                                <LogOut size={12} />
                             </button>
                         </div>
                     </form>
 
-                    <div className="w-full mt-6 pt-6 border-t border-[var(--border)]">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 block">Arcade_Stats</label>
-                        <div className="flex items-center gap-3 p-4 bg-[var(--viz-amber)]/10 text-[var(--viz-amber)] rounded-2xl border border-[var(--viz-amber)]/20">
-                            <Zap className="w-5 h-5 fill-current" />
-                            <div className="text-left">
-                                <div className="text-xs font-bold">Arcade Points</div>
-                                <div className="text-[10px] opacity-70">{arcadePoints} AP Collected</div>
-                            </div>
+                    <div className="w-full mt-4 pt-4 border-t border-[var(--border)]/30 flex items-center justify-between">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">Arcade Points</span>
+                        <div className="flex items-center gap-1 text-amber-500 font-mono text-xs font-black">
+                            <Zap size={11} fill="currentColor" />
+                            <span>{arcadePoints} AP</span>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div className="w-full mt-6 pt-6 border-t border-[var(--border)]">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 block">Neural_Omni_Sync</label>
-                        <div className="space-y-4">
-                            {/* GITHUB */}
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">GitHub_Node</span>
-                                    {isPlatformConnected('github') && <CheckCircle2 size={10} className="text-emerald-500" />}
-                                </div>
-                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('github') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
-                                    <Github size={12} className={isPlatformConnected('github') ? 'text-emerald-500' : 'text-[#52525b]'} />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Username" 
-                                        value={formData.githubUsername} 
-                                        onChange={(e) => setFormData({...formData, githubUsername: e.target.value})}
-                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
-                                    />
-                                </div>
-                                {isPlatformConnected('github') && (externalStats?.github || localOmniData?.externalStats?.github) && (
-                                    <div className="px-3 text-[9px] font-bold text-emerald-500/60 uppercase tracking-widest flex gap-3">
-                                        <span>Repos: {(localOmniData?.externalStats?.github || externalStats?.github).publicRepos}</span>
-                                        <span>Followers: {(localOmniData?.externalStats?.github || externalStats?.github).followers}</span>
-                                    </div>
-                                )}
+            {/* NEURAL OMNI SYNC NODES GRID */}
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-1.5 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
+                        <Rocket size={14} />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/65">Identity Nodes</span>
+                       <span className="text-xs font-black text-[var(--foreground)] tracking-tight">Platform Connections</span>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    {/* GITHUB NODE */}
+                    <div className={`p-4 rounded-2xl border transition-all ${isPlatformConnected('github') ? 'border-emerald-500/25 bg-emerald-500/[0.01]' : 'border-[var(--border)]'}`}>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <div className="flex items-center gap-2">
+                                <Github size={14} className={isPlatformConnected('github') ? 'text-emerald-500' : 'text-[var(--muted-foreground)]/40'} />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--foreground)]">GitHub</span>
                             </div>
-
-                            {/* LEETCODE */}
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">LeetCode_Node</span>
-                                    {isPlatformConnected('leetcode') && <CheckCircle2 size={10} className="text-emerald-500" />}
-                                </div>
-                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('leetcode') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
-                                    <Zap size={12} className={isPlatformConnected('leetcode') ? 'text-amber-500' : 'text-[#52525b]'} />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Username" 
-                                        value={formData.leetcodeUsername} 
-                                        onChange={(e) => setFormData({...formData, leetcodeUsername: e.target.value})}
-                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
-                                    />
-                                </div>
-                                {isPlatformConnected('leetcode') && (externalStats?.leetcode || localOmniData?.externalStats?.leetcode) && (
-                                    <div className="px-3 text-[9px] font-bold text-amber-500/60 uppercase tracking-widest flex gap-3">
-                                        <span>Solved: {(localOmniData?.externalStats?.leetcode || externalStats?.leetcode).totalSolved}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* CODEFORCES */}
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">Codeforces_Node</span>
-                                    {isPlatformConnected('codeforces') && <CheckCircle2 size={10} className="text-emerald-500" />}
-                                </div>
-                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('codeforces') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
-                                    <Award size={12} className={isPlatformConnected('codeforces') ? 'text-blue-500' : 'text-[#52525b]'} />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Username" 
-                                        value={formData.codeforcesUsername} 
-                                        onChange={(e) => setFormData({...formData, codeforcesUsername: e.target.value})}
-                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
-                                    />
-                                </div>
-                                {isPlatformConnected('codeforces') && (externalStats?.codeforces || localOmniData?.externalStats?.codeforces) && (
-                                    <div className="px-3 text-[9px] font-bold text-blue-500/60 uppercase tracking-widest flex gap-3">
-                                        <span>Rating: {(localOmniData?.externalStats?.codeforces || externalStats?.codeforces).rating}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* CODECHEF */}
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">CodeChef_Node</span>
-                                    {isPlatformConnected('codechef') && <CheckCircle2 size={10} className="text-emerald-500" />}
-                                </div>
-                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('codechef') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
-                                    <div className="w-3 h-3 rounded-full bg-amber-600/20 flex items-center justify-center text-amber-600 font-bold text-[8px]">C</div>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Username" 
-                                        value={formData.codechefUsername} 
-                                        onChange={(e) => setFormData({...formData, codechefUsername: e.target.value})}
-                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
-                                    />
-                                </div>
-                                {isPlatformConnected('codechef') && (externalStats?.codechef || localOmniData?.externalStats?.codechef) && (
-                                    <div className="px-3 text-[9px] font-bold text-amber-600/60 uppercase tracking-widest flex gap-3">
-                                        <span>Rating: {(localOmniData?.externalStats?.codechef || externalStats?.codechef).rating}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* ATCODER */}
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-[10px] font-black text-[#52525b] uppercase tracking-tighter">Atcoder_Node</span>
-                                    {isPlatformConnected('atcoder') && <CheckCircle2 size={10} className="text-emerald-500" />}
-                                </div>
-                                <div className={`flex items-center gap-2 px-3 py-2 bg-[var(--background)] rounded-xl border transition-all ${isPlatformConnected('atcoder') ? 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-[var(--border)]'}`}>
-                                    <div className="w-3 h-3 rounded-full bg-slate-400/20 flex items-center justify-center text-slate-400 font-bold text-[8px]">A</div>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Username" 
-                                        value={formData.atcoderUsername} 
-                                        onChange={(e) => setFormData({...formData, atcoderUsername: e.target.value})}
-                                        className="bg-transparent border-none outline-none text-xs w-full font-mono"
-                                    />
-                                </div>
-                                {isPlatformConnected('atcoder') && (externalStats?.atcoder || localOmniData?.externalStats?.atcoder) && (
-                                    <div className="px-3 text-[9px] font-bold text-slate-400/60 uppercase tracking-widest flex gap-3">
-                                        <span>Rating: {(localOmniData?.externalStats?.atcoder || externalStats?.atcoder).rating}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <button 
-                                onClick={handleSyncOmni}
-                                disabled={syncing}
-                                className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
-                                    syncing ? 'bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] border-[var(--viz-cyan)]/20' : 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95'
-                                }`}
-                            >
-                                {syncing ? <Loader2 size={12} className="animate-spin" /> : <Rocket size={12} />} 
-                                {syncing ? "SYNCING_NEURAL_STREAMS..." : "SYNC_ALL_PLATFORMS"}
-                            </button>
-                            
-                            {!isPlatformConnected('github') && !isPlatformConnected('leetcode') && !isPlatformConnected('codeforces') && (
-                                <p className="text-[9px] text-amber-500/50 flex items-center gap-1.5 px-1 font-bold uppercase italic tracking-tighter">
-                                    <AlertCircle size={10} /> Link accounts & save changes first
-                                </p>
-                            )}
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${isPlatformConnected('github') ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-[var(--foreground)]/5 text-[var(--muted-foreground)]/45'}`}>
+                                {isPlatformConnected('github') ? "Connected" : "Disconnected"}
+                            </span>
                         </div>
+                        <input 
+                            type="text" placeholder="Username" value={formData.githubUsername} 
+                            onChange={(e) => setFormData({...formData, githubUsername: e.target.value})}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs font-mono focus:border-[var(--primary)]/50 outline-none transition-all mb-2"
+                        />
+                        {isPlatformConnected('github') && (externalStats?.github || localOmniData?.externalStats?.github) && (
+                            <div className="flex items-center gap-3 text-[9px] font-mono text-[var(--muted-foreground)] uppercase">
+                                <span>Repos: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.github || externalStats?.github).publicRepos}</strong></span>
+                                <span>Followers: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.github || externalStats?.github).followers}</strong></span>
+                            </div>
+                        )}
                     </div>
 
+                    {/* LEETCODE NODE */}
+                    <div className={`p-4 rounded-2xl border transition-all ${isPlatformConnected('leetcode') ? 'border-amber-500/25 bg-amber-500/[0.01]' : 'border-[var(--border)]'}`}>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <div className="flex items-center gap-2">
+                                <Zap size={14} className={isPlatformConnected('leetcode') ? 'text-amber-500' : 'text-[var(--muted-foreground)]/40'} />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--foreground)]">LeetCode</span>
+                            </div>
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${isPlatformConnected('leetcode') ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-[var(--foreground)]/5 text-[var(--muted-foreground)]/45'}`}>
+                                {isPlatformConnected('leetcode') ? "Connected" : "Disconnected"}
+                            </span>
+                        </div>
+                        <input 
+                            type="text" placeholder="Username" value={formData.leetcodeUsername} 
+                            onChange={(e) => setFormData({...formData, leetcodeUsername: e.target.value})}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs font-mono focus:border-[var(--primary)]/50 outline-none transition-all mb-2"
+                        />
+                        {isPlatformConnected('leetcode') && (externalStats?.leetcode || localOmniData?.externalStats?.leetcode) && (
+                            <div className="flex items-center gap-3 text-[9px] font-mono text-[var(--muted-foreground)] uppercase">
+                                <span>Solved: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.leetcode || externalStats?.leetcode).totalSolved}</strong></span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CODEFORCES NODE */}
+                    <div className={`p-4 rounded-2xl border transition-all ${isPlatformConnected('codeforces') ? 'border-blue-500/25 bg-blue-500/[0.01]' : 'border-[var(--border)]'}`}>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <div className="flex items-center gap-2">
+                                <Award size={14} className={isPlatformConnected('codeforces') ? 'text-blue-500' : 'text-[var(--muted-foreground)]/40'} />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--foreground)]">Codeforces</span>
+                            </div>
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${isPlatformConnected('codeforces') ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-[var(--foreground)]/5 text-[var(--muted-foreground)]/45'}`}>
+                                {isPlatformConnected('codeforces') ? "Connected" : "Disconnected"}
+                            </span>
+                        </div>
+                        <input 
+                            type="text" placeholder="Username" value={formData.codeforcesUsername} 
+                            onChange={(e) => setFormData({...formData, codeforcesUsername: e.target.value})}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs font-mono focus:border-[var(--primary)]/50 outline-none transition-all mb-2"
+                        />
+                        {isPlatformConnected('codeforces') && (externalStats?.codeforces || localOmniData?.externalStats?.codeforces) && (
+                            <div className="flex items-center gap-3 text-[9px] font-mono text-[var(--muted-foreground)] uppercase">
+                                <span>Rating: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.codeforces || externalStats?.codeforces).rating}</strong></span>
+                                <span>Rank: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.codeforces || externalStats?.codeforces).rank}</strong></span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CODECHEF NODE */}
+                    <div className={`p-4 rounded-2xl border transition-all ${isPlatformConnected('codechef') ? 'border-amber-700/25 bg-amber-700/[0.01]' : 'border-[var(--border)]'}`}>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3.5 h-3.5 rounded-full bg-amber-600/20 flex items-center justify-center text-amber-600 font-bold text-[8px]">C</div>
+                                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--foreground)]">CodeChef</span>
+                            </div>
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${isPlatformConnected('codechef') ? 'bg-amber-600/10 text-amber-600 border border-amber-600/20' : 'bg-[var(--foreground)]/5 text-[var(--muted-foreground)]/45'}`}>
+                                {isPlatformConnected('codechef') ? "Connected" : "Disconnected"}
+                            </span>
+                        </div>
+                        <input 
+                            type="text" placeholder="Username" value={formData.codechefUsername} 
+                            onChange={(e) => setFormData({...formData, codechefUsername: e.target.value})}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs font-mono focus:border-[var(--primary)]/50 outline-none transition-all mb-2"
+                        />
+                        {isPlatformConnected('codechef') && (externalStats?.codechef || localOmniData?.externalStats?.codechef) && (
+                            <div className="flex items-center gap-3 text-[9px] font-mono text-[var(--muted-foreground)] uppercase">
+                                <span>Rating: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.codechef || externalStats?.codechef).rating}</strong></span>
+                                <span>Stars: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.codechef || externalStats?.codechef).stars}</strong></span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ATCODER NODE */}
+                    <div className={`p-4 rounded-2xl border transition-all ${isPlatformConnected('atcoder') ? 'border-slate-500/25 bg-slate-500/[0.01]' : 'border-[var(--border)]'}`}>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3.5 h-3.5 rounded-full bg-slate-400/20 flex items-center justify-center text-slate-400 font-bold text-[8px]">A</div>
+                                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--foreground)]">AtCoder</span>
+                            </div>
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${isPlatformConnected('atcoder') ? 'bg-slate-400/10 text-slate-400 border border-slate-400/20' : 'bg-[var(--foreground)]/5 text-[var(--muted-foreground)]/45'}`}>
+                                {isPlatformConnected('atcoder') ? "Connected" : "Disconnected"}
+                            </span>
+                        </div>
+                        <input 
+                            type="text" placeholder="Username" value={formData.atcoderUsername} 
+                            onChange={(e) => setFormData({...formData, atcoderUsername: e.target.value})}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs font-mono focus:border-[var(--primary)]/50 outline-none transition-all mb-2"
+                        />
+                        {isPlatformConnected('atcoder') && (externalStats?.atcoder || localOmniData?.externalStats?.atcoder) && (
+                            <div className="flex items-center gap-3 text-[9px] font-mono text-[var(--muted-foreground)] uppercase">
+                                <span>Rating: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.atcoder || externalStats?.atcoder).rating}</strong></span>
+                                <span>Highest: <strong className="text-[var(--foreground)]">{(localOmniData?.externalStats?.atcoder || externalStats?.atcoder).maxRating}</strong></span>
+                            </div>
+                        )}
+                    </div>
+
+                    <button 
+                        type="button"
+                        onClick={handleSyncOmni}
+                        disabled={syncing}
+                        className={`w-full py-3 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                            syncing ? 'bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] border-[var(--viz-cyan)]/25' : 'bg-white text-black border-white shadow-md hover:opacity-90 active:scale-95'
+                        }`}
+                    >
+                        {syncing ? <Loader2 size={12} className="animate-spin" /> : <Rocket size={12} />} 
+                        {syncing ? "Synchronizing Platforms..." : "Sync Platforms"}
+                    </button>
                 </div>
             </div>
           </motion.div>
-
+          
+          {/* RIGHT COLUMN: GRAPHS & METRICS */}
           <motion.div 
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-7 xl:col-span-8 space-y-6"
           >
-            <div className="grid grid-cols-1 gap-6">
-                <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden flex flex-col justify-center">
-                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-3 flex items-center gap-2">
-                        <Sparkles size={14} className="text-amber-500" /> Neural Coach Assessment
-                    </h3>
-                    <AnimatePresence mode="wait">
-                        <motion.p 
-                            key={aiFeedback}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm font-medium leading-relaxed italic text-[var(--foreground)]/80"
-                        >
-                            {aiFeedback || "Awaiting neural synchronization to provide placement intelligence..."}
-                        </motion.p>
-                    </AnimatePresence>
-                </div>
+            {/* Neural Coach Assessment */}
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden flex flex-col justify-center">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/5 to-transparent rounded-bl-full pointer-events-none" />
+                <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-3 flex items-center gap-2">
+                    <Sparkles size={12} className="text-amber-500 animate-pulse" /> Neural Coach Assessment
+                </h3>
+                <AnimatePresence mode="wait">
+                    <motion.div 
+                        key={aiFeedback}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        className="text-xs font-semibold leading-relaxed text-[var(--foreground)]/80 whitespace-pre-wrap"
+                    >
+                        {aiFeedback || "Awaiting neural synchronization to provide placement intelligence..."}
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
-            <div className="flex justify-center w-full my-8">
+            {/* FUT Rating Card */}
+            <div className="flex justify-center w-full">
                 <UserRatingCard user={session?.user} stats={stats} />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden">
-                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                        <Zap size={14} className="text-[var(--primary)]" fill="currentColor" /> Algorithm Radar
-                    </h3>
-                    <SkillRadar stats={stats?.user?.categoryStats || {}} theme={theme} />
-                </div>
-                
-                <div className="space-y-6">
-                    <StatCapsuleSmall label="Easy" count={stats?.user?.solvedEasy || 0} color="#10b981" />
-                    <StatCapsuleSmall label="Medium" count={stats?.user?.solvedMedium || 0} color="#f59e0b" />
-                    <StatCapsuleSmall label="Hard" count={stats?.user?.solvedHard || 0} color="#ef4444" />
-                </div>
+            {/* Grid Progress Capsules (Without Radar) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatCapsuleSmall label="Easy" count={stats?.user?.solvedEasy || 0} color="#10b981" />
+                <StatCapsuleSmall label="Medium" count={stats?.user?.solvedMedium || 0} color="#f59e0b" />
+                <StatCapsuleSmall label="Hard" count={stats?.user?.solvedHard || 0} color="#ef4444" />
             </div>
 
-            <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl relative overflow-hidden">
-                <div className="flex justify-between items-start mb-8">
+            {/* Trajectory Area Chart */}
+            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-md relative overflow-hidden">
+                <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-1">Skill Trajectory</h3>
-                        <div className="text-5xl font-black font-mono tracking-tighter">{ratingValue}</div>
+                        <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-1">Skill Trajectory</h3>
+                        <div className="text-3xl font-black font-mono tracking-tight">{ratingValue}</div>
                     </div>
-                    <div className={`p-4 rounded-2xl bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]`}>
-                        <TrendingUp size={24} />
+                    <div className="p-2 rounded-xl bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]">
+                        <TrendingUp size={16} />
                     </div>
                 </div>
-                <div className="h-[250px] w-full">
+                <div className="h-[200px] w-full">
                     {!loadingStats && stats && stats.ratingHistory.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={stats.ratingHistory}>
@@ -577,26 +578,26 @@ export default function ProfilePage() {
                                 </defs>
                                 <XAxis dataKey="date" hide />
                                 <YAxis hide domain={['dataMin - 50', 'dataMax + 50']} />
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)' }} />
-                                <Area type="monotone" dataKey="rating" stroke="var(--viz-cyan)" strokeWidth={4} fill="url(#ratingP)" />
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)' }} />
+                                <Area type="monotone" dataKey="rating" stroke="var(--viz-cyan)" strokeWidth={3} fill="url(#ratingP)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     ) : !loadingStats && stats ? (
                         <div className="h-full flex flex-col items-center justify-center text-[var(--muted-foreground)]">
-                            <TrendingUp size={32} className="opacity-20 mb-3" />
-                            <span className="text-[11px] font-semibold uppercase tracking-widest">Compete in contests to build your trajectory</span>
+                            <TrendingUp size={24} className="opacity-20 mb-2" />
+                            <span className="text-[10px] font-semibold uppercase tracking-widest">Compete in contests to build your trajectory</span>
                         </div>
                     ) : null}
                 </div>
             </div>
 
-            <div className="p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl overflow-hidden">
-                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-8 flex items-center gap-2">
-                    <Calendar size={14} /> Synaptic Transmission Log
+            {/* Activity Calendar */}
+            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-md overflow-hidden">
+                <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-6 flex items-center gap-2">
+                    <Calendar size={12} /> Synaptic Transmission Log
                 </h3>
-                <div className="flex justify-center overflow-x-auto pb-4">
+                <div className="flex justify-center overflow-x-auto pb-2 custom-scrollbar">
                     {!loadingStats && stats?.calendarData && (
-                         
                         <ActivityCalendar 
                             data={stats.calendarData}
                             theme={{
@@ -604,9 +605,9 @@ export default function ProfilePage() {
                                 light: ['#f1f5f9', '#0ea5e9']
                             }}
                             colorScheme={(theme === 'dark' ? 'dark' : 'light') as any}
-                            blockSize={14}
-                            blockMargin={5}
-                            blockRadius={4}
+                            blockSize={12}
+                            blockMargin={4}
+                            blockRadius={3}
                         />
                     )}
                 </div>
@@ -621,13 +622,13 @@ export default function ProfilePage() {
 
 function StatCapsuleSmall({ label, count, color }: { label: string, count: number, color: string }) {
     return (
-        <div className="p-6 rounded-[2rem] bg-[var(--card)] border border-[var(--border)] hover:border-opacity-100 transition-all shadow-lg flex justify-between items-center">
+        <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-opacity-100 transition-all shadow-sm flex flex-col gap-2 relative">
             <div>
-                <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-1">{label}</div>
-                <div className="text-3xl font-black font-mono">{count}</div>
+                <div className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 mb-1">{label}</div>
+                <div className="text-xl font-black font-mono leading-none">{count}</div>
             </div>
-            <div className="w-24 h-2 bg-[var(--background)] rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} whileInView={{ width: '60%' }} className="h-full rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}` }} />
+            <div className="w-full h-1 bg-[var(--foreground)]/5 rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${Math.min(100, count * 5)}%`, backgroundColor: color }} />
             </div>
         </div>
     );
