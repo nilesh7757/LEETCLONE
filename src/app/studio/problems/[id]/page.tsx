@@ -54,7 +54,7 @@ export default function StudioProblemEditor() {
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"statement" | "solution" | "testcases" | "collaborators" | "settings">("statement");
+  const [activeTab, setActiveTab] = useState<"statement" | "solutions" | "testcases" | "collaborators" | "settings">("statement");
   const [isSaving, setIsSaving] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -383,11 +383,11 @@ export default function StudioProblemEditor() {
          {/* SIDE BAR BUTTONS */}
          <aside className="w-64 border-r border-white/5 bg-[#080808] p-4 flex flex-col gap-2 shrink-0">
             {[
-               { id: 'statement', label: 'Problem Statement', icon: FileText },
-               { id: 'solution', label: 'Reference Solution', icon: FileCode2 },
+               { id: 'statement', label: 'Statement', icon: FileText },
                { id: 'testcases', label: 'Test Cases', icon: Database },
+               { id: 'solutions', label: 'Solutions', icon: Code2 },
                { id: 'collaborators', label: 'Collaborators', icon: Users },
-               { id: 'settings', label: 'Metadata Settings', icon: Settings },
+               { id: 'settings', label: 'Settings', icon: Settings },
             ].map(tab => (
                <button
                   key={tab.id}
@@ -467,9 +467,9 @@ export default function StudioProblemEditor() {
                )}
 
                {/* REFERENCE SOLUTION */}
-               {activeTab === 'solution' && (
+               {activeTab === 'solutions' && (
                   <motion.div 
-                     key="solution" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                     key="solutions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                      className="max-w-6xl space-y-8"
                   >
                      <div className="flex items-center justify-between">

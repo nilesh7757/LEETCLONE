@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { toast } from "sonner";
-import Split from "react-split";
+import dynamic from "next/dynamic";
+const Split = dynamic(() => import("react-split"), { ssr: false });
 import Editor from "@monaco-editor/react";
 import { AnimatePresence, motion } from "framer-motion";
 

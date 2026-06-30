@@ -2,9 +2,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, CheckCircle, XCircle, Clock, Cpu, Layout } from "lucide-react";
+import { X, CheckCircle, XCircle, Clock, Cpu, Layout, Sparkles, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Submission } from "@/types/submission";
+import axios from "axios";
+import { toast } from "sonner";
 
 interface SubmissionDetailsModalProps {
   submission: Submission | null;
@@ -13,13 +15,38 @@ interface SubmissionDetailsModalProps {
 
 export default function SubmissionDetailsModal({ submission, onClose }: SubmissionDetailsModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [complexity, setComplexity] = useState<{ time: string; space: string } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  useEffect(() => {
+    setComplexity(null);
+  }, [submission?.id]);
+
   if (!submission) return null;
+
+  const handleAnalyzeComplexity = async () => {
+    setIsAnalyzing(true);
+    try {
+      const { data } = await axios.post("/api/ai/predict-complexity", {
+        code: submission.code,
+        language: submission.language
+      });
+      setComplexity({
+        time: data.timeComplexity || "O(N)",
+        space: data.spaceComplexity || "O(1)"
+      });
+      toast.success("AI complexity analysis complete!");
+    } catch (err) {
+      toast.error("Failed to analyze complexity");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const results = Array.isArray(submission.testCaseResults) ? submission.testCaseResults : [];
 
@@ -68,6 +95,50 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                 <StatItem icon={Cpu} label="Memory" value={submission.memory ? `${(submission.memory / 1024 / 1024).toFixed(2)} MB` : "N/A"} />
                 <StatItem icon={Layout} label="Language" value={submission.language} />
               </div>
+
+              {/* Complexity Analysis Panel */}
+              {submission.status === 'Accepted' && (
+                <div className="pt-2 border-t border-[var(--border)]">
+                  {complexity ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
+                          <Clock size={18} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 font-sans">Time Complexity</p>
+                          <p className="font-bold text-sm text-amber-500 font-mono">{complexity.time}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500">
+                          <Cpu size={18} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 font-sans">Space Complexity</p>
+                          <p className="font-bold text-sm text-purple-500 font-mono">{complexity.space}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleAnalyzeComplexity}
+                      disabled={isAnalyzing}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 border border-[var(--primary)]/20 text-[var(--primary)] rounded-2xl text-xs font-bold uppercase tracking-widest transition-all cursor-pointer disabled:opacity-50 border-none"
+                    >
+                      {isAnalyzing ? (
+                         <>
+                           <Loader2 size={14} className="animate-spin" /> Analyzing Complexity...
+                         </>
+                      ) : (
+                         <>
+                           <Sparkles size={14} /> Analyze Time & Space Complexity (AI)
+                         </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Code Section */}
               <div className="space-y-3">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Split from "react-split";
+import dynamic from "next/dynamic";
+const Split = dynamic(() => import("react-split"), { ssr: false });
 import { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { 
