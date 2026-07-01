@@ -41,6 +41,19 @@ export default function EditorPanel({
   const internalMonacoRef = useRef<Monaco | null>(null);
   const { resolvedTheme } = useTheme();
 
+  // Synchronize code from outside updates (e.g. language switch, reset, page load)
+  // while avoiding cursor jumps during active typing (normalizing line endings to prevent mismatch)
+  useEffect(() => {
+    if (internalEditorRef.current) {
+      const currentValue = internalEditorRef.current.getValue();
+      const normalize = (str: string) => str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      if (normalize(code) !== normalize(currentValue)) {
+        internalEditorRef.current.setValue(code);
+      }
+    }
+  }, [code]);
+
+
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     internalEditorRef.current = editor;
     internalMonacoRef.current = monaco;
@@ -166,17 +179,7 @@ export default function EditorPanel({
     );
   }
 
-  // Synchronize code from outside updates (e.g. language switch, reset, page load)
-  // while avoiding cursor jumps during active typing (normalizing line endings to prevent mismatch)
-  useEffect(() => {
-    if (internalEditorRef.current) {
-      const currentValue = internalEditorRef.current.getValue();
-      const normalize = (str: string) => str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-      if (normalize(code) !== normalize(currentValue)) {
-        internalEditorRef.current.setValue(code);
-      }
-    }
-  }, [code]);
+
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden bg-transparent">
