@@ -70,20 +70,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const monacoRef = useRef<Monaco | null>(null);
 
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
-  const [aiEnabled, setAiEnabled] = useState(false);
-
-  useEffect(() => {
-    const val = localStorage.getItem("ai_autocomplete_enabled") === "true";
-    const timer = setTimeout(() => {
-      setAiEnabled(val);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleToggleAi = (val: boolean) => {
-    setAiEnabled(val);
-    localStorage.setItem("ai_autocomplete_enabled", val ? "true" : "false");
-  };
 
   const {
     code, setCode,
@@ -267,8 +253,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                 isRunning={isRunning}
                                 isSubmitting={isSubmitting}
                                 onReset={resetCode}
-                                aiEnabled={aiEnabled}
-                                setAiEnabled={handleToggleAi}
                             />
                         </div>
                     </div>
@@ -281,8 +265,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             setLanguage={setLanguage}
                             theme="vs-dark"
                             onMount={onEditorMount}
-                            aiEnabled={aiEnabled}
-                            setAiEnabled={handleToggleAi}
                         />
                     </div>
                     </div>
