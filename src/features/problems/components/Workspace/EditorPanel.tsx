@@ -62,8 +62,9 @@ export default function EditorPanel({
     internalMonacoRef.current = monaco;
 
     // Register Inline Completion Provider once globally on the monaco instance
-    if (!(monaco as any)._inlineCompletionsRegistered) {
-      (monaco as any)._inlineCompletionsRegistered = true;
+    const monacoExtended = monaco as unknown as { _inlineCompletionsRegistered?: boolean };
+    if (!monacoExtended._inlineCompletionsRegistered) {
+      monacoExtended._inlineCompletionsRegistered = true;
       const langs = ["javascript", "typescript", "python", "java", "cpp", "csharp", "go", "ruby", "swift", "rust", "php", "sql"];
       
       langs.forEach(lang => {

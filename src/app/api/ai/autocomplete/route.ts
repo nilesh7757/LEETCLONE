@@ -48,8 +48,9 @@ Provide the missing code to insert:`;
     }
 
     return NextResponse.json({ suggestion: text });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("AI Autocomplete API error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
 }

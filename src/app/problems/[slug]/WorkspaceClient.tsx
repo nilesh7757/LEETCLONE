@@ -73,7 +73,11 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const [aiEnabled, setAiEnabled] = useState(false);
 
   useEffect(() => {
-    setAiEnabled(localStorage.getItem("ai_autocomplete_enabled") === "true");
+    const val = localStorage.getItem("ai_autocomplete_enabled") === "true";
+    const timer = setTimeout(() => {
+      setAiEnabled(val);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleToggleAi = (val: boolean) => {
