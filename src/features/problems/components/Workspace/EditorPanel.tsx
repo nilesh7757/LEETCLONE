@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { Editor, Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { 
-  ChevronDown, Check, Play, Send, Loader2, RotateCcw
+  ChevronDown, Check, Play, Send, Loader2, RotateCcw, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { languages } from "@/lib/starterCode";
@@ -29,11 +29,14 @@ interface EditorPanelProps {
   isRunning?: boolean;
   isSubmitting?: boolean;
   isLoggedIn?: boolean;
+  aiEnabled?: boolean;
+  setAiEnabled?: (val: boolean) => void;
 }
 export default function EditorPanel({ 
   code = "", setCode = () => {}, language, setLanguage, theme,
   onMount,
-  isToolbarOnly, onRun, onSubmit, onReset, isRunning, isSubmitting
+  isToolbarOnly, onRun, onSubmit, onReset, isRunning, isSubmitting,
+  aiEnabled = false, setAiEnabled = () => {}
 }: EditorPanelProps) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -57,6 +60,63 @@ export default function EditorPanel({
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     internalEditorRef.current = editor;
     internalMonacoRef.current = monaco;
+
+    // Register Inline Completion Provider once globally on the monaco instance
+    if (!(monaco as any)._inlineCompletionsRegistered) {
+      (monaco as any)._inlineCompletionsRegistered = true;
+      const langs = ["javascript", "typescript", "python", "java", "cpp", "csharp", "go", "ruby", "swift", "rust", "php", "sql"];
+      
+      langs.forEach(lang => {
+        monaco.languages.registerInlineCompletionsProvider(lang, {
+          provideInlineCompletions: async (model, position, context, token) => {
+            const isEnabled = localStorage.getItem("ai_autocomplete_enabled") === "true";
+            if (!isEnabled) return { items: [] };
+
+            // Debounce typing (600ms of typing inactivity)
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            if (token.isCancellationRequested) return { items: [] };
+
+            const offset = model.getOffsetAt(position);
+            const fullText = model.getValue();
+            const prefix = fullText.substring(0, offset);
+            const suffix = fullText.substring(offset);
+
+            try {
+              const response = await fetch("/api/ai/autocomplete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prefix, suffix, language: lang }),
+              });
+              
+              if (!response.ok) return { items: [] };
+              const data = await response.json();
+              
+              if (data.suggestion) {
+                return {
+                  items: [
+                    {
+                      insertText: data.suggestion,
+                      range: new monaco.Range(
+                        position.lineNumber,
+                        position.column,
+                        position.lineNumber,
+                        position.column
+                      ),
+                    },
+                  ],
+                };
+              }
+            } catch (err) {
+              console.error("Autocomplete fetch failed:", err);
+            }
+
+            return { items: [] };
+          },
+          disposeInlineCompletions: () => {},
+        });
+      });
+    }
+
     if (onMount) onMount(editor, monaco);
   };
 
@@ -143,6 +203,21 @@ export default function EditorPanel({
          </div>
 
          <div className="w-px h-4 bg-white/5 mx-1" />
+
+         <button 
+             onClick={() => setAiEnabled(!aiEnabled)}
+             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 group ${
+                aiEnabled 
+                  ? "bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30 shadow-[0_0_12px_rgba(59,130,246,0.2)]" 
+                  : "text-[#a1a1aa] border border-transparent hover:text-white hover:bg-white/5"
+             }`}
+             title="Toggle AI Code Autocomplete suggestions"
+          >
+             <Sparkles size={13} className={`transition-transform duration-300 ${aiEnabled ? "text-[#3b82f6] scale-110" : "text-gray-400 group-hover:rotate-12"}`} />
+             AI Auto: {aiEnabled ? "ON" : "OFF"}
+          </button>
+
+          <div className="w-px h-4 bg-white/5 mx-1" />
 
          {onReset && (
             <>
