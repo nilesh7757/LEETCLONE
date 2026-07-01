@@ -99,13 +99,13 @@ export default function ProblemDescription({
                 <div className="font-mono text-xs space-y-2">
                   <div className="flex items-baseline gap-2">
                     <span className="text-[10px] font-black text-[var(--primary)] uppercase tracking-wider w-16 shrink-0">Input:</span>
-                    <span className="text-[var(--foreground)] font-medium break-all">
+                    <span className="text-[var(--foreground)] font-medium break-all whitespace-pre-wrap">
                       {typeof ex.input === "object" ? JSON.stringify(ex.input) : ex.input}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider w-16 shrink-0">Output:</span>
-                    <span className="text-emerald-500 font-bold break-all">
+                    <span className="text-emerald-500 font-bold break-all whitespace-pre-wrap">
                       {typeof ex.expectedOutput === "object" ? JSON.stringify(ex.expectedOutput) : ex.expectedOutput}
                     </span>
                   </div>

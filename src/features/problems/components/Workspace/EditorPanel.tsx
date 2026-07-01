@@ -166,6 +166,18 @@ export default function EditorPanel({
     );
   }
 
+  // Synchronize code from outside updates (e.g. language switch, reset, page load)
+  // while avoiding cursor jumps during active typing (normalizing line endings to prevent mismatch)
+  useEffect(() => {
+    if (internalEditorRef.current) {
+      const currentValue = internalEditorRef.current.getValue();
+      const normalize = (str: string) => str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      if (normalize(code) !== normalize(currentValue)) {
+        internalEditorRef.current.setValue(code);
+      }
+    }
+  }, [code]);
+
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden bg-transparent">
       <div className="flex-1 relative min-h-0">
@@ -173,7 +185,7 @@ export default function EditorPanel({
           height="100%"
           language={language}
           theme={editorTheme}
-          value={code}
+          defaultValue={code}
           onChange={(val) => setCode(val || "")}
           options={{
             minimap: { enabled: false },
