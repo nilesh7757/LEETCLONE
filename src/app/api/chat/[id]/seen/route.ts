@@ -17,6 +17,7 @@ export const POST = apiHandler(async (req: Request, { params }: { params: Promis
     throw new ApiError("Invalid payload", 400);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (prisma.message as any).updateMany({
     where: {
       id: { in: messageIds },

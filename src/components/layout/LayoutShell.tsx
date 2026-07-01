@@ -19,7 +19,9 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   useEffect(() => {
     const stored = localStorage.getItem("sidebar_collapsed");
     if (stored === "true") {
-      setIsCollapsed(true);
+      setTimeout(() => {
+        setIsCollapsed(true);
+      }, 0);
     }
   }, []);
 

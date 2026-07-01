@@ -320,7 +320,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
   );
 }
 
-function StatCapsule({ label, count, color, icon: Icon }: { label: string, count: number, color: string, icon: React.ElementType }) {
+function StatCapsule({ label, count, color, icon: Icon }: { label: string, count: number, color: string, icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }> }) {
     return (
         <div className="group p-8 rounded-[2.5rem] bg-[var(--card)] border border-[var(--border)] hover:border-opacity-100 transition-all duration-500 hover:-translate-y-2 shadow-lg">
             <div className="flex justify-between items-center mb-6">

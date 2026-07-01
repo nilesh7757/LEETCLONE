@@ -77,7 +77,7 @@ export const CodeSnippet = ({ code, activeLine }: CodeSnippetProps) => {
 
 interface DocSectionProps {
   title: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   children: React.ReactNode;
   color?: string;
 }

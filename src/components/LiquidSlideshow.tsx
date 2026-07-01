@@ -56,7 +56,7 @@ const LiquidShaderMaterial = shaderMaterial(
 
 extend({ LiquidShaderMaterial });
 
-// @ts-expect-error custom material properties
+// Custom material properties
 type LiquidShaderMaterialImpl = {
   uTime: number;
   uProgress: number;
@@ -64,7 +64,7 @@ type LiquidShaderMaterialImpl = {
   uTex2: THREE.Texture;
   uDispMap: THREE.Texture;
   uIntensity: number;
-} & JSX.IntrinsicElements['shaderMaterial'];
+} & React.JSX.IntrinsicElements['shaderMaterial'];
 
 // Default placeholder procedural textures are used instead of external URLs to avoid CORS / missing file black screens.
 // You can switch back to `useTexture(['/image1.jpg', ...])` once you have the image files in your `public` folder.
@@ -78,6 +78,12 @@ function Scene() {
 
   // Procedural fallback textures
   const { tex1, tex2, clonedDisp } = useMemo(() => {
+    let seed = 42;
+    const lcg = () => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296;
+      return seed / 4294967296;
+    };
+
     // Cyberpunk purple gradient (Image 1)
     const data1 = new Uint8Array(256 * 256 * 4);
     for (let i = 0; i < 256; i++) {
@@ -98,7 +104,7 @@ function Scene() {
       for (let j = 0; j < 256; j++) {
         const idx = (i * 256 + j) * 4;
         data2[idx] = 10; // R
-        data2[idx + 1] = 180 + Math.random() * 50; // G (static noise)
+        data2[idx + 1] = 180 + lcg() * 50; // G (static noise)
         data2[idx + 2] = 50 + (i / 256) * 50; // B
         data2[idx + 3] = 255;
       }
@@ -109,7 +115,7 @@ function Scene() {
     // Noise displacement map
     const noise = new Uint8Array(128 * 128 * 4);
     for (let i = 0; i < noise.length; i += 4) {
-      const val = Math.floor(Math.random() * 255);
+      const val = Math.floor(lcg() * 255);
       noise[i] = val;
       noise[i + 1] = val;
       noise[i + 2] = val;

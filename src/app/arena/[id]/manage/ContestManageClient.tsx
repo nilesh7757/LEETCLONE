@@ -62,6 +62,7 @@ export default function ContestManageClient({ contestId }: { contestId: string }
 
   // Inline Problem Editing States
   const [editingProblemId, setEditingProblemId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editingProblemData, setEditingProblemData] = useState<any>(null);
   const [loadingProblem, setLoadingProblem] = useState(false);
 

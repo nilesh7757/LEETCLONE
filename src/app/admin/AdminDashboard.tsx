@@ -105,7 +105,7 @@ interface GeneratedProblem {
 interface StatCardProps {
     title: string;
     value: number | string;
-    icon: React.ElementType;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
     trend?: string;
 }

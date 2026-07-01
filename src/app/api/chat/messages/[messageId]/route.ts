@@ -14,6 +14,7 @@ export const DELETE = apiHandler(async (req: Request, { params }: { params: Prom
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type"); // "me" or "everyone"
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const message = await (prisma.message as any).findUnique({
     where: { id: messageId },
     include: {
@@ -29,7 +30,7 @@ export const DELETE = apiHandler(async (req: Request, { params }: { params: Prom
     throw new ApiError("Message not found", 404);
   }
 
-  const isParticipant = message.conversation.participants.some((p: any) => p.userId === session.user.id);
+  const isParticipant = message.conversation.participants.some((p: { userId: string }) => p.userId === session.user.id);
   if (!isParticipant) {
     throw new ApiError("Forbidden", 403);
   }
@@ -39,6 +40,7 @@ export const DELETE = apiHandler(async (req: Request, { params }: { params: Prom
       throw new ApiError("Forbidden: Only sender can delete for everyone", 403);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (prisma.message as any).update({
       where: { id: messageId },
       data: { isDeletedForEveryone: true }
@@ -49,6 +51,7 @@ export const DELETE = apiHandler(async (req: Request, { params }: { params: Prom
       currentDeleted.push(session.user.id);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (prisma.message as any).update({
       where: { id: messageId },
       data: { deletedForUsers: currentDeleted.join(",") }

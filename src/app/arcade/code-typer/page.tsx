@@ -87,7 +87,7 @@ export default function CodeTyperGame() {
   const renderSnippet = () => {
     return snippet.split("").map((char, index) => {
       let color = "text-[var(--foreground)]/40";
-      let isCursor = index === inputVal.length;
+      const isCursor = index === inputVal.length;
 
       if (index < inputVal.length) {
         color = inputVal[index] === char ? "text-emerald-400 font-bold" : "text-red-400 bg-red-400/10 font-bold underline";

@@ -123,7 +123,7 @@ export default function BinaryGuessGame() {
               <div className="space-y-4">
                 <h1 className="text-4xl font-black tracking-tighter uppercase">Binary Node Guess</h1>
                 <p className="text-[var(--muted-foreground)] font-medium max-w-sm mx-auto leading-relaxed text-sm">
-                  We've hidden a target value between <strong>1 and 100</strong>. Can you locate it in <strong>7 guesses or fewer</strong> using optimal binary search?
+                  We&apos;ve hidden a target value between <strong>1 and 100</strong>. Can you locate it in <strong>7 guesses or fewer</strong> using optimal binary search?
                 </p>
                 <div className="p-4 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-2xl text-xs text-[var(--muted-foreground)] flex items-start gap-3 max-w-sm mx-auto text-left">
                   <Info size={16} className="text-emerald-400 shrink-0 mt-0.5" />

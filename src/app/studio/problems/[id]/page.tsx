@@ -111,19 +111,19 @@ export default function StudioProblemEditor() {
       setMetaProblemType(p.type || "CODING");
 
       // Parse test sets
-      let parsedExamples: any[] = [];
-      let parsedHidden: any[] = [];
+      let parsedExamples: Array<{ id: string; input: string; output: string }> = [];
+      let parsedHidden: Array<{ id: string; input: string; output: string }> = [];
       if (p.testSets) {
-        const sets = p.testSets as any;
+        const sets = p.testSets;
         if (Array.isArray(sets.examples)) {
-          parsedExamples = sets.examples.map((ex: any, idx: number) => ({
+          parsedExamples = sets.examples.map((ex, idx: number) => ({
             id: `ex-${idx}-${Date.now()}`,
             input: ex.input || "",
             output: ex.expectedOutput || ""
           }));
         }
         if (Array.isArray(sets.hidden)) {
-          parsedHidden = sets.hidden.map((tc: any, idx: number) => ({
+          parsedHidden = sets.hidden.map((tc, idx: number) => ({
             id: `tc-${idx}-${Date.now()}`,
             input: tc.input || "",
             output: tc.expectedOutput || ""
@@ -391,7 +391,7 @@ export default function StudioProblemEditor() {
             ].map(tab => (
                <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as "statement" | "solutions" | "testcases" | "collaborators" | "settings")}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
                      activeTab === tab.id 
                      ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 

@@ -31,7 +31,7 @@ function classNames(...classes: (string | undefined | null | false)[]) {
 }
 
 interface SidebarItemProps {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   label: string;
   href: string;
   isActive?: boolean;

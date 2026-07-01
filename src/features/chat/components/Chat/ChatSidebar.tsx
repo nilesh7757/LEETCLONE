@@ -29,6 +29,13 @@ interface Conversation {
   };
 }
 
+interface SearchUser {
+  id: string;
+  name?: string | null;
+  image?: string | null;
+  email?: string | null;
+}
+
 export default function ChatSidebar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +45,7 @@ export default function ChatSidebar() {
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -90,7 +97,7 @@ export default function ChatSidebar() {
       try {
         const { data } = await axios.get(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
         // Filter out ourselves
-        const filtered = data.users.filter((u: any) => u.id !== session?.user?.id);
+        const filtered = data.users.filter((u: SearchUser) => u.id !== session?.user?.id);
         setSearchResults(filtered);
       } catch (err) {
         console.error("Search error:", err);
