@@ -95,7 +95,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
             source_code: finalCode,
             language_id: langId,
             stdin: tc.input || "",
-            cpu_time_limit: params.timeLimit || 5,
+            cpu_time_limit: (params.timeLimit && params.timeLimit > 10 ? params.timeLimit / 1000 : params.timeLimit) || 5,
             memory_limit: (params.memoryLimit || 512) * 1024,
           };
 

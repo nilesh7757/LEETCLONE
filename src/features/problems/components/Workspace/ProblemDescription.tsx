@@ -55,7 +55,7 @@ export default function ProblemDescription({
         </span>
         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--muted-foreground)] flex items-center gap-1.5">
           <Timer size={12} />
-          {timeLimit / 1000}s Limit
+          {timeLimit > 10 ? timeLimit / 1000 : timeLimit}s Limit
         </span>
         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--muted-foreground)] flex items-center gap-1.5">
           <Cpu size={12} />
