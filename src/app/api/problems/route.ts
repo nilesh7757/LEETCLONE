@@ -125,8 +125,8 @@ export const GET = apiHandler(async (req: Request) => {
       rateStr = ((titleSum % 25) + 45.3).toFixed(1);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { submissions, starredBy, ...rest } = problem as any;
+    const starredBy = (problem as { starredBy?: { id: string }[] }).starredBy;
+    const { submissions, ...rest } = problem;
 
     return {
       ...rest,

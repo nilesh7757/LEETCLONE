@@ -18,6 +18,7 @@ interface Problem {
   isSolved?: boolean;
   isAttempted?: boolean;
   acceptanceRate?: string;
+  isStarred?: boolean;
 }
 
 interface ProblemTableProps {
@@ -47,7 +48,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
   const [starredMap, setStarredMap] = useState<Record<string, boolean>>(() => {
     const initialMap: Record<string, boolean> = {};
     problems.forEach(p => {
-      initialMap[p.id] = (p as any).isStarred || false;
+      initialMap[p.id] = p.isStarred || false;
     });
     return initialMap;
   });

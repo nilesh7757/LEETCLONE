@@ -41,13 +41,7 @@ async function getStats(userId?: string) {
   return { totalProblems, solvedCount, attemptCount };
 }
 
-interface WhereClause {
-  creatorId?: string;
-  OR?: Prisma.ProblemWhereInput[];
-  title?: { contains: string; mode: Prisma.QueryMode };
-  difficulty?: string;
-  category?: string;
-}
+// Relying on Prisma.ProblemWhereInput directly for strict type safety
 
 export default async function ProblemsPage({ searchParams }: PageProps) {
   const session = await auth();
@@ -60,7 +54,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const pageSize = 12; 
   const skip = (currentPage - 1) * pageSize;
 
-  const whereClause: WhereClause = {};
+  const whereClause: Prisma.ProblemWhereInput = {};
   if (currentTab === "mine" && userId) {
     whereClause.creatorId = userId;
   } else {
@@ -71,7 +65,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   }
 
   if (resolvedSearchParams.search) {
-    whereClause.title = { contains: resolvedSearchParams.search, mode: 'insensitive' };
+    whereClause.title = { contains: resolvedSearchParams.search, mode: 'insensitive' as Prisma.QueryMode };
   }
   if (resolvedSearchParams.difficulty && resolvedSearchParams.difficulty !== "All") {
     whereClause.difficulty = resolvedSearchParams.difficulty;
@@ -80,7 +74,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
     whereClause.category = resolvedSearchParams.category;
   }
   if (resolvedSearchParams.starred === "true" && userId) {
-    (whereClause as any).starredBy = {
+    whereClause.starredBy = {
       some: {
         userId
       }
@@ -150,7 +144,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       category: problem.category,
       isSolved: solvedProblemIds.has(problem.id),
       isAttempted: attemptedProblemIds.has(problem.id) && !solvedProblemIds.has(problem.id),
-      isStarred: userId ? (problem as any).starredBy?.length > 0 : false,
+      isStarred: userId ? ((problem as unknown as { starredBy?: { id: string }[] }).starredBy?.length ?? 0) > 0 : false,
       acceptanceRate: rateStr,
     };
   });
