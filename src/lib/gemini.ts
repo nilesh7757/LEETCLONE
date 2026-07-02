@@ -85,7 +85,7 @@ export async function runAI<T = unknown>(
       const completion = await nvidia.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: prompt + "\n\nCRITICAL: Return valid JSON ONLY." },
+          { role: "user" as const, content: prompt + (isJsonMode ? "\n\nCRITICAL: Return valid JSON ONLY." : "") },
         ],
         model: "meta/llama-3.1-405b-instruct",
         response_format: isJsonMode ? { type: "json_object" } : undefined,
@@ -109,7 +109,7 @@ export async function runAI<T = unknown>(
       const completion = await groq.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: prompt + "\n\nSTRICT JSON ONLY." },
+          { role: "user" as const, content: prompt + (isJsonMode ? "\n\nSTRICT JSON ONLY." : "") },
         ],
         model: "llama-3.3-70b-versatile",
         response_format: isJsonMode ? { type: "json_object" } : undefined,
@@ -135,7 +135,7 @@ export async function runAI<T = unknown>(
         try {
           const model = genAI.getGenerativeModel({ model: modelId });
           const combinedPrompt = (systemInstruction ? `System: ${systemInstruction}\n\n` : "") + 
-                                 `User: ${prompt}\n\nCRITICAL: Return only the JSON object.`;
+                                 `User: ${prompt}` + (isJsonMode ? `\n\nCRITICAL: Return only the JSON object.` : "");
 
           const result = await model.generateContent(combinedPrompt);
           const response = await result.response;
@@ -165,7 +165,7 @@ export async function runAI<T = unknown>(
           const hfRes = await axios.post(
               "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct",
               { 
-                inputs: (systemInstruction ? `<|system|>\n${systemInstruction}\n` : "") + `<|user|>\n${prompt}\n\nReturn JSON only.\n<|assistant|>`,
+                inputs: (systemInstruction ? `<|system|>\n${systemInstruction}\n` : "") + `<|user|>\n${prompt}` + (isJsonMode ? "\n\nReturn JSON only." : "") + "\n<|assistant|>",
                 parameters: { max_new_tokens: 2048, return_full_text: false }
               },
               { headers: { Authorization: `Bearer ${keys.HF_API_KEY}` }, timeout: 30000 }

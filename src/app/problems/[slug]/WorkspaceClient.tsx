@@ -199,12 +199,11 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
                         title={t.label}
-                        className={`relative h-full text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 px-1 shrink-0 ${
+                        className={`relative h-full transition-all flex items-center justify-center px-4 shrink-0 hover:bg-[var(--foreground)]/5 ${
                             activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         }`}
                     >
-                        <t.icon size={14} className={activeTab === t.id ? "text-[var(--primary)] shrink-0" : "shrink-0"} />
-                        <span className="hidden xl:inline">{t.label}</span>
+                        <t.icon size={16} className={activeTab === t.id ? "text-[var(--primary)] shrink-0" : "shrink-0"} />
                         {activeTab === t.id && (
                             <motion.div layoutId="left-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)] shadow-[0_0_12px_rgba(143,68,240,0.5)]" />
                         )}
