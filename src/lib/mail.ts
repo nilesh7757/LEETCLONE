@@ -114,3 +114,44 @@ export async function sendStudyReminderEmail(email: string, planTitle: string, p
     `,
   });
 }
+
+export async function sendUnfinishedGoalsEmail(email: string, goalsList: { title: string }[]) {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, NEXT_PUBLIC_APP_URL } = process.env;
+  const appUrl = NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+  const goalsHtml = goalsList.map(g => `<li>${g.title}</li>`).join("");
+
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+    logger.info("========================================");
+    logger.info(`[DEV MODE] Unfinished Goals Email for ${email}:`);
+    goalsList.forEach(g => logger.info(`- ${g.title}`));
+    logger.info("========================================");
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: parseInt(SMTP_PORT || "587"),
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"LogiQuest" <${SMTP_USER}>`,
+    to: email,
+    subject: `Daily Reminder: Unfinished Goals 🎯`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #e11d48;">You have unfinished goals today! ⚠️</h2>
+        <p>Here are the tasks you scheduled for today that are still pending:</p>
+        <ul style="line-height: 1.6; color: #333;">
+          ${goalsHtml}
+        </ul>
+        <p>To keep your momentum, these tasks have been carried over to tomorrow's planner list automatically.</p>
+        <a href="${appUrl}/problems" style="background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: bold; margin-top: 10px;">View Mastery Planner</a>
+      </div>
+    `,
+  });
+}

@@ -301,6 +301,7 @@ model User {
   siegePlans            SiegePlan[]
   resumeReviews         ResumeReview[]
   dailyBeserkLogs       DailyBeserkLog[]
+  goals                 Goal[]
   following             User[]                    @relation("UserFollows")
   followedBy            User[]                    @relation("UserFollows")
   problemCollaborations ProblemCollaborator[]
@@ -624,4 +625,18 @@ model DailyBeserkLog {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
+}
+
+model Goal {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  date      DateTime
+  isDone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
 }

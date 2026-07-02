@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import ProblemTable from "@/features/problems/components/ProblemTable";
 import ProblemFilters from "@/features/problems/components/ProblemFilters";
 import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
+import MasteryCalendar from "@/features/problems/components/MasteryCalendar";
 import { auth } from "@/auth"; 
 import { Trophy, Target, Sparkles } from "lucide-react";
 import { Prisma, ProblemType } from "@prisma/client";
@@ -212,6 +213,14 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Daily Challenge</span>
                </div>
                <DailyProblemCard />
+            </div>
+
+            <div className="space-y-3">
+               <div className="flex items-center gap-2 px-1">
+                  <div className="w-1 h-1 rounded-full bg-blue-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Mastery Planner</span>
+               </div>
+               <MasteryCalendar />
             </div>
           </div>
 
