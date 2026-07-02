@@ -202,7 +202,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
                         title={t.label}
-                        className={`relative h-full transition-all flex items-center justify-center gap-1.5 px-3 shrink-0 hover:bg-[var(--foreground)]/5 ${
+                        className={`flex-tab-btn relative h-full transition-all flex items-center justify-center gap-1.5 px-3 shrink-0 hover:bg-[var(--foreground)]/5 ${
                             activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         }`}
                     >
@@ -411,19 +411,31 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-        @container sidebar (max-width: 530px) {
+        .flex-tab-btn {
+          transition: all 0.2s ease;
+        }
+
+        @container sidebar (max-width: 480px) {
+          .flex-tab-btn {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            gap: 0.25rem !important;
+          }
+        }
+
+        @container sidebar (max-width: 560px) {
           .tab-label-ai { display: none; }
         }
-        @container sidebar (max-width: 470px) {
+        @container sidebar (max-width: 490px) {
           .tab-label-solutions { display: none; }
         }
-        @container sidebar (max-width: 400px) {
+        @container sidebar (max-width: 420px) {
           .tab-label-submissions { display: none; }
         }
-        @container sidebar (max-width: 320px) {
+        @container sidebar (max-width: 350px) {
           .tab-label-resources { display: none; }
         }
-        @container sidebar (max-width: 250px) {
+        @container sidebar (max-width: 280px) {
           .tab-label-description { display: none; }
         }
       `}</style>
