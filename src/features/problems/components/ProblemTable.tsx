@@ -14,6 +14,7 @@ interface Problem {
   companies?: string[];
   isSolved?: boolean;
   isAttempted?: boolean;
+  acceptanceRate?: string;
 }
 
 interface ProblemTableProps {
@@ -129,7 +130,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                 {/* Acceptance Column */}
                 <td className="py-4 pr-4 text-right">
                   <span className="font-mono text-xs font-semibold text-[var(--muted-foreground)]">
-                    84.2%
+                    {problem.acceptanceRate || "0.0"}%
                   </span>
                 </td>
               </tr>

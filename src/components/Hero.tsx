@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import LiquidSlideshow from "@/components/LiquidSlideshow";
+import IDEShowcase from "@/components/IDEShowcase";
 
 // Card Tier definition type
 type CardTier = "bronze" | "silver" | "gold" | "inform" | "icon" | "toty";
@@ -110,7 +110,7 @@ export default function Hero() {
           <div className="lg:col-span-5 flex items-center justify-center relative min-h-[380px] w-full max-w-lg lg:mx-0 mx-auto">
             <div className="absolute -inset-10 bg-[#8F44F0]/10 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse" />
             <div className="w-full h-full min-h-[380px] bg-[#0e0e11] rounded-3xl shadow-2xl overflow-hidden relative">
-              <LiquidSlideshow />
+              <IDEShowcase />
             </div>
           </div>
 

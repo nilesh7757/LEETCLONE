@@ -4,6 +4,7 @@ import { BookOpen, Trophy, ArrowRight, Layers, Plus, Lock, Mic, Zap, Sparkles } 
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import GeneratePlanButton from "@/features/study-plans/components/GeneratePlanButton";
+import CompanyPrepButton from "@/features/study-plans/components/CompanyPrepButton";
 import Image from "next/image";
 
 interface StudyPlan {
@@ -68,6 +69,8 @@ export default async function StudyPlansPage() {
             <div className="p-1 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-1">
                 <GeneratePlanButton />
             </div>
+            
+            <CompanyPrepButton />
             
             <Link
               href="/interview"
