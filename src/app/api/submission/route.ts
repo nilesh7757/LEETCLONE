@@ -79,6 +79,7 @@ export const POST = apiHandler(async (req: Request) => {
     select: {
       id: true,
       title: true,
+      slug: true,
       difficulty: true,
       description: true,
       timeLimit: true,
@@ -120,6 +121,8 @@ export const POST = apiHandler(async (req: Request) => {
   if (problem.type === "CODING") {
     const job = await executionQueue.add('submit-code', {
       problemId: problem.id,
+      problemSlug: problem.slug,
+      problemTitle: problem.title,
       code,
       language,
       type: "CODING",

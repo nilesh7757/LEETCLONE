@@ -41,6 +41,8 @@ export interface ExecuteCodeParams {
   memoryLimit?: number;
   isOutputGeneration?: boolean;
   problemId?: string;
+  problemSlug?: string;
+  problemTitle?: string;
   initialSchema?: string;
   initialData?: string;
 }
@@ -119,11 +121,21 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
             else if (statusId === 6) status = "Compilation Error";
             else status = "Runtime Error";
           } else {
-            if (statusId === 3) status = "Accepted";
-            else if (statusId === 4) status = "Wrong Answer";
-            else if (statusId === 5) status = "Time Limit Exceeded";
-            else if (statusId === 6) status = "Compilation Error";
-            else status = "Runtime Error";
+            if (statusId === 3) {
+              status = "Accepted";
+            } else if (statusId === 4) {
+              if (checkSpecialJudge(params.problemSlug, params.problemTitle, tc.input || "", (data.stdout || "").trim())) {
+                status = "Accepted";
+              } else {
+                status = "Wrong Answer";
+              }
+            } else if (statusId === 5) {
+              status = "Time Limit Exceeded";
+            } else if (statusId === 6) {
+              status = "Compilation Error";
+            } else {
+              status = "Runtime Error";
+            }
           }
 
           return {
@@ -158,4 +170,79 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
   }
 
   return results;
+}
+
+function validateTopologicalSort(input: string, actualOutput: string): boolean {
+  try {
+    const lines = input.trim().split(/\s+/);
+    if (lines.length < 2) return false;
+    
+    const n = parseInt(lines[0]);
+    const m = parseInt(lines[1]);
+    
+    // Parse edges
+    const edges: [number, number][] = [];
+    let idx = 2;
+    for (let i = 0; i < m; i++) {
+      if (idx + 1 >= lines.length) break;
+      const u = parseInt(lines[idx]);
+      const v = parseInt(lines[idx + 1]);
+      edges.push([u, v]);
+      idx += 2;
+    }
+    
+    // Parse user's output
+    const outputTokens = actualOutput.trim().split(/\s+/).map(t => parseInt(t));
+    
+    // Check if the output has exactly N elements
+    if (outputTokens.length !== n) return false;
+    
+    // Check if it is a permutation of 0 to N-1
+    const seen = new Set(outputTokens);
+    if (seen.size !== n) return false;
+    for (let i = 0; i < n; i++) {
+      if (!seen.has(i)) return false;
+    }
+    
+    // Check if all topological constraints (edges) are satisfied
+    const pos = new Map<number, number>();
+    outputTokens.forEach((v, index) => {
+      pos.set(v, index);
+    });
+    
+    for (const [u, v] of edges) {
+      const posU = pos.get(u);
+      const posV = pos.get(v);
+      if (posU === undefined || posV === undefined || posU >= posV) {
+        return false;
+      }
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function checkSpecialJudge(
+  problemSlug: string | undefined,
+  problemTitle: string | undefined,
+  input: string,
+  actualOutput: string
+): boolean {
+  const normTitle = (problemTitle || "").toLowerCase();
+  const normSlug = (problemSlug || "").toLowerCase();
+
+  // If Topological Sort or graph cycle containing topo validation
+  if (
+    normTitle.includes("topo") || 
+    normSlug.includes("topo") || 
+    normTitle.includes("topological") || 
+    normSlug.includes("topological") ||
+    normSlug.includes("cycle")
+  ) {
+    return validateTopologicalSort(input, actualOutput);
+  }
+
+  return false;
 }
