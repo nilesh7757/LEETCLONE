@@ -26,6 +26,7 @@ model Problem {
   type               ProblemType          @default(CODING)
   initialData        String?
   initialSchema      String?
+  customChecker      String?
   hints              String[]             @default([])
   blueprint          Json?
   pattern            String?

@@ -88,6 +88,7 @@ export const POST = apiHandler(async (req: Request) => {
       initialSchema: true,
       initialData: true,
       type: true,
+      customChecker: true,
     },
   });
 
@@ -123,6 +124,7 @@ export const POST = apiHandler(async (req: Request) => {
       problemId: problem.id,
       problemSlug: problem.slug,
       problemTitle: problem.title,
+      customChecker: problem.customChecker,
       code,
       language,
       type: "CODING",

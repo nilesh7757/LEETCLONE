@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ProblemType } from "@prisma/client";
 import { logger } from "./logger";
+import vm from "vm";
 
 const JUDGE0_URL = "https://ce.judge0.com/submissions?base64_encoded=false&wait=true";
 
@@ -43,6 +44,7 @@ export interface ExecuteCodeParams {
   problemId?: string;
   problemSlug?: string;
   problemTitle?: string;
+  customChecker?: string | null;
   initialSchema?: string;
   initialData?: string;
 }
@@ -124,7 +126,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
             if (statusId === 3) {
               status = "Accepted";
             } else if (statusId === 4) {
-              if (checkSpecialJudge(params.problemSlug, params.problemTitle, tc.input || "", (data.stdout || "").trim())) {
+              if (checkSpecialJudge(params.customChecker, params.problemSlug, params.problemTitle, tc.input || "", (data.stdout || "").trim(), tc.expectedOutput || "")) {
                 status = "Accepted";
               } else {
                 status = "Wrong Answer";
@@ -225,15 +227,37 @@ function validateTopologicalSort(input: string, actualOutput: string): boolean {
 }
 
 function checkSpecialJudge(
+  customChecker: string | undefined | null,
   problemSlug: string | undefined,
   problemTitle: string | undefined,
   input: string,
-  actualOutput: string
+  actualOutput: string,
+  expectedOutput: string
 ): boolean {
+  // 1. Run dynamic custom checker in Node VM sandbox if present
+  if (customChecker) {
+    try {
+      const sandbox = {
+        input,
+        actualOutput,
+        expectedOutput,
+        result: false,
+        console,
+      };
+
+      vm.createContext(sandbox);
+      vm.runInContext(customChecker, sandbox, { timeout: 1000 });
+
+      return sandbox.result === true;
+    } catch (e) {
+      logger.error("[VM_CHECKER] Custom checker execution failed:", e);
+    }
+  }
+
   const normTitle = (problemTitle || "").toLowerCase();
   const normSlug = (problemSlug || "").toLowerCase();
 
-  // If Topological Sort or graph cycle containing topo validation
+  // 2. Fallback to hardcoded topological sort check
   if (
     normTitle.includes("topo") || 
     normSlug.includes("topo") || 
