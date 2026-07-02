@@ -308,6 +308,15 @@ export default function MasteryCalendar() {
           const hasCompletedGoals = dayGoals.length > 0 && dayGoals.every(g => g.isDone);
           const hasContests = dayContests.length > 0;
 
+          const getNumberColorClass = () => {
+            if (isSelected) return "text-[var(--primary)] font-black";
+            if (hasActiveGoals) return "text-blue-500 dark:text-blue-400 font-black";
+            if (hasContests) return "text-amber-500 dark:text-amber-400 font-black";
+            if (hasCompletedGoals) return "text-emerald-500 dark:text-emerald-400 font-black";
+            if (isToday) return "text-white font-bold";
+            return "text-[var(--muted-foreground)] hover:text-white";
+          };
+
           return (
             <button
               key={`day-${dayNum}`}
@@ -316,28 +325,15 @@ export default function MasteryCalendar() {
                 setSelectedDate(cellDate);
                 setIsPopoverOpen(true);
               }}
-              className={`aspect-square w-full rounded-lg text-[10px] font-bold font-mono flex flex-col items-center justify-center relative cursor-pointer transition-all border ${
+              className={`aspect-square w-full rounded-lg text-[10px] font-mono flex flex-col items-center justify-center relative cursor-pointer transition-all border ${
                 isSelected
-                  ? "bg-[var(--primary)]/20 text-[var(--primary)] border-[var(--primary)]/40 font-black shadow-md scale-105"
+                  ? "bg-[var(--primary)]/20 border-[var(--primary)]/40 shadow-md scale-105"
                   : isToday
-                  ? "bg-white/5 text-white border-white/20"
-                  : "bg-transparent text-[var(--muted-foreground)] hover:text-white hover:bg-white/5 border-transparent"
-              } ${hasContests ? "ring-1 ring-amber-500/40 border-amber-500/25" : ""}`}
+                  ? "bg-white/5 border-white/20"
+                  : "bg-transparent border-transparent hover:bg-white/5"
+              } ${hasContests ? "ring-1 ring-amber-500/40 border-amber-500/25" : ""} ${getNumberColorClass()}`}
             >
               {dayNum}
-
-              {/* Status Dots */}
-              <div className="absolute bottom-1 flex gap-0.5">
-                {hasContests && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                )}
-                {hasActiveGoals && (
-                  <span className="w-1 h-1 rounded-full bg-blue-500" />
-                )}
-                {hasCompletedGoals && (
-                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                )}
-              </div>
             </button>
           );
         })}
@@ -346,11 +342,11 @@ export default function MasteryCalendar() {
       {/* QUICK STATS INSTEAD OF BOTTOM INPUT */}
       <div className="border-t border-[var(--border)]/20 pt-3 flex items-center justify-between text-[9px] font-mono text-[var(--muted-foreground)]/60">
         <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="text-blue-500 dark:text-blue-400 font-black">12</span>
           <span>Active Tasks</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="text-emerald-500 dark:text-emerald-400 font-black">28</span>
           <span>All Completed</span>
         </div>
       </div>
