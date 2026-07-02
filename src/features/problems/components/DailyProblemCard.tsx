@@ -73,9 +73,6 @@ export default function DailyProblemCard() {
           <div className="relative z-10 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                 <div className="p-1.5 bg-amber-500/10 text-amber-500 rounded-lg">
-                    <Zap size={14} fill="currentColor" />
-                 </div>
                  <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Daily Challenge</span>
               </div>
               

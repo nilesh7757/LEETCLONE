@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Play, AlertCircle, HelpCircle } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Play, AlertCircle, HelpCircle, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
 interface Problem {
   id: string;
@@ -41,6 +44,30 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [starredMap, setStarredMap] = useState<Record<string, boolean>>(() => {
+    const initialMap: Record<string, boolean> = {};
+    problems.forEach(p => {
+      initialMap[p.id] = (p as any).isStarred || false;
+    });
+    return initialMap;
+  });
+
+  const toggleStar = async (id: string, slug: string) => {
+    setStarredMap(prev => ({ ...prev, [id]: !prev[id] }));
+    try {
+      const { data } = await axios.post(`/api/problems/${slug}/star`);
+      setStarredMap(prev => ({ ...prev, [id]: data.starred }));
+      if (data.starred) {
+        toast.success("Problem bookmarked!");
+      } else {
+        toast.success("Bookmark removed.");
+      }
+    } catch {
+      setStarredMap(prev => ({ ...prev, [id]: !prev[id] }));
+      toast.error("Failed to update bookmark.");
+    }
+  };
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     const params = new URLSearchParams(searchParams.toString());
@@ -64,6 +91,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-[var(--border)] pb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/60">
+              <th className="py-4 pl-4 w-[40px]"></th>
               <th className="py-4 pl-4 w-[60px]">Status</th>
               <th className="py-4">Title</th>
               <th className="py-4 w-[120px]">Difficulty</th>
@@ -77,6 +105,20 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                 key={problem.id}
                 className="group hover:bg-[var(--foreground)]/[0.02] transition-colors"
               >
+                {/* Star Toggle Column */}
+                <td className="py-4 pl-4">
+                  <button
+                    onClick={() => toggleStar(problem.id, problem.slug)}
+                    className="p-1 rounded-lg hover:bg-white/5 transition-all text-gray-500 hover:text-yellow-500 cursor-pointer"
+                    title={starredMap[problem.id] ? "Remove bookmark" : "Bookmark problem"}
+                  >
+                    <Star 
+                      size={14} 
+                      className={starredMap[problem.id] ? "fill-yellow-500 text-yellow-500" : "text-gray-500 opacity-30 hover:opacity-100"} 
+                    />
+                  </button>
+                </td>
+
                 {/* Status Column */}
                 <td className="py-4 pl-4">
                   {problem.isSolved ? (

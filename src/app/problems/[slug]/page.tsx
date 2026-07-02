@@ -47,6 +47,7 @@ interface ProblemData {
     type: string;
     creator: string | null;
   }[];
+  starredBy?: { id: string }[];
 }
 
 export default async function Workspace({ params, searchParams }: WorkspaceProps) {
@@ -96,7 +97,13 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
         where: {
           isPublic: true
         }
-      }
+      },
+      ...(userId ? {
+        starredBy: {
+          where: { userId },
+          select: { id: true }
+        }
+      } : {})
     }
   }) as ProblemData;
 
@@ -157,6 +164,7 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
       <WorkspaceClient 
         problem={{
           ...problem,
+          isStarred: userId ? (problem.starredBy && problem.starredBy.length > 0) : false,
           initialSchema: (problem as unknown as { initialSchema: string }).initialSchema || undefined,
           initialData: (problem as unknown as { initialData: string }).initialData || undefined,
           blueprint: (problem as unknown as { blueprint: unknown[] }).blueprint || undefined,

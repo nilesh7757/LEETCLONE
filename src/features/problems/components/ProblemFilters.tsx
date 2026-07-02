@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, X, ChevronDown, Tag } from "lucide-react";
+import { Search, X, ChevronDown, Tag, Star } from "lucide-react";
 
 function useDebounceValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -34,10 +34,12 @@ export default function ProblemFilters() {
   const searchParams = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
+  const isFirstMount = useRef(true);
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [difficulty, setDifficulty] = useState(searchParams.get("difficulty") || "All");
   const [category, setCategory] = useState(searchParams.get("category") || "All");
+  const [starred, setStarred] = useState(searchParams.get("starred") === "true");
   
   const [isTagsOpen, setIsTagsOpen] = useState(false);
   const debouncedSearch = useDebounceValue(search, 400);
@@ -53,8 +55,13 @@ export default function ProblemFilters() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Update query state reactively inside startTransition
+  // Update query state reactively inside startTransition when filters change
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+
     const params = new URLSearchParams(searchParams.toString());
     
     if (debouncedSearch) params.set("search", debouncedSearch);
@@ -67,12 +74,15 @@ export default function ProblemFilters() {
     else if (category === "DP") params.set("category", "Dynamic Programming");
     else params.delete("category");
 
+    if (starred) params.set("starred", "true");
+    else params.delete("starred");
+
     params.set("page", "1");
     
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
-  }, [debouncedSearch, difficulty, category, router, searchParams]);
+  }, [debouncedSearch, difficulty, category, starred, router]);
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[var(--border)]/20 select-none">
@@ -99,6 +109,20 @@ export default function ProblemFilters() {
       </div>
 
       <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <button
+          onClick={() => setStarred(!starred)}
+          type="button"
+          className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer shrink-0 ${
+            starred 
+              ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30 font-black shadow-sm" 
+              : "bg-[var(--foreground)]/5 text-[var(--muted-foreground)] border-[var(--border)] hover:text-white hover:bg-white/5"
+          }`}
+          title="Filter starred problems only"
+        >
+          <Star size={12} className={starred ? "fill-yellow-500 text-yellow-500" : ""} />
+          Starred
+        </button>
+
         {/* Difficulty Select (Center) */}
         <div className="flex bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl p-0.5 gap-0.5 shrink-0">
           {["All", ...difficulties].map(d => {

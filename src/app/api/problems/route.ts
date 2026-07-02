@@ -42,6 +42,18 @@ export const GET = apiHandler(async (req: Request) => {
     }
   }
 
+  const starredOnly = searchParams.get("starred") === "true";
+  if (starredOnly && userId) {
+    whereClause = {
+      ...whereClause,
+      starredBy: {
+        some: {
+          userId
+        }
+      }
+    };
+  }
+
   // Apply search query if present
   if (query) {
     whereClause = {
@@ -85,7 +97,13 @@ export const GET = apiHandler(async (req: Request) => {
             endTime: true,
             creatorId: true,
           }
-        }
+        },
+        ...(userId ? {
+          starredBy: {
+            where: { userId },
+            select: { id: true }
+          }
+        } : {})
       },
       orderBy: {
         updatedAt: "desc",
@@ -107,10 +125,12 @@ export const GET = apiHandler(async (req: Request) => {
       rateStr = ((titleSum % 25) + 45.3).toFixed(1);
     }
 
-    const { submissions, ...rest } = problem;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { submissions, starredBy, ...rest } = problem as any;
 
     return {
       ...rest,
+      isStarred: starredBy ? starredBy.length > 0 : false,
       acceptanceRate: rateStr
     };
   });

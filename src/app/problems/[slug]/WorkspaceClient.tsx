@@ -8,8 +8,10 @@ import type { editor } from "monaco-editor";
 import { 
   ChevronLeft, History, 
   Sparkles, Flame, MessageCircle, Info,
-  CheckCircle, XCircle, Code2, Library
+  CheckCircle, XCircle, Code2, Library, Star
 } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import NotificationBell from "@/components/ui/NotificationBell";
 import Link from "next/link";
@@ -42,6 +44,7 @@ export interface Problem {
   description: string;
   timeLimit: number;
   memoryLimit: number;
+  isStarred?: boolean;
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
   initialSchema?: string | null;
   initialData?: string | null;
@@ -70,6 +73,23 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   const monacoRef = useRef<Monaco | null>(null);
 
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [isStarred, setIsStarred] = useState(problem.isStarred || false);
+
+  const toggleWorkspaceStar = async () => {
+    setIsStarred(prev => !prev);
+    try {
+      const { data } = await axios.post(`/api/problems/${problem.slug}/star`);
+      setIsStarred(data.starred);
+      if (data.starred) {
+        toast.success("Problem bookmarked!");
+      } else {
+        toast.success("Bookmark removed.");
+      }
+    } catch {
+      setIsStarred(prev => !prev);
+      toast.error("Failed to toggle bookmark.");
+    }
+  };
 
   const {
     code, setCode,
@@ -125,6 +145,16 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                <span className="text-[var(--muted-foreground)] font-medium tracking-tight">Problems</span>
                <span className="text-[var(--muted-foreground)] font-light opacity-30">/</span>
                <span className="text-[var(--foreground)] font-bold tracking-tight">{problem.title}</span>
+               <button
+                  onClick={toggleWorkspaceStar}
+                  className="p-1 rounded-lg hover:bg-white/5 transition-all text-gray-500 hover:text-yellow-500 shrink-0 cursor-pointer"
+                  title={isStarred ? "Remove bookmark" : "Bookmark problem"}
+               >
+                  <Star 
+                     size={14} 
+                     className={isStarred ? "fill-yellow-500 text-yellow-500" : "text-gray-500 hover:text-yellow-500"} 
+                  />
+               </button>
             </div>
          </div>
 

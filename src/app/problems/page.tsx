@@ -17,6 +17,7 @@ interface PageProps {
     search?: string;
     difficulty?: string;
     category?: string;
+    starred?: string;
   }>;
 }
 
@@ -78,6 +79,13 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   if (resolvedSearchParams.category && resolvedSearchParams.category !== "All") {
     whereClause.category = resolvedSearchParams.category;
   }
+  if (resolvedSearchParams.starred === "true" && userId) {
+    (whereClause as any).starredBy = {
+      some: {
+        userId
+      }
+    };
+  }
 
   const [problems, totalCount] = await prisma.$transaction([
     prisma.problem.findMany({
@@ -87,7 +95,13 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
           select: {
             status: true
           }
-        }
+        },
+        ...(userId ? {
+          starredBy: {
+            where: { userId },
+            select: { id: true }
+          }
+        } : {})
       },
       orderBy: { createdAt: "desc" },
       skip,
@@ -136,6 +150,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       category: problem.category,
       isSolved: solvedProblemIds.has(problem.id),
       isAttempted: attemptedProblemIds.has(problem.id) && !solvedProblemIds.has(problem.id),
+      isStarred: userId ? (problem as any).starredBy?.length > 0 : false,
       acceptanceRate: rateStr,
     };
   });
