@@ -157,7 +157,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             >
             {/* LEFT PANEL: CONTENT */}
             <div className="flex flex-col h-full bg-[var(--card)] overflow-hidden min-h-0 border-r border-[var(--border)]">
-                <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)]">
+                <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-3 xl:gap-5 bg-[var(--card)]">
                     {([
                     { id: 'description', label: 'Description', icon: Info },
                     { id: 'resources', label: 'Resources', icon: Library },
@@ -168,12 +168,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     <button
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
-                        className={`relative h-full text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 px-1 ${
+                        title={t.label}
+                        className={`relative h-full text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 px-1 shrink-0 ${
                             activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         }`}
                     >
-                        <t.icon size={14} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
-                        {t.label}
+                        <t.icon size={14} className={activeTab === t.id ? "text-[var(--primary)] shrink-0" : "shrink-0"} />
+                        <span className="hidden xl:inline">{t.label}</span>
                         {activeTab === t.id && (
                             <motion.div layoutId="left-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)] shadow-[0_0_12px_rgba(143,68,240,0.5)]" />
                         )}
