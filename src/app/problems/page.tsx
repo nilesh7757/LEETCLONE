@@ -131,9 +131,16 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       const accepted = problem.submissions.filter(s => s.status === "Accepted").length;
       rateStr = ((accepted / total) * 100).toFixed(1);
     } else {
-      // Deterministic realistic fallback rate based on title character values
+      // Deterministic realistic fallback rate based on title character values and difficulty
       const titleSum = problem.title.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      rateStr = ((titleSum % 25) + 45.3).toFixed(1);
+      const diff = problem.difficulty;
+      if (diff === "Easy") {
+        rateStr = ((titleSum % 20) + 65.4).toFixed(1);
+      } else if (diff === "Medium") {
+        rateStr = ((titleSum % 15) + 43.1).toFixed(1);
+      } else {
+        rateStr = ((titleSum % 15) + 22.7).toFixed(1);
+      }
     }
 
     return {
