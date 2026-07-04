@@ -18,6 +18,7 @@ interface ProblemDescriptionProps {
   category: string;
   timeLimit: number;
   memoryLimit: number;
+  companies?: string[];
 }
 
 export default function ProblemDescription({
@@ -27,6 +28,7 @@ export default function ProblemDescription({
   category,
   timeLimit,
   memoryLimit,
+  companies = [],
 }: ProblemDescriptionProps) {
   const [sanitizedHtml, setSanitizedHtml] = useState(description);
   const { resolvedTheme } = useTheme();
@@ -80,6 +82,23 @@ export default function ProblemDescription({
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
       </div>
+
+      {/* Companies Section */}
+      {companies && companies.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center mt-2 border-t border-[var(--border)]/20 pt-6">
+          <div className="text-[10px] font-black text-[var(--muted-foreground)]/50 uppercase tracking-widest mr-2">Target Companies</div>
+          <div className="flex flex-wrap gap-1.5">
+            {companies.map(c => (
+              <span 
+                key={c}
+                className="px-2.5 py-0.5 rounded-md bg-[var(--foreground)]/5 text-[9px] font-bold text-[var(--muted-foreground)]/80 border border-[var(--border)] uppercase tracking-wider hover:text-[var(--primary)] hover:border-[var(--primary)]/30 hover:bg-[var(--primary)]/5 transition-all cursor-default"
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Scenarios Section */}
       {examples.length > 0 && (

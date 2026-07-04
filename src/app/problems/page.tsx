@@ -17,6 +17,7 @@ interface PageProps {
     search?: string;
     difficulty?: string;
     category?: string;
+    company?: string;
     starred?: string;
   }>;
 }
@@ -72,6 +73,11 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   }
   if (resolvedSearchParams.category && resolvedSearchParams.category !== "All") {
     whereClause.category = resolvedSearchParams.category;
+  }
+  if (resolvedSearchParams.company && resolvedSearchParams.company !== "All") {
+    whereClause.companies = {
+      has: resolvedSearchParams.company
+    };
   }
   if (resolvedSearchParams.starred === "true" && userId) {
     whereClause.starredBy = {

@@ -45,6 +45,7 @@ export interface Problem {
   timeLimit: number;
   memoryLimit: number;
   isStarred?: boolean;
+  companies?: string[];
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
   initialSchema?: string | null;
   initialData?: string | null;
@@ -227,6 +228,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         category={problem.category}
                         timeLimit={problem.timeLimit}
                         memoryLimit={problem.memoryLimit}
+                        companies={problem.companies}
                       />
                     )}
                     {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}

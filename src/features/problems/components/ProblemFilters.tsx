@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, X, ChevronDown, Tag, Star } from "lucide-react";
+import { Search, X, ChevronDown, Tag, Star, Briefcase } from "lucide-react";
 
 function useDebounceValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -27,28 +27,54 @@ const tags = [
   { name: "Bit Manipulation", color: "var(--viz-cyan)" },
 ];
 
+const companies = [
+  "Google",
+  "Amazon",
+  "Microsoft",
+  "Meta",
+  "Uber",
+  "Nvidia",
+  "Samsung",
+  "Cisco",
+  "BNY Mellon",
+  "Tekion",
+  "Meesho",
+  "Goldman Sachs",
+  "Sprinklr",
+  "Trilogy Innovation",
+  "Directi",
+  "Flipkart",
+  "Accolite",
+];
+
 const difficulties = ["Easy", "Medium", "Hard"];
 
 export default function ProblemFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const tagsDropdownRef = useRef<HTMLDivElement>(null);
+  const companyDropdownRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
   const isFirstMount = useRef(true);
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [difficulty, setDifficulty] = useState(searchParams.get("difficulty") || "All");
   const [category, setCategory] = useState(searchParams.get("category") || "All");
+  const [company, setCompany] = useState(searchParams.get("company") || "All");
   const [starred, setStarred] = useState(searchParams.get("starred") === "true");
   
   const [isTagsOpen, setIsTagsOpen] = useState(false);
+  const [isCompaniesOpen, setIsCompaniesOpen] = useState(false);
   const debouncedSearch = useDebounceValue(search, 400);
 
   // Close dropdown if clicked outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (tagsDropdownRef.current && !tagsDropdownRef.current.contains(event.target as Node)) {
         setIsTagsOpen(false);
+      }
+      if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
+        setIsCompaniesOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -74,6 +100,9 @@ export default function ProblemFilters() {
     else if (category === "DP") params.set("category", "Dynamic Programming");
     else params.delete("category");
 
+    if (company && company !== "All") params.set("company", company);
+    else params.delete("company");
+
     if (starred) params.set("starred", "true");
     else params.delete("starred");
 
@@ -82,7 +111,7 @@ export default function ProblemFilters() {
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
-  }, [debouncedSearch, difficulty, category, starred, router]);
+  }, [debouncedSearch, difficulty, category, company, starred, router]);
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[var(--border)]/20 select-none">
@@ -108,7 +137,7 @@ export default function ProblemFilters() {
         )}
       </div>
 
-      <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+      <div className="flex items-center gap-3 w-full sm:w-auto justify-end flex-wrap sm:flex-nowrap">
         <button
           onClick={() => setStarred(!starred)}
           type="button"
@@ -144,8 +173,8 @@ export default function ProblemFilters() {
           })}
         </div>
 
-        {/* Category Dropdown (Right) */}
-        <div className="relative" ref={dropdownRef}>
+        {/* Category Dropdown */}
+        <div className="relative border-r border-[var(--border)]/20 pr-3 mr-1" ref={tagsDropdownRef}>
           <button
             onClick={() => setIsTagsOpen(!isTagsOpen)}
             type="button"
@@ -181,6 +210,49 @@ export default function ProblemFilters() {
                     style={isSelected ? { color: tag.color } : {}}
                   >
                     {tag.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Company Dropdown */}
+        <div className="relative" ref={companyDropdownRef}>
+          <button
+            onClick={() => setIsCompaniesOpen(!isCompaniesOpen)}
+            type="button"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+          >
+            <Briefcase size={12} className="text-emerald-400" />
+            {company === "All" ? "Companies" : company}
+            <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isCompaniesOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {isCompaniesOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto custom-scrollbar">
+              <div className="px-3 py-1.5 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 mb-1.5">
+                Company Filters
+              </div>
+              <button
+                onClick={() => { setCompany("All"); setIsCompaniesOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                  company === "All" ? "text-emerald-400 bg-white/5" : "text-gray-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                All Companies
+              </button>
+              {companies.map(c => {
+                const isSelected = company === c;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => { setCompany(c); setIsCompaniesOpen(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                      isSelected ? "text-emerald-400 bg-white/10" : "text-gray-300 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {c}
                   </button>
                 );
               })}
