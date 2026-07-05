@@ -226,6 +226,39 @@ function validateTopologicalSort(input: string, actualOutput: string): boolean {
   }
 }
 
+function compareFloatsAndStrings(actual: string, expected: string): boolean {
+  try {
+    const actualTokens = actual.trim().split(/\s+/);
+    const expectedTokens = expected.trim().split(/\s+/);
+
+    if (actualTokens.length !== expectedTokens.length) {
+      return false;
+    }
+
+    for (let i = 0; i < actualTokens.length; i++) {
+      const act = actualTokens[i];
+      const exp = expectedTokens[i];
+
+      const actNum = Number(act);
+      const expNum = Number(exp);
+
+      if (!isNaN(actNum) && !isNaN(expNum) && act.trim() !== "" && exp.trim() !== "") {
+        if (Math.abs(actNum - expNum) > 1e-6) {
+          return false;
+        }
+      } else {
+        if (act !== exp) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function checkSpecialJudge(
   customChecker: string | undefined | null,
   problemSlug: string | undefined,
@@ -268,5 +301,7 @@ function checkSpecialJudge(
     return validateTopologicalSort(input, actualOutput);
   }
 
-  return false;
+  // 3. Fallback to float-tolerant token comparison (e.g. 2 vs 2.0)
+  return compareFloatsAndStrings(actualOutput, expectedOutput);
 }
+

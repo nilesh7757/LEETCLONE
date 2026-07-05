@@ -8,7 +8,8 @@ import type { editor } from "monaco-editor";
 import { 
   ChevronLeft, History, 
   Sparkles, Flame, MessageCircle, Info,
-  CheckCircle, XCircle, Code2, Library, Star
+  CheckCircle, XCircle, Code2, Library, Star,
+  Terminal, X, Play, Send, Loader2
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -16,7 +17,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import NotificationBell from "@/components/ui/NotificationBell";
 import Link from "next/link";
 import DiscussionSection from "@/features/problems/components/Discussion/DiscussionSection";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useSession } from "next-auth/react";
 import GeminiChat from "@/features/ai/components/GeminiChat";      
@@ -75,6 +76,8 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
 
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [isStarred, setIsStarred] = useState(problem.isStarred || false);
+  const [mobileMainTab, setMobileMainTab] = useState<'others' | 'code'>('others');
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 
   const toggleWorkspaceStar = async () => {
     setIsStarred(prev => !prev);
@@ -330,72 +333,216 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             </Split>
         </div>
 
-        {/* MOBILE WORKSPACE (READ-ONLY) */}
-        <div className="md:hidden flex flex-col h-full bg-[var(--card)] overflow-hidden">
-            <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)] overflow-x-auto no-scrollbar">
-                {([
-                    { id: 'description', label: 'Description', icon: Info },
-                    { id: 'resources', label: 'Resources', icon: Library },
-                    { id: 'submissions', label: 'History', icon: History },
-                    { id: 'solutions', label: 'Solutions', icon: MessageCircle },
-                    { id: 'ai', label: 'Coach', icon: Sparkles }, 
-                ] as const).map(t => (
-                    <button
-                        key={t.id}
-                        onClick={() => setActiveTab(t.id)}
-                        className={`relative h-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 px-1 shrink-0 ${
-                            activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                        }`}
-                    >
-                        <t.icon size={13} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
-                        {t.label}
-                        {activeTab === t.id && (
-                            <motion.div layoutId="mobile-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)]" />
-                        )}
-                    </button>
-                ))}
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 pb-20">
-                {activeTab === 'description' && (
-                  <ProblemDescription 
-                    description={problem.description} 
-                    examples={examples} 
-                    difficulty={problem.difficulty}
-                    category={problem.category}
-                    timeLimit={problem.timeLimit}
-                    memoryLimit={problem.memoryLimit}
-                  />
-                )}
-                {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
-                {activeTab === 'submissions' && (
-                    <div className="space-y-3">
-                        {submissions.map((sub, i) => (
-                            <div 
-                                key={i} 
-                                onClick={() => setSelectedSubmission(sub)}
-                                className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]"
+        {/* MOBILE WORKSPACE */}
+        <div className="md:hidden flex flex-col h-full bg-[var(--card)] overflow-hidden relative">
+            {mobileMainTab === 'others' ? (
+                <>
+                    {/* SUB-TABS (at the top of Others) */}
+                    <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)] overflow-x-auto no-scrollbar">
+                        {([
+                            { id: 'description', label: 'Description', icon: Info },
+                            { id: 'resources', label: 'Resources', icon: Library },
+                            { id: 'submissions', label: 'History', icon: History },
+                            { id: 'solutions', label: 'Solutions', icon: MessageCircle },
+                            { id: 'ai', label: 'Coach', icon: Sparkles }, 
+                        ] as const).map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => setActiveTab(t.id)}
+                                className={`relative h-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 px-1 shrink-0 ${
+                                    activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                                }`}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
-                                        {sub.status === 'Accepted' ? <CheckCircle size={18} /> : <XCircle size={18} />}
-                                    </div>
-                                    <div>
-                                        <div className="text-[13px] font-bold">{sub.status}</div>
-                                        <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
-                                    </div>
-                                </div>
-                                <div className="font-mono text-[11px] text-[var(--muted-foreground)]">{sub.runtime}ms</div>
-                            </div>
+                                <t.icon size={13} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
+                                {t.label}
+                                {activeTab === t.id && (
+                                    <motion.div layoutId="mobile-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)]" />
+                                )}
+                            </button>
                         ))}
                     </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-6">
+                        {activeTab === 'description' && (
+                          <ProblemDescription 
+                            description={problem.description} 
+                            examples={examples} 
+                            difficulty={problem.difficulty}
+                            category={problem.category}
+                            timeLimit={problem.timeLimit}
+                            memoryLimit={problem.memoryLimit}
+                          />
+                        )}
+                        {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
+                        {activeTab === 'submissions' && (
+                            <div className="space-y-3">
+                                {submissions.map((sub, i) => (
+                                    <div 
+                                        key={i} 
+                                        onClick={() => setSelectedSubmission(sub)}
+                                        className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
+                                                {sub.status === 'Accepted' ? <CheckCircle size={18} /> : <XCircle size={18} />}
+                                            </div>
+                                            <div>
+                                                <div className="text-[13px] font-bold">{sub.status}</div>
+                                                <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
+                                            </div>
+                                        </div>
+                                        <div className="font-mono text-[11px] text-[var(--muted-foreground)]">{sub.runtime}ms</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
+                        {activeTab === 'ai' && <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />}
+                    </div>
+                </>
+            ) : (
+                <>
+                    {/* CODE WORKSPACE FOR MOBILE */}
+                    <div className="flex items-center justify-between px-4 border-b border-[var(--border)] h-[44px] shrink-0 bg-[var(--card)]">
+                        <div className="flex items-center gap-2">
+                            <Code2 size={14} className="text-[var(--primary)]" />
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Code Editor</div>
+                        </div>
+                        
+                        {/* Quick access settings: Language selector & Reset */}
+                        <div className="flex items-center gap-2">
+                            <EditorPanel
+                                isToolbarOnly
+                                language={language}
+                                setLanguage={setLanguage}
+                                onRun={(markersCb) => handleRun(markersCb)}
+                                onSubmit={handleSubmit}
+                                isRunning={isRunning}
+                                isSubmitting={isSubmitting}
+                                onReset={resetCode}
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Editor area */}
+                    <div className="flex-1 min-h-0 relative bg-[var(--card)]">
+                        <EditorPanel
+                            isEditorOnly
+                            code={code}
+                            setCode={setCode}
+                            language={language}
+                            setLanguage={setLanguage}
+                            theme="vs-dark"
+                            onMount={onEditorMount}
+                        />
+                        
+                        {/* Sliding Console drawer */}
+                        <AnimatePresence>
+                          {isConsoleOpen && (
+                            <motion.div
+                              initial={{ y: "100%" }}
+                              animate={{ y: 0 }}
+                              exit={{ y: "100%" }}
+                              transition={{ type: "spring", damping: 30, stiffness: 250 }}
+                              className="absolute inset-x-0 bottom-0 top-0 bg-[var(--card)] z-[100] border-t border-[var(--border)] flex flex-col"
+                            >
+                              <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--background)] shrink-0">
+                                <div className="text-[10px] font-black uppercase tracking-wider text-[var(--muted-foreground)]">Console Panel</div>
+                                <button
+                                  onClick={() => setIsConsoleOpen(false)}
+                                  className="p-1 hover:bg-[var(--foreground)]/5 rounded-lg transition-all"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                              <div className="flex-1 min-h-0">
+                                <ConsolePanel
+                                  consoleTab={consoleTab}
+                                  setConsoleTab={setConsoleTab}
+                                  localTestCases={localTestCases}
+                                  activeTestCaseId={activeTestCaseId}
+                                  setActiveTestCaseId={setActiveTestCaseId}        
+                                  handleAddTestCase={handleAddTestCase}
+                                  removeTestCase={removeTestCase}
+                                  updateTestCase={updateTestCase}
+                                  results={results}
+                                  examplesLength={examples.length}
+                                  code={code}
+                                  language={language}
+                                  problemTitle={problem.title}
+                                />
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                    </div>
+                    
+                    {/* Mobile Run/Submit/Console panel bar */}
+                    <div className="h-[48px] border-t border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shrink-0 z-10">
+                        <button
+                          onClick={() => {
+                            setIsConsoleOpen(!isConsoleOpen);
+                            if (!isConsoleOpen && results) {
+                              setConsoleTab('result');
+                            }
+                          }}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--foreground)]/5 transition-all"
+                        >
+                          <Terminal size={14} className="text-[var(--primary)]" />
+                          Console {isConsoleOpen ? "▼" : "▲"}
+                        </button>
+                        
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleRun((msg) => {})}
+                            disabled={isRunning}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-white hover:bg-white/5 border border-[var(--border)] transition-all disabled:opacity-30"
+                          >
+                            {isRunning ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="text-[#3b82f6]" />}
+                            Run
+                          </button>
+                          <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-[#3b82f6] hover:text-white transition-all disabled:opacity-30 active:scale-95"
+                          >
+                            {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                            Submit
+                          </button>
+                        </div>
+                    </div>
+                </>
+            )}
+            
+            {/* PERSISTENT BOTTOM TAB BAR */}
+            <div className="h-[56px] border-t border-[var(--border)] bg-[var(--card)] flex items-center justify-around px-4 shrink-0 z-50">
+              <button
+                onClick={() => setMobileMainTab('others')}
+                className={`flex flex-col items-center justify-center gap-1 w-1/2 h-full transition-all relative ${
+                  mobileMainTab === 'others' ? "text-[var(--primary)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                <Info size={18} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Problem & Info</span>
+                {mobileMainTab === 'others' && (
+                  <motion.div layoutId="mobile-main-tab-indicator" className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-[var(--primary)]" />
                 )}
-                {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
-                {activeTab === 'ai' && <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />}
-            </div>
-
-            <div className="absolute bottom-0 left-0 right-0 bg-[var(--primary)] text-[var(--foreground)] py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest z-50">
-                💻 Switch to a desktop to code & submit
+              </button>
+              
+              <div className="w-px h-6 bg-[var(--border)] opacity-30" />
+              
+              <button
+                onClick={() => setMobileMainTab('code')}
+                className={`flex flex-col items-center justify-center gap-1 w-1/2 h-full transition-all relative ${
+                  mobileMainTab === 'code' ? "text-[var(--primary)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                <Code2 size={18} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Code Editor</span>
+                {mobileMainTab === 'code' && (
+                  <motion.div layoutId="mobile-main-tab-indicator" className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-[var(--primary)]" />
+                )}
+              </button>
             </div>
         </div>
       </main>
