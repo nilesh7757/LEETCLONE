@@ -64,6 +64,19 @@ const GAMES = [
     points: "100 AP",
     href: "/arcade/binary-guess",
     status: "READY"
+  },
+  {
+    id: "cs-core-arena",
+    title: "CS Core Arena",
+    description: "Conquer adaptive AI obstacles across DBMS, OS, System Design, OOPS, and Coding Logic. Escalating difficulties and deep real-world system insights.",
+    icon: Sparkles,
+    color: "text-cyan-400",
+    bg: "bg-cyan-400/10",
+    border: "border-cyan-400/20",
+    difficulty: "Adaptive",
+    points: "Dynamic AP",
+    href: "/arcade/cs-core-arena",
+    status: "READY"
   }
 ];
 
