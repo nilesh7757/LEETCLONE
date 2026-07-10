@@ -195,6 +195,9 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         timeout: 20000 // Prevent UI freezing if submission hangs
       });
 
+      // Always fetch latest submissions list to show the new run
+      await fetchSubmissions();
+
       if (data.submission.status === "Accepted") {
         toast.success("Accepted! 🎉");
         confetti({
@@ -205,15 +208,18 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         });
         if (data.newStreak) update({ streak: data.newStreak });
         setActiveTab("submissions");
-        fetchSubmissions();
+        setSelectedSubmission(data.submission);
       } else {
-        toast.error("Wrong Answer");
+        toast.error(data.submission.status || "Wrong Answer");
         setConsoleOpen(true);
         setConsoleTab("result");
+        setActiveTestCaseId(0);
+        setActiveTab("submissions");
+        setSelectedSubmission(data.submission);
         if (data.failedTestCase) {
           setResults([
             {
-              status: "Wrong Answer",
+              status: data.submission.status || "Wrong Answer",
               input: data.failedTestCase.input,
               actual: data.failedTestCase.output,
               expected: data.failedTestCase.expected,
