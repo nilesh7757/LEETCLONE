@@ -5,7 +5,6 @@ import { CheckCircle, Circle, ChevronLeft, Info, ChevronRight } from "lucide-rea
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import StudyPlanControls from "@/features/study-plans/components/StudyPlanControls";
-import { motion } from "framer-motion";
 
 interface StudyPlanDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -112,14 +111,12 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                     </div>
                  </div>
                  
-                 <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden shadow-inner">
-                    <motion.div 
-                       initial={{ width: 0 }}
-                       animate={{ width: `${progress}%` }}
-                       className="h-full bg-gradient-to-r from-[var(--viz-blue)] to-[var(--viz-purple)] shadow-[0_0_15px_rgba(var(--viz-blue-rgb),0.3)]"
-                       transition={{ duration: 1, ease: "easeOut" }}
-                    />
-                 </div>
+                  <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden shadow-inner">
+                     <div 
+                        className="h-full bg-gradient-to-r from-[var(--viz-blue)] to-[var(--viz-purple)] shadow-[0_0_15px_rgba(var(--viz-blue-rgb),0.3)] transition-all duration-1000 ease-out"
+                        style={{ width: `${progress}%` }}
+                     />
+                  </div>
               </div>
            </div>
         </div>
