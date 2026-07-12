@@ -69,7 +69,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
 
   let finalCode = code;
   if (type === ProblemType.SQL) {
-    finalCode = `${params.initialSchema || ""}\n${params.initialData || ""}\n${code}`;
+    finalCode = `.headers on\n.mode csv\n${params.initialSchema || ""}\n${params.initialData || ""}\n${code}`;
   }
 
   logger.info(`[EXEC_CODE] Executing ${testCases.length} test cases for ${language} using Judge0 Cloud...`);
@@ -126,7 +126,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
             if (statusId === 3) {
               status = "Accepted";
             } else if (statusId === 4) {
-              if (checkSpecialJudge(params.customChecker, params.problemSlug, params.problemTitle, tc.input || "", (data.stdout || "").trim(), tc.expectedOutput || "")) {
+              if (checkSpecialJudge(params.customChecker, params.problemSlug, params.problemTitle, tc.input || "", (data.stdout || "").trim(), tc.expectedOutput || "", type === ProblemType.SQL)) {
                 status = "Accepted";
               } else {
                 status = "Wrong Answer";
@@ -259,14 +259,70 @@ function compareFloatsAndStrings(actual: string, expected: string): boolean {
   }
 }
 
+function compareSqlResults(actual: string, expected: string): boolean {
+  try {
+    const actualLines = actual.trim().split("\n").map(l => l.trim()).filter(Boolean);
+    const expectedLines = expected.trim().split("\n").map(l => l.trim()).filter(Boolean);
+
+    if (actualLines.length !== expectedLines.length) return false;
+    if (actualLines.length === 0) return true;
+
+    // Compare headers case-insensitively
+    const actualHeaders = actualLines[0].toLowerCase().split(",").map(h => h.trim());
+    const expectedHeaders = expectedLines[0].toLowerCase().split(",").map(h => h.trim());
+
+    if (actualHeaders.length !== expectedHeaders.length) return false;
+    for (let i = 0; i < actualHeaders.length; i++) {
+      if (actualHeaders[i] !== expectedHeaders[i]) return false;
+    }
+
+    // Sort actual and expected rows for order-insensitivity
+    const actualRows = actualLines.slice(1).sort();
+    const expectedRows = expectedLines.slice(1).sort();
+
+    for (let i = 0; i < actualRows.length; i++) {
+      const actRow = actualRows[i];
+      const expRow = expectedRows[i];
+
+      const actCols = actRow.split(",").map(c => c.trim());
+      const expCols = expRow.split(",").map(c => c.trim());
+
+      if (actCols.length !== expCols.length) return false;
+
+      for (let j = 0; j < actCols.length; j++) {
+        const actVal = actCols[j];
+        const expVal = expCols[j];
+
+        const actNum = Number(actVal);
+        const expNum = Number(expVal);
+
+        if (!isNaN(actNum) && !isNaN(expNum) && actVal !== "" && expVal !== "") {
+          if (Math.abs(actNum - expNum) > 1e-6) return false;
+        } else {
+          if (actVal.toLowerCase() !== expVal.toLowerCase()) return false;
+        }
+      }
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function checkSpecialJudge(
   customChecker: string | undefined | null,
   problemSlug: string | undefined,
   problemTitle: string | undefined,
   input: string,
   actualOutput: string,
-  expectedOutput: string
+  expectedOutput: string,
+  isSql?: boolean
 ): boolean {
+  if (isSql) {
+    return compareSqlResults(actualOutput, expectedOutput);
+  }
+
   // 1. Run dynamic custom checker in Node VM sandbox if present
   if (customChecker) {
     try {
