@@ -65,7 +65,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "description" | "resources" | "submissions" | "solutions" | "ai"
+    "description" | "resources" | "submissions" | "solutions" | "ai" | "database"
   >("description");
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [consoleTab, setConsoleTab] = useState<"testcase" | "result">(

@@ -9,7 +9,7 @@ import {
   ChevronLeft, History, 
   Sparkles, Flame, MessageCircle, Info,
   CheckCircle, XCircle, Code2, Library, Star,
-  Terminal, X, Play, Send, Loader2
+  Terminal, X, Play, Send, Loader2, Database
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ import ConsolePanel from "@/features/problems/components/Workspace/ConsolePanel"
 import SubmissionDetailsModal from "@/features/problems/components/Workspace/SubmissionDetailsModal";
 import ExecutionAnimation from "@/features/problems/components/Workspace/ExecutionAnimation";
 import ProblemResources from "@/features/problems/components/Workspace/ProblemResources";
+import DatabaseSchemaViewer from "@/features/problems/components/Workspace/DatabaseSchemaViewer";
 
 export interface TestCase {
   input: string | object;
@@ -196,12 +197,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             >
                 <div className="flex items-center px-2 border-b border-[var(--border)] h-[44px] shrink-0 gap-1 xl:gap-2 bg-[var(--card)] overflow-hidden">
                     {([
-                    { id: 'description', label: 'Description', icon: Info },
-                    { id: 'resources', label: 'Resources', icon: Library },
-                    { id: 'submissions', label: 'History', icon: History },
-                    { id: 'solutions', label: 'Solutions', icon: MessageCircle },
-                    { id: 'ai', label: 'AI Coach', icon: Sparkles }, 
-                    ] as const).map(t => (
+                      { id: 'description', label: 'Description', icon: Info },
+                      ...(problem.type === "SQL" ? [{ id: 'database', label: 'Database', icon: Database }] : []),
+                      { id: 'resources', label: 'Resources', icon: Library },
+                      { id: 'submissions', label: 'History', icon: History },
+                      { id: 'solutions', label: 'Solutions', icon: MessageCircle },
+                      { id: 'ai', label: 'AI Coach', icon: Sparkles }, 
+                    ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database"; label: string; icon: typeof Info }[]).map(t => (
                     <button
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
@@ -232,6 +234,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         timeLimit={problem.timeLimit}
                         memoryLimit={problem.memoryLimit}
                         companies={problem.companies}
+                      />
+                    )}
+                    {activeTab === 'database' && (
+                      <DatabaseSchemaViewer 
+                        problemId={problem.id}
+                        initialSchema={problem.initialSchema}
+                        initialData={problem.initialData}
                       />
                     )}
                     {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
@@ -337,15 +346,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         <div className="md:hidden flex flex-col h-full bg-[var(--card)] overflow-hidden relative">
             {mobileMainTab === 'others' ? (
                 <>
-                    {/* SUB-TABS (at the top of Others) */}
                     <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)] overflow-x-auto no-scrollbar">
                         {([
                             { id: 'description', label: 'Description', icon: Info },
+                            ...(problem.type === "SQL" ? [{ id: 'database', label: 'Database', icon: Database }] : []),
                             { id: 'resources', label: 'Resources', icon: Library },
                             { id: 'submissions', label: 'History', icon: History },
                             { id: 'solutions', label: 'Solutions', icon: MessageCircle },
                             { id: 'ai', label: 'Coach', icon: Sparkles }, 
-                        ] as const).map(t => (
+                        ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database"; label: string; icon: typeof Info }[]).map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setActiveTab(t.id)}
@@ -371,6 +380,13 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             category={problem.category}
                             timeLimit={problem.timeLimit}
                             memoryLimit={problem.memoryLimit}
+                          />
+                        )}
+                        {activeTab === 'database' && (
+                          <DatabaseSchemaViewer 
+                            problemId={problem.id}
+                            initialSchema={problem.initialSchema}
+                            initialData={problem.initialData}
                           />
                         )}
                         {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
