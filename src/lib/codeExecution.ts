@@ -22,6 +22,8 @@ export interface TestInputOutput {
   input: string;
   expectedOutput: string;
   isExample?: boolean;
+  initialSchema?: string;
+  initialData?: string;
 }
 
 export interface ExecutionResult {
@@ -67,11 +69,6 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
     throw new Error(`Language ${language} not supported yet.`);
   }
 
-  let finalCode = code;
-  if (type === ProblemType.SQL) {
-    finalCode = `.headers on\n.mode csv\n${params.initialSchema || ""}\n${params.initialData || ""}\n${code}`;
-  }
-
   logger.info(`[EXEC_CODE] Executing ${testCases.length} test cases for ${language} using Judge0 Cloud...`);
 
   const results: ExecutionResult[] = [];
@@ -88,6 +85,13 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
               logger.warn(`[EXEC_CODE] Executing test case ${actualIndex} with empty STDIN`);
           }
 
+          let sourceCode = code;
+          if (type === ProblemType.SQL) {
+            const schema = tc.initialSchema || params.initialSchema || "";
+            const data = tc.initialData || params.initialData || "";
+            sourceCode = `.headers on\n.mode csv\n${schema}\n${data}\n${code}`;
+          }
+
           const payload: {
             source_code: string;
             language_id: number;
@@ -96,7 +100,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
             memory_limit: number;
             expected_output?: string;
           } = {
-            source_code: finalCode,
+            source_code: sourceCode,
             language_id: langId,
             stdin: tc.input || "",
             cpu_time_limit: (params.timeLimit && params.timeLimit > 10 ? params.timeLimit / 1000 : params.timeLimit) || 5,

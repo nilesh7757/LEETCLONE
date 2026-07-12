@@ -179,7 +179,9 @@ export const POST = apiHandler(async (req: Request) => {
         type: "SQL",
         testCases: combinedTestCases.map(tc => ({
           input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
-          expectedOutput: typeof tc.expectedOutput === "object" ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || "")
+          expectedOutput: typeof tc.expectedOutput === "object" ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || ""),
+          initialSchema: tc.initialSchema,
+          initialData: tc.initialData
         })),
         initialSchema: problem.initialSchema || "",
         initialData: problem.initialData || ""
@@ -192,7 +194,9 @@ export const POST = apiHandler(async (req: Request) => {
         type: "SQL",
         testCases: combinedTestCases.map(tc => ({
           input: tc.input,
-          expectedOutput: tc.expectedOutput
+          expectedOutput: tc.expectedOutput,
+          initialSchema: tc.initialSchema,
+          initialData: tc.initialData
         })),
         initialSchema: problem.initialSchema || "",
         initialData: problem.initialData || ""
