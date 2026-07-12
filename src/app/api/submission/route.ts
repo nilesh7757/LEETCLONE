@@ -120,7 +120,7 @@ export const POST = apiHandler(async (req: Request) => {
   let designScore: number | null = null;
 
   if (problem.type === "CODING") {
-    const runDirectly = !(await hasActiveWorkers());
+    const runDirectly = !(await hasActiveWorkers().catch(() => false));
 
     if (runDirectly) {
       results = await executeCode({
@@ -139,31 +139,44 @@ export const POST = apiHandler(async (req: Request) => {
         memoryLimit: problem.memoryLimit
       });
     } else {
-      const job = await executionQueue.add('submit-code', {
-        problemId: problem.id,
-        problemSlug: problem.slug,
-        problemTitle: problem.title,
-        customChecker: problem.customChecker,
-        code,
-        language,
-        type: "CODING",
-        testCases: combinedTestCases.map(tc => ({
-          input: tc.input,
-          expectedOutput: tc.expectedOutput
-        })),
-        timeLimit: problem.timeLimit,
-        memoryLimit: problem.memoryLimit
-      });
-      results = await job.waitUntilFinished(queueEvents, 30000);
+      try {
+        const job = await executionQueue.add('submit-code', {
+          problemId: problem.id,
+          problemSlug: problem.slug,
+          problemTitle: problem.title,
+          customChecker: problem.customChecker,
+          code,
+          language,
+          type: "CODING",
+          testCases: combinedTestCases.map(tc => ({
+            input: tc.input,
+            expectedOutput: tc.expectedOutput
+          })),
+          timeLimit: problem.timeLimit,
+          memoryLimit: problem.memoryLimit
+        });
+        results = await job.waitUntilFinished(queueEvents, 30000);
+      } catch (err) {
+        logger.error("[SUBMIT_CODE] Queue submit failed, falling back to direct execution:", err);
+        results = await executeCode({
+          problemId: problem.id,
+          problemSlug: problem.slug,
+          problemTitle: problem.title,
+          customChecker: problem.customChecker,
+          code,
+          language,
+          type: "CODING",
+          testCases: combinedTestCases.map(tc => ({
+            input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
+            expectedOutput: typeof tc.expectedOutput === "object" ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || "")
+          })),
+          timeLimit: problem.timeLimit,
+          memoryLimit: problem.memoryLimit
+        });
+      }
     }
   } else if (problem.type === "SQL") {
-    let runDirectly = false;
-    try {
-      const workers = await executionQueue.getWorkers();
-      if (workers.length === 0) runDirectly = true;
-    } catch {
-      runDirectly = true;
-    }
+    const runDirectly = !(await hasActiveWorkers().catch(() => false));
 
     if (runDirectly) {
       results = await executeCode({
@@ -181,21 +194,39 @@ export const POST = apiHandler(async (req: Request) => {
         initialData: problem.initialData || ""
       });
     } else {
-      const job = await executionQueue.add('submit-sql', {
-        problemId: problem.id,
-        code,
-        language: "sql",
-        type: "SQL",
-        testCases: combinedTestCases.map(tc => ({
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          initialSchema: tc.initialSchema,
-          initialData: tc.initialData
-        })),
-        initialSchema: problem.initialSchema || "",
-        initialData: problem.initialData || ""
-      });
-      results = await job.waitUntilFinished(queueEvents, 30000);
+      try {
+        const job = await executionQueue.add('submit-sql', {
+          problemId: problem.id,
+          code,
+          language: "sql",
+          type: "SQL",
+          testCases: combinedTestCases.map(tc => ({
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            initialSchema: tc.initialSchema,
+            initialData: tc.initialData
+          })),
+          initialSchema: problem.initialSchema || "",
+          initialData: problem.initialData || ""
+        });
+        results = await job.waitUntilFinished(queueEvents, 30000);
+      } catch (err) {
+        logger.error("[SUBMIT_SQL] Queue submit failed, falling back to direct execution:", err);
+        results = await executeCode({
+          problemId: problem.id,
+          code,
+          language: "sql",
+          type: "SQL",
+          testCases: combinedTestCases.map(tc => ({
+            input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
+            expectedOutput: typeof tc.expectedOutput === "object" ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || ""),
+            initialSchema: tc.initialSchema,
+            initialData: tc.initialData
+          })),
+          initialSchema: problem.initialSchema || "",
+          initialData: problem.initialData || ""
+        });
+      }
     }
   } else if (problem.type === "SYSTEM_DESIGN") {
     const evalResult = await evaluateSystemDesign(

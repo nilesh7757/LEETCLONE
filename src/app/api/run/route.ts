@@ -77,7 +77,7 @@ export const POST = apiHandler(async (req: Request) => {
   if (casesToGenerate.length > 0 && generationCode && finalType === "CODING") {
     const refLang = language || detectLanguage(generationCode);
     
-    const runRefDirectly = !(await hasActiveWorkers());
+    const runRefDirectly = !(await hasActiveWorkers().catch(() => false));
 
     let refResults;
     if (runRefDirectly) {
@@ -96,21 +96,39 @@ export const POST = apiHandler(async (req: Request) => {
         isOutputGeneration: true
       });
     } else {
-      const refJob = await executionQueue.add('generate-outputs', {
-        problemId: problemId || "ref-generator",
-        type: "CODING" as ProblemType,
-        code: generationCode,
-        language: refLang,
-        testCases: casesToGenerate.map(tc => ({ 
-          input: typeof tc === 'string' ? tc : (tc.input || ""), 
-          expectedOutput: "" 
-        })),
-        timeLimit: problem?.timeLimit || 2,
-        memoryLimit: problem?.memoryLimit || 256,
-        isOutputGeneration: true
-      });
+      try {
+        const refJob = await executionQueue.add('generate-outputs', {
+          problemId: problemId || "ref-generator",
+          type: "CODING" as ProblemType,
+          code: generationCode,
+          language: refLang,
+          testCases: casesToGenerate.map(tc => ({ 
+            input: typeof tc === 'string' ? tc : (tc.input || ""), 
+            expectedOutput: "" 
+          })),
+          timeLimit: problem?.timeLimit || 2,
+          memoryLimit: problem?.memoryLimit || 256,
+          isOutputGeneration: true
+        });
 
-      refResults = await refJob.waitUntilFinished(queueEvents, 30000);
+        refResults = await refJob.waitUntilFinished(queueEvents, 30000);
+      } catch (err) {
+        console.error("[API_RUN] Output generation queue failed, falling back to direct execution:", err);
+        const { executeCode } = await import("@/lib/codeExecution");
+        refResults = await executeCode({
+          problemId: problemId || "ref-generator",
+          type: "CODING" as ProblemType,
+          code: generationCode,
+          language: refLang,
+          testCases: casesToGenerate.map(tc => ({ 
+            input: typeof tc === 'string' ? tc : (tc.input || ""), 
+            expectedOutput: "" 
+          })),
+          timeLimit: problem?.timeLimit || 2,
+          memoryLimit: problem?.memoryLimit || 256,
+          isOutputGeneration: true
+        });
+      }
     }
 
     casesToGenerate.forEach((tc, idx) => {
@@ -140,7 +158,7 @@ export const POST = apiHandler(async (req: Request) => {
   }
 
   let results;
-  const runDirectly = !(await hasActiveWorkers());
+  const runDirectly = !(await hasActiveWorkers().catch(() => false));
 
   if (runDirectly) {
     const { executeCode } = await import("@/lib/codeExecution");
@@ -149,11 +167,20 @@ export const POST = apiHandler(async (req: Request) => {
       language: finalLanguage
     });
   } else {
-    const job = await executionQueue.add('run-code', { 
-      ...commonParams, 
-      language: finalLanguage 
-    });
-    results = await job.waitUntilFinished(queueEvents, 30000); // 30 seconds timeout
+    try {
+      const job = await executionQueue.add('run-code', { 
+        ...commonParams, 
+        language: finalLanguage 
+      });
+      results = await job.waitUntilFinished(queueEvents, 30000); // 30 seconds timeout
+    } catch (err) {
+      console.error("[API_RUN] Code run queue failed, falling back to direct execution:", err);
+      const { executeCode } = await import("@/lib/codeExecution");
+      results = await executeCode({
+        ...commonParams,
+        language: finalLanguage
+      });
+    }
   }
   
   return NextResponse.json({ results });

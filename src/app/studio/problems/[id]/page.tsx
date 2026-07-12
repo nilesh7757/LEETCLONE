@@ -56,7 +56,7 @@ export default function StudioProblemEditor() {
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"statement" | "solutions" | "testcases" | "collaborators" | "settings">("statement");
+  const [activeTab, setActiveTab] = useState<"statement" | "solutions" | "collaborators" | "settings">("statement");
   const [isSaving, setIsSaving] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -86,6 +86,7 @@ export default function StudioProblemEditor() {
     error?: string;
   } | null>(null);
   const [isSandboxRunning, setIsSandboxRunning] = useState(false);
+  const [testWorkspaceTab, setTestWorkspaceTab] = useState<"sandbox" | "vetting">("sandbox");
 
   // Test Case states
   const [examples, setExamples] = useState<Array<{ id: string; input: string; output: string; status?: string; runtime?: number }>>([]);
@@ -445,16 +446,14 @@ export default function StudioProblemEditor() {
                   testCases.filter(tc => tc.status === 'Accepted').length;
 
                 let suffix = "";
-                if (tab.id === 'testcases') {
+                if (tab.id === 'solutions') {
                    suffix = isSandboxPassed ? ` (${validatedCasesCount}/${totalCases})` : " 🔒";
-                } else if (tab.id === 'solutions') {
-                   suffix = isSandboxPassed ? " ✓" : "";
                 }
 
                 return (
                    <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as 'statement' | 'solutions' | 'testcases' | 'collaborators' | 'settings')}
+                      onClick={() => setActiveTab(tab.id as 'statement' | 'solutions' | 'collaborators' | 'settings')}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
                          activeTab === tab.id 
                          ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 
@@ -608,304 +607,285 @@ export default function StudioProblemEditor() {
                            />
                         </div>
 
-                        {/* Verification Sandbox */}
-                        <div className="flex flex-col gap-6 bg-white/[0.01] border border-white/5 rounded-[2rem] p-8">
-                           <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                              <div className="flex items-center gap-2 text-[#3b82f6]">
-                                 <Cpu size={16} />
-                                 <span className="text-[10px] font-bold uppercase tracking-widest">Local Sandbox Run</span>
-                              </div>
+                        {/* Verification & Test Cases Panel */}
+                        <div className="flex flex-col gap-6 bg-white/[0.01] border border-white/5 rounded-[2rem] p-8 min-h-[500px]">
+                           {/* Workspace Sub-tabs */}
+                           <div className="flex items-center gap-2 border-b border-white/5 pb-4">
                               <button
-                                 onClick={handleRunSandbox}
-                                 disabled={isSandboxRunning || !referenceSolution.trim()}
-                                 className="px-5 py-2 bg-[#3b82f6] text-white hover:bg-[#2563eb] text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all disabled:opacity-30 cursor-pointer"
+                                 onClick={() => setTestWorkspaceTab("sandbox")}
+                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
+                                    testWorkspaceTab === 'sandbox'
+                                    ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 font-semibold"
+                                    : "text-[#52525b] border-transparent hover:text-white"
+                                 }`}
                               >
-                                 {isSandboxRunning ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="inline mr-1" />}
-                                 Execute Code
+                                 <Cpu size={12} /> Sandbox Console
+                              </button>
+                              <button
+                                 onClick={() => setTestWorkspaceTab("vetting")}
+                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
+                                    testWorkspaceTab === 'vetting'
+                                    ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 font-semibold"
+                                    : "text-[#52525b] border-transparent hover:text-white"
+                                 }`}
+                              >
+                                 <Database size={12} /> Vetting Suite {!isSandboxPassed && " 🔒"}
                               </button>
                            </div>
 
-                           <div className="space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Console Input (STDIN)</label>
-                              <textarea
-                                 value={sandboxInput}
-                                 onChange={(e) => setSandboxInput(e.target.value)}
-                                 placeholder="Provide input arguments..."
-                                 className="w-full bg-black border border-white/5 rounded-xl p-4 font-mono text-xs text-[#a1a1aa] min-h-[100px] focus:outline-none"
-                              />
-                           </div>
+                           {/* SUB-TAB CONTENTS */}
+                           {testWorkspaceTab === 'sandbox' && (
+                              <div className="flex-1 flex flex-col gap-6">
+                                 <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#a1a1aa]">Sandbox Run</span>
+                                    <button
+                                       onClick={handleRunSandbox}
+                                       disabled={isSandboxRunning || !referenceSolution.trim()}
+                                       className="px-5 py-2 bg-[#3b82f6] text-white hover:bg-[#2563eb] text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all disabled:opacity-30 cursor-pointer"
+                                    >
+                                       {isSandboxRunning ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="inline mr-1" />}
+                                       Execute Code
+                                    </button>
+                                 </div>
 
-                           <div className="flex-1 flex flex-col min-h-[150px] bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
-                              <div className="h-8 border-b border-white/5 bg-white/[0.02] flex items-center px-4 gap-2">
-                                 <Terminal size={12} className="text-[#52525b]" />
-                                 <span className="text-[8px] font-bold uppercase tracking-widest text-[#52525b]">Console Output</span>
-                              </div>
-                              <div className="flex-1 p-6 font-mono text-xs overflow-y-auto custom-scrollbar max-h-[160px]">
-                                 {isSandboxRunning ? (
-                                    <div className="h-full flex items-center justify-center gap-2 opacity-35">
-                                       <Loader2 className="animate-spin" size={14} />
-                                       <span className="text-[9px] uppercase tracking-widest">Running...</span>
-                                    </div>
-                                 ) : sandboxResult ? (
-                                    <div className="space-y-4">
-                                       <div className="flex items-center gap-6 border-b border-white/5 pb-2">
-                                          <div className="flex flex-col">
-                                             <span className="text-[8px] uppercase text-[#52525b] font-bold">Status</span>
-                                             <span className={`text-[10px] font-black uppercase ${sandboxResult.status === 'Accepted' ? 'text-green-500' : 'text-rose-500'}`}>{sandboxResult.status}</span>
-                                          </div>
-                                          <div className="flex flex-col">
-                                             <span className="text-[8px] uppercase text-[#52525b] font-bold">Runtime</span>
-                                             <span className="text-[10px] font-black text-white">{sandboxResult.runtime?.toFixed(0)}ms</span>
-                                          </div>
-                                       </div>
-                                       {sandboxResult.actual && (
-                                          <pre className="text-[10px] text-[#a1a1aa] whitespace-pre-wrap">{sandboxResult.actual}</pre>
-                                       )}
-                                       {sandboxResult.error && (
-                                          <pre className="text-[10px] text-rose-400 whitespace-pre-wrap bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">{sandboxResult.error}</pre>
-                                       )}
-                                    </div>
-                                 ) : (
-                                    <div className="h-full flex items-center justify-center opacity-10 italic">
-                                       Console outputs display here.
-                                    </div>
-                                 )}
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </motion.div>
-               )}
+                                 <div className="space-y-3">
+                                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Console Input (STDIN)</label>
+                                    <textarea
+                                       value={sandboxInput}
+                                       onChange={(e) => setSandboxInput(e.target.value)}
+                                       placeholder="Provide input arguments..."
+                                       className="w-full bg-black border border-white/5 rounded-xl p-4 font-mono text-xs text-[#a1a1aa] min-h-[100px] focus:outline-none"
+                                    />
+                                 </div>
 
-               {/* TEST CASES */}
-               {activeTab === 'testcases' && isSandboxPassed && (
-                  <motion.div 
-                     key="testcases" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                     className="max-w-6xl space-y-8"
-                  >
-                     <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                           <h2 className="text-2xl font-black uppercase tracking-tight text-white">Test Cases Workspace</h2>
-                           <p className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Define multiple test vectors. Upload files to bulk add inputs.</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                           <button 
-                              onClick={autoGenerateOutputs}
-                              disabled={isVerifying || !referenceSolution.trim()}
-                              className="px-5 py-2 bg-white/5 border border-white/5 hover:border-[#3b82f6]/30 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer disabled:opacity-30"
-                              title="Generates outputs automatically using your reference solution"
-                           >
-                              {isVerifying ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} className="text-amber-500" />}
-                              Auto-Generate Outputs
-                           </button>
-                           <button 
-                              onClick={runTestCases}
-                              disabled={isVerifying || !referenceSolution.trim()}
-                              className="px-5 py-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer disabled:opacity-30"
-                           >
-                              {isVerifying ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
-                              Run Validation
-                           </button>
-                        </div>
-                     </div>
- 
-                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Test Cases Table Stream */}
-                        <div className="lg:col-span-2 space-y-6">
-                           {/* Example Test Cases Block */}
-                           <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#3b82f6]">Example Cases (Visible to Users)</label>
-                                 <button
-                                    onClick={() => setExamples(prev => [...prev, { id: `ex-${Date.now()}`, input: "", output: "" }])}
-                                    className="p-1 rounded bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 hover:bg-[#3b82f6]/20 text-[9px] uppercase font-black tracking-widest flex items-center gap-1 cursor-pointer"
-                                 >
-                                    <Plus size={10} /> Add Example
-                                 </button>
-                              </div>
-                              <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar pr-1">
-                                 {examples.length === 0 ? (
-                                    <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-2xl text-xs text-[#52525b] uppercase font-bold tracking-wider">
-                                       No examples configured.
+                                 <div className="flex-1 flex flex-col min-h-[150px] bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
+                                    <div className="h-8 border-b border-white/5 bg-white/[0.02] flex items-center px-4 gap-2">
+                                       <Terminal size={12} className="text-[#52525b]" />
+                                       <span className="text-[8px] font-bold uppercase tracking-widest text-[#52525b]">Console Output</span>
                                     </div>
-                                 ) : (
-                                    examples.map((ex, idx) => (
-                                       <div key={ex.id} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col gap-3 relative group">
-                                          <button 
-                                             onClick={() => setExamples(prev => prev.filter(item => item.id !== ex.id))}
-                                             className="absolute top-2 right-2 p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer"
-                                          >
-                                             <Trash2 size={12} />
-                                          </button>
-                                          <div className="grid grid-cols-2 gap-4">
-                                             <div className="space-y-1">
-                                                <span className="text-[8px] text-[#52525b] uppercase font-bold">Input Example {idx + 1}</span>
-                                                <textarea 
-                                                   value={ex.input} 
-                                                   onChange={e => setExamples(prev => prev.map(item => item.id === ex.id ? { ...item, input: e.target.value } : item))}
-                                                   className="w-full bg-black border border-white/5 rounded-xl p-3 font-mono text-[10px] text-white outline-none resize-none min-h-[60px]"
-                                                />
-                                             </div>
-                                             <div className="space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                   <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
-                                                   {ex.status && (
-                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
-                                                         ex.status === 'Accepted' ? 'text-green-500' : 
-                                                         ex.status === 'Incomplete Input' ? 'text-amber-500' : 'text-rose-500'
-                                                      }`}>
-                                                         {ex.status === 'Accepted' ? <Check size={8} /> : 
-                                                          ex.status === 'Incomplete Input' ? <AlertCircle size={8} /> : <X size={8} />} 
-                                                         {ex.status}
-                                                      </span>
-                                                   )}
+                                    <div className="flex-1 p-6 font-mono text-xs overflow-y-auto custom-scrollbar max-h-[160px]">
+                                       {isSandboxRunning ? (
+                                          <div className="h-full flex items-center justify-center gap-2 opacity-35">
+                                             <Loader2 className="animate-spin" size={14} />
+                                             <span className="text-[9px] uppercase tracking-widest">Running...</span>
+                                          </div>
+                                       ) : sandboxResult ? (
+                                          <div className="space-y-4">
+                                             <div className="flex items-center gap-6 border-b border-white/5 pb-2">
+                                                <div className="flex flex-col">
+                                                   <span className="text-[8px] uppercase text-[#52525b] font-bold">Status</span>
+                                                   <span className={`text-[10px] font-black uppercase ${sandboxResult.status === 'Accepted' ? 'text-green-500' : 'text-rose-500'}`}>{sandboxResult.status}</span>
                                                 </div>
-                                                <textarea 
-                                                   value={ex.output} 
-                                                   onChange={e => setExamples(prev => prev.map(item => item.id === ex.id ? { ...item, output: e.target.value } : item))}
-                                                   className="w-full bg-black border border-white/5 rounded-xl p-3 font-mono text-[10px] text-white outline-none resize-none min-h-[60px]"
-                                                />
+                                                <div className="flex flex-col">
+                                                   <span className="text-[8px] uppercase text-[#52525b] font-bold">Runtime</span>
+                                                   <span className="text-[10px] font-black text-white">{sandboxResult.runtime?.toFixed(0)}ms</span>
+                                                </div>
                                              </div>
+                                             {sandboxResult.actual && (
+                                                <pre className="text-[10px] text-[#a1a1aa] whitespace-pre-wrap">{sandboxResult.actual}</pre>
+                                             )}
+                                             {sandboxResult.error && (
+                                                <pre className="text-[10px] text-rose-400 whitespace-pre-wrap bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">{sandboxResult.error}</pre>
+                                             )}
                                           </div>
+                                       ) : (
+                                          <div className="h-full flex items-center justify-center opacity-10 italic">
+                                             Console outputs display here.
+                                          </div>
+                                       )}
+                                    </div>
+                                 </div>
+                              </div>
+                           )}
+
+                           {testWorkspaceTab === 'vetting' && (
+                              <div className="flex-1 flex flex-col gap-6">
+                                 {!isSandboxPassed ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4">
+                                       <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                                          <ShieldCheck size={24} />
                                        </div>
-                                    ))
-                                 )}
-                              </div>
-                           </div>
- 
-                           {/* Hidden Test Cases Block */}
-                           <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#3b82f6]">Hidden Cases (Vetting Suite)</label>
-                                 <button
-                                    onClick={() => setTestCases(prev => [...prev, { id: `tc-${Date.now()}`, input: "", output: "" }])}
-                                    className="p-1 rounded bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 hover:bg-[#3b82f6]/20 text-[9px] uppercase font-black tracking-widest flex items-center gap-1 cursor-pointer"
-                                 >
-                                    <Plus size={10} /> Add Case
-                                 </button>
-                              </div>
-                              <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                                 {testCases.length === 0 ? (
-                                    <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-2xl text-xs text-[#52525b] uppercase font-bold tracking-wider">
-                                       No hidden test cases loaded.
+                                       <div className="space-y-1">
+                                          <h4 className="text-xs font-bold text-white uppercase tracking-wider">Vetting Suite Locked</h4>
+                                          <p className="text-[10px] text-[#52525b] uppercase font-bold tracking-widest max-w-[280px] leading-relaxed">
+                                             Verify your reference solution in the Sandbox Console first.
+                                          </p>
+                                       </div>
+                                       <button
+                                          onClick={() => setTestWorkspaceTab("sandbox")}
+                                          className="px-4 py-2 bg-[#3b82f6] text-white hover:bg-[#2563eb] rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all cursor-pointer"
+                                       >
+                                          Go to Sandbox
+                                       </button>
                                     </div>
                                  ) : (
-                                    testCases.map((tc, idx) => (
-                                       <div key={tc.id} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col gap-3 relative group">
-                                          <button 
-                                             onClick={() => setTestCases(prev => prev.filter(item => item.id !== tc.id))}
-                                             className="absolute top-2 right-2 p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer"
-                                          >
-                                             <Trash2 size={12} />
-                                          </button>
-                                          <div className="grid grid-cols-2 gap-4">
-                                             <div className="space-y-1">
-                                                <span className="text-[8px] text-[#52525b] uppercase font-bold">Input {idx + 1}</span>
-                                                <textarea 
-                                                   value={tc.input} 
-                                                   onChange={e => setTestCases(prev => prev.map(item => item.id === tc.id ? { ...item, input: e.target.value } : item))}
-                                                   className="w-full bg-black border border-white/5 rounded-xl p-3 font-mono text-[10px] text-white outline-none resize-none min-h-[60px]"
-                                                />
-                                             </div>
-                                             <div className="space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                   <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
-                                                   {tc.status && (
-                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
-                                                         tc.status === 'Accepted' ? 'text-green-500' : 
-                                                         tc.status === 'Incomplete Input' ? 'text-amber-500' : 'text-rose-500'
-                                                      }`}>
-                                                         {tc.status === 'Accepted' ? <Check size={8} /> : 
-                                                          tc.status === 'Incomplete Input' ? <AlertCircle size={8} /> : <X size={8} />} 
-                                                         {tc.status}
-                                                      </span>
-                                                   )}
-                                                </div>
-                                                <textarea 
-                                                   value={tc.output} 
-                                                   onChange={e => setTestCases(prev => prev.map(item => item.id === tc.id ? { ...item, output: e.target.value } : item))}
-                                                   className="w-full bg-black border border-white/5 rounded-xl p-3 font-mono text-[10px] text-white outline-none resize-none min-h-[60px]"
-                                                />
-                                             </div>
+                                    <div className="flex-1 flex flex-col gap-6">
+                                       {/* Vetting buttons */}
+                                       <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#a1a1aa]">Vetting Actions</span>
+                                          <div className="flex gap-2">
+                                             <button 
+                                                onClick={autoGenerateOutputs}
+                                                disabled={isVerifying || !referenceSolution.trim()}
+                                                className="px-4 py-2 bg-white/5 border border-white/5 hover:border-[#3b82f6]/30 text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-30"
+                                                title="Generates expected outputs automatically using reference solution"
+                                             >
+                                                {isVerifying ? <Loader2 size={10} className="animate-spin" /> : <Zap size={10} className="text-amber-500" />}
+                                                Auto Output
+                                             </button>
+                                             <button 
+                                                onClick={runTestCases}
+                                                disabled={isVerifying || !referenceSolution.trim()}
+                                                className="px-4 py-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-30"
+                                             >
+                                                {isVerifying ? <Loader2 size={10} className="animate-spin" /> : <Play size={10} />}
+                                                Validate
+                                             </button>
                                           </div>
                                        </div>
-                                    ))
+
+                                       {/* Drag & Drop Panel */}
+                                       <div 
+                                          onClick={() => fileInputRef.current?.click()}
+                                          className="border border-dashed border-white/10 hover:border-[#3b82f6]/40 rounded-2xl p-4 bg-white/[0.01] hover:bg-[#3b82f6]/5 text-center transition-all cursor-pointer group"
+                                       >
+                                          <input 
+                                             type="file" 
+                                             ref={fileInputRef} 
+                                             onChange={handleFileUpload} 
+                                             className="hidden" 
+                                             multiple 
+                                             accept=".txt,.in,.out"
+                                          />
+                                          <Upload className="mx-auto w-6 h-6 text-[#52525b] group-hover:text-[#3b82f6] transition-all mb-2" />
+                                          <h4 className="text-[10px] font-bold text-white uppercase tracking-wider">Drag & Drop files</h4>
+                                          <p className="text-[8px] text-[#52525b] uppercase font-semibold tracking-wider mt-1">Accepts .txt, .in, or .out bulk input files</p>
+                                       </div>
+
+                                       {/* Cases */}
+                                       <div className="flex-1 overflow-y-auto max-h-[350px] space-y-6 custom-scrollbar pr-1">
+                                          {/* Examples */}
+                                          <div className="space-y-3">
+                                             <div className="flex items-center justify-between">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-[#3b82f6]">Example Cases</label>
+                                                <button
+                                                   onClick={() => setExamples(prev => [...prev, { id: `ex-${Date.now()}`, input: "", output: "" }])}
+                                                   className="p-1 rounded bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 hover:bg-[#3b82f6]/20 text-[9px] uppercase font-black tracking-widest flex items-center gap-1 cursor-pointer"
+                                                >
+                                                   <Plus size={10} /> Add
+                                                </button>
+                                             </div>
+                                             {examples.length === 0 ? (
+                                                <p className="text-[10px] text-[#52525b] italic">No examples configured.</p>
+                                             ) : (
+                                                <div className="space-y-2">
+                                                   {examples.map((ex, idx) => (
+                                                      <div key={ex.id} className="p-3 bg-[#080808]/60 border border-white/5 rounded-xl flex flex-col gap-2 relative group">
+                                                         <button 
+                                                            onClick={() => setExamples(prev => prev.filter(item => item.id !== ex.id))}
+                                                            className="absolute top-2 right-2 p-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer"
+                                                         >
+                                                            <Trash2 size={10} />
+                                                         </button>
+                                                         <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                               <span className="text-[8px] text-[#52525b] uppercase font-bold">Input {idx + 1}</span>
+                                                               <textarea 
+                                                                  value={ex.input} 
+                                                                  onChange={e => setExamples(prev => prev.map(item => item.id === ex.id ? { ...item, input: e.target.value } : item))}
+                                                                  className="w-full bg-black border border-white/5 rounded-lg p-2 font-mono text-[9px] text-white outline-none resize-none min-h-[45px]"
+                                                               />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                               <div className="flex items-center justify-between">
+                                                                  <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
+                                                                  {ex.status && (
+                                                                     <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
+                                                                        ex.status === 'Accepted' ? 'text-green-500' : 
+                                                                        ex.status === 'Incomplete Input' ? 'text-amber-500' : 'text-rose-500'
+                                                                     }`}>
+                                                                        {ex.status}
+                                                                     </span>
+                                                                  )}
+                                                               </div>
+                                                               <textarea 
+                                                                  value={ex.output} 
+                                                                  onChange={e => setExamples(prev => prev.map(item => item.id === ex.id ? { ...item, output: e.target.value } : item))}
+                                                                  className="w-full bg-black border border-white/5 rounded-lg p-2 font-mono text-[9px] text-white outline-none resize-none min-h-[45px]"
+                                                               />
+                                                            </div>
+                                                         </div>
+                                                      </div>
+                                                   ))}
+                                                </div>
+                                             )}
+                                          </div>
+
+                                          {/* Hidden Cases */}
+                                          <div className="space-y-3">
+                                             <div className="flex items-center justify-between">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-[#3b82f6]">Hidden Cases</label>
+                                                <button
+                                                   onClick={() => setTestCases(prev => [...prev, { id: `tc-${Date.now()}`, input: "", output: "" }])}
+                                                   className="p-1 rounded bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 hover:bg-[#3b82f6]/20 text-[9px] uppercase font-black tracking-widest flex items-center gap-1 cursor-pointer"
+                                                >
+                                                   <Plus size={10} /> Add
+                                                </button>
+                                             </div>
+                                             {testCases.length === 0 ? (
+                                                <p className="text-[10px] text-[#52525b] italic">No hidden test cases configured.</p>
+                                             ) : (
+                                                <div className="space-y-2">
+                                                   {testCases.map((tc, idx) => (
+                                                      <div key={tc.id} className="p-3 bg-[#080808]/60 border border-white/5 rounded-xl flex flex-col gap-2 relative group">
+                                                         <button 
+                                                            onClick={() => setTestCases(prev => prev.filter(item => item.id !== tc.id))}
+                                                            className="absolute top-2 right-2 p-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer"
+                                                         >
+                                                            <Trash2 size={10} />
+                                                         </button>
+                                                         <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                               <span className="text-[8px] text-[#52525b] uppercase font-bold">Input {idx + 1}</span>
+                                                               <textarea 
+                                                                  value={tc.input} 
+                                                                  onChange={e => setTestCases(prev => prev.map(item => item.id === tc.id ? { ...item, input: e.target.value } : item))}
+                                                                  className="w-full bg-black border border-white/5 rounded-lg p-2 font-mono text-[9px] text-white outline-none resize-none min-h-[45px]"
+                                                               />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                               <div className="flex items-center justify-between">
+                                                                  <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
+                                                                  {tc.status && (
+                                                                     <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
+                                                                        tc.status === 'Accepted' ? 'text-green-500' : 
+                                                                        tc.status === 'Incomplete Input' ? 'text-amber-500' : 'text-rose-500'
+                                                                     }`}>
+                                                                        {tc.status}
+                                                                     </span>
+                                                                  )}
+                                                               </div>
+                                                               <textarea 
+                                                                  value={tc.output} 
+                                                                  onChange={e => setTestCases(prev => prev.map(item => item.id === tc.id ? { ...item, output: e.target.value } : item))}
+                                                                  className="w-full bg-black border border-white/5 rounded-lg p-2 font-mono text-[9px] text-white outline-none resize-none min-h-[45px]"
+                                                               />
+                                                            </div>
+                                                         </div>
+                                                      </div>
+                                                   ))}
+                                                </div>
+                                             )}
+                                          </div>
+                                       </div>
+                                    </div>
                                  )}
                               </div>
-                           </div>
-                        </div>
- 
-                        {/* File Upload Side Panel */}
-                        <div className="space-y-6">
-                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Bulk Upload Panel</label>
-                           
-                           {/* Drag & Drop Card */}
-                           <div 
-                              onClick={() => fileInputRef.current?.click()}
-                              className="border-2 border-dashed border-white/10 hover:border-[#3b82f6]/40 rounded-3xl p-8 bg-white/[0.01] hover:bg-[#3b82f6]/5 text-center transition-all cursor-pointer group relative overflow-hidden"
-                           >
-                              <input 
-                                 type="file" 
-                                 ref={fileInputRef} 
-                                 onChange={handleFileUpload} 
-                                 className="hidden" 
-                                 multiple 
-                                 accept=".txt,.in,.out"
-                              />
-                              <Upload className="mx-auto w-8 h-8 text-[#52525b] group-hover:text-[#3b82f6] group-hover:scale-105 transition-all mb-4" />
-                              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Drag & Drop files</h4>
-                              <p className="text-[9px] text-[#52525b] uppercase font-semibold tracking-wider mt-2">Accepts .txt, .in, or .out test input vectors</p>
-                           </div>
- 
-                           <div className="p-6 bg-white/[0.01] border border-white/5 rounded-2xl flex flex-col gap-3">
-                              <div className="flex items-center gap-2 text-[#3b82f6]">
-                                 <Info size={14} />
-                                 <span className="text-[9px] font-bold uppercase tracking-widest">Vetting Advice</span>
-                              </div>
-                              <p className="text-[10px] text-[#52525b] leading-relaxed uppercase tracking-wider">
-                                 1. Write your solution in reference code.<br/>
-                                 2. Add inputs manually or drop input files.<br/>
-                                 3. Click <strong className="text-white">Auto-Generate Outputs</strong> to run reference solution and generate outputs.<br/>
-                                 4. Click <strong className="text-white">Save Changes</strong> to sync problem model.
-                              </p>
-                           </div>
+                           )}
                         </div>
                      </div>
                   </motion.div>
-               )}
-
-               {/* TEST CASES LOCKED */}
-               {activeTab === 'testcases' && !isSandboxPassed && (
-                  <motion.div 
-                     key="testcases-locked" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                     className="max-w-xl mx-auto py-24 flex flex-col items-center justify-center text-center space-y-8"
-                  >
-                     <div className="w-20 h-20 rounded-[2.5rem] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 animate-pulse">
-                        <ShieldCheck size={36} />
-                     </div>
-                     <div className="space-y-3">
-                        <h2 className="text-3xl font-black uppercase tracking-tight text-white">Test Cases Workspace Locked</h2>
-                        <p className="text-xs text-[#52525b] uppercase font-bold tracking-widest leading-relaxed">
-                           To ensure high-quality problem blueprints, you must write and verify your reference solution first.
-                        </p>
-                     </div>
-                     <div className="p-8 bg-white/[0.01] border border-white/5 rounded-3xl text-left w-full space-y-4">
-                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">How to unlock:</span>
-                        <div className="space-y-2 text-xs text-[#a1a1aa] leading-relaxed animate-fade-in">
-                           <p>1. Go to the <strong className="text-white">Solutions</strong> tab on the sidebar.</p>
-                           <p>2. Implement the reference solution in your selected language.</p>
-                           <p>3. Provide an input in the console sandbox and click <strong className="text-[#3b82f6]">Execute Code</strong>.</p>
-                           <p>4. Once it runs successfully with no errors, this workspace will unlock.</p>
-                        </div>
-                     </div>
-                     <button
-                        onClick={() => setActiveTab("solutions")}
-                        className="px-8 py-4 bg-[#3b82f6] text-white hover:bg-[#2563eb] rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 cursor-pointer shadow-lg hover:shadow-[#3b82f6]/20"
-                     >
-                        Go to Solutions <ArrowRight size={14} />
-                     </button>
-                  </motion.div>
-               )}
+                   )}
 
                {/* COLLABORATORS */}
                {activeTab === 'collaborators' && (
