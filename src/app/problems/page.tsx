@@ -4,6 +4,7 @@ import ProblemFilters from "@/features/problems/components/ProblemFilters";
 import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
 import MasteryCalendar from "@/features/problems/components/MasteryCalendar";
 import { auth } from "@/auth"; 
+import Link from "next/link";
 import { Trophy, Target, Sparkles } from "lucide-react";
 import { Prisma, ProblemType } from "@prisma/client";
 import * as motion from "framer-motion/client";
@@ -50,7 +51,11 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const stats = await getStats(userId);
   
   const resolvedSearchParams = await searchParams;
-  const currentTab = resolvedSearchParams.tab === "mine" ? "mine" : "public";
+  const currentTab = resolvedSearchParams.tab === "mine" 
+    ? "mine" 
+    : resolvedSearchParams.tab === "sql" 
+      ? "sql" 
+      : "public";
   const currentPage = parseInt(resolvedSearchParams.page || "1");
   const pageSize = 12; 
   const skip = (currentPage - 1) * pageSize;
@@ -63,6 +68,12 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       { isPublic: true },
       { contests: { some: { endTime: { lte: new Date() }, publishProblems: true } } }
     ];
+    
+    if (currentTab === "sql") {
+      whereClause.type = "SQL";
+    } else {
+      whereClause.type = "CODING";
+    }
   }
 
   if (resolvedSearchParams.search) {
@@ -249,6 +260,29 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
           {/* MAIN TABLE */}
           <div className="lg:col-span-9">             
              <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col gap-6">
+                <div className="flex bg-[var(--foreground)]/5 border border-[var(--border)] rounded-2xl p-1 gap-1 shrink-0 max-w-md">
+                  {[
+                    { id: "public", label: "Coding Set" },
+                    { id: "sql", label: "Database (SQL)" },
+                    { id: "mine", label: "My Foundry" }
+                  ].map(t => {
+                    const isActive = currentTab === t.id;
+                    const href = `?tab=${t.id}`;
+                    return (
+                      <Link
+                        key={t.id}
+                        href={href}
+                        className={`flex-1 text-center py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          isActive 
+                            ? "bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] shadow-md"
+                            : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        {t.label}
+                      </Link>
+                    );
+                  })}
+                </div>
                 <ProblemFilters />
                 <ProblemTable 
                    problems={problemsWithStatus} 
