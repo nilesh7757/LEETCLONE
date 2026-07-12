@@ -3,7 +3,7 @@ import { TestInputOutput } from "@/lib/codeExecution";
 import { ProblemType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { executionQueue, queueEvents } from "@/lib/queue";
+import { executionQueue, queueEvents, hasActiveWorkers } from "@/lib/queue";
 import { detectLanguage } from "@/lib/utils";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
@@ -24,6 +24,7 @@ export const POST = apiHandler(async (req: Request) => {
     timeLimit,
     memoryLimit,
     testCases,
+    isSandbox,
   } = await req.json();
 
   if (!code) {
@@ -69,18 +70,14 @@ export const POST = apiHandler(async (req: Request) => {
 
   // DYNAMIC EXPECTED OUTPUT GENERATION
   const generationCode = code || problem?.referenceSolution;
-  const casesToGenerate = finalTestCases.filter(tc => !tc.expectedOutput || String(tc.expectedOutput).trim() === "");
+  const casesToGenerate = isSandbox 
+    ? [] 
+    : finalTestCases.filter(tc => !tc.expectedOutput || String(tc.expectedOutput).trim() === "");
   
   if (casesToGenerate.length > 0 && generationCode && finalType === "CODING") {
     const refLang = language || detectLanguage(generationCode);
     
-    let runRefDirectly = false;
-    try {
-      const workers = await executionQueue.getWorkers();
-      if (workers.length === 0) runRefDirectly = true;
-    } catch {
-      runRefDirectly = true;
-    }
+    const runRefDirectly = !(await hasActiveWorkers());
 
     let refResults;
     if (runRefDirectly) {
@@ -143,13 +140,7 @@ export const POST = apiHandler(async (req: Request) => {
   }
 
   let results;
-  let runDirectly = false;
-  try {
-    const workers = await executionQueue.getWorkers();
-    if (workers.length === 0) runDirectly = true;
-  } catch {
-    runDirectly = true;
-  }
+  const runDirectly = !(await hasActiveWorkers());
 
   if (runDirectly) {
     const { executeCode } = await import("@/lib/codeExecution");

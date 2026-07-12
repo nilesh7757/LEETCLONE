@@ -9,7 +9,8 @@ jest.mock('@/lib/queue', () => ({
       waitUntilFinished: jest.fn().mockResolvedValue([{ status: 'Accepted', runtime: 100, actual: '3' }]) 
     }) 
   },
-  queueEvents: {}
+  queueEvents: {},
+  hasActiveWorkers: jest.fn().mockResolvedValue(true)
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {

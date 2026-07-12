@@ -6,14 +6,16 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { 
-  Zap, ChevronLeft, Cpu, ShieldCheck, Activity, 
+  Zap, ChevronLeft, ChevronRight, Cpu, ShieldCheck, Activity, 
   Terminal, Play, Target, CheckCircle2, AlertCircle,
   Database, Code2, Users, UserPlus, Trash2, Loader2,
-  FileText, Settings, Share2, Save, ArrowLeft, Clipboard,
+  FileText, Settings, Share2, Save, ArrowLeft, ArrowRight, Clipboard,
   Plus, Upload, FileCode2, Info, Eye, Check, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 interface Collaborator {
   id: string;
@@ -58,9 +60,20 @@ export default function StudioProblemEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
+  const [isSandboxPassed, setIsSandboxPassed] = useState(false);
+
   // Statement editor states
   const [description, setDescription] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
+  const [renderedDescription, setRenderedDescription] = useState("");
+
+  useEffect(() => {
+    const parseMarkdown = async () => {
+      const parsed = await marked.parse(description || "");
+      setRenderedDescription(DOMPurify.sanitize(parsed));
+    };
+    parseMarkdown();
+  }, [description]);
 
   // Solution editor states
   const [referenceSolution, setReferenceSolution] = useState("");
@@ -99,6 +112,9 @@ export default function StudioProblemEditor() {
       setProblem(p);
       setDescription(p.description || "");
       setReferenceSolution(p.referenceSolution || "");
+      if (p.referenceSolution && p.referenceSolution.trim() !== "") {
+        setIsSandboxPassed(true);
+      }
       setLanguage(p.language || "javascript");
       
       // Load settings
@@ -184,10 +200,20 @@ export default function StudioProblemEditor() {
         code: referenceSolution,
         language: language,
         testCases: [{ input: sandboxInput, expectedOutput: "" }],
-        type: metaProblemType
+        type: metaProblemType,
+        isSandbox: true
       });
-      setSandboxResult(data.results[0]);
+      const result = data.results[0];
+      setSandboxResult(result);
+      if (result && result.status === 'Accepted') {
+        setIsSandboxPassed(true);
+        toast.success("Sandbox execution successful! Test Cases unlocked.");
+      } else {
+        setIsSandboxPassed(false);
+        toast.error(`Sandbox execution failed: ${result?.status || 'Error'}`);
+      }
     } catch (err) {
+      setIsSandboxPassed(false);
       toast.error("Sandbox code execution failed");
     } finally {
       setIsSandboxRunning(false);
@@ -207,14 +233,26 @@ export default function StudioProblemEditor() {
         const { data: exData } = await axios.post("/api/run", {
           code: referenceSolution,
           language: language,
-          testCases: examples.map(ex => ({ input: ex.input, expectedOutput: ex.output })),
-          type: metaProblemType
+          testCases: examples.map(ex => ({ input: ex.input, expectedOutput: "" })),
+          type: metaProblemType,
+          isSandbox: true
         });
-        setExamples(prev => prev.map((ex, idx) => ({
-          ...ex,
-          status: exData.results[idx]?.status || "Failed",
-          runtime: exData.results[idx]?.runtime || 0
-        })));
+        setExamples(prev => prev.map((ex, idx) => {
+          const res = exData.results[idx];
+          const hasInput = ex.input && ex.input.trim() !== "";
+          let status = "Failed";
+          if (!hasInput) {
+             status = "Incomplete Input";
+          } else if (res) {
+             status = res.status;
+          }
+          return {
+            ...ex,
+            output: (res && res.status === 'Accepted' && hasInput) ? res.actual : ex.output,
+            status: status,
+            runtime: res?.runtime || 0
+          };
+        }));
       }
 
       // 2. Run Hidden Cases
@@ -222,14 +260,26 @@ export default function StudioProblemEditor() {
         const { data: tcData } = await axios.post("/api/run", {
           code: referenceSolution,
           language: language,
-          testCases: testCases.map(tc => ({ input: tc.input, expectedOutput: tc.output })),
-          type: metaProblemType
+          testCases: testCases.map(tc => ({ input: tc.input, expectedOutput: "" })),
+          type: metaProblemType,
+          isSandbox: true
         });
-        setTestCases(prev => prev.map((tc, idx) => ({
-          ...tc,
-          status: tcData.results[idx]?.status || "Failed",
-          runtime: tcData.results[idx]?.runtime || 0
-        })));
+        setTestCases(prev => prev.map((tc, idx) => {
+          const res = tcData.results[idx];
+          const hasInput = tc.input && tc.input.trim() !== "";
+          let status = "Failed";
+          if (!hasInput) {
+             status = "Incomplete Input";
+          } else if (res) {
+             status = res.status;
+          }
+          return {
+            ...tc,
+            output: (res && res.status === 'Accepted' && hasInput) ? res.actual : tc.output,
+            status: status,
+            runtime: res?.runtime || 0
+          };
+        }));
       }
       toast.success("Validation run complete!");
     } catch (err) {
@@ -380,29 +430,83 @@ export default function StudioProblemEditor() {
 
       {/* 2. BODY LAYOUT */}
       <div className="flex-1 flex min-h-0">
-         {/* SIDE BAR BUTTONS */}
-         <aside className="w-64 border-r border-white/5 bg-[#080808] p-4 flex flex-col gap-2 shrink-0">
-            {[
-               { id: 'statement', label: 'Statement', icon: FileText },
-               { id: 'testcases', label: 'Test Cases', icon: Database },
-               { id: 'solutions', label: 'Solutions', icon: Code2 },
-               { id: 'collaborators', label: 'Collaborators', icon: Users },
-               { id: 'settings', label: 'Settings', icon: Settings },
-            ].map(tab => (
-               <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as "statement" | "solutions" | "testcases" | "collaborators" | "settings")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
-                     activeTab === tab.id 
-                     ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 
-                     : "text-[#52525b] border-transparent hover:text-white hover:bg-white/5"
-                  }`}
-               >
-                  <tab.icon size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
-               </button>
-            ))}
-         </aside>
+          {/* SIDE BAR BUTTONS */}
+          <aside className="w-64 border-r border-white/5 bg-[#080808] p-4 flex flex-col gap-2 shrink-0">
+             {[
+                { id: 'statement', label: 'Statement', icon: FileText },
+                { id: 'testcases', label: 'Test Cases', icon: Database },
+                { id: 'solutions', label: 'Solutions', icon: Code2 },
+                { id: 'collaborators', label: 'Collaborators', icon: Users },
+                { id: 'settings', label: 'Settings', icon: Settings },
+             ].map(tab => {
+                const totalCases = examples.length + testCases.length;
+                const validatedCasesCount = 
+                  examples.filter(ex => ex.status === 'Accepted').length + 
+                  testCases.filter(tc => tc.status === 'Accepted').length;
+
+                let suffix = "";
+                if (tab.id === 'testcases') {
+                   suffix = isSandboxPassed ? ` (${validatedCasesCount}/${totalCases})` : " 🔒";
+                } else if (tab.id === 'solutions') {
+                   suffix = isSandboxPassed ? " ✓" : "";
+                }
+
+                return (
+                   <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
+                         activeTab === tab.id 
+                         ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 
+                         : "text-[#52525b] border-transparent hover:text-white hover:bg-white/5"
+                      }`}
+                   >
+                      <div className="flex items-center gap-3">
+                         <tab.icon size={16} />
+                         <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
+                      </div>
+                      {suffix && <span className="text-[9px] font-black uppercase tracking-tight text-[#3b82f6]/70">{suffix}</span>}
+                   </button>
+                );
+             })}
+
+             {/* PROGRESS CHECKLIST */}
+             <div className="mt-auto p-4 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
+                <span className="text-[8px] font-bold text-[#52525b] uppercase tracking-widest">Workspace Checklist</span>
+                <div className="space-y-2">
+                   <div className="flex items-center gap-2 text-[10px]">
+                      {referenceSolution.trim() ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />}
+                      <span className={referenceSolution.trim() ? "text-[#a1a1aa]" : "text-[#52525b]"}>1. Reference Solution</span>
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px]">
+                      {isSandboxPassed ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />}
+                      <span className={isSandboxPassed ? "text-[#a1a1aa]" : "text-[#52525b]"}>2. Sandbox Run (No Errors)</span>
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px]">
+                      {(examples.length > 0 || testCases.length > 0) ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />}
+                      <span className={(examples.length > 0 || testCases.length > 0) ? "text-[#a1a1aa]" : "text-[#52525b]"}>3. Define Test Cases</span>
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px]">
+                      {(() => {
+                         const totalCases = examples.length + testCases.length;
+                         const validatedCasesCount = 
+                           examples.filter(ex => ex.status === 'Accepted').length + 
+                           testCases.filter(tc => tc.status === 'Accepted').length;
+                         const isAllValidated = totalCases > 0 && validatedCasesCount === totalCases;
+                         return isAllValidated ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />;
+                      })()}
+                      <span className={(() => {
+                         const totalCases = examples.length + testCases.length;
+                         const validatedCasesCount = 
+                           examples.filter(ex => ex.status === 'Accepted').length + 
+                           testCases.filter(tc => tc.status === 'Accepted').length;
+                         const isAllValidated = totalCases > 0 && validatedCasesCount === totalCases;
+                         return isAllValidated ? "text-[#a1a1aa]" : "text-[#52525b]";
+                      })()}>4. Validate Test Cases</span>
+                   </div>
+                </div>
+             </div>
+          </aside>
 
          {/* MAIN WORKSPACE SCREEN */}
          <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#050505] p-12">
@@ -453,9 +557,10 @@ export default function StudioProblemEditor() {
                               {description ? (
                                  <div className="space-y-4">
                                     <h1 className="text-xl font-bold uppercase border-b border-white/5 pb-2">{metaTitle || "Untitled"}</h1>
-                                    <div className="text-xs text-[#a1a1aa] whitespace-pre-wrap leading-relaxed">
-                                       {description}
-                                    </div>
+                                    <div 
+                                       className="text-xs text-[#a1a1aa] leading-relaxed prose prose-invert prose-sm max-w-none"
+                                       dangerouslySetInnerHTML={{ __html: renderedDescription }}
+                                    />
                                  </div>
                               ) : (
                                  <span className="italic text-[#52525b] text-xs">Nothing to render. Write statement to see live render output.</span>
@@ -573,7 +678,7 @@ export default function StudioProblemEditor() {
                )}
 
                {/* TEST CASES */}
-               {activeTab === 'testcases' && (
+               {activeTab === 'testcases' && isSandboxPassed && (
                   <motion.div 
                      key="testcases" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                      className="max-w-6xl space-y-8"
@@ -603,7 +708,7 @@ export default function StudioProblemEditor() {
                            </button>
                         </div>
                      </div>
-
+ 
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Test Cases Table Stream */}
                         <div className="lg:col-span-2 space-y-6">
@@ -645,8 +750,13 @@ export default function StudioProblemEditor() {
                                                 <div className="flex items-center justify-between">
                                                    <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
                                                    {ex.status && (
-                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${ex.status === 'Accepted' ? 'text-green-500' : 'text-rose-500'}`}>
-                                                         {ex.status === 'Accepted' ? <Check size={8} /> : <X size={8} />} {ex.status}
+                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
+                                                         ex.status === 'Accepted' ? 'text-green-500' : 
+                                                         ex.status === 'Incomplete Input' ? 'text-amber-500' : 'text-rose-500'
+                                                      }`}>
+                                                         {ex.status === 'Accepted' ? <Check size={8} /> : 
+                                                          ex.status === 'Incomplete Input' ? <AlertCircle size={8} /> : <X size={8} />} 
+                                                         {ex.status}
                                                       </span>
                                                    )}
                                                 </div>
@@ -662,7 +772,7 @@ export default function StudioProblemEditor() {
                                  )}
                               </div>
                            </div>
-
+ 
                            {/* Hidden Test Cases Block */}
                            <div className="space-y-3">
                               <div className="flex items-center justify-between">
@@ -701,8 +811,13 @@ export default function StudioProblemEditor() {
                                                 <div className="flex items-center justify-between">
                                                    <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
                                                    {tc.status && (
-                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${tc.status === 'Accepted' ? 'text-green-500' : 'text-rose-500'}`}>
-                                                         {tc.status === 'Accepted' ? <Check size={8} /> : <X size={8} />} {tc.status}
+                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
+                                                         tc.status === 'Accepted' ? 'text-green-500' : 
+                                                         tc.status === 'Incomplete Input' ? 'text-amber-500' : 'text-rose-500'
+                                                      }`}>
+                                                         {tc.status === 'Accepted' ? <Check size={8} /> : 
+                                                          tc.status === 'Incomplete Input' ? <AlertCircle size={8} /> : <X size={8} />} 
+                                                         {tc.status}
                                                       </span>
                                                    )}
                                                 </div>
@@ -719,7 +834,7 @@ export default function StudioProblemEditor() {
                               </div>
                            </div>
                         </div>
-
+ 
                         {/* File Upload Side Panel */}
                         <div className="space-y-6">
                            <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Bulk Upload Panel</label>
@@ -741,7 +856,7 @@ export default function StudioProblemEditor() {
                               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Drag & Drop files</h4>
                               <p className="text-[9px] text-[#52525b] uppercase font-semibold tracking-wider mt-2">Accepts .txt, .in, or .out test input vectors</p>
                            </div>
-
+ 
                            <div className="p-6 bg-white/[0.01] border border-white/5 rounded-2xl flex flex-col gap-3">
                               <div className="flex items-center gap-2 text-[#3b82f6]">
                                  <Info size={14} />
@@ -756,6 +871,39 @@ export default function StudioProblemEditor() {
                            </div>
                         </div>
                      </div>
+                  </motion.div>
+               )}
+
+               {/* TEST CASES LOCKED */}
+               {activeTab === 'testcases' && !isSandboxPassed && (
+                  <motion.div 
+                     key="testcases-locked" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                     className="max-w-xl mx-auto py-24 flex flex-col items-center justify-center text-center space-y-8"
+                  >
+                     <div className="w-20 h-20 rounded-[2.5rem] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 animate-pulse">
+                        <ShieldCheck size={36} />
+                     </div>
+                     <div className="space-y-3">
+                        <h2 className="text-3xl font-black uppercase tracking-tight text-white">Test Cases Workspace Locked</h2>
+                        <p className="text-xs text-[#52525b] uppercase font-bold tracking-widest leading-relaxed">
+                           To ensure high-quality problem blueprints, you must write and verify your reference solution first.
+                        </p>
+                     </div>
+                     <div className="p-8 bg-white/[0.01] border border-white/5 rounded-3xl text-left w-full space-y-4">
+                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">How to unlock:</span>
+                        <div className="space-y-2 text-xs text-[#a1a1aa] leading-relaxed animate-fade-in">
+                           <p>1. Go to the <strong className="text-white">Solutions</strong> tab on the sidebar.</p>
+                           <p>2. Implement the reference solution in your selected language.</p>
+                           <p>3. Provide an input in the console sandbox and click <strong className="text-[#3b82f6]">Execute Code</strong>.</p>
+                           <p>4. Once it runs successfully with no errors, this workspace will unlock.</p>
+                        </div>
+                     </div>
+                     <button
+                        onClick={() => setActiveTab("solutions")}
+                        className="px-8 py-4 bg-[#3b82f6] text-white hover:bg-[#2563eb] rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 cursor-pointer shadow-lg hover:shadow-[#3b82f6]/20"
+                     >
+                        Go to Solutions <ArrowRight size={14} />
+                     </button>
                   </motion.div>
                )}
 

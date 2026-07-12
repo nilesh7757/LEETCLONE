@@ -9,7 +9,7 @@ import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
 import { updateUserStreak } from "@/lib/services/streak";
 import { processContestScoring } from "@/lib/services/contest";
-import { executionQueue, queueEvents } from "@/lib/queue";
+import { executionQueue, queueEvents, hasActiveWorkers } from "@/lib/queue";
 import { submissionSchema } from "@/lib/validations";
 
 // Ensure socket is connected
@@ -120,13 +120,7 @@ export const POST = apiHandler(async (req: Request) => {
   let designScore: number | null = null;
 
   if (problem.type === "CODING") {
-    let runDirectly = false;
-    try {
-      const workers = await executionQueue.getWorkers();
-      if (workers.length === 0) runDirectly = true;
-    } catch {
-      runDirectly = true;
-    }
+    const runDirectly = !(await hasActiveWorkers());
 
     if (runDirectly) {
       results = await executeCode({

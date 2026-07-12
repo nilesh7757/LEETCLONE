@@ -1,52 +1,76 @@
 # High-Level Design (HLD) Document - LogiQuest
 
 ## 1. Introduction
-The High-Level Design (HLD) document defines the architecture and system flow for LogiQuest, a highly scalable, real-time code evaluation and collaborative learning platform. The architecture is designed to handle thousands of concurrent users, providing a seamless experience for real-time multiplayer coding, instantaneous AI feedback, and code execution.
+The High-Level Design (HLD) document defines the system topology, component interactions, and architectural patterns of **LogiQuest**. The design ensures sub-2.5s code execution cycles, dynamic live contest updates, and database operations optimized for sudden traffic spikes.
 
-## 2. System Architecture Overview
+---
 
-LogiQuest employs a **Microservices-oriented Hybrid Monolith Architecture**. It separates real-time stateful workloads (Socket.IO) from stateless request-response workloads (Next.js) to ensure independent scalability and fault tolerance.
+## 2. System Architecture & Topology
 
-### 2.1 Core Architectural Tiers
-1. **Presentation Tier (Client):** Next.js App Router (React 19) serving statically generated (SSG) and server-side rendered (SSR) pages. Monaco Editor is leveraged for the coding environment.
-2. **Application Tier (Backend Services):**
-   - **Next.js Server Actions & API Routes:** Handles business logic, auth, CRUD operations, and stateless API calls.
-   - **Socket.IO Node.js Server:** A dedicated, stateful Node.js server managing WebSocket connections, collaboration rooms, and real-time cursor/code synchronizations.
-3. **Execution Tier (Judge0):** A sandboxed container execution environment deployed via Docker to safely compile and run untrusted code.
-4. **AI & Inference Tier:** Integrations with Google Gemini and Groq for real-time AST parsing, code audits, and conversational AI mock interviews.
-5. **Data & Persistence Tier:**
-   - **PostgreSQL:** Primary ACID-compliant relational database.
-   - **Redis (Upstash):** High-speed in-memory datastore for caching, rate limiting, and pub/sub message brokering between stateless and stateful tiers.
+LogiQuest utilizes a **Microservices-oriented Hybrid Monolith Architecture**. Stateful WebSocket communication is decoupled from stateless HTTP request-response actions to guarantee high availability and independent scaling.
 
-## 3. Detailed Component Architecture
+```text
+                                  +---------------------------------------+
+                                  |            Client Browser             |
+                                  |      (React 19 / Monaco Editor)       |
+                                  +-------------------+---------------+---+
+                                                      |               |
+                                     HTTP API Calls / |               | Stateful WS Connection
+                                     Server Actions   |               | (Socket.IO)
+                                                      v               v
+                                  +-------------------+---+       +---+---------------+
+                                  |  Next.js Server   |       | Socket.IO Server  |
+                                  |  (Stateless API)  |       | (Stateful Room)   |
+                                  +---------+---------+---+       +---+-----------+---+
+                                            |         |               |           |
+                              Prisma Client |         | Redis Pub/Sub |           | Redis Adapter
+                                            v         +---------------+           v
+                                   +--------+--------+            +---------------+
+                                   |  PostgreSQL DB  |            |  Redis Cache  |
+                                   | (Primary/Read)  |            | (Cache / Pub) |
+                                   +-----------------+            +---------------+
+                                            |
+                         Webhook Callback   |   POST Run payload
+                                            v   (async)
+                                   +--------+--------+
+                                   | Judge0 API RCE  |
+                                   | (Docker Sandbox)|
+                                   +-----------------+
+```
 
-### 3.1 Next.js Application Server
-- **Routing & Rendering:** Utilizes Next.js App Router. Pages like `/problems` are ISR (Incremental Static Regeneration) cached, while `/problems/[id]/workspace` are SSR or Client-side rendered to fetch real-time state.
-- **Authentication:** NextAuth.js implements OAuth 2.0 (Google, GitHub) and JWT-based session management.
+---
 
-### 3.2 Real-Time Collaboration Engine
-- **State Synchronization:** Uses Operational Transformation (OT) or CRDTs (Conflict-free Replicated Data Types) via Yjs to resolve concurrent code edits in the Monaco editor.
-- **Redis Pub/Sub:** Since the Socket.IO server may horizontally scale to multiple instances, Redis Pub/Sub acts as a backplane. When User A (on Node 1) types, Node 1 publishes the change to Redis. Node 2 receives it and emits it to User B in the same collaboration room.
+## 3. Tiered Component Architecture
 
-### 3.3 Remote Code Execution (RCE) Engine
-- **Sandboxing:** Code is sent via HTTP REST to Judge0, which uses `isolate` (Linux kernel namespaces, cgroups) to securely execute code with strict CPU time limits, memory limits, and disabled network access.
-- **Asynchronous Webhooks:** To avoid blocking threads, Next.js fires the payload to Judge0 with a `webhook_url`. Judge0 executes the code and POSTs the result back to the Next.js Webhook handler. Next.js saves to PostgreSQL and triggers a Redis event, which the Socket server catches to notify the client.
+### 3.1 Presentation Tier (Client)
+*   **Next.js 16 (App Router):** Renders statically optimized landing pages and dynamic workspace layouts.
+*   **Monaco Editor Pane:** Embeds `@monaco-editor/react` as the primary development console. Uses local caching to store active user code drafts.
+*   **Framer Motion:** Animates layout adjustments and structural state changes.
 
-## 4. Scalability and High Availability (HA) Strategies
+### 3.2 Application & Real-Time Tier
+*   **Stateless Next.js Server:** Handles credentials, database transactions (Prisma client), rate limiting, and administrative API endpoints.
+*   **Stateful Socket.IO Node.js Server:** A separate event-driven process managing contest rooms, chat, and live announcements.
 
-### 4.1 Horizontal Scaling
-- **Stateless Next.js Nodes:** Deployed on Vercel, scaling instantly from 0 to N nodes based on HTTP traffic.
-- **Stateful Socket Nodes:** Deployed on container orchestration (e.g., Kubernetes/AWS ECS) behind an Application Load Balancer with sticky sessions enabled.
+### 3.3 Execution Tier (Remote Code Execution - RCE)
+*   **Judge0 Sandbox:** An isolated Linux namespace sandboxing engine that compiles and executes untrusted code. It exposes a callback webhook endpoint to report outcomes asynchronously.
 
-### 4.2 Caching Strategy (Redis)
-- **Problem Descriptions & Leaderboards:** Cached in Redis with a TTL of 1 hour. Leaderboards use Redis Sorted Sets (`ZADD`, `ZREVRANGE`) for O(log(N)) insertions and O(1) reads for top-K players.
-- **Session Caching:** JWT sessions are validated without hitting PostgreSQL for every API request.
+---
 
-## 5. Security Posture
-- **Code Execution Security:** Strict unprivileged user execution, restricted `/tmp` file access, drop all Linux capabilities (`cap_drop`).
-- **Network Security:** TLS 1.3 across all endpoints. CORS restricted to allowed domains. WebSockets protected by origin checks and JWT verification upon upgrade request.
-- **Rate Limiting:** Redis-based token bucket algorithm preventing API abuse and brute-force attacks (max 10 submissions/minute per user).
+## 4. Scalability & High Availability (HA) Model
 
-## 6. Disaster Recovery & Backups
-- **PostgreSQL:** Write-Ahead Logging (WAL) enabled with automated nightly snapshots and Point-in-Time Recovery (PITR) up to 7 days.
-- **Redis:** Configured with AOF (Append-Only File) persisting every second to avoid data loss on Socket/Leaderboard states.
+### 4.1 Stateful WebSockets Horizontal Scaling
+Since the stateful Socket.IO server maintains connections for contests and chat rooms, we resolve horizontal scalability by implementing:
+*   **Sticky Sessions:** The Application Load Balancer (ALB) directs handshake upgrades from the same user IP to the same container node.
+*   **Redis Socket.IO Adapter (`@socket.io/redis-adapter`):** The Socket.IO server instances publish events (e.g. chat messages, contest updates) to a Redis channel. Every socket container listens to Redis, relaying room updates to connected browser clients globally regardless of which server node they are on.
+
+### 4.2 Caching Strategy & Redis Cache-Aside Model
+*   **Read-Caching:** Problem listings, descriptions, and user profile badges are cached in Redis with a Time-To-Live (TTL) of 1 hour.
+*   **Leaderboard Aggregations:** Leaderboard standings are stored using **Redis Sorted Sets (ZSET)**. This maps the ranking lookup runtime complexity to $O(\log N)$ for writes and $O(1)$ for reads.
+
+---
+
+## 5. Security Architecture
+
+*   **RCE Containment:** Host operating system directories are fully protected. Judge0 drops root privileges, disables DNS/network interfaces, and throttles container CPU execution.
+*   **NextAuth Session Audits:** JWT tokens are encrypted using HS256/AES keys stored securely in system environments.
+*   **API Security & Firewalls:** The system utilizes a token bucket rate-limiter configuration stored in Redis, blocking connections that exceed 10 submission runs per minute per IP address.

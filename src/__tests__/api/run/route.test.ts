@@ -12,7 +12,8 @@ jest.mock('@/lib/queue', () => ({
       waitUntilFinished: jest.fn().mockResolvedValue([{ actual: 'out' }]) 
     }) 
   },
-  queueEvents: {}
+  queueEvents: {},
+  hasActiveWorkers: jest.fn().mockResolvedValue(true)
 }))
 
 import { POST } from '@/app/api/run/route';

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import DOMPurify from "dompurify";
 import { useTheme } from "next-themes";
+import { marked } from "marked";
 
 interface TestCase {
   input: string | object;
@@ -30,11 +31,15 @@ export default function ProblemDescription({
   memoryLimit,
   companies = [],
 }: ProblemDescriptionProps) {
-  const [sanitizedHtml, setSanitizedHtml] = useState(description);
+  const [sanitizedHtml, setSanitizedHtml] = useState("");
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    setSanitizedHtml(DOMPurify.sanitize(description));
+    const parseMarkdown = async () => {
+      const parsed = await marked.parse(description || "");
+      setSanitizedHtml(DOMPurify.sanitize(parsed));
+    };
+    parseMarkdown();
   }, [description]);
 
   const isDark = resolvedTheme !== "light" && resolvedTheme !== "cream";

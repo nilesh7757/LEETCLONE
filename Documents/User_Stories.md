@@ -1,18 +1,49 @@
-# User Stories
+# Agile User Stories - LogiQuest
 
-## Epic 1: Problem Solving
-- **US 1.1:** As a user, I want to filter problems by topic, difficulty, and status so that I can practice specific areas.
-- **US 1.2:** As a user, I want to write and execute code in an integrated Monaco editor so that I can test my solutions immediately.
-- **US 1.3:** As a user, I want to see time and space complexity analysis from the AI agent so that I can optimize my code.
+## Epic 1: Problem Solving & Workspace
 
-## Epic 2: Collaborative Coding & Contests
-- **US 2.1:** As a user, I want to invite a friend to a real-time coding session so that we can pair program.
-- **US 2.2:** As a competitive programmer, I want to participate in live contests with real-time leaderboards so that I can compete with others.
+### US-1.1: Advanced Problem Filtering
+*   **Statement:**
+    > **As a** registered learner,
+    > **I want to** filter and sort coding problems by difficulty, category, and solve-status,
+    > **so that** I can focus on targeted concepts during practice sessions.
+*   **Acceptance Criteria:**
+    *   **AC 1:** Given a user is on the problems directory page, when they click "Medium" difficulty, the list must only render problems with medium difficulty tag.
+    *   **AC 2:** When selecting a specific category tag (e.g., "Dynamic Programming"), the list must filter recursively to match the selection.
+    *   **AC 3:** The URL search parameters must update dynamically (e.g., `/problems?difficulty=MEDIUM&tag=dp`) to allow direct link sharing.
 
-## Epic 3: AI Interview Preparation
-- **US 3.1:** As a job candidate, I want to take a simulated mock interview with an AI agent so that I can practice answering technical questions under pressure.
-- **US 3.2:** As a learner, I want to receive a customized study plan based on my performance in mock interviews.
+### US-1.2: Code Compilation & Verification
+*   **Statement:**
+    > **As a** coder,
+    > **I want to** execute code drafts against sample and hidden inputs inside an embedded code editor,
+    > **so that** I can verify solution correctness instantly.
+*   **Acceptance Criteria:**
+    *   **AC 1:** Given a user has entered code in the Monaco Editor, when they click "Run Code", the terminal pane must output the compilation log and execution time.
+    *   **AC 2:** When clicking "Submit", the editor must block writing, send the payload to Judge0, and update the UI with status updates (`PENDING` -> `RUNNING` -> `ACCEPTED` or error state).
 
-## Epic 4: Social and Community
-- **US 4.1:** As a user, I want to publish blog posts and editorials about problem solutions to share my knowledge.
-- **US 4.2:** As a user, I want to maintain a daily coding streak and earn badges to stay motivated.
+---
+
+## Epic 2: AI Interview Preparation
+
+### US-2.1: AI-Powered Oral & Coding Mock Interview
+*   **Statement:**
+    > **As a** job seeker,
+    > **I want to** undergo a mock interview session led by an AI agent,
+    > **so that** I can practice speaking through my logic and solving challenges under pressure.
+*   **Acceptance Criteria:**
+    *   **AC 1:** Given a candidate starts an interview, the AI must display the problem statement but keep the code editor disabled.
+    *   **AC 2:** The candidate must provide an overview of their approach in chat. If the AI validates the approach, the editor must become writeable.
+    *   **AC 3:** When the candidate runs code, the AI must inspect the output structure and query the user about potential optimization improvements.
+
+---
+
+## Epic 3: Gamification & Engagement
+
+### US-3.1: Daily Streak Preservation
+*   **Statement:**
+    > **As a** learner,
+    > **I want to** maintain a daily streak counter,
+    > **so that** I am motivated to solve coding challenges daily.
+*   **Acceptance Criteria:**
+    *   **AC 1:** Given a user submits an `ACCEPTED` solution, the system must check their last solve timestamp. If it is within 24 hours of the current day, increment streak count by 1.
+    *   **AC 2:** If the user fails to submit an accepted solution within a calendar day, the streak must reset to 0 upon their next login.

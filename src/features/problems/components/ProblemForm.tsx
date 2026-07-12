@@ -9,6 +9,8 @@ import dynamic from "next/dynamic";
 const Split = dynamic(() => import("react-split"), { ssr: false });
 import Editor from "@monaco-editor/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 import { 
   PlusCircle, Trash2, FileText, LayoutTemplate, SlidersHorizontal, 
@@ -133,6 +135,19 @@ export default function ProblemForm({
       problemType: "CODING",
     },
   });
+
+  const descriptionValue = watch("description");
+  const [markdownPreviewHtml, setMarkdownPreviewHtml] = useState("");
+
+  useEffect(() => {
+    if (descriptionMode === "MARKDOWN" && markdownPreview) {
+      const parseMarkdown = async () => {
+        const parsed = await marked.parse(descriptionValue || "");
+        setMarkdownPreviewHtml(DOMPurify.sanitize(parsed));
+      };
+      parseMarkdown();
+    }
+  }, [descriptionValue, descriptionMode, markdownPreview]);
 
   const runVerification = async () => {
     const currentCode = getValues("referenceSolution");
@@ -500,8 +515,7 @@ export default function ProblemForm({
                               <div className="flex-1 min-h-0 relative">
                                  {markdownPreview ? (
                                     <div className="h-full p-6 overflow-y-auto custom-scrollbar prose prose-invert prose-sm max-w-none">
-                                       <div dangerouslySetInnerHTML={{ __html: watch("description") }} />
-                                       {/* Note: Ideally use a markdown parser here, but for now showing raw/tiptap html if stored as such */}
+                                       <div dangerouslySetInnerHTML={{ __html: markdownPreviewHtml }} />
                                        <p className="text-[8px] text-[var(--muted-foreground)]/30 uppercase mt-10 tracking-widest italic">Previewing content</p>
                                     </div>
                                  ) : (
