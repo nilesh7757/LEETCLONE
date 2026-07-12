@@ -88,7 +88,8 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
           let sourceCode = code;
           if (type === ProblemType.SQL) {
             const schema = tc.initialSchema || params.initialSchema || "";
-            const data = tc.initialData || params.initialData || "";
+            // If the test case input has custom sql, run it as seed data. Otherwise fallback to predefined database state.
+            const data = (tc.input && tc.input.trim() !== "") ? tc.input : (tc.initialData || params.initialData || "");
             sourceCode = `.headers on\n.mode csv\n${schema}\n${data}\n${code}`;
           }
 
