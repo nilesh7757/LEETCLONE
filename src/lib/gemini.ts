@@ -44,37 +44,70 @@ export const MODELS = [
   "gemini-pro",
 ];
 
-function getZodSchemaInstructions(schema: z.ZodTypeAny): string {
-  if (schema instanceof z.ZodObject) {
-    const shape = schema.shape;
+function getZodTypeDescription(field: any, depth: number = 0): string {
+  const indent = "  ".repeat(depth);
+  
+  let current = field;
+  let desc = field.description || "";
+  while (current && current._def) {
+    const def = current._def as any;
+    if (def.description && !desc) desc = def.description;
+    
+    const constructorName = current.constructor.name;
+    if (
+      constructorName === "ZodDefault" || 
+      constructorName === "ZodOptional" || 
+      constructorName === "ZodNullable"
+    ) {
+      current = def.innerType;
+    } else if (constructorName === "ZodEffects") {
+      current = def.schema;
+    } else if (constructorName === "ZodPipe") {
+      current = def.in;
+    } else {
+      break;
+    }
+  }
+
+  if (current instanceof z.ZodObject) {
+    const shape = current.shape;
     const lines: string[] = [];
     for (const key of Object.keys(shape)) {
-      const field = shape[key];
-      let desc = field.description || "";
-      let typeName = "string";
-      
-      let current = field;
-      while (current && current._def) {
-        if (current._def.description && !desc) desc = current._def.description;
-        if (current.constructor.name === "ZodDefault" || current.constructor.name === "ZodOptional" || current.constructor.name === "ZodNullable") {
-          current = current._def.innerType;
-        } else {
-          break;
-        }
-      }
-      
-      if (current instanceof z.ZodString) typeName = "string";
-      else if (current instanceof z.ZodNumber) typeName = "number";
-      else if (current instanceof z.ZodBoolean) typeName = "boolean";
-      else if (current instanceof z.ZodArray) {
-        const el = current._def.type;
-        typeName = `array of ${el?.constructor.name.replace("Zod", "").toLowerCase() || "string"}s`;
-      } else {
-        typeName = current?.constructor?.name?.replace("Zod", "").toLowerCase() || "any";
-      }
-      lines.push(`- "${key}" (${typeName}): ${desc || "No description provided."}`);
+      const valueType = getZodTypeDescription(shape[key], depth + 1);
+      lines.push(`${indent}  "${key}": ${valueType}`);
     }
-    return `\n\nCRITICAL: Your output must be a single JSON object conforming exactly to this structure (do NOT include extra fields or markdown formatting unless wrapping in standard json block):\n{\n${lines.map(l => "  " + l).join(",\n")}\n}`;
+    return `{\n${lines.join(",\n")}\n${indent}}`;
+  }
+
+  if (current instanceof z.ZodArray) {
+    const elementType = current.element;
+    const elementDesc = getZodTypeDescription(elementType, depth);
+    return `Array of ${elementDesc}`;
+  }
+
+  if (current instanceof z.ZodString) {
+    return `string${desc ? ` (${desc})` : ""}`;
+  }
+  if (current instanceof z.ZodNumber) {
+    return `number${desc ? ` (${desc})` : ""}`;
+  }
+  if (current instanceof z.ZodBoolean) {
+    return `boolean${desc ? ` (${desc})` : ""}`;
+  }
+  if (current instanceof z.ZodUnion) {
+    const options = (current._def as any).options.map((o: any) => getZodTypeDescription(o, depth));
+    return `(${options.join(" | ")})${desc ? ` (${desc})` : ""}`;
+  }
+  if (current instanceof z.ZodEnum) {
+    return `enum [${(current._def as any).values.map((v: any) => `"${v}"`).join(", ")}]${desc ? ` (${desc})` : ""}`;
+  }
+  
+  return `${current?.constructor?.name?.replace("Zod", "").toLowerCase() || "any"}${desc ? ` (${desc})` : ""}`;
+}
+
+function getZodSchemaInstructions(schema: any): string {
+  if (schema instanceof z.ZodObject) {
+    return `\n\nCRITICAL: Your output must be a single JSON object conforming exactly to this structure (do NOT include extra fields or markdown formatting unless wrapping in standard json block):\n${getZodTypeDescription(schema, 0)}`;
   }
   return "";
 }
