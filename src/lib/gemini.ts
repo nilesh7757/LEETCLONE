@@ -44,13 +44,22 @@ export const MODELS = [
   "gemini-pro",
 ];
 
-function getZodTypeDescription(field: any, depth: number = 0): string {
+interface ZodInternalDef {
+  description?: string;
+  innerType?: z.ZodTypeAny;
+  schema?: z.ZodTypeAny;
+  in?: z.ZodTypeAny;
+  options?: z.ZodTypeAny[];
+  values?: string[];
+}
+
+function getZodTypeDescription(field: z.ZodTypeAny, depth: number = 0): string {
   const indent = "  ".repeat(depth);
   
   let current = field;
   let desc = field.description || "";
   while (current && current._def) {
-    const def = current._def as any;
+    const def = current._def as unknown as ZodInternalDef;
     if (def.description && !desc) desc = def.description;
     
     const constructorName = current.constructor.name;
@@ -59,11 +68,14 @@ function getZodTypeDescription(field: any, depth: number = 0): string {
       constructorName === "ZodOptional" || 
       constructorName === "ZodNullable"
     ) {
-      current = def.innerType;
+      if (def.innerType) current = def.innerType;
+      else break;
     } else if (constructorName === "ZodEffects") {
-      current = def.schema;
+      if (def.schema) current = def.schema;
+      else break;
     } else if (constructorName === "ZodPipe") {
-      current = def.in;
+      if (def.in) current = def.in;
+      else break;
     } else {
       break;
     }
@@ -73,7 +85,7 @@ function getZodTypeDescription(field: any, depth: number = 0): string {
     const shape = current.shape;
     const lines: string[] = [];
     for (const key of Object.keys(shape)) {
-      const valueType = getZodTypeDescription(shape[key], depth + 1);
+      const valueType = getZodTypeDescription(shape[key] as z.ZodTypeAny, depth + 1);
       lines.push(`${indent}  "${key}": ${valueType}`);
     }
     return `{\n${lines.join(",\n")}\n${indent}}`;
@@ -81,7 +93,7 @@ function getZodTypeDescription(field: any, depth: number = 0): string {
 
   if (current instanceof z.ZodArray) {
     const elementType = current.element;
-    const elementDesc = getZodTypeDescription(elementType, depth);
+    const elementDesc = getZodTypeDescription(elementType as z.ZodTypeAny, depth);
     return `Array of ${elementDesc}`;
   }
 
@@ -95,17 +107,19 @@ function getZodTypeDescription(field: any, depth: number = 0): string {
     return `boolean${desc ? ` (${desc})` : ""}`;
   }
   if (current instanceof z.ZodUnion) {
-    const options = (current._def as any).options.map((o: any) => getZodTypeDescription(o, depth));
+    const def = current._def as unknown as ZodInternalDef;
+    const options = (def.options || []).map((o: z.ZodTypeAny) => getZodTypeDescription(o, depth));
     return `(${options.join(" | ")})${desc ? ` (${desc})` : ""}`;
   }
   if (current instanceof z.ZodEnum) {
-    return `enum [${(current._def as any).values.map((v: any) => `"${v}"`).join(", ")}]${desc ? ` (${desc})` : ""}`;
+    const def = current._def as unknown as ZodInternalDef;
+    return `enum [${(def.values || []).map((v: string) => `"${v}"`).join(", ")}]${desc ? ` (${desc})` : ""}`;
   }
   
   return `${current?.constructor?.name?.replace("Zod", "").toLowerCase() || "any"}${desc ? ` (${desc})` : ""}`;
 }
 
-function getZodSchemaInstructions(schema: any): string {
+function getZodSchemaInstructions(schema: z.ZodTypeAny): string {
   if (schema instanceof z.ZodObject) {
     return `\n\nCRITICAL: Your output must be a single JSON object conforming exactly to this structure (do NOT include extra fields or markdown formatting unless wrapping in standard json block):\n${getZodTypeDescription(schema, 0)}`;
   }
@@ -132,7 +146,7 @@ export async function runAI<T = unknown>(
 
   let enhancedPrompt = prompt;
   if (schema) {
-    enhancedPrompt += getZodSchemaInstructions(schema);
+    enhancedPrompt += getZodSchemaInstructions(schema as z.ZodTypeAny);
   }
 
   const parseResponse = (text: string) => {
