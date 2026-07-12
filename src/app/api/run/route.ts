@@ -71,21 +71,48 @@ export const POST = apiHandler(async (req: Request) => {
   
   if (casesToGenerate.length > 0 && generationCode && finalType === "CODING") {
     const refLang = language || detectLanguage(generationCode);
-    const refJob = await executionQueue.add('generate-outputs', {
-      problemId: problemId || "ref-generator",
-      type: "CODING" as ProblemType,
-      code: generationCode,
-      language: refLang,
-      testCases: casesToGenerate.map(tc => ({ 
-        input: typeof tc === 'string' ? tc : (tc.input || ""), 
-        expectedOutput: "" 
-      })),
-      timeLimit: problem?.timeLimit || 2,
-      memoryLimit: problem?.memoryLimit || 256,
-      isOutputGeneration: true
-    });
+    
+    let runRefDirectly = false;
+    try {
+      const workers = await executionQueue.getWorkers();
+      if (workers.length === 0) runRefDirectly = true;
+    } catch {
+      runRefDirectly = true;
+    }
 
-    const refResults = await refJob.waitUntilFinished(queueEvents, 30000);
+    let refResults;
+    if (runRefDirectly) {
+      const { executeCode } = await import("@/lib/codeExecution");
+      refResults = await executeCode({
+        problemId: problemId || "ref-generator",
+        type: "CODING" as ProblemType,
+        code: generationCode,
+        language: refLang,
+        testCases: casesToGenerate.map(tc => ({ 
+          input: typeof tc === 'string' ? tc : (tc.input || ""), 
+          expectedOutput: "" 
+        })),
+        timeLimit: problem?.timeLimit || 2,
+        memoryLimit: problem?.memoryLimit || 256,
+        isOutputGeneration: true
+      });
+    } else {
+      const refJob = await executionQueue.add('generate-outputs', {
+        problemId: problemId || "ref-generator",
+        type: "CODING" as ProblemType,
+        code: generationCode,
+        language: refLang,
+        testCases: casesToGenerate.map(tc => ({ 
+          input: typeof tc === 'string' ? tc : (tc.input || ""), 
+          expectedOutput: "" 
+        })),
+        timeLimit: problem?.timeLimit || 2,
+        memoryLimit: problem?.memoryLimit || 256,
+        isOutputGeneration: true
+      });
+
+      refResults = await refJob.waitUntilFinished(queueEvents, 30000);
+    }
 
     casesToGenerate.forEach((tc, idx) => {
       const res = refResults[idx];
