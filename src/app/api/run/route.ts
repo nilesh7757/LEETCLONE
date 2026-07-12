@@ -113,12 +113,28 @@ export const POST = apiHandler(async (req: Request) => {
     finalLanguage = "sql";
   }
 
-  const job = await executionQueue.add('run-code', { 
-    ...commonParams, 
-    language: finalLanguage 
-  });
+  let results;
+  let runDirectly = false;
+  try {
+    const workers = await executionQueue.getWorkers();
+    if (workers.length === 0) runDirectly = true;
+  } catch {
+    runDirectly = true;
+  }
 
-  const results = await job.waitUntilFinished(queueEvents, 30000); // 30 seconds timeout
+  if (runDirectly) {
+    const { executeCode } = await import("@/lib/codeExecution");
+    results = await executeCode({
+      ...commonParams,
+      language: finalLanguage
+    });
+  } else {
+    const job = await executionQueue.add('run-code', { 
+      ...commonParams, 
+      language: finalLanguage 
+    });
+    results = await job.waitUntilFinished(queueEvents, 30000); // 30 seconds timeout
+  }
   
   return NextResponse.json({ results });
 });
