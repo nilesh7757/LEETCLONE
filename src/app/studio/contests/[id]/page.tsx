@@ -85,7 +85,7 @@ export default function StudioContestEditor() {
   const handleUpdate = async (updateData: Partial<Contest> | Record<string, unknown>) => {
     setIsSaving(true);
     try {
-      await axios.patch(`/api/contest/${id}/update`, updateData);
+      await axios.patch(`/api/contest/${id}`, updateData);
       toast.success("Contest updated");
       fetchContest();
     } catch (err: unknown) {

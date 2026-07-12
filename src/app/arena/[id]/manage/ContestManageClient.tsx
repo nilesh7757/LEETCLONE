@@ -139,7 +139,7 @@ export default function ContestManageClient({ contestId }: { contestId: string }
   const handleSaveSettings = async () => {
     setIsSavingSettings(true);
     try {
-      await axios.patch(`/api/contest/${contestId}/update`, settings);
+      await axios.patch(`/api/contest/${contestId}`, settings);
       toast.success("Contest configuration updated");
       fetchContest();
     } catch (err: unknown) {
@@ -171,7 +171,7 @@ export default function ContestManageClient({ contestId }: { contestId: string }
   const handleRemoveFromContest = async (problemId: string) => {
     const currentProblemIds = contest?.problems.map(p => p.id) || [];
     try {
-      await axios.patch(`/api/contest/${contestId}/update`, {
+      await axios.patch(`/api/contest/${contestId}`, {
         problemIds: currentProblemIds.filter(id => id !== problemId)
       });
       toast.success("Problem removed from contest");

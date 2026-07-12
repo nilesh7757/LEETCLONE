@@ -435,8 +435,7 @@ export default function StudioProblemEditor() {
           <aside className="w-64 border-r border-white/5 bg-[#080808] p-4 flex flex-col gap-2 shrink-0">
              {[
                 { id: 'statement', label: 'Statement', icon: FileText },
-                { id: 'testcases', label: 'Test Cases', icon: Database },
-                { id: 'solutions', label: 'Solutions', icon: Code2 },
+                { id: 'solutions', label: 'Solutions & Tests', icon: Code2 },
                 { id: 'collaborators', label: 'Collaborators', icon: Users },
                 { id: 'settings', label: 'Settings', icon: Settings },
              ].map(tab => {
