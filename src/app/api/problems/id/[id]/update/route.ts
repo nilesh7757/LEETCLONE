@@ -69,7 +69,7 @@ export const PATCH = apiHandler(async (req: Request, { params }: { params: Promi
                   type: "CODING",
                   language,
                   code: referenceSolution,
-                  testCases: testCasesInput.map((tc: any) => ({ 
+                  testCases: testCasesInput.map((tc: string | InputCase) => ({ 
                       input: typeof tc === 'string' ? tc : (tc.input || ""), 
                       expectedOutput: "" 
                   })),
@@ -83,14 +83,14 @@ export const PATCH = apiHandler(async (req: Request, { params }: { params: Promi
                       processedTestCases.push({ input: res.input, expectedOutput: res.actual });
                   } else {
                       // Fallback: save the existing output provided by the frontend instead of aborting the save
-                      const originalTc = testCasesInput.find((tc: any) => tc && typeof tc === 'object' && tc.input === res.input);
+                      const originalTc = testCasesInput.find((tc: string | InputCase) => tc && typeof tc === 'object' && (tc as InputCase).input === res.input) as InputCase | undefined;
                       processedTestCases.push({ input: res.input, expectedOutput: originalTc?.output || "" });
                   }
               }
           } catch (execErr) {
               console.error("[SAVE_VALIDATION] Reference solution execution validation failed during save:", execErr);
               // Fallback to saving whatever inputs/outputs the frontend passed
-              testCasesInput.forEach((tc: any) => {
+              testCasesInput.forEach((tc: string | InputCase) => {
                   processedTestCases.push({
                       input: typeof tc === 'string' ? tc : (tc.input || ""),
                       expectedOutput: typeof tc === 'string' ? "" : (tc.output || "")

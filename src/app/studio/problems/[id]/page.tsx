@@ -454,7 +454,7 @@ export default function StudioProblemEditor() {
                 return (
                    <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
+                      onClick={() => setActiveTab(tab.id as 'statement' | 'solutions' | 'testcases' | 'collaborators' | 'settings')}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
                          activeTab === tab.id 
                          ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 
