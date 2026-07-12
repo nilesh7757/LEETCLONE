@@ -4,6 +4,7 @@ jest.mock('@/auth', () => ({
 }))
 jest.mock('@/lib/queue', () => ({
   executionQueue: { 
+    getWorkers: jest.fn().mockResolvedValue([{ id: 'w1' }]),
     add: jest.fn().mockResolvedValue({ 
       waitUntilFinished: jest.fn().mockResolvedValue([{ status: 'Accepted', runtime: 100, actual: '3' }]) 
     }) 

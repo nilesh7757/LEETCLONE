@@ -101,7 +101,7 @@ describe('executeCode', () => {
     expect(mockedAxios.post).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        source_code: 'CREATE TABLE users (id INT);\nINSERT INTO users VALUES (1);\nSELECT * FROM users;',
+        source_code: '.headers on\n.mode csv\nCREATE TABLE users (id INT);\nINSERT INTO users VALUES (1);\nSELECT * FROM users;',
       })
     );
   });
