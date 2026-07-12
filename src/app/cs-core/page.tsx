@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BookOpen, Monitor, Database, Network, Box, PlayCircle, Search, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const CS_DOMAINS = [
   {
@@ -85,13 +86,20 @@ export default function CsCoreDashboard() {
     setIsRecommending(true);
     try {
       const res = await fetch("/api/cs-core/recommend", { method: "POST" });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to get AI recommendation. Please try again.");
+      }
       const data = await res.json();
       if (data.topic) {
         const slug = data.topic.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         router.push(`/cs-core/custom-${slug}?title=${encodeURIComponent(data.topic)}`);
+      } else {
+        throw new Error("No topic returned from the recommender.");
       }
     } catch (err) {
       console.error(err);
+      toast.error(err instanceof Error ? err.message : "Failed to generate recommendation.");
       setIsRecommending(false);
     }
   };

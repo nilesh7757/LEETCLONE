@@ -26,7 +26,7 @@ describe('Problems API (GET)', () => {
 
   it('should return public problems when unauthenticated', async () => {
     (auth as jest.Mock).mockResolvedValue(null);
-    (prisma.problem.findMany as jest.Mock).mockResolvedValue([{ id: '1', title: 'P1' }]);
+    (prisma.problem.findMany as jest.Mock).mockResolvedValue([{ id: '1', title: 'P1', submissions: [], contests: [] }]);
     (prisma.problem.count as jest.Mock).mockResolvedValue(1);
 
     const req = new Request('http://localhost/api/problems');

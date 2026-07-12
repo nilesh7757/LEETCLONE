@@ -44,6 +44,41 @@ export const MODELS = [
   "gemini-pro",
 ];
 
+function getZodSchemaInstructions(schema: z.ZodTypeAny): string {
+  if (schema instanceof z.ZodObject) {
+    const shape = schema.shape;
+    const lines: string[] = [];
+    for (const key of Object.keys(shape)) {
+      const field = shape[key];
+      let desc = field.description || "";
+      let typeName = "string";
+      
+      let current = field;
+      while (current && current._def) {
+        if (current._def.description && !desc) desc = current._def.description;
+        if (current.constructor.name === "ZodDefault" || current.constructor.name === "ZodOptional" || current.constructor.name === "ZodNullable") {
+          current = current._def.innerType;
+        } else {
+          break;
+        }
+      }
+      
+      if (current instanceof z.ZodString) typeName = "string";
+      else if (current instanceof z.ZodNumber) typeName = "number";
+      else if (current instanceof z.ZodBoolean) typeName = "boolean";
+      else if (current instanceof z.ZodArray) {
+        const el = current._def.type;
+        typeName = `array of ${el?.constructor.name.replace("Zod", "").toLowerCase() || "string"}s`;
+      } else {
+        typeName = current?.constructor?.name?.replace("Zod", "").toLowerCase() || "any";
+      }
+      lines.push(`- "${key}" (${typeName}): ${desc || "No description provided."}`);
+    }
+    return `\n\nCRITICAL: Your output must be a single JSON object conforming exactly to this structure (do NOT include extra fields or markdown formatting unless wrapping in standard json block):\n{\n${lines.map(l => "  " + l).join(",\n")}\n}`;
+  }
+  return "";
+}
+
 /**
  * Universal AI Executor - Type-safe with Ultimate Resilience
  */
@@ -60,6 +95,11 @@ export async function runAI<T = unknown>(
 
   if (!keys.GEMINI_API_KEY && !keys.GROQ_API_KEY && !keys.NVIDIA_API_KEY && !keys.HF_API_KEY) {
     throw new AIError("No AI API Keys configured.", 500);
+  }
+
+  let enhancedPrompt = prompt;
+  if (schema) {
+    enhancedPrompt += getZodSchemaInstructions(schema);
   }
 
   const parseResponse = (text: string) => {
@@ -79,15 +119,15 @@ export async function runAI<T = unknown>(
     }
   };
 
-  // 1. Try NVIDIA (Llama 3.1 405B)
+  // 1. Try NVIDIA (Llama 3.3 70B)
   if (nvidia && keys.NVIDIA_API_KEY && !fastMode) {
     try {
       const completion = await nvidia.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: prompt + (isJsonMode ? "\n\nCRITICAL: Return valid JSON ONLY." : "") },
+          { role: "user" as const, content: enhancedPrompt + (isJsonMode ? "\n\nCRITICAL: Return valid JSON ONLY." : "") },
         ],
-        model: "meta/llama-3.1-405b-instruct",
+        model: "meta/llama-3.3-70b-instruct",
         response_format: isJsonMode ? { type: "json_object" } : undefined,
         temperature: 0.1,
       });
@@ -100,7 +140,9 @@ export async function runAI<T = unknown>(
       } else {
          return (isJsonMode ? parseResponse(content) : content) as T | string;
       }
-    } catch (error) {}
+    } catch (error) {
+      logger.error("[AI_NVIDIA_ERROR]", error);
+    }
   }
 
   // 2. Try Groq (Llama 3.3 70B)
@@ -109,7 +151,7 @@ export async function runAI<T = unknown>(
       const completion = await groq.chat.completions.create({
         messages: [
           ...(systemInstruction ? [{ role: "system" as const, content: systemInstruction }] : []),
-          { role: "user" as const, content: prompt + (isJsonMode ? "\n\nSTRICT JSON ONLY." : "") },
+          { role: "user" as const, content: enhancedPrompt + (isJsonMode ? "\n\nSTRICT JSON ONLY." : "") },
         ],
         model: "llama-3.3-70b-versatile",
         response_format: isJsonMode ? { type: "json_object" } : undefined,
@@ -124,7 +166,9 @@ export async function runAI<T = unknown>(
       } else {
          return (isJsonMode ? parseResponse(content) : content) as T | string;
       }
-    } catch (error) {}
+    } catch (error) {
+      logger.error("[AI_GROQ_ERROR]", error);
+    }
   }
 
   // 3. Try Gemini (Using stable gemini-pro if flash fails)
@@ -135,7 +179,7 @@ export async function runAI<T = unknown>(
         try {
           const model = genAI.getGenerativeModel({ model: modelId });
           const combinedPrompt = (systemInstruction ? `System: ${systemInstruction}\n\n` : "") + 
-                                 `User: ${prompt}` + (isJsonMode ? `\n\nCRITICAL: Return only the JSON object.` : "");
+                                 `User: ${enhancedPrompt}` + (isJsonMode ? `\n\nCRITICAL: Return only the JSON object.` : "");
 
           const result = await model.generateContent(combinedPrompt);
           const response = await result.response;
@@ -165,7 +209,7 @@ export async function runAI<T = unknown>(
           const hfRes = await axios.post(
               "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct",
               { 
-                inputs: (systemInstruction ? `<|system|>\n${systemInstruction}\n` : "") + `<|user|>\n${prompt}` + (isJsonMode ? "\n\nReturn JSON only." : "") + "\n<|assistant|>",
+                inputs: (systemInstruction ? `<|system|>\n${systemInstruction}\n` : "") + `<|user|>\n${enhancedPrompt}` + (isJsonMode ? "\n\nReturn JSON only." : "") + "\n<|assistant|>",
                 parameters: { max_new_tokens: 2048, return_full_text: false }
               },
               { headers: { Authorization: `Bearer ${keys.HF_API_KEY}` }, timeout: 30000 }
@@ -173,7 +217,9 @@ export async function runAI<T = unknown>(
           const content = hfRes.data[0]?.generated_text || hfRes.data.generated_text || "";
           if (isJsonMode) return parseResponse(content);
           return content;
-      } catch (error) {}
+      } catch (error) {
+        logger.error("[AI_HF_ERROR]", error);
+      }
   }
 
   throw new AIError("Intelligence grid offline. Please try again.", 500);
@@ -235,9 +281,28 @@ export async function auditAndAnalyze(
 }
 
 export async function predictComplexity(code: string, language: string): Promise<z.infer<typeof ComplexitySchema>> {
-  const prompt = `Predict complexity for this ${language} code in JSON format. Code:\n${code}`;
+  const prompt = `
+    Analyze the following ${language} code and determine its exact Time Complexity and Space Complexity.
+    
+    Code:
+    ${code}
+    
+    Instructions:
+    1. Identify all loops, nested loops, recursive calls, and library functions.
+    2. Trace how the input size (typically N) affects the runtime.
+    3. Calculate the tightest Big-O bounds. Be precise (e.g., O(1), O(log N), O(N), O(N log N), O(N^2), O(2^N)).
+    4. Estimate the auxiliary and total space complexity, including recursion call stacks or dynamic allocations.
+    5. Pinpoint any complexity bottleneck in the code.
+  `.trim();
+
+  const systemInstruction = `
+    You are an expert static analyzer and algorithms specialist.
+    Analyze the provided code carefully and output its Big-O time complexity, space complexity, and specific bottleneck.
+    Do not default to O(N) unless the code is strictly linear. Trace nested loops (O(N^2) or O(N log N) if binary search / sorting is present) and logarithmic processes (O(log N)) carefully.
+  `.trim();
+
   try {
-    return await runAI(prompt, "Be a fast complexity estimator.", ComplexitySchema) as z.infer<typeof ComplexitySchema>;
+    return await runAI(prompt, systemInstruction, ComplexitySchema) as z.infer<typeof ComplexitySchema>;
   } catch (error) {
     return { timeComplexity: "Calculating...", spaceComplexity: "Calculating..." };
   }
