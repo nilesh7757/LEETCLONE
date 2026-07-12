@@ -5,6 +5,7 @@ import { CheckCircle, Circle, ChevronLeft, Info, ChevronRight } from "lucide-rea
 import { auth } from "@/auth";
 import AIWeaknessAnalysis from "@/features/ai/components/AIWeaknessAnalysis";
 import StudyPlanControls from "@/features/study-plans/components/StudyPlanControls";
+import EnrollmentButton from "@/features/study-plans/components/EnrollmentButton";
 
 interface StudyPlanDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -48,6 +49,16 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
   if (!plan.isPublic && plan.creatorId !== userId && !isAdmin) {
     notFound();
   }
+
+  // Fetch enrollment status for the user
+  const enrollment = userId ? await prisma.studyPlanEnrollment.findUnique({
+    where: {
+      userId_studyPlanId: {
+        userId,
+        studyPlanId: plan.id
+      }
+    }
+  }) : null;
 
   // Calculate progress
   const totalProblems = plan.problems.length;
@@ -117,6 +128,16 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                         style={{ width: `${progress}%` }}
                      />
                   </div>
+
+                  {userId && (
+                    <div className="pt-6 border-t border-[var(--primary)]/10">
+                      <EnrollmentButton 
+                        planId={plan.id}
+                        initialEnrolled={!!enrollment}
+                        initialReminderTime={enrollment?.reminderTime}
+                      />
+                    </div>
+                  )}
               </div>
            </div>
         </div>
