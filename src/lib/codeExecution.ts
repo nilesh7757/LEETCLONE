@@ -223,11 +223,22 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
           })
         );
       } else {
-        // --- POLLING FALLBACK: Poll Judge0 directly ---
-        const pollResponse = await axios.get(
-          `https://ce.judge0.com/submissions/batch?tokens=${pendingTokens.join(",")}&base64_encoded=false&fields=status_id,status,stdout,stderr,compile_output,message,time,memory`
+        // --- POLLING FALLBACK: Poll Judge0 directly in chunks of up to 20 ---
+        const pollingChunks: string[][] = [];
+        const POLLING_BATCH_LIMIT = 20;
+        for (let i = 0; i < pendingTokens.length; i += POLLING_BATCH_LIMIT) {
+          pollingChunks.push(pendingTokens.slice(i, i + POLLING_BATCH_LIMIT));
+        }
+
+        const chunkResponses = await Promise.all(
+          pollingChunks.map(async (chunkTokens) => {
+            const pollResponse = await axios.get(
+              `https://ce.judge0.com/submissions/batch?tokens=${chunkTokens.join(",")}&base64_encoded=false&fields=status_id,status,stdout,stderr,compile_output,message,time,memory`
+            );
+            return pollResponse.data.submissions || [];
+          })
         );
-        submissions = pollResponse.data.submissions;
+        submissions = chunkResponses.flat();
       }
 
       if (!submissions || !Array.isArray(submissions)) {
