@@ -73,10 +73,19 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
   }
 
   // Determine if we should use the webhook callback flow
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://logiquest.nileshmori.me";
-  const isLocalHost = appUrl.includes("localhost") || appUrl.includes("127.0.0.1");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const isTest = process.env.NODE_ENV === "test";
-  const callbackUrl = isTest ? null : (process.env.JUDGE0_CALLBACK_URL || (!isLocalHost ? `${appUrl}/api/judge0-callback` : null));
+  const isDev = process.env.NODE_ENV === "development";
+
+  let callbackUrl: string | null = null;
+  if (process.env.JUDGE0_CALLBACK_URL) {
+    callbackUrl = process.env.JUDGE0_CALLBACK_URL;
+  } else if (appUrl && !isTest && !isDev) {
+    const isLocalHost = appUrl.includes("localhost") || appUrl.includes("127.0.0.1");
+    if (!isLocalHost) {
+      callbackUrl = `${appUrl}/api/judge0-callback`;
+    }
+  }
 
   logger.info(`[EXEC_CODE] Submitting ${testCases.length} test cases to Judge0 Batch API... Callback url: ${callbackUrl || "None (direct polling fallback)"}`);
 
