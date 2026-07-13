@@ -66,7 +66,7 @@ LogiQuest is a high-fidelity, full-stack platform designed to provide a robust e
 ## 🏗️ Project Architecture
 
 ```text
-D:\LEETCLONE\
+logiquest/
 ├── prisma/               # Database schema and migrations
 ├── public/               # Static assets (logos, audio)
 ├── server.js             # Custom Socket.io server

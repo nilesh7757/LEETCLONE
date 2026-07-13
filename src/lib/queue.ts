@@ -13,6 +13,7 @@ const redisOptions = {
   ...(redisUrl.startsWith('rediss://') ? { tls: { rejectUnauthorized: false } } : {})
 };
 export const connection = new Redis(redisUrl, redisOptions);
+(globalThis as unknown as Record<string, unknown>)._redisConnection = connection;
 
 let redisRateLimited = false;
 

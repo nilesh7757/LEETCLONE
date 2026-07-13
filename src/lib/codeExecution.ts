@@ -55,7 +55,7 @@ export interface ExecuteCodeParams {
 }
 
 /**
- * HIGH-RELIABILITY ENGINE: Judge0 Cloud Runner (Asynchronous Batch Submissions)
+ * HIGH-RELIABILITY ENGINE: Judge0 Cloud Runner (Asynchronous Webhook Callback & Local Polling)
  */
 export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionResult[]> {
   const { code, testCases, language = "javascript", type } = params;
@@ -72,7 +72,13 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
     throw new Error(`Language ${language} not supported yet.`);
   }
 
-  logger.info(`[EXEC_CODE] Submitting ${testCases.length} test cases to Judge0 Batch API...`);
+  // Determine if we should use the webhook callback flow
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://logiquest.nileshmori.me";
+  const isLocalHost = appUrl.includes("localhost") || appUrl.includes("127.0.0.1");
+  const isTest = process.env.NODE_ENV === "test";
+  const callbackUrl = isTest ? null : (process.env.JUDGE0_CALLBACK_URL || (!isLocalHost ? `${appUrl}/api/judge0-callback` : null));
+
+  logger.info(`[EXEC_CODE] Submitting ${testCases.length} test cases to Judge0 Batch API... Callback url: ${callbackUrl || "None (direct polling fallback)"}`);
 
   // 1. Construct submission payloads
   const submissionsPayload = testCases.map((tc) => {
@@ -90,6 +96,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
       cpu_time_limit: number;
       memory_limit: number;
       expected_output?: string;
+      callback_url?: string;
     } = {
       source_code: sourceCode,
       language_id: langId,
@@ -97,6 +104,10 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
       cpu_time_limit: (params.timeLimit && params.timeLimit > 10 ? params.timeLimit / 1000 : params.timeLimit) || 5,
       memory_limit: (params.memoryLimit || 512) * 1024,
     };
+
+    if (callbackUrl) {
+      payload.callback_url = callbackUrl;
+    }
 
     if (!params.isOutputGeneration && tc.expectedOutput) {
       payload.expected_output = tc.expectedOutput;
@@ -142,12 +153,15 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
     }));
   }
 
-  // 3. Poll batch statuses dynamically
+  // 3. Poll batch statuses dynamically (either from Redis/memory callbacks, or direct Judge0 GET fallback)
   const results: ExecutionResult[] = new Array(testCases.length);
   const finished = new Set<number>();
   let attempts = 0;
   const maxAttempts = 40; // Max 16 seconds of polling
   let hasFailure = false;
+
+  const globalStore = ((globalThis as unknown as Record<string, unknown>)._judge0CallbackStore as Map<string, unknown>) || new Map<string, unknown>();
+  const redis = (globalThis as unknown as { _redisConnection: import("ioredis").Redis | undefined })._redisConnection;
 
   while (finished.size < testCases.length && attempts < maxAttempts && !hasFailure) {
     attempts++;
@@ -157,23 +171,64 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
     const pendingTokens = pendingIndices.map(idx => tokens[idx]);
 
     try {
-      const pollResponse = await axios.get(
-        `https://ce.judge0.com/submissions/batch?tokens=${pendingTokens.join(",")}&base64_encoded=false&fields=status_id,status,stdout,stderr,compile_output,message,time,memory`
-      );
+      let submissions: unknown[] = [];
 
-      const submissions = pollResponse.data.submissions;
+      if (callbackUrl) {
+        // --- WEBHOOK FLOW: Poll local memory and Redis ---
+        submissions = await Promise.all(
+          pendingTokens.map(async (token) => {
+            // Check global memory store first
+            if (globalStore.has(token)) {
+              return globalStore.get(token);
+            }
+
+            // Check Redis store
+            try {
+              if (redis && redis.status === "ready") {
+                const cached = await redis.get(`judge0:token:${token}`);
+                if (cached) {
+                  const parsed = JSON.parse(cached);
+                  globalStore.set(token, parsed);
+                  return parsed;
+                }
+              }
+            } catch (redisErr) {
+              logger.warn(`[EXEC_CODE] Redis read failed for ${token}:`, redisErr);
+            }
+
+            // Still processing
+            return { status: { id: 1 } };
+          })
+        );
+      } else {
+        // --- POLLING FALLBACK: Poll Judge0 directly ---
+        const pollResponse = await axios.get(
+          `https://ce.judge0.com/submissions/batch?tokens=${pendingTokens.join(",")}&base64_encoded=false&fields=status_id,status,stdout,stderr,compile_output,message,time,memory`
+        );
+        submissions = pollResponse.data.submissions;
+      }
+
       if (!submissions || !Array.isArray(submissions)) {
-        throw new Error("Invalid response from polling endpoint.");
+        throw new Error("Invalid response from execution stores.");
       }
 
       for (let k = 0; k < submissions.length; k++) {
-        const sub = submissions[k];
+        const sub = submissions[k] as {
+          status?: { id: number; description?: string };
+          status_id?: number;
+          stdout?: string;
+          stderr?: string;
+          compile_output?: string;
+          message?: string;
+          time?: string;
+          memory?: number;
+        };
         const actualIndex = pendingIndices[k];
         const tc = testCases[actualIndex];
-        const statusId = sub.status?.id;
+        const statusId = sub.status?.id || sub.status_id;
 
-        // Status 1: In Queue, Status 2: Processing
-        if (statusId === 1 || statusId === 2) {
+        // Status 1: In Queue, Status 2: Processing, undefined/missing: Pending
+        if (!statusId || statusId === 1 || statusId === 2) {
           continue;
         }
 
@@ -207,10 +262,22 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
           actual: (sub.stdout || "").trim(),
           status,
           error: sub.stderr || sub.compile_output || sub.message,
-          runtime: parseFloat(sub.time) * 1000 || 0,
+          runtime: parseFloat(sub.time || "0") * 1000 || 0,
         };
 
         finished.add(actualIndex);
+
+        // Clean up from local stores
+        if (callbackUrl) {
+          globalStore.delete(tokens[actualIndex]);
+          try {
+            if (redis && redis.status === "ready") {
+              await redis.del(`judge0:token:${tokens[actualIndex]}`);
+            }
+          } catch (delErr) {
+            logger.warn(`[EXEC_CODE] Redis del failed for ${tokens[actualIndex]}:`, delErr);
+          }
+        }
       }
 
       // Early termination check in sequential order
@@ -221,7 +288,6 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
             break;
           }
         } else {
-          // Must wait for the next pending testcase in sequential order to determine status
           break;
         }
       }
