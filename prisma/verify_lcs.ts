@@ -101,8 +101,9 @@ for (const tc of testCases) {
       failed++;
       failures.push({ id: tc.id, note: tc.note, expected: tc.expected, actual, input: tc.input });
     }
-  } catch (err: any) {
-    console.log(`  💥 Case #${tc.id}: ERROR — ${err.message}`);
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.log(`  💥 Case #${tc.id}: ERROR — ${errMsg}`);
     failed++;
     failures.push({ id: tc.id, note: tc.note, expected: tc.expected, actual: "ERROR", input: tc.input });
   }

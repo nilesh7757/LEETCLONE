@@ -53,16 +53,16 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
     return initialMap;
   });
 
-  // Re-sync starredMap when problems change (e.g. page navigation)
-  useEffect(() => {
-    setStarredMap(() => {
-      const newMap: Record<string, boolean> = {};
-      problems.forEach(p => {
-        newMap[p.id] = p.isStarred || false;
-      });
-      return newMap;
+  const [prevProblems, setPrevProblems] = useState(problems);
+
+  if (problems !== prevProblems) {
+    setPrevProblems(problems);
+    const newMap: Record<string, boolean> = {};
+    problems.forEach(p => {
+      newMap[p.id] = p.isStarred || false;
     });
-  }, [problems]);
+    setStarredMap(newMap);
+  }
 
   const toggleStar = async (id: string, slug: string) => {
     setStarredMap(prev => ({ ...prev, [id]: !prev[id] }));

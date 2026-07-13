@@ -40,7 +40,7 @@ export default function NotFound() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
     // Trigger glitch on mount
     setTimeout(() => setGlitching(true), 300);
     setTimeout(() => setGlitching(false), 2500);
