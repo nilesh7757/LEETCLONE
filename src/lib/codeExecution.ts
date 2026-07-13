@@ -81,8 +81,17 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
   if (process.env.JUDGE0_CALLBACK_URL) {
     callbackUrl = process.env.JUDGE0_CALLBACK_URL;
   } else if (appUrl && !isTest && !isDev) {
-    const isLocalHost = appUrl.includes("localhost") || appUrl.includes("127.0.0.1");
-    if (!isLocalHost) {
+    const lowercaseApp = appUrl.toLowerCase();
+    const isPrivateOrLocal = 
+      lowercaseApp.includes("localhost") ||
+      lowercaseApp.includes("127.0.0.1") ||
+      lowercaseApp.includes("0.0.0.0") ||
+      /192\.168\.\d+\.\d+/.test(appUrl) ||
+      /10\.\d+\.\d+\.\d+/.test(appUrl) ||
+      /172\.(1[6-9]|2\d|3[01])\.\d+\.\d+/.test(appUrl) ||
+      /169\.254\.\d+\.\d+/.test(appUrl);
+
+    if (!isPrivateOrLocal) {
       callbackUrl = `${appUrl}/api/judge0-callback`;
     }
   }
@@ -138,7 +147,11 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
         tokens.push(...data.map((item: { token: string }) => item.token));
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      let errorMsg = error instanceof Error ? error.message : "Unknown error";
+      if (axios.isAxiosError(error) && error.response) {
+        errorMsg = `${errorMsg} - Response: ${JSON.stringify(error.response.data)}`;
+        logger.error(`[EXEC_CODE] Judge0 Batch submission failed. Payload: ${JSON.stringify(chunk)}`);
+      }
       logger.error(`[EXEC_CODE] Judge0 Batch submission failed for chunk at index ${i}:`, errorMsg);
       return testCases.map((tc) => ({
         input: String(tc.input || ""),
