@@ -488,8 +488,19 @@ function CodingCard({ name, role, rating, tier, stats, interactive = false }: Co
     <div 
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onKeyDown={(e) => {
+        if (interactive && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          // Trigger holographic shimmer on keyboard activation
+          setCoords({ x: 0.5, y: 0.5, active: true });
+          setTimeout(() => setCoords({ x: 0.5, y: 0.5, active: false }), 600);
+        }
+      }}
+      tabIndex={interactive ? 0 : undefined}
+      role={interactive ? "button" : undefined}
+      aria-label={interactive ? `${name} coder card — ${role} tier` : undefined}
       // Compact size: w-56, h-80 (320px)
-      className={`relative w-56 h-[320px] rounded-[2rem] border-2 ${styleSet.bg} ${styleSet.border} ${styleSet.glow} p-4 flex flex-col justify-between overflow-hidden transition-all duration-300 select-none`}
+      className={`relative w-56 h-[320px] rounded-[2rem] border-2 ${styleSet.bg} ${styleSet.border} ${styleSet.glow} p-4 flex flex-col justify-between overflow-hidden transition-all duration-300 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8F44F0] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]`}
       style={{
         transform: interactive ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${coords.active ? 1.03 : 1})` : "none",
         transition: coords.active ? "none" : "transform 0.5s ease, shadow 0.5s ease",

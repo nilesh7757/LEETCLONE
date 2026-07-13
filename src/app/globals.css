@@ -25,7 +25,10 @@
   --primary-foreground: #ffffff;
   
   --muted: #18181b;
-  --muted-foreground: #a1a1aa;
+  --muted-foreground: #b0b0ba;
+  /* #b0b0ba on #080808 = ~7.2:1 — passes WCAG AAA */
+  --muted-subtle: #808090;
+  /* Use --muted-subtle for purely decorative labels */
   
   --accent: #27272a;
   --accent-foreground: #fafafa;
@@ -84,7 +87,10 @@
   --primary-foreground: #fafafa;
   
   --muted: #f4f4f5;
-  --muted-foreground: #71717a;
+  --muted-foreground: #52525b;
+  /* #52525b on #fafafa = ~7.0:1 — passes WCAG AAA */
+  --muted-subtle: #71717a;
+  /* Use --muted-subtle for purely decorative labels */
   
   --accent: #f4f4f5;
   --accent-foreground: #09090b;
@@ -129,7 +135,9 @@
   --primary-foreground: #FDFCF0;
   
   --muted: #F5F2E1;
-  --muted-foreground: #7D746C;
+  --muted-foreground: #5c5248;
+  /* #5c5248 on #FDFCF0 = ~7.5:1 — passes WCAG AAA */
+  --muted-subtle: #7D746C;
   
   --accent: #F5F2E1;
   --accent-foreground: #443B34;
@@ -245,7 +253,7 @@ html {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   position: relative;
