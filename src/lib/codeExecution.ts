@@ -120,12 +120,26 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       logger.error(`[EXEC_CODE] Judge0 Batch submission failed for chunk at index ${i}:`, errorMsg);
-      throw new Error(`Judge0 service unreachable: ${errorMsg}`);
+      return testCases.map((tc) => ({
+        input: String(tc.input || ""),
+        expected: String(tc.expectedOutput || ""),
+        actual: "",
+        status: "Service Unreachable",
+        error: errorMsg,
+        runtime: 0,
+      }));
     }
   }
 
   if (tokens.length !== testCases.length) {
-    throw new Error("Failed to register all test cases with Judge0.");
+    return testCases.map((tc) => ({
+      input: String(tc.input || ""),
+      expected: String(tc.expectedOutput || ""),
+      actual: "",
+      status: "Service Unreachable",
+      error: "Failed to register all test cases with Judge0.",
+      runtime: 0,
+    }));
   }
 
   // 3. Poll batch statuses dynamically

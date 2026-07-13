@@ -19,10 +19,17 @@ describe('executeCode', () => {
 
   it('should return Accepted when code runs successfully and output matches', async () => {
     mockedAxios.post.mockResolvedValueOnce({
+      data: [{ token: 'token1' }],
+    });
+    mockedAxios.get.mockResolvedValueOnce({
       data: {
-        status: { id: 3, description: 'Accepted' },
-        stdout: 'hello\n',
-        time: '0.05',
+        submissions: [
+          {
+            status: { id: 3, description: 'Accepted' },
+            stdout: 'hello\n',
+            time: '0.05',
+          },
+        ],
       },
     });
 
@@ -32,14 +39,22 @@ describe('executeCode', () => {
     expect(results[0].status).toBe('Accepted');
     expect(results[0].actual).toBe('hello');
     expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
   });
 
   it('should return Wrong Answer when output does not match', async () => {
     mockedAxios.post.mockResolvedValueOnce({
+      data: [{ token: 'token1' }],
+    });
+    mockedAxios.get.mockResolvedValueOnce({
       data: {
-        status: { id: 4, description: 'Wrong Answer' },
-        stdout: 'wrong\n',
-        time: '0.05',
+        submissions: [
+          {
+            status: { id: 4, description: 'Wrong Answer' },
+            stdout: 'wrong\n',
+            time: '0.05',
+          },
+        ],
       },
     });
 
@@ -51,10 +66,17 @@ describe('executeCode', () => {
 
   it('should return Time Limit Exceeded when status id is 5', async () => {
     mockedAxios.post.mockResolvedValueOnce({
+      data: [{ token: 'token1' }],
+    });
+    mockedAxios.get.mockResolvedValueOnce({
       data: {
-        status: { id: 5, description: 'Time Limit Exceeded' },
-        stdout: '',
-        time: '5.0',
+        submissions: [
+          {
+            status: { id: 5, description: 'Time Limit Exceeded' },
+            stdout: '',
+            time: '5.0',
+          },
+        ],
       },
     });
 
@@ -80,10 +102,17 @@ describe('executeCode', () => {
 
   it('should correctly prepend schema and data for SQL problems', async () => {
     mockedAxios.post.mockResolvedValueOnce({
+      data: [{ token: 'token1' }],
+    });
+    mockedAxios.get.mockResolvedValueOnce({
       data: {
-        status: { id: 3, description: 'Accepted' },
-        stdout: '1',
-        time: '0.01',
+        submissions: [
+          {
+            status: { id: 3, description: 'Accepted' },
+            stdout: '1',
+            time: '0.01',
+          },
+        ],
       },
     });
 
@@ -101,7 +130,11 @@ describe('executeCode', () => {
     expect(mockedAxios.post).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        source_code: '.headers on\n.mode csv\nCREATE TABLE users (id INT);\nINSERT INTO users VALUES (1);\nSELECT * FROM users;',
+        submissions: [
+          expect.objectContaining({
+            source_code: '.headers on\n.mode csv\nCREATE TABLE users (id INT);\nINSERT INTO users VALUES (1);\nSELECT * FROM users;',
+          })
+        ]
       })
     );
   });
