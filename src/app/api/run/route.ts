@@ -8,9 +8,42 @@ import { detectLanguage } from "@/lib/utils";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 
+interface RunRequestBody {
+  language?: string;
+  code?: string;
+  problemId?: string;
+  type?: string;
+  initialSchema?: string;
+  initialData?: string;
+  timeLimit?: number;
+  memoryLimit?: number;
+  testCases?: unknown[];
+  isSandbox?: boolean;
+}
+
 export const POST = apiHandler(async (req: Request) => {
   const session = await auth();
-  if (!session || !session.user) {
+  let isPublicProblem = false;
+  let requestData: RunRequestBody = {};
+
+  try {
+    requestData = await req.clone().json() as RunRequestBody;
+    if (requestData.problemId) {
+      const problem = await prisma.problem.findUnique({
+        where: { id: requestData.problemId },
+        select: { isPublic: true }
+      });
+      if (problem?.isPublic) {
+        isPublicProblem = true;
+      }
+    } else if (requestData.isSandbox) {
+      isPublicProblem = true;
+    }
+  } catch (err) {
+    console.error("[API_RUN] Anonymous playground check failed:", err);
+  }
+
+  if (!session?.user && !isPublicProblem) {
     throw new ApiError("Unauthorized", 401);
   }
 
@@ -25,7 +58,7 @@ export const POST = apiHandler(async (req: Request) => {
     memoryLimit,
     testCases,
     isSandbox,
-  } = await req.json();
+  } = requestData;
 
   if (!code) {
     throw new ApiError("Missing code", 400);

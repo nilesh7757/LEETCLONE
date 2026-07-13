@@ -68,7 +68,21 @@ export async function GET(req: Request) {
       console.log(`[CRON] Reminder sent to ${enrollment.user.email}`);
     }
 
-    return NextResponse.json({ success: true, processed: enrollments.length });
+    // 2. Delete temporary guest users older than 24 hours
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const deletedGuests = await prisma.user.deleteMany({
+      where: {
+        description: "Temporary Guest Account",
+        createdAt: { lt: oneDayAgo }
+      }
+    });
+    console.log(`[CRON] Cleaned up ${deletedGuests.count} guest accounts older than 24 hours.`);
+
+    return NextResponse.json({
+      success: true,
+      processedReminders: enrollments.length,
+      deletedGuests: deletedGuests.count
+    });
   } catch (error) {
     console.error("[CRON ERROR]", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

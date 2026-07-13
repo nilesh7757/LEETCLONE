@@ -2,6 +2,8 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LEETCLONE)
 
+![LogiQuest Workspace Showcase](public/workspace_demo.jpg)
+
 LogiQuest is a premium, high-fidelity full-stack platform designed to provide a robust environment for competitive programming, technical interview preparation, and coding practice. It integrates cutting-edge frontend animations, an interactive data structure visualizer, real-time contest dashboards, secure background code execution, and multi-model AI agents to offer an unmatched, state-of-the-art developer learning experience.
 
 ---

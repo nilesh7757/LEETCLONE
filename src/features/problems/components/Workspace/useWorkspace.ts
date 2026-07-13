@@ -229,7 +229,11 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
       }
     } catch (err) {
       console.error("Submission failed", err);
-      toast.error("Submission failed");
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        toast.error("Please sign in or use a Guest session to submit solutions.");
+      } else {
+        toast.error("Submission failed");
+      }
     } finally {
       setIsSubmitting(false);
     }

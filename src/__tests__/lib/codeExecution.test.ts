@@ -138,4 +138,88 @@ describe('executeCode', () => {
       })
     );
   });
+
+  it('should batch process multiple test cases', async () => {
+    mockedAxios.post.mockResolvedValueOnce({
+      data: [{ token: 'token1' }, { token: 'token2' }],
+    });
+    mockedAxios.get.mockResolvedValueOnce({
+      data: {
+        submissions: [
+          {
+            status: { id: 3, description: 'Accepted' },
+            stdout: 'output1\n',
+            time: '0.01',
+          },
+          {
+            status: { id: 3, description: 'Accepted' },
+            stdout: 'output2\n',
+            time: '0.02',
+          },
+        ],
+      },
+    });
+
+    const multiParams = {
+      code: 'console.log("hello")',
+      testCases: [
+        { input: 'input1', expectedOutput: 'output1' },
+        { input: 'input2', expectedOutput: 'output2' },
+      ],
+      language: 'javascript',
+      type: ProblemType.CODING,
+    };
+
+    const results = await executeCode(multiParams);
+
+    expect(results).toHaveLength(2);
+    expect(results[0].status).toBe('Accepted');
+    expect(results[1].status).toBe('Accepted');
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('should early-terminate execution on first failed test case', async () => {
+    mockedAxios.post.mockResolvedValueOnce({
+      data: [{ token: 'token1' }, { token: 'token2' }, { token: 'token3' }],
+    });
+    mockedAxios.get.mockResolvedValueOnce({
+      data: {
+        submissions: [
+          {
+            status: { id: 3, description: 'Accepted' },
+            stdout: 'output1\n',
+            time: '0.01',
+          },
+          {
+            status: { id: 4, description: 'Wrong Answer' },
+            stdout: 'wrong\n',
+            time: '0.02',
+          },
+          {
+            status: { id: 1, description: 'In Queue' },
+            stdout: '',
+            time: '0.00',
+          },
+        ],
+      },
+    });
+
+    const multiParams = {
+      code: 'console.log("hello")',
+      testCases: [
+        { input: 'input1', expectedOutput: 'output1' },
+        { input: 'input2', expectedOutput: 'output2' },
+        { input: 'input3', expectedOutput: 'output3' },
+      ],
+      language: 'javascript',
+      type: ProblemType.CODING,
+    };
+
+    const results = await executeCode(multiParams);
+
+    expect(results).toHaveLength(2);
+    expect(results[0].status).toBe('Accepted');
+    expect(results[1].status).toBe('Wrong Answer');
+  });
 });
