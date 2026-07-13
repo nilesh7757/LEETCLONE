@@ -57,7 +57,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-[var(--foreground)] overflow-x-hidden pt-20 md:pt-28 pb-20 px-4">
+    <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-x-hidden pt-20 md:pt-28 pb-20 px-4">
       {/* Background radial glow */}
       <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1400px] h-[600px] bg-gradient-to-b from-[#8F44F0]/10 via-[#740DF6]/5 to-transparent rounded-full blur-[150px] -z-10 pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(143,68,240,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(143,68,240,0.02)_1px,transparent_1px)] bg-[size:40px_40px] -z-10 pointer-events-none" />
@@ -68,9 +68,9 @@ export default function Hero() {
           
           {/* Left Text Column */}
           <div className="lg:col-span-7 text-center lg:text-left flex flex-col justify-center">
-            <div className="inline-flex self-center lg:self-start items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md">
+            <div className="inline-flex self-center lg:self-start items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--input)] border border-[var(--border)] mb-8 backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-[#8F44F0]" />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-[#a1a1aa] font-black">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-[var(--muted-foreground)] font-black">
                 ALGORITHMIC PERFORMANCE WORKSPACE ACTIVE
               </span>
             </div>
@@ -82,21 +82,21 @@ export default function Hero() {
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-[#a1a1aa] max-w-2xl mb-10 leading-relaxed text-left">
+            <p className="text-base sm:text-lg md:text-xl text-[var(--muted-foreground)] max-w-2xl mb-10 leading-relaxed text-left">
               An advanced algorithmic development workbench. Featuring real-time code execution, AI-assisted feedback, and 40+ interactive algorithm visualizers built for senior-level engineers.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-start">
               <Link
                 href="/problems"
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#8F44F0] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#6d28d9] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(143,68,240,0.4)] active:scale-95 group text-sm uppercase tracking-wider"
+                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#8F44F0] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#6d28d9] text-[var(--primary-foreground)] font-bold rounded-xl transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(143,68,240,0.4)] active:scale-95 group text-sm uppercase tracking-wider"
               >
                 Start Practicing 
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/arena"
-                className="w-full sm:w-auto px-8 py-4 bg-white/5 text-white font-bold rounded-xl border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-3 backdrop-blur-md active:scale-95 text-sm uppercase tracking-wider"
+                className="w-full sm:w-auto px-8 py-4 bg-[var(--input)] text-[var(--foreground)] font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--accent)] transition-all flex items-center justify-center gap-3 backdrop-blur-md active:scale-95 text-sm uppercase tracking-wider"
               >
                 Enter Arena 
                 <Trophy className="w-4 h-4 text-[#eab308]" />
@@ -104,23 +104,23 @@ export default function Hero() {
             </div>
 
             {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg border-t border-white/5 pt-8 text-left">
+            <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg border-t border-[var(--border)] pt-8 text-left">
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-white">
+                <div className="text-2xl sm:text-3xl font-black text-[var(--foreground)]">
                   {mounted && problemsCount !== null ? problemsCount : 62}
                 </div>
-                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Curated Problems</div>
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-1">Curated Problems</div>
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-black text-[#8F44F0] flex items-center gap-1.5">
                   {mounted && userCount !== null ? userCount : 3}
                   <span className="w-2.5 h-2.5 rounded-full bg-[#4ade80] inline-block animate-pulse" />
                 </div>
-                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Active Coders</div>
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-1">Active Coders</div>
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-white">40+</div>
-                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">DSA Visualizers</div>
+                <div className="text-2xl sm:text-3xl font-black text-[var(--foreground)]">40+</div>
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-1">DSA Visualizers</div>
               </div>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function Hero() {
           {/* Right Column - Unified Glassmorphic IDE Showcase Panel */}
           <div className="lg:col-span-5 flex items-center justify-center relative min-h-[380px] w-full max-w-lg lg:mx-0 mx-auto">
             <div className="absolute -inset-10 bg-[#8F44F0]/10 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse" />
-            <div className="w-full h-full min-h-[380px] bg-[#0e0e11] rounded-3xl shadow-2xl overflow-hidden relative">
+            <div className="w-full h-full min-h-[380px] bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden relative">
               <IDEShowcase />
             </div>
           </div>
@@ -137,23 +137,23 @@ export default function Hero() {
       </section>
 
       {/* Feature Glimpses Capsule Row */}
-      <section className="max-w-7xl mx-auto mb-32 border-y border-white/5 py-10">
+      <section className="max-w-7xl mx-auto mb-32 border-y border-[var(--border)] py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="p-2">
             <span className="text-[#8F44F0] font-black text-xs uppercase tracking-widest block mb-1">01. Skill Analytics</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Dynamic performance profiles</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Dynamic performance profiles</span>
           </div>
           <div className="p-2">
             <span className="text-[#eab308] font-black text-xs uppercase tracking-widest block mb-1">02. H2H Arena</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Real-time peer matchings</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Real-time peer matchings</span>
           </div>
           <div className="p-2">
             <span className="text-blue-400 font-black text-xs uppercase tracking-widest block mb-1">03. AI Code Coach</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Gemini-assisted optimization</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Gemini-assisted optimization</span>
           </div>
           <div className="p-2">
             <span className="text-green-400 font-black text-xs uppercase tracking-widest block mb-1">04. Sandbox IDE</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Secure compilation engine</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Secure compilation engine</span>
           </div>
         </div>
       </section>
@@ -168,24 +168,24 @@ export default function Hero() {
               <Trophy size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">Interactive Skill Analytics</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white leading-none">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
               DYNAMIC PERFORMANCE CARDS
             </h2>
-            <p className="text-[#a1a1aa] text-base leading-relaxed">
+            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Every solved problem, contest submission, and language proficiency feeds directly into your interactive coder profile. Progress through six specialized skill brackets from Novice to Master, and display your capabilities dynamically.
             </p>
-            <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
+            <div className="grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-6">
               <div>
                 <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Novice</h4>
-                <div className="text-xs font-bold text-white">Foundational Level</div>
+                <div className="text-xs font-bold text-[var(--foreground)]">Foundational Level</div>
               </div>
               <div>
                 <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest font-mono">Advanced</h4>
-                <div className="text-xs font-bold text-white">100+ Challenges</div>
+                <div className="text-xs font-bold text-[var(--foreground)]">100+ Challenges</div>
               </div>
               <div>
                 <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Master</h4>
-                <div className="text-xs font-bold text-white">Top 10 Global</div>
+                <div className="text-xs font-bold text-[var(--foreground)]">Top 10 Global</div>
               </div>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function Hero() {
                   className={`px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${
                     selectedDetailTier === t
                       ? "bg-[#8F44F0] text-white border-transparent"
-                      : "bg-white/5 border-white/10 text-[#a1a1aa] hover:text-white"
+                      : "bg-[var(--input)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                   }`}
                 >
                   {t === "toty" ? "Master" : t === "icon" ? "Expert" : t === "inform" ? "Specialist" : t === "gold" ? "Advanced" : t === "silver" ? "Intermediate" : "Novice"}
@@ -244,15 +244,15 @@ export default function Hero() {
               <Trophy size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">High-Intensity Battle</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white leading-none">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
               REAL-TIME MULTIPLAYER ARENA
             </h2>
-            <p className="text-[#a1a1aa] text-base leading-relaxed">
+            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Match up against developers globally in timed coding faceoffs. Solve algorithms under extreme pressure, edge case checks, and earn rating points to upgrade your player attributes.
             </p>
-            <div className="border-t border-white/5 pt-6 flex gap-8">
+            <div className="border-t border-[var(--border)] pt-6 flex gap-8">
               <div>
-                <span className="block text-2xl font-black text-white">Podium</span>
+                <span className="block text-2xl font-black text-[var(--foreground)]">Podium</span>
                 <span className="text-[10px] text-[#71717a] uppercase font-bold">Top rank bragging rights</span>
               </div>
               <div>
@@ -264,31 +264,31 @@ export default function Hero() {
 
           <div className="lg:col-span-6 lg:order-1 flex justify-center">
             {/* Arena Podium Visual Mockup */}
-            <div className="p-6 bg-[#111]/80 border border-white/5 rounded-3xl w-full max-w-sm flex flex-col gap-6 shadow-2xl relative overflow-hidden">
-              <div className="text-[10px] font-mono text-[#a1a1aa] uppercase tracking-widest border-b border-white/5 pb-3 flex justify-between">
+            <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl w-full max-w-sm flex flex-col gap-6 shadow-2xl relative overflow-hidden">
+              <div className="text-[10px] font-mono text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-3 flex justify-between">
                 <span>Contest Bracket</span>
                 <span className="text-[#eab308] font-bold">Rankings</span>
               </div>
               <div className="flex justify-between items-end gap-3 h-32 pt-4 relative">
                 {/* 2nd place */}
                 <div className="flex-1 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-white mb-2">91 OVR</span>
-                  <div className="w-full bg-white/5 h-16 rounded-t-xl flex items-center justify-center text-[#71717a] border border-white/5">
+                  <span className="text-[10px] font-bold text-[var(--foreground)] mb-2">91 OVR</span>
+                  <div className="w-full bg-[var(--input)] h-16 rounded-t-xl flex items-center justify-center text-[#71717a] border border-[var(--border)]">
                     2
                   </div>
                 </div>
                 {/* 1st place */}
                 <div className="flex-1 flex flex-col items-center">
                   <Trophy size={18} className="text-[#eab308] mb-2 animate-bounce" />
-                  <div className="w-full bg-[#8F44F0]/20 h-24 rounded-t-xl flex flex-col items-center justify-center text-white border border-[#8F44F0]/30 relative shadow-[0_0_20px_rgba(143,68,240,0.15)]">
+                  <div className="w-full bg-[#8F44F0]/20 h-24 rounded-t-xl flex flex-col items-center justify-center text-[var(--foreground)] border border-[#8F44F0]/30 relative shadow-[0_0_20px_rgba(143,68,240,0.15)]">
                     <span className="font-black text-lg">1</span>
                     <span className="text-[8px] uppercase tracking-widest text-[#8F44F0]">Champion</span>
                   </div>
                 </div>
                 {/* 3rd place */}
                 <div className="flex-1 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-white mb-2">84 OVR</span>
-                  <div className="w-full bg-white/5 h-12 rounded-t-xl flex items-center justify-center text-[#71717a] border border-white/5">
+                  <span className="text-[10px] font-bold text-[var(--foreground)] mb-2">84 OVR</span>
+                  <div className="w-full bg-[var(--input)] h-12 rounded-t-xl flex items-center justify-center text-[#71717a] border border-[var(--border)]">
                     3
                   </div>
                 </div>
@@ -304,15 +304,15 @@ export default function Hero() {
               <Sparkles size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">Built-in Guidance</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white leading-none">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
               GEMINI AI CODE COACH
             </h2>
-            <p className="text-[#a1a1aa] text-base leading-relaxed">
+            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Stagnating on a hard algorithm or hit by compile errors? Get instant, context-aware optimizations, visual algorithm hints, and complex trace suggestions from your built-in AI Coach.
             </p>
-            <div className="border-t border-white/5 pt-6 flex gap-8">
+            <div className="border-t border-[var(--border)] pt-6 flex gap-8">
               <div>
-                <span className="block text-2xl font-black text-white">Hint system</span>
+                <span className="block text-2xl font-black text-[var(--foreground)]">Hint system</span>
                 <span className="text-[10px] text-[#71717a] uppercase font-bold">Step-by-step guidance</span>
               </div>
               <div>
@@ -324,20 +324,20 @@ export default function Hero() {
 
           <div className="lg:col-span-6 flex justify-center">
             {/* AI Coach Mini Chat Bubble Mock */}
-            <div className="p-5 bg-[#111]/80 border border-[#8F44F0]/20 rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl relative">
-              <div className="text-[10px] font-mono text-[#a1a1aa] uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-1.5">
+            <div className="p-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl relative">
+              <div className="text-[10px] font-mono text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-2 flex items-center gap-1.5">
                 <Sparkles size={12} className="text-[#8F44F0]" />
                 <span>Coach Gemini Chat</span>
               </div>
               
               <div className="space-y-3 text-[11px] font-mono leading-relaxed">
                 {/* User message */}
-                <div className="bg-white/5 rounded-2xl p-3 border border-white/5 max-w-[85%] self-start text-[#a1a1aa]">
-                  <span className="text-white block font-bold text-[9px] uppercase tracking-wider mb-1">User</span>
+                <div className="bg-[var(--input)] rounded-2xl p-3 border border-[var(--border)] max-w-[85%] self-start text-[var(--muted-foreground)]">
+                  <span className="text-[var(--foreground)] block font-bold text-[9px] uppercase tracking-wider mb-1">User</span>
                   How do I reduce nested loop time complexity?
                 </div>
                 {/* AI response */}
-                <div className="bg-[#8F44F0]/10 rounded-2xl p-3 border border-[#8F44F0]/20 max-w-[90%] ml-auto text-white">
+                <div className="bg-[#8F44F0]/10 rounded-2xl p-3 border border-[var(--border)] max-w-[90%] ml-auto text-[var(--foreground)]">
                   <span className="text-purple-400 block font-bold text-[9px] uppercase tracking-wider mb-1">Coach Gemini</span>
                   Use a HashMap to store values. That reduces the complexity from <span className="text-red-400">O(N²)</span> to <span className="text-green-400">O(N)</span>.
                 </div>
@@ -353,15 +353,15 @@ export default function Hero() {
               <Code2 size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">Fast Execution</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white leading-none">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
               COMPILATION WORKBENCH
             </h2>
-            <p className="text-[#a1a1aa] text-base leading-relaxed">
+            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Code seamlessly inside a Monaco-powered sandbox editor. Execute complex custom inputs instantly, run compiler test checks, and view results with inline code error markers.
             </p>
-            <div className="border-t border-white/5 pt-6 flex gap-8">
+            <div className="border-t border-[var(--border)] pt-6 flex gap-8">
               <div>
-                <span className="block text-2xl font-black text-white">Monaco</span>
+                <span className="block text-2xl font-black text-[var(--foreground)]">Monaco</span>
                 <span className="text-[10px] text-[#71717a] uppercase font-bold">Standard features</span>
               </div>
               <div>
@@ -373,8 +373,8 @@ export default function Hero() {
 
           <div className="lg:col-span-6 lg:order-1 flex justify-center">
             {/* Sandbox Mini Editor Window */}
-            <div className="p-4 bg-[#111]/80 border border-white/5 rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl relative font-mono">
-              <div className="flex justify-between items-center text-[10px] text-[#a1a1aa] border-b border-white/5 pb-2">
+            <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl relative font-mono">
+              <div className="flex justify-between items-center text-[10px] text-[var(--muted-foreground)] border-b border-[var(--border)] pb-2">
                 <span className="flex items-center gap-1.5"><Terminal size={10} /> solution.js</span>
                 <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400 text-[8px] font-bold tracking-widest">Run Finished</span>
               </div>
@@ -383,7 +383,7 @@ export default function Hero() {
                 <div className="pl-3">let map = <span className="text-yellow-400">new</span> <span className="text-blue-400">Map</span>();</div>
                 <div className="pl-3">return arr.reduce((acc, val) =&gt; &#123;</div>
                 <div className="pl-6 text-purple-400">acc.set(val, (acc.get(val) || 0) + 1);</div>
-                <div className="pl-6 text-[#a1a1aa]">return acc;</div>
+                <div className="pl-6 text-[var(--muted-foreground)]">return acc;</div>
                 <div className="pl-3">&#125;, map);</div>
                 <div>&#125;</div>
               </div>
@@ -617,7 +617,7 @@ function CodingCard({ name, role, rating, tier, stats, interactive = false }: Co
 
 function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-[#080808]/80 backdrop-blur-md py-16 mt-32 max-w-7xl mx-auto relative z-10">
+    <footer className="border-t border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-md py-16 mt-32 max-w-7xl mx-auto relative z-10">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 px-4">
         {/* Left Column - Branding */}
         <div className="lg:col-span-2 space-y-4">
@@ -625,9 +625,9 @@ function Footer() {
             <div className="w-8 h-8 rounded-lg bg-[#8F44F0]/10 flex items-center justify-center border border-[#8F44F0]/20">
               <Code2 className="w-4 h-4 text-[#8F44F0]" />
             </div>
-            <span className="text-lg font-black tracking-widest text-white uppercase">LOGIQUEST</span>
+            <span className="text-lg font-black tracking-widest text-[var(--foreground)] uppercase">LOGIQUEST</span>
           </div>
-          <p className="text-xs text-[#a1a1aa] leading-relaxed max-w-xs">
+          <p className="text-xs text-[var(--muted-foreground)] leading-relaxed max-w-xs">
             Unleash your inner coding potential on the ultimate sandbox. Owned by NILESH.
           </p>
           <div className="flex items-center gap-3 pt-2 text-[#71717a]">
@@ -646,7 +646,7 @@ function Footer() {
         {/* Column 2 - Platform Links */}
         <div>
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Platform</h4>
-          <ul className="space-y-2 text-xs text-[#a1a1aa] font-bold">
+          <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
             <li><Link href="/problems" className="hover:text-white transition-colors">Problems</Link></li>
             <li><Link href="/arena" className="hover:text-white transition-colors">Multiplayer Arena</Link></li>
             <li><Link href="/profile" className="hover:text-white transition-colors">Performance Dashboard</Link></li>
@@ -657,7 +657,7 @@ function Footer() {
         {/* Column 3 - Resources */}
         <div>
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Resources</h4>
-          <ul className="space-y-2 text-xs text-[#a1a1aa] font-bold">
+          <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
             <li><Link href="/problems" className="hover:text-white transition-colors">AI Coach Guidance</Link></li>
             <li><Link href="/resources" className="hover:text-white transition-colors">DSA Sheets</Link></li>
             <li><Link href="/architect" className="hover:text-white transition-colors">System Design Blocks</Link></li>
@@ -668,7 +668,7 @@ function Footer() {
         {/* Column 4 - Profiles & Legal */}
         <div>
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Coder Info</h4>
-          <ul className="space-y-2 text-xs text-[#a1a1aa] font-bold">
+          <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
             <li><a href="https://codeforces.com/profile/nileshm7757" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Codeforces Profile</a></li>
             <li><a href="https://leetcode.com/u/nileshmori7757" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LeetCode Profile</a></li>
             <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
@@ -678,7 +678,7 @@ function Footer() {
       </div>
 
       {/* Footer Bottom Bar */}
-      <div className="border-t border-white/5 mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
+      <div className="border-t border-[var(--border)] mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
         <span className="text-[10px] text-[#71717a] uppercase font-black tracking-widest text-center sm:text-left">
           © 2026 LOGIQUEST. ALL RIGHTS RESERVED.
         </span>
@@ -689,4 +689,3 @@ function Footer() {
     </footer>
   );
 }
-

@@ -86,12 +86,12 @@ export const POST = apiHandler(async (req: Request) => {
   let finalTestCases: TestInputOutput[] = [];
 
   if (testCases && Array.isArray(testCases) && testCases.length > 0) {
-    finalTestCases = testCases.map(tc => ({
-      input: typeof tc === 'string' ? tc : (tc.input || ""),
-      expectedOutput: typeof tc === 'string' ? "" : (tc.expectedOutput || tc.output || ""),
-      isExample: typeof tc === 'string' ? false : (tc.isExample ?? false),
-      initialSchema: typeof tc === 'string' ? undefined : tc.initialSchema,
-      initialData: typeof tc === 'string' ? undefined : tc.initialData
+    finalTestCases = (testCases as Array<string | Record<string, unknown>>).map(tc => ({
+      input: typeof tc === 'string' ? tc : String(tc.input ?? ""),
+      expectedOutput: typeof tc === 'string' ? "" : String(tc.expectedOutput ?? tc.output ?? ""),
+      isExample: typeof tc === 'string' ? false : Boolean(tc.isExample ?? false),
+      initialSchema: typeof tc === 'string' ? undefined : tc.initialSchema as string | undefined,
+      initialData: typeof tc === 'string' ? undefined : tc.initialData as string | undefined,
     }));
   } else if (problem) {
     let allTestSets: TestInputOutput[] = [];
