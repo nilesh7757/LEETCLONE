@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "Terms of Service | LogiQuest",
+  description: "Read the terms and conditions for using the LogiQuest platform.",
+};
+
 export default function TermsPage() {
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 text-[var(--foreground)]">

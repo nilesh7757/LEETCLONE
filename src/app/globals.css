@@ -1,4 +1,10 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Tell Tailwind v4 exactly which files to scan — keeps the bundle tight */
+@source "../components/**/*.{ts,tsx}";
+@source "../features/**/*.{ts,tsx}";
+@source "../app/**/*.{ts,tsx}";
 
 @theme {
   --font-sans: var(--font-geist-sans);

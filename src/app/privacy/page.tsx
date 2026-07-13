@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "Privacy Policy | LogiQuest",
+  description: "Learn how LogiQuest collects, uses, and protects your personal data.",
+};
+
 export default function PrivacyPage() {
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 text-[var(--foreground)]">

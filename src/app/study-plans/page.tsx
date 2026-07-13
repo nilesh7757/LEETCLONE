@@ -7,6 +7,11 @@ import GeneratePlanButton from "@/features/study-plans/components/GeneratePlanBu
 import CompanyPrepButton from "@/features/study-plans/components/CompanyPrepButton";
 import Image from "next/image";
 
+export const metadata = {
+  title: "Study Plans | LogiQuest",
+  description: "Follow AI-generated or curated study plans to systematically master data structures and algorithms for placements.",
+};
+
 interface StudyPlan {
   id: string;
   slug: string;

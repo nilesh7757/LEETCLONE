@@ -9,6 +9,11 @@ import { Trophy, Target, Sparkles } from "lucide-react";
 import { Prisma, ProblemType } from "@prisma/client";
 import * as motion from "framer-motion/client";
 
+export const metadata = {
+  title: "Problems | LogiQuest",
+  description: "Browse 60+ curated algorithmic problems spanning arrays, graphs, DP, trees, and more. Practice with real-time code execution and AI hints.",
+};
+
 export const dynamic = "force-dynamic";
 
 interface PageProps {

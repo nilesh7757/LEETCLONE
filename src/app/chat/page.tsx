@@ -1,5 +1,10 @@
 import { MessageSquare } from "lucide-react";
 
+export const metadata = {
+  title: "Community Chat | LogiQuest",
+  description: "Connect with other coders, ask questions, and discuss problem-solving strategies in the LogiQuest community chat.",
+};
+
 export default function ChatIndexPage() {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden bg-[var(--background)]">
