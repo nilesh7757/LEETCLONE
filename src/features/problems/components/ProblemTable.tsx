@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Play, AlertCircle, HelpCircle, Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -52,6 +52,17 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
     });
     return initialMap;
   });
+
+  // Re-sync starredMap when problems change (e.g. page navigation)
+  useEffect(() => {
+    setStarredMap(() => {
+      const newMap: Record<string, boolean> = {};
+      problems.forEach(p => {
+        newMap[p.id] = p.isStarred || false;
+      });
+      return newMap;
+    });
+  }, [problems]);
 
   const toggleStar = async (id: string, slug: string) => {
     setStarredMap(prev => ({ ...prev, [id]: !prev[id] }));

@@ -147,7 +147,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         language,
         testCases: sanitizedTestCases,
       }, {
-        timeout: 15000 // Prevent UI freezing if API hangs
+        timeout: 45000 // Judge0 free tier can be slow — allow enough headroom for submission + polling
       });
 
       setResults(data.results);
@@ -172,7 +172,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         const errorMsg = err.code === "ECONNABORTED" 
-          ? "Request timed out. Please try again."
+          ? "Execution server is taking longer than usual. This is a Judge0 server delay, not a code issue — please try again."
           : (err.response?.data?.error || err.message);
         toast.error("Execution Error: " + errorMsg);
       } else {
@@ -192,7 +192,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         type: problem.type,
         language,
       }, {
-        timeout: 20000 // Prevent UI freezing if submission hangs
+        timeout: 60000 // Submissions run ALL test cases (not just examples), need more time
       });
 
       // Always fetch latest submissions list to show the new run

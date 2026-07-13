@@ -8,6 +8,9 @@ import { detectLanguage } from "@/lib/utils";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
 
+// Extend Vercel serverless function timeout (default 10s on Hobby is too short)
+export const maxDuration = 60;
+
 interface RunRequestBody {
   language?: string;
   code?: string;
@@ -144,7 +147,7 @@ export const POST = apiHandler(async (req: Request) => {
           isOutputGeneration: true
         });
 
-        refResults = await refJob.waitUntilFinished(queueEvents, 30000);
+        refResults = await refJob.waitUntilFinished(queueEvents, 45000);
       } catch (err) {
         console.error("[API_RUN] Output generation queue failed, falling back to direct execution:", err);
         const { executeCode } = await import("@/lib/codeExecution");
@@ -205,7 +208,7 @@ export const POST = apiHandler(async (req: Request) => {
         ...commonParams, 
         language: finalLanguage 
       });
-      results = await job.waitUntilFinished(queueEvents, 30000); // 30 seconds timeout
+      results = await job.waitUntilFinished(queueEvents, 45000); // 45 seconds timeout
     } catch (err) {
       console.error("[API_RUN] Code run queue failed, falling back to direct execution:", err);
       const { executeCode } = await import("@/lib/codeExecution");

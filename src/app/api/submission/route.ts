@@ -12,6 +12,9 @@ import { processContestScoring } from "@/lib/services/contest";
 import { executionQueue, queueEvents, hasActiveWorkers } from "@/lib/queue";
 import { submissionSchema } from "@/lib/validations";
 
+// Submissions run ALL test cases (30+ for some problems) — need more time than /api/run
+export const maxDuration = 60;
+
 // Ensure socket is connected
 socketClient.connect();
 
@@ -155,7 +158,7 @@ export const POST = apiHandler(async (req: Request) => {
           timeLimit: problem.timeLimit,
           memoryLimit: problem.memoryLimit
         });
-        results = await job.waitUntilFinished(queueEvents, 30000);
+        results = await job.waitUntilFinished(queueEvents, 55000);
       } catch (err) {
         logger.error("[SUBMIT_CODE] Queue submit failed, falling back to direct execution:", err);
         results = await executeCode({
@@ -209,7 +212,7 @@ export const POST = apiHandler(async (req: Request) => {
           initialSchema: problem.initialSchema || "",
           initialData: problem.initialData || ""
         });
-        results = await job.waitUntilFinished(queueEvents, 30000);
+        results = await job.waitUntilFinished(queueEvents, 55000);
       } catch (err) {
         logger.error("[SUBMIT_SQL] Queue submit failed, falling back to direct execution:", err);
         results = await executeCode({

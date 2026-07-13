@@ -157,7 +157,7 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
   const results: ExecutionResult[] = new Array(testCases.length);
   const finished = new Set<number>();
   let attempts = 0;
-  const maxAttempts = 40; // Max 16 seconds of polling
+  const maxAttempts = 75; // Max 30 seconds of polling (75 × 400ms) — Judge0 free tier can be slow
   let hasFailure = false;
 
   const globalStore = ((globalThis as unknown as Record<string, unknown>)._judge0CallbackStore as Map<string, unknown>) || new Map<string, unknown>();
