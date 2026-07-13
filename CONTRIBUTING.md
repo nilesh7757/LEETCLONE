@@ -5,7 +5,7 @@ Thank you for your interest in contributing to LogiQuest!
 ## How to Contribute
 
 1. **Fork the Repository**: Create a personal fork of the project on GitHub.
-2. **Clone the Fork**: `git clone https://github.com/YOUR_USERNAME/LEETCLONE.git`
+2. **Clone the Fork**: `git clone https://github.com/YOUR_USERNAME/LOGIQUEST.git`
 3. **Create a Branch**: `git checkout -b feature/your-feature-name`
 4. **Make Changes**: Implement your feature or bug fix.
 5. **Run Tests**: Ensure all tests pass with `npm test`.

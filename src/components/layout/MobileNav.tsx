@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, Code2, BookOpen, MonitorPlay, Trophy, PenTool, LineChart, Globe, MessageSquare, ShieldAlert, UserCircle, LogOut, Gamepad2, Shield, GraduationCap, BrainCircuit } from "lucide-react";
+import { Menu, X, Code2, BookOpen, MonitorPlay, Trophy, PenTool, LineChart, Globe, MessageSquare, ShieldAlert, UserCircle, LogOut, Gamepad2, Shield, GraduationCap, BrainCircuit, Info } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "../ui/Logo";
@@ -63,6 +63,7 @@ export default function MobileNav() {
     { label: "Leaderboard", href: "/leaderboard", icon: LineChart, color: "var(--viz-green)", rgb: "var(--viz-green-rgb)" },
     { label: "Blog", href: "/blog", icon: Globe, color: "var(--viz-green)", rgb: "var(--viz-green-rgb)" },
     { label: "Chat", href: "/chat", icon: MessageSquare, color: "var(--viz-blue)", rgb: "var(--viz-blue-rgb)" },
+    { label: "About Build", href: "/about", icon: Info, color: "var(--viz-purple)", rgb: "var(--viz-purple-rgb)" },
   ];
 
   return (

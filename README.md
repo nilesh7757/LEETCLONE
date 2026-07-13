@@ -1,6 +1,6 @@
 # LogiQuest - Solve Logic, Master the Journey
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LEETCLONE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LOGIQUEST)
 
 LogiQuest is a premium, high-fidelity full-stack platform designed to provide a robust environment for competitive programming, technical interview preparation, and coding practice. It integrates cutting-edge frontend animations, an interactive data structure visualizer, real-time contest dashboards, secure background code execution, and multi-model AI agents to offer an unmatched, state-of-the-art developer learning experience.
 
@@ -143,8 +143,8 @@ D:\LEETCLONE\
 
 1.  **Clone the Repository:**
     ```bash
-    git clone https://github.com/nilesh7757/LEETCLONE.git
-    cd LEETCLONE
+    git clone https://github.com/nilesh7757/LOGIQUEST.git
+    cd LOGIQUEST
     ```
 
 2.  **Install Node Modules:**

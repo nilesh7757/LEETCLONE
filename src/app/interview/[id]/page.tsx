@@ -403,7 +403,7 @@ export default function InterviewPage({
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-2">
             <Sparkles className="w-3 h-3 text-[#8F44F0]" />
-            <span className="text-[9px] uppercase tracking-[0.2em] font-black text-white/70">LeetClone AI Evaluation</span>
+            <span className="text-[9px] uppercase tracking-[0.2em] font-black text-white/70">LogiQuest AI Evaluation</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black uppercase tracking-widest text-white">{interview.title}</h1>
         </div>

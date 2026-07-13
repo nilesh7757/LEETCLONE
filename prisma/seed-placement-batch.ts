@@ -140,8 +140,8 @@ int main() {
       { input: "5\n1 3 2 3 1", expectedOutput: "2", isExample: true },
       { input: "5\n2 4 3 5 1", expectedOutput: "3", isExample: true },
       { input: "1\n5", expectedOutput: "0", isExample: false },
-      { input: "6\n4 2 1 6 3 1", expectedOutput: "6", isExample: false },
-      { input: "5\n-5 -5 -5 -5 -5", expectedOutput: "0", isExample: false }
+      { input: "6\n4 2 1 6 3 1", expectedOutput: "4", isExample: false },
+      { input: "5\n-5 -5 -5 -5 -5", expectedOutput: "10", isExample: false }
     ],
     referenceSolution: `
 #include <iostream>

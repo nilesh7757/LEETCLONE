@@ -25,18 +25,35 @@ export default function Hero() {
   // Selected Tier in detail showcase
   const [selectedDetailTier, setSelectedDetailTier] = useState<CardTier>("toty");
 
-  // Platform stats counter
-  const [activeUsers, setActiveUsers] = useState(1420);
+  // Platform stats counters
+  const [problemsCount, setProblemsCount] = useState<number | null>(null);
+  const [userCount, setUserCount] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
       setMounted(true);
     }, 0);
-    const interval = setInterval(() => {
-      setActiveUsers(prev => prev + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3));
-    }, 4500);
-    return () => clearInterval(interval);
+
+    // Fetch actual problems count from public API
+    fetch("/api/problems?limit=1")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.pagination?.total !== undefined) {
+          setProblemsCount(data.pagination.total);
+        }
+      })
+      .catch(err => console.error("Error fetching problems count:", err));
+
+    // Fetch actual user count from public API
+    fetch("/api/leaderboard?limit=1")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.pagination?.total !== undefined) {
+          setUserCount(data.pagination.total);
+        }
+      })
+      .catch(err => console.error("Error fetching user count:", err));
   }, []);
 
   return (
@@ -54,19 +71,19 @@ export default function Hero() {
             <div className="inline-flex self-center lg:self-start items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-[#8F44F0]" />
               <span className="text-[10px] uppercase tracking-[0.25em] text-[#a1a1aa] font-black">
-                Phase 1 Mastery Protocol Active
+                ALGORITHMIC PERFORMANCE WORKSPACE ACTIVE
               </span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-7xl font-black tracking-tight leading-[0.95] mb-8 uppercase text-left">
               ELEVATE YOUR CODE.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8F44F0] via-[#c084fc] to-[#60a5fa]">
-                OWN THE LEADERBOARD.
+                MASTER YOUR CRAFT.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-[#a1a1aa] max-w-2xl mb-10 leading-relaxed text-left">
-              Join a state-of-the-art competitive programming workbench. Build algorithmic consistency, track micro-complexities in real-time, get guidance from your built-in AI Coach, and challenge friends globally.
+              An advanced algorithmic development workbench. Featuring real-time code execution, AI-assisted feedback, and 40+ interactive algorithm visualizers built for senior-level engineers.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-start">
@@ -89,19 +106,21 @@ export default function Hero() {
             {/* Quick stats */}
             <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg border-t border-white/5 pt-8 text-left">
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-white">1000+</div>
-                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Challenges</div>
+                <div className="text-2xl sm:text-3xl font-black text-white">
+                  {mounted && problemsCount !== null ? problemsCount : 62}
+                </div>
+                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Curated Problems</div>
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-black text-[#8F44F0] flex items-center gap-1.5">
-                  {mounted ? activeUsers : 1420}
+                  {mounted && userCount !== null ? userCount : 3}
                   <span className="w-2.5 h-2.5 rounded-full bg-[#4ade80] inline-block animate-pulse" />
                 </div>
-                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Live Online</div>
+                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Active Coders</div>
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-white">2.0s</div>
-                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">Max Runtime</div>
+                <div className="text-2xl sm:text-3xl font-black text-white">40+</div>
+                <div className="text-[10px] text-[#a1a1aa] uppercase font-black tracking-widest mt-1">DSA Visualizers</div>
               </div>
             </div>
           </div>
@@ -121,20 +140,20 @@ export default function Hero() {
       <section className="max-w-7xl mx-auto mb-32 border-y border-white/5 py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="p-2">
-            <span className="text-[#8F44F0] font-black text-xs uppercase tracking-widest block mb-1">01. Coder Tiers</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">FUT-Style attributes</span>
+            <span className="text-[#8F44F0] font-black text-xs uppercase tracking-widest block mb-1">01. Skill Analytics</span>
+            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Dynamic performance profiles</span>
           </div>
           <div className="p-2">
             <span className="text-[#eab308] font-black text-xs uppercase tracking-widest block mb-1">02. H2H Arena</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Multiplayer matching</span>
+            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Real-time peer matchings</span>
           </div>
           <div className="p-2">
-            <span className="text-blue-400 font-black text-xs uppercase tracking-widest block mb-1">03. AI Coach</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Error debugging hints</span>
+            <span className="text-blue-400 font-black text-xs uppercase tracking-widest block mb-1">03. AI Code Coach</span>
+            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Gemini-assisted optimization</span>
           </div>
           <div className="p-2">
             <span className="text-green-400 font-black text-xs uppercase tracking-widest block mb-1">04. Sandbox IDE</span>
-            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Online workspace engine</span>
+            <span className="text-[10px] text-[#a1a1aa] uppercase font-bold">Secure compilation engine</span>
           </div>
         </div>
       </section>
@@ -147,25 +166,25 @@ export default function Hero() {
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8F44F0]/10 border border-[#8F44F0]/20 text-[#c084fc]">
               <Trophy size={12} />
-              <span className="text-[10px] uppercase font-black tracking-widest">Ultimate Coder Tiers</span>
+              <span className="text-[10px] uppercase font-black tracking-widest">Interactive Skill Analytics</span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-black uppercase text-white leading-none">
-              DYNAMIC FUT CODER CARDS
+              DYNAMIC PERFORMANCE CARDS
             </h2>
             <p className="text-[#a1a1aa] text-base leading-relaxed">
-              Every solved problem, contest rating, and streak feeds into your interactive coder card. Climb through six visual tiers from Bronze up to Team of the Year (TOTY) and share your credentials dynamically.
+              Every solved problem, contest submission, and language proficiency feeds directly into your interactive coder profile. Progress through six specialized skill brackets from Novice to Master, and display your capabilities dynamically.
             </p>
             <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
               <div>
-                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Bronze</h4>
-                <div className="text-xs font-bold text-white">Novice entry</div>
+                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Novice</h4>
+                <div className="text-xs font-bold text-white">Foundational Level</div>
               </div>
               <div>
-                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest font-mono">Gold</h4>
-                <div className="text-xs font-bold text-white">100+ Solved</div>
+                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest font-mono">Advanced</h4>
+                <div className="text-xs font-bold text-white">100+ Challenges</div>
               </div>
               <div>
-                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">TOTY</h4>
+                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Master</h4>
                 <div className="text-xs font-bold text-white">Top 10 Global</div>
               </div>
             </div>
@@ -173,8 +192,14 @@ export default function Hero() {
 
           <div className="lg:col-span-6 flex flex-col items-center justify-center gap-6">
             <CodingCard 
-              name="LEETCLONE"
-              role={selectedDetailTier === "toty" ? "TOTY" : selectedDetailTier.toUpperCase()}
+              name="LOGIQUEST"
+              role={
+                selectedDetailTier === "toty" ? "MASTER" : 
+                selectedDetailTier === "icon" ? "EXPERT" : 
+                selectedDetailTier === "inform" ? "SPECIALIST" : 
+                selectedDetailTier === "gold" ? "ADVANCED" : 
+                selectedDetailTier === "silver" ? "INTERMEDIATE" : "NOVICE"
+              }
               rating={
                 selectedDetailTier === "toty" ? 99 : 
                 selectedDetailTier === "icon" ? 92 : 
@@ -205,7 +230,7 @@ export default function Hero() {
                       : "bg-white/5 border-white/10 text-[#a1a1aa] hover:text-white"
                   }`}
                 >
-                  {t}
+                  {t === "toty" ? "Master" : t === "icon" ? "Expert" : t === "inform" ? "Specialist" : t === "gold" ? "Advanced" : t === "silver" ? "Intermediate" : "Novice"}
                 </button>
               ))}
             </div>
@@ -579,7 +604,11 @@ function CodingCard({ name, role, rating, tier, stats, interactive = false }: Co
       {/* Card Footer Tier Crest */}
       <div className="flex justify-center items-center pb-1 relative z-10">
         <span className={`text-[8px] font-black tracking-[0.2em] uppercase bg-black/40 px-2 py-0.5 rounded-full border border-white/5 ${styleSet.accentColor}`}>
-          {tier === "toty" ? "TOTY" : tier}
+          {tier === "toty" ? "MASTER" : 
+           tier === "icon" ? "EXPERT" : 
+           tier === "inform" ? "SPECIALIST" : 
+           tier === "gold" ? "ADVANCED" : 
+           tier === "silver" ? "INTERMEDIATE" : "NOVICE"}
         </span>
       </div>
     </div>
@@ -596,7 +625,7 @@ function Footer() {
             <div className="w-8 h-8 rounded-lg bg-[#8F44F0]/10 flex items-center justify-center border border-[#8F44F0]/20">
               <Code2 className="w-4 h-4 text-[#8F44F0]" />
             </div>
-            <span className="text-lg font-black tracking-widest text-white uppercase">LEETCLONE</span>
+            <span className="text-lg font-black tracking-widest text-white uppercase">LOGIQUEST</span>
           </div>
           <p className="text-xs text-[#a1a1aa] leading-relaxed max-w-xs">
             Unleash your inner coding potential on the ultimate sandbox. Owned by NILESH.
@@ -651,7 +680,7 @@ function Footer() {
       {/* Footer Bottom Bar */}
       <div className="border-t border-white/5 mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
         <span className="text-[10px] text-[#71717a] uppercase font-black tracking-widest text-center sm:text-left">
-          © 2026 LEETCLONE. ALL RIGHTS RESERVED.
+          © 2026 LOGIQUEST. ALL RIGHTS RESERVED.
         </span>
         <span className="text-[10px] text-[#71717a] uppercase font-black tracking-widest text-center sm:text-right flex items-center gap-1">
           CRAFTED WITH <Zap size={10} className="text-[#8F44F0]" /> BY NILESH

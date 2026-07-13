@@ -65,6 +65,33 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  const handleGuestSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/guest", { method: "POST" });
+      if (!res.ok) {
+        throw new Error("Failed to prepare guest account.");
+      }
+
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: "guest@logiquest.com",
+        password: "guestpassword",
+      });
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        toast.success("Logged in as Guest Coder!");
+        router.push("/problems");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Guest login failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex bg-[var(--background)] overflow-hidden">
       {/* Left Side - Wall Animation (Hidden on mobile) */}
@@ -79,7 +106,7 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center">
             {/* Replace with actual logo if available, utilizing text for now */}
             <h1 className="text-3xl font-bold tracking-tighter text-[var(--foreground)] mb-2">
-              <span className="text-emerald-500">Leet</span>Code
+              <span className="text-[#8F44F0]">Logi</span>Quest
             </h1>
             <p className="text-[var(--muted-foreground)] text-sm">Welcome back! Please login to continue.</p>
         </div>
@@ -136,6 +163,15 @@ export default function LoginPage() {
                     className="w-full h-10 mt-2 bg-[var(--foreground)] hover:opacity-90 text-[var(--background)] font-medium rounded-full text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={handleGuestSignIn}
+                    disabled={loading}
+                    className="w-full h-10 bg-gradient-to-r from-[#8F44F0] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#6d28d9] text-white font-bold rounded-full text-sm transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(143,68,240,0.3)] active:scale-95 disabled:opacity-70"
+                >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guest Demo (One-Click)"}
                 </button>
             </form>
 

@@ -103,7 +103,8 @@ export const authConfig = {
         "/problems",
         "/contest",
         "/leaderboard",
-        "/profile"
+        "/profile",
+        "/admin"
       ].some((route) => nextUrl.pathname.startsWith(route));
 
       if (isProtectedRoute) {

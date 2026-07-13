@@ -72,7 +72,7 @@ export default function SignupPage() {
         {/* Logo Area */}
         <div className="mb-8 flex flex-col items-center">
             <h1 className="text-3xl font-bold tracking-tighter text-white mb-2">
-              <span className="text-emerald-500">Leet</span>Code
+              <span className="text-[#8F44F0]">Logi</span>Quest
             </h1>
             <p className="text-neutral-400 text-sm">Create an account to start coding.</p>
         </div>

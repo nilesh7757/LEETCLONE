@@ -26,7 +26,7 @@ const STAT_CONFIGS = [
 
 const CARD_THEMES = {
   bronze: {
-    name: "FUT Bronze",
+    name: "Novice",
     bg: "linear-gradient(135deg, #1f1412 0%, #36211e 40%, #854b40 85%, #b26a5c 100%)",
     border: "border-[#854b40] shadow-[#854b40]/15",
     text: "text-orange-50",
@@ -40,7 +40,7 @@ const CARD_THEMES = {
     statBarBg: "bg-orange-500/10",
   },
   silver: {
-    name: "FUT Silver",
+    name: "Intermediate",
     bg: "linear-gradient(135deg, #13171e 0%, #202735 40%, #768897 85%, #a5b4c0 100%)",
     border: "border-[#768897] shadow-[#768897]/20",
     text: "text-slate-50",
@@ -54,7 +54,7 @@ const CARD_THEMES = {
     statBarBg: "bg-slate-500/10",
   },
   gold: {
-    name: "FUT Gold",
+    name: "Advanced",
     bg: "linear-gradient(135deg, #1c190f 0%, #352d17 40%, #dbb244 85%, #f7d16f 100%)",
     border: "border-[#dbb244] shadow-[#dbb244]/20",
     text: "text-yellow-50",
@@ -68,7 +68,7 @@ const CARD_THEMES = {
     statBarBg: "bg-yellow-500/10",
   },
   inform: {
-    name: "Inform TOTW",
+    name: "Specialist",
     bg: "linear-gradient(135deg, #09090c 0%, #15151b 45%, #ffd700 90%, #09090c 100%)",
     border: "border-[#ffd700] shadow-[#ffd700]/25",
     text: "text-white",
@@ -82,7 +82,7 @@ const CARD_THEMES = {
     statBarBg: "bg-yellow-500/10",
   },
   toty: {
-    name: "TOTY Blue",
+    name: "Master",
     bg: "linear-gradient(135deg, #010414 0%, #001f5c 35%, #0056e0 75%, #ffd700 100%)",
     border: "border-[#ffd700] shadow-blue-500/30",
     text: "text-white",
@@ -96,7 +96,7 @@ const CARD_THEMES = {
     statBarBg: "bg-blue-500/15",
   },
   icon: {
-    name: "FUT Icon",
+    name: "Expert",
     bg: "linear-gradient(135deg, #101012 0%, #222226 40%, #ffffff 85%, #d4af37 100%)",
     border: "border-[#d4af37] shadow-[#d4af37]/25",
     text: "text-white",
@@ -306,12 +306,12 @@ export default function UserRatingCard({ user, stats }: UserRatingCardProps) {
 
   // AUTOMATIC RATING TO CARD SKIN MAPPING
   const selectedTheme = useMemo<keyof typeof CARD_THEMES>(() => {
-    if (ultimateRating >= 94) return "toty";   // 94-99: Team of the Year (Blue/Gold)
-    if (ultimateRating >= 88) return "icon";   // 88-93: FUT Icon (White/Gold)
-    if (ultimateRating >= 78) return "inform"; // 78-87: TOTW Inform (Black/Gold)
-    if (ultimateRating >= 68) return "gold";   // 68-77: FUT Gold
-    if (ultimateRating >= 62) return "silver"; // 62-67: FUT Silver
-    return "bronze";                           // <62: FUT Bronze
+    if (ultimateRating >= 94) return "toty";   // 94-99: Master (Blue/Gold)
+    if (ultimateRating >= 88) return "icon";   // 88-93: Expert (White/Gold)
+    if (ultimateRating >= 78) return "inform"; // 78-87: Specialist (Black/Gold)
+    if (ultimateRating >= 68) return "gold";   // 68-77: Advanced (Gold)
+    if (ultimateRating >= 62) return "silver"; // 62-67: Intermediate (Silver)
+    return "bronze";                           // <62: Novice (Bronze)
   }, [ultimateRating]);
 
   const theme = CARD_THEMES[selectedTheme];
@@ -394,7 +394,7 @@ export default function UserRatingCard({ user, stats }: UserRatingCardProps) {
         style: captureStyle as unknown as Partial<CSSStyleDeclaration>,
       });
       const link = document.createElement('a');
-      link.download = `${user?.name || 'player'}-fut-card.png`;
+      link.download = `${user?.name || 'player'}-skills-card.png`;
       link.href = dataUrl;
       link.click();
       toast.success("PNG Downloaded!");
@@ -681,7 +681,7 @@ export default function UserRatingCard({ user, stats }: UserRatingCardProps) {
                     <Calendar size={10} />
                     <span className="text-[7.5px] font-mono">{memberSince}</span>
                   </div>
-                  <span className="text-[7px] font-black tracking-[0.3em] text-white/20">LEETCLONE FUT</span>
+                  <span className="text-[7px] font-black tracking-[0.3em] text-white/20">LOGIQUEST METRICS</span>
                 </div>
 
               </div>

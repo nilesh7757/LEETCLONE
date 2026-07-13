@@ -61,7 +61,7 @@ export default function IDEShowcase() {
           <div className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
           <div className="w-2.5 h-2.5 rounded-full bg-[#eab308]" />
           <div className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" />
-          <span className="ml-3 text-[10px] text-[#a1a1aa] font-bold tracking-wider uppercase">LeetClone IDE v3.0</span>
+          <span className="ml-3 text-[10px] text-[#a1a1aa] font-bold tracking-wider uppercase">LogiQuest IDE v3.0</span>
         </div>
         
         {/* Play/Run Code Button */}

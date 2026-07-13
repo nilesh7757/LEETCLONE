@@ -15,8 +15,26 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LogiQuest - Solve Logic, Master the Journey",
+  metadataBase: new URL("https://logiquest.nileshmori.me"),
+  title: {
+    default: "LogiQuest — Solve Logic, Master the Journey",
+    template: "%s · LogiQuest",
+  },
   description: "A premium platform for interactive coding algorithms, AI-powered interview preparation, and real-time competitive logic.",
+  openGraph: {
+    title: "LogiQuest — Solve Logic, Master the Journey",
+    description: "A premium platform for interactive coding algorithms, AI-powered interview preparation, and real-time competitive logic.",
+    url: "https://logiquest.nileshmori.me",
+    siteName: "LogiQuest",
+    images: ["/og.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LogiQuest — Solve Logic, Master the Journey",
+    description: "A premium platform for interactive coding algorithms, AI-powered interview preparation, and real-time competitive logic.",
+    images: ["/og.png"],
+  },
   icons: {
     icon: "/favicon.svg",
   },

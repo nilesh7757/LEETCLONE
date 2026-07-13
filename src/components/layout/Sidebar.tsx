@@ -19,7 +19,8 @@ import {
   GraduationCap,
   BrainCircuit,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Info
 } from "lucide-react";
 import Logo from "../ui/Logo";
 import { useSession } from "next-auth/react";
@@ -102,6 +103,7 @@ export default function Sidebar({ isCollapsed = false, toggleCollapse }: Sidebar
     { label: "Leaderboard", href: "/leaderboard", icon: LineChart, color: "var(--viz-green)" },
     { label: "Blog", href: "/blog", icon: Globe, color: "var(--viz-green)" },
     { label: "Chat", href: "/chat", icon: MessageSquare, color: "var(--viz-blue)" },
+    { label: "About Build", href: "/about", icon: Info, color: "var(--viz-purple)" },
   ];
 
   return (
