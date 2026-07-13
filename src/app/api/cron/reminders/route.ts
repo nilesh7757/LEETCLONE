@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendStudyReminderEmail } from "@/lib/mail";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   // Security: Check for Cron Secret if in production
@@ -13,7 +14,7 @@ export async function GET(req: Request) {
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     
-    console.log(`[CRON] Running study reminders for ${currentTime}`);
+    logger.info(`[CRON] Running study reminders for ${currentTime}`);
 
     // 1. Find enrollments with a reminder set for right now
     const enrollments = await prisma.studyPlanEnrollment.findMany({
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
       }
     });
 
-    console.log(`[CRON] Found ${enrollments.length} users to remind.`);
+    logger.info(`[CRON] Found ${enrollments.length} users to remind.`);
 
     for (const enrollment of enrollments) {
       if (!enrollment.user.email) continue;
@@ -65,7 +66,7 @@ export async function GET(req: Request) {
         progress
       );
       
-      console.log(`[CRON] Reminder sent to ${enrollment.user.email}`);
+      logger.info(`[CRON] Reminder sent to ${enrollment.user.email}`);
     }
 
     // 2. Delete temporary guest users older than 24 hours
@@ -76,7 +77,7 @@ export async function GET(req: Request) {
         createdAt: { lt: oneDayAgo }
       }
     });
-    console.log(`[CRON] Cleaned up ${deletedGuests.count} guest accounts older than 24 hours.`);
+    logger.info(`[CRON] Cleaned up ${deletedGuests.count} guest accounts older than 24 hours.`);
 
     return NextResponse.json({
       success: true,
@@ -84,7 +85,7 @@ export async function GET(req: Request) {
       deletedGuests: deletedGuests.count
     });
   } catch (error) {
-    console.error("[CRON ERROR]", error);
+    logger.error("[CRON ERROR]", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -2,8 +2,14 @@ import cloudinary from "@/lib/cloudinaryConfig";
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
+import { auth } from "@/auth";
 
 export const POST = apiHandler(async (req: Request) => {
+  const session = await auth();
+  if (!session || !session.user) {
+    throw new ApiError("Unauthorized", 401);
+  }
+
   const formData = await req.formData();
   const file = formData.get("file") as File;
 

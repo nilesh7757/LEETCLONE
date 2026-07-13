@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
 
 export const GET = apiHandler(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -43,7 +44,7 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
 
   // --- RATING CALCULATION AND UPDATE LOGIC ---
   if (hasEnded && !ratingsFinalized && contest.registrations.length > 0) {
-      console.log(`Contest ${contest.title} has ended. Calculating ratings...`);
+      logger.info(`Contest ${contest.title} has ended. Calculating ratings...`);
 
       const participants = contest.registrations.map(reg => ({
           userId: reg.user.id,
@@ -98,7 +99,7 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
 
       try {
           await prisma.$transaction([...updates, ...ratingHistoryEntries]);
-          console.log(`Ratings updated and history recorded for contest ${contest.title}`);
+          logger.info(`Ratings updated and history recorded for contest ${contest.title}`);
           // After updating, we need to refresh the user objects in registrations
           // to reflect the new rating for the leaderboard display.
           // This is slightly inefficient but ensures consistency for this request.
@@ -117,7 +118,7 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
           if (reFetchedContest) contest.registrations = reFetchedContest.registrations;
 
       } catch (transactionError) {
-          console.error(`Failed to update ratings for contest ${contest.title}:`, transactionError);
+          logger.error(`Failed to update ratings for contest ${contest.title}:`, transactionError);
           // Even if transaction fails, try to return current leaderboard
       }
   }

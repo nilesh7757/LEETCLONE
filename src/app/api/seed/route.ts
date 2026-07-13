@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     // Check if problems already exist
     const count = await prisma.problem.count();

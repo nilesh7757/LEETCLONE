@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   const session = await auth();
   
   if (!session || !session.user || !session.user.id) {
-    console.log("Register API: Unauthorized - Session or User ID missing", session);
+    logger.warn("Register API: Unauthorized - Session or User ID missing");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { contestId } = await req.json();
-    console.log(`Register API: Registering user ${session.user.id} for contest ${contestId}`);
+    logger.info(`Register API: Registering user ${session.user.id} for contest ${contestId}`);
 
     // Verify contest existence and visibility
     const contest = await prisma.contest.findUnique({
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
     });
 
     if (existing) {
-      console.log("Register API: User already registered");
+      logger.info("Register API: User already registered");
       return NextResponse.json({ message: "Already registered" });
     }
 
@@ -69,10 +70,10 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("Register API: Registration successful");
+    logger.info("Register API: Registration successful");
     return NextResponse.json({ registration });
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.error("Registration error:", error);
     return NextResponse.json(
       { error: "Failed to register for contest" },
       { status: 500 }

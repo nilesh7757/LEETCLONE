@@ -2,9 +2,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(',')[0] || "127.0.0.1";
+    const rateLimitResult = await rateLimit(`guest-auth:${ip}`, 5, 60000);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many guest accounts created. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const randomId = crypto.randomBytes(6).toString("hex");
     const guestEmail = `guest_${randomId}@logiquest.com`;
     const guestPassword = `guest_pass_${randomId}`;
@@ -24,7 +35,7 @@ export async function POST() {
       },
     });
 
-    console.log(`[GUEST_AUTH] Created random guest demo user: ${guestEmail}`);
+    logger.info(`[GUEST_AUTH] Created random guest demo user: ${guestEmail}`);
     
     return NextResponse.json({ 
       success: true,
@@ -32,7 +43,7 @@ export async function POST() {
       password: guestPassword
     });
   } catch (error) {
-    console.error("[GUEST_AUTH] Error creating guest user:", error);
+    logger.error("[GUEST_AUTH] Error creating guest user:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
