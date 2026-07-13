@@ -3,7 +3,10 @@ import { ProblemType } from "@prisma/client";
 import { logger } from "./logger";
 import vm from "vm";
 
-const JUDGE0_URL = "https://ce.judge0.com/submissions?base64_encoded=false&wait=true";
+// NOTE: We are using ce.judge0.com which is the free public tier of Judge0.
+// It has strict rate limits. Under high production load, this should be migrated
+// to a dedicated, self-hosted Judge0 instance.
+const JUDGE0_BATCH_URL = "https://ce.judge0.com/submissions/batch?base64_encoded=false";
 
 // Map of LogiQuest languages to Judge0 language IDs
 const LANGUAGE_ID_MAP: Record<string, number> = {
@@ -52,7 +55,7 @@ export interface ExecuteCodeParams {
 }
 
 /**
- * HIGH-RELIABILITY ENGINE: Judge0 Cloud Runner
+ * HIGH-RELIABILITY ENGINE: Judge0 Cloud Runner (Asynchronous Batch Submissions)
  */
 export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionResult[]> {
   const { code, testCases, language = "javascript", type } = params;
@@ -69,114 +72,178 @@ export async function executeCode(params: ExecuteCodeParams): Promise<ExecutionR
     throw new Error(`Language ${language} not supported yet.`);
   }
 
-  logger.info(`[EXEC_CODE] Executing ${testCases.length} test cases for ${language} using Judge0 Cloud...`);
+  logger.info(`[EXEC_CODE] Submitting ${testCases.length} test cases to Judge0 Batch API...`);
 
-  const results: ExecutionResult[] = [];
-  const CHUNK_SIZE = 5;
+  // 1. Construct submission payloads
+  const submissionsPayload = testCases.map((tc) => {
+    let sourceCode = code;
+    if (type === ProblemType.SQL) {
+      const schema = tc.initialSchema || params.initialSchema || "";
+      const data = (tc.input && tc.input.trim() !== "") ? tc.input : (tc.initialData || params.initialData || "");
+      sourceCode = `.headers on\n.mode csv\n${schema}\n${data}\n${code}`;
+    }
 
-  for (let i = 0; i < testCases.length; i += CHUNK_SIZE) {
-    const chunk = testCases.slice(i, i + CHUNK_SIZE);
-    
-    const chunkResults = await Promise.all(
-      chunk.map(async (tc, index) => {
-        const actualIndex = i + index;
-        try {
-          if (!tc.input || String(tc.input).trim() === "") {
-              logger.warn(`[EXEC_CODE] Executing test case ${actualIndex} with empty STDIN`);
-          }
+    const payload: {
+      source_code: string;
+      language_id: number;
+      stdin: string;
+      cpu_time_limit: number;
+      memory_limit: number;
+      expected_output?: string;
+    } = {
+      source_code: sourceCode,
+      language_id: langId,
+      stdin: tc.input || "",
+      cpu_time_limit: (params.timeLimit && params.timeLimit > 10 ? params.timeLimit / 1000 : params.timeLimit) || 5,
+      memory_limit: (params.memoryLimit || 512) * 1024,
+    };
 
-          let sourceCode = code;
-          if (type === ProblemType.SQL) {
-            const schema = tc.initialSchema || params.initialSchema || "";
-            // If the test case input has custom sql, run it as seed data. Otherwise fallback to predefined database state.
-            const data = (tc.input && tc.input.trim() !== "") ? tc.input : (tc.initialData || params.initialData || "");
-            sourceCode = `.headers on\n.mode csv\n${schema}\n${data}\n${code}`;
-          }
+    if (!params.isOutputGeneration && tc.expectedOutput) {
+      payload.expected_output = tc.expectedOutput;
+    }
 
-          const payload: {
-            source_code: string;
-            language_id: number;
-            stdin: string;
-            cpu_time_limit: number;
-            memory_limit: number;
-            expected_output?: string;
-          } = {
-            source_code: sourceCode,
-            language_id: langId,
-            stdin: tc.input || "",
-            cpu_time_limit: (params.timeLimit && params.timeLimit > 10 ? params.timeLimit / 1000 : params.timeLimit) || 5,
-            memory_limit: (params.memoryLimit || 512) * 1024,
-          };
+    return payload;
+  });
 
-          if (!params.isOutputGeneration && tc.expectedOutput) {
-            payload.expected_output = tc.expectedOutput;
-          }
+  // 2. Submit batches of up to 20 submissions at once
+  const tokens: string[] = [];
+  const BATCH_LIMIT = 20;
 
-          const response = await axios.post(JUDGE0_URL, payload);
-          const data = response.data;
-          
-          if (!data || !data.status) {
-             throw new Error("Invalid response from execution engine");
-          }
-
-          const statusId = data.status.id;
-
-          let status: ExecutionResult["status"] = "Accepted";
-          if (params.isOutputGeneration) {
-            if (statusId === 3 || statusId === 4) status = "Accepted";
-            else if (statusId === 5) status = "Time Limit Exceeded";
-            else if (statusId === 6) status = "Compilation Error";
-            else status = "Runtime Error";
-          } else {
-            if (statusId === 3) {
-              status = "Accepted";
-            } else if (statusId === 4) {
-              if (checkSpecialJudge(params.customChecker, params.problemSlug, params.problemTitle, tc.input || "", (data.stdout || "").trim(), tc.expectedOutput || "", type === ProblemType.SQL)) {
-                status = "Accepted";
-              } else {
-                status = "Wrong Answer";
-              }
-            } else if (statusId === 5) {
-              status = "Time Limit Exceeded";
-            } else if (statusId === 6) {
-              status = "Compilation Error";
-            } else {
-              status = "Runtime Error";
-            }
-          }
-
-          return {
-            input: String(tc.input || ""),
-            expected: String(tc.expectedOutput || ""),
-            actual: (data.stdout || "").trim(),
-            status,
-            error: data.stderr || data.compile_output || data.message,
-            runtime: parseFloat(data.time) * 1000 || 0,
-          };
-        } catch (error: unknown) {
-          const errorMsg = error instanceof Error ? error.message : "Unknown error";
-          logger.error(`[EXEC_CODE] Judge0 API error for test case ${actualIndex}:`, errorMsg);
-          return {
-            input: String(tc.input || ""),
-            expected: String(tc.expectedOutput || ""),
-            actual: "",
-            status: "Service Unreachable",
-            error: errorMsg,
-            runtime: 0,
-          } as ExecutionResult;
-        }
-      })
-    );
-
-    results.push(...chunkResults);
-    
-    // Add a small delay between chunks to respect rate limits
-    if (i + CHUNK_SIZE < testCases.length) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  for (let i = 0; i < submissionsPayload.length; i += BATCH_LIMIT) {
+    const chunk = submissionsPayload.slice(i, i + BATCH_LIMIT);
+    try {
+      const response = await axios.post(JUDGE0_BATCH_URL, { submissions: chunk });
+      const data = response.data;
+      if (Array.isArray(data)) {
+        tokens.push(...data.map((item: { token: string }) => item.token));
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      logger.error(`[EXEC_CODE] Judge0 Batch submission failed for chunk at index ${i}:`, errorMsg);
+      throw new Error(`Judge0 service unreachable: ${errorMsg}`);
     }
   }
 
-  return results;
+  if (tokens.length !== testCases.length) {
+    throw new Error("Failed to register all test cases with Judge0.");
+  }
+
+  // 3. Poll batch statuses dynamically
+  const results: ExecutionResult[] = new Array(testCases.length);
+  const finished = new Set<number>();
+  let attempts = 0;
+  const maxAttempts = 40; // Max 16 seconds of polling
+  let hasFailure = false;
+
+  while (finished.size < testCases.length && attempts < maxAttempts && !hasFailure) {
+    attempts++;
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    const pendingIndices = testCases.map((_, idx) => idx).filter(idx => !finished.has(idx));
+    const pendingTokens = pendingIndices.map(idx => tokens[idx]);
+
+    try {
+      const pollResponse = await axios.get(
+        `https://ce.judge0.com/submissions/batch?tokens=${pendingTokens.join(",")}&base64_encoded=false&fields=status_id,status,stdout,stderr,compile_output,message,time,memory`
+      );
+
+      const submissions = pollResponse.data.submissions;
+      if (!submissions || !Array.isArray(submissions)) {
+        throw new Error("Invalid response from polling endpoint.");
+      }
+
+      for (let k = 0; k < submissions.length; k++) {
+        const sub = submissions[k];
+        const actualIndex = pendingIndices[k];
+        const tc = testCases[actualIndex];
+        const statusId = sub.status?.id;
+
+        // Status 1: In Queue, Status 2: Processing
+        if (statusId === 1 || statusId === 2) {
+          continue;
+        }
+
+        let status: ExecutionResult["status"] = "Accepted";
+        if (params.isOutputGeneration) {
+          if (statusId === 3 || statusId === 4) status = "Accepted";
+          else if (statusId === 5) status = "Time Limit Exceeded";
+          else if (statusId === 6) status = "Compilation Error";
+          else status = "Runtime Error";
+        } else {
+          if (statusId === 3) {
+            status = "Accepted";
+          } else if (statusId === 4) {
+            if (checkSpecialJudge(params.customChecker, params.problemSlug, params.problemTitle, tc.input || "", (sub.stdout || "").trim(), tc.expectedOutput || "", type === ProblemType.SQL)) {
+              status = "Accepted";
+            } else {
+              status = "Wrong Answer";
+            }
+          } else if (statusId === 5) {
+            status = "Time Limit Exceeded";
+          } else if (statusId === 6) {
+            status = "Compilation Error";
+          } else {
+            status = "Runtime Error";
+          }
+        }
+
+        results[actualIndex] = {
+          input: String(tc.input || ""),
+          expected: String(tc.expectedOutput || ""),
+          actual: (sub.stdout || "").trim(),
+          status,
+          error: sub.stderr || sub.compile_output || sub.message,
+          runtime: parseFloat(sub.time) * 1000 || 0,
+        };
+
+        finished.add(actualIndex);
+      }
+
+      // Early termination check in sequential order
+      for (let idx = 0; idx < testCases.length; idx++) {
+        if (finished.has(idx)) {
+          if (results[idx].status !== "Accepted") {
+            hasFailure = true;
+            break;
+          }
+        } else {
+          // Must wait for the next pending testcase in sequential order to determine status
+          break;
+        }
+      }
+
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      logger.error("[EXEC_CODE] Polling error during status retrieval:", errorMsg);
+      pendingIndices.forEach(idx => {
+        results[idx] = {
+          input: String(testCases[idx].input || ""),
+          expected: String(testCases[idx].expectedOutput || ""),
+          actual: "",
+          status: "Service Unreachable",
+          error: errorMsg,
+          runtime: 0,
+        };
+        finished.add(idx);
+      });
+      break;
+    }
+  }
+
+  // Aggregate results and apply sequential early termination
+  const finalResults: ExecutionResult[] = [];
+  for (let idx = 0; idx < testCases.length; idx++) {
+    if (results[idx]) {
+      finalResults.push(results[idx]);
+      if (results[idx].status !== "Accepted") {
+        break; // Stop reporting past the first failing test case
+      }
+    } else {
+      break; // Exited early
+    }
+  }
+
+  return finalResults;
 }
 
 function validateTopologicalSort(input: string, actualOutput: string): boolean {

@@ -32,8 +32,8 @@ export default function AboutPage() {
     {
       title: "Secure Sandboxed Code Execution",
       icon: RunnerIcon,
-      tech: "Piston Engine + BullMQ background workers",
-      desc: "Executing arbitrary user-submitted code securely while maintaining sub-second feedback. Configured isolated runtime environments using the Piston runner API. Developed a BullMQ job distribution pattern backed by persistent worker scripts to queue, execute, and verify code execution memory/time limits without stalling the primary Node.js process.",
+      tech: "Judge0 API + BullMQ background workers",
+      desc: "Executing arbitrary user-submitted code securely while maintaining sub-second feedback. Configured isolated runtime environments using the Judge0 API. Developed a BullMQ job distribution pattern backed by persistent worker scripts to queue, execute, and verify code execution memory/time limits without stalling the primary Node.js process.",
       impact: "Sandboxed execution completes in under 2.0 seconds with resource quotas strictly enforced."
     },
     {
@@ -136,7 +136,7 @@ export default function AboutPage() {
               <g transform="translate(530, 180)">
                 <rect width="120" height="70" rx="10" fill="#1e1313" stroke="#ef4444" strokeWidth="2" />
                 <text x="60" y="25" fill="#ef4444" fontWeight="bold" textAnchor="middle">SANDBOX RUNNER</text>
-                <text x="60" y="45" fill="#a1a1aa" textAnchor="middle" fontSize="9">Piston Executor</text>
+                <text x="60" y="45" fill="#a1a1aa" textAnchor="middle" fontSize="9">Judge0 API</text>
                 <text x="60" y="58" fill="#a1a1aa" textAnchor="middle" fontSize="9">BullMQ Workers</text>
               </g>
 
@@ -259,7 +259,7 @@ export default function AboutPage() {
           {/* Call to action buttons */}
           <div className="flex flex-col sm:flex-row md:flex-col gap-3 w-full sm:w-auto shrink-0">
             <a 
-              href="https://github.com/nilesh7757/LOGIQUEST" 
+              href="https://github.com/nilesh7757/LEETCLONE" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2.5 active:scale-95 text-center"

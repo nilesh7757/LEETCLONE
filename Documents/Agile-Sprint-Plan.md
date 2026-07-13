@@ -3,7 +3,7 @@
 ## Sprint 1: Foundation & Authentication (Weeks 1-2)
 - **Goal:** Setup project repository, database schema, and user authentication.
 - **Tasks:**
-  - Initialize Next.js 16 app with Tailwind and Framer Motion.
+  - Initialize Next.js 15 app with Tailwind and Framer Motion.
   - Setup PostgreSQL database and Prisma ORM.
   - Implement Next-Auth (Google, GitHub, Credentials).
   - Create basic UI layout (Navbar, Footer, Sidebar).

@@ -73,11 +73,15 @@ export default function LoginPage() {
       if (!res.ok) {
         throw new Error("Failed to prepare guest account.");
       }
+      const data = await res.json();
+      if (!data.success || !data.email || !data.password) {
+        throw new Error("Failed to retrieve guest credentials.");
+      }
 
       const result = await signIn("credentials", {
         redirect: false,
-        email: "guest@logiquest.com",
-        password: "guestpassword",
+        email: data.email,
+        password: data.password,
       });
       if (result?.error) {
         setError(result.error);

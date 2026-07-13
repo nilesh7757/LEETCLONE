@@ -7,7 +7,7 @@ LogiQuest is a high-fidelity, full-stack platform designed to provide a robust e
 ## 🚀 Tech Stack
 
 ### Frontend
-- **Framework:** Next.js 16+ (App Router) with React 19.
+- **Framework:** Next.js 15 (App Router) with React 19.
 - **Styling:** Tailwind CSS 4 (PostCSS configuration) for modern, utility-first UI design.
 - **Code Editor:** Monaco Editor (`@monaco-editor/react`) for a VS-Code-like editing experience.
 - **Animations:** Framer Motion for smooth, interactive UI transitions.

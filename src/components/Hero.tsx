@@ -365,8 +365,8 @@ export default function Hero() {
                 <span className="text-[10px] text-[#71717a] uppercase font-bold">Standard features</span>
               </div>
               <div>
-                <span className="block text-2xl font-black text-green-400">Piston</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">High speed runners</span>
+                <span className="block text-2xl font-black text-green-400">Judge0</span>
+                <span className="text-[10px] text-[#71717a] uppercase font-bold">Sandboxed runner</span>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { PrismaClient, ProblemType } from "@prisma/client";
-import { executeCode } from "./src/lib/codeExecution";
+import { executeCode } from "../src/lib/codeExecution";
 
 const prisma = new PrismaClient();
 

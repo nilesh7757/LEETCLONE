@@ -1,6 +1,6 @@
 # LogiQuest - Solve Logic, Master the Journey
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LOGIQUEST)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LEETCLONE)
 
 LogiQuest is a premium, high-fidelity full-stack platform designed to provide a robust environment for competitive programming, technical interview preparation, and coding practice. It integrates cutting-edge frontend animations, an interactive data structure visualizer, real-time contest dashboards, secure background code execution, and multi-model AI agents to offer an unmatched, state-of-the-art developer learning experience.
 
@@ -26,10 +26,7 @@ LogiQuest is designed with a professional development lifecycle in mind. Explore
 
 ### 📊 System Diagrams & Lifecycles
 *   **[Activity Diagrams](Documents/Activity_Diagrams.md):** High-level workflow charts representing sequential processes.
-*   **[Class Diagrams](Documents/Class_Diagrams.md):** Static structure representation showing domain classes and relations.
 *   **[Component Diagram](Documents/Component-Diagram.md):** Physical structural breakdown of client components, features, and core libraries.
-*   **[Sequence Diagrams](Documents/Sequence_Diagrams.md):** Architectural message passing loops between client, server, Redis, and Judge0.
-*   **[Submission State Diagram](Documents/Submission_State_Diagram.md):** Step-by-step state transition of code evaluations.
 
 ### 📅 Project Management & Development Roadmap
 *   **[Agile Sprint Plan](Documents/Agile-Sprint-Plan.md):** Week-by-week sprint logs mapping the initial product creation from foundation to final release.
@@ -65,7 +62,7 @@ LogiQuest is designed with a professional development lifecycle in mind. Explore
 
 ## 🛠️ Tech Stack
 
-*   **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS 4, Framer Motion, Monaco Editor, Recharts.
+*   **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS 4, Framer Motion, Monaco Editor, Recharts.
 *   **Backend & WS:** Socket.io, Node.js (`server.js`), Next.js Server Actions, NextAuth.js v5.
 *   **Database & Cache:** PostgreSQL, Prisma ORM, Redis (ioredis / Upstash).
 *   **AI Integration:** Google Generative AI (Gemini Pro/Flash SDK), Groq SDK.
@@ -106,7 +103,7 @@ graph TD
 Here is a simplified map of the project repository directory layout:
 
 ```text
-D:\LEETCLONE\
+logiquest/
 ├── .github/              # CI/CD Workflows (GitHub Actions)
 ├── prisma/               # Prisma Database Schema, Migrations, and Seeding Scripts
 │   ├── migrations/       # SQL Database migration logs

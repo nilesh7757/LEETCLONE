@@ -5,10 +5,10 @@ The Low-Level Design specifies the detailed internal implementation, class struc
 
 ## 2. Design Patterns Utilized
 
-### 2.1 Repository & Service Pattern
-To decouple the business logic from the Next.js routing and Prisma ORM, LogiQuest implements a Service Layer.
-- **ProblemService.ts**: Contains methods like `getProblemById`, `submitSolution`.
-- **ProblemRepository.ts**: Handles Prisma queries. The Service calls the Repository, abstracting DB specifics.
+### 2.1 Route Handlers & Service Tier
+To separate routing logic from business calculations, LogiQuest utilizes Route Handlers combined with helper services.
+- **Route Handlers (`src/app/api/`)**: Handle HTTP request extraction, request validations, and authorization checks.
+- **Prisma Client (`src/lib/prisma.ts`)**: Direct database interface, utilizing transactional operations and index-backed queries.
 
 ### 2.2 Observer Pattern (Pub/Sub)
 Implemented across the Next.js backend and Socket.IO server via Redis.
@@ -16,11 +16,10 @@ Implemented across the Next.js backend and Socket.IO server via Redis.
 - **Subscriber:** Socket.IO Room Manager.
 - **Event:** `SUBMISSION_UPDATE`. When a Judge0 payload arrives, the Observer pushes the state to all subscribed clients in a specific `roomId`.
 
-### 2.3 Strategy Pattern (AI Integration)
-The system supports multiple LLMs (Gemini, Groq, OpenAI). The `AIService` class utilizes the Strategy Pattern:
-- `IAIProvider` interface defines `generateAudit(prompt: string)`.
-- `GeminiProvider` and `GroqProvider` implement this interface.
-- This allows hot-swapping AI providers based on rate limits or subscription tiers without rewriting business logic.
+### 2.3 AI Provider Architecture
+AI features (Code Coach audits, dynamic editorial generator, and mock interview evaluation) are orchestrated directly through API clients.
+- **Gemini SDK (`src/lib/gemini.ts`)**: Invokes Gemini models (e.g. Gemini 2.5 Flash/Pro) using specialized system prompt contexts.
+- **System prompts**: Custom prompts analyze compilation logs, runtime outputs, and syntax trees to generate structured step-by-step guidance.
 
 ## 3. Core Modules & Class Interfaces
 
@@ -65,9 +64,9 @@ class CollaborationRoomManager {
     socket.to(roomId).emit('user_joined', userDetails);
   }
 
-  public handleCodeChange(socket: Socket, roomId: string, delta: any): void {
-    // CRDT / Yjs integration point for conflict resolution
-    socket.to(roomId).emit('code_delta_update', delta);
+  public handleCodeChange(socket: Socket, roomId: string, code: string): void {
+    // Broadcasts the updated code buffer to other room participants
+    socket.to(roomId).emit('code_update', { code });
   }
 }
 ```
@@ -85,14 +84,13 @@ When a user submits code against a problem with 50 test cases:
    - If all `status == 3 (AC)`, overarching status is `AC`.
 5. Only if overarching status is `AC`, trigger `UserRatingService.updateRating(userId)`.
 
-### 4.2 Contest Leaderboard Ranking (Redis ZSET)
-- Each contest has a key: `contest:{contestId}:leaderboard`.
-- When a user solves a problem:
-  - Calculate Penalty = `Time taken from start + (Failed attempts * 20 mins)`.
-  - Score = `Number of accepted problems`.
-  - Redis sorted set ranks by score (descending), then by penalty (ascending).
-- To achieve multi-factor sorting in a single ZSET score: `(Score * 10000000) - Penalty`. Thus, higher score wins.
+### 4.2 Contest Leaderboard Ranking (Database Querying)
+- Contest standings are calculated dynamically from submission records in the relational database.
+- When a query is requested:
+  - Fetch user submission metadata (accepted count, timestamp of ACs, failed attempts).
+  - Calculate Score = `Number of accepted problems` and Penalty = `Time taken from start + (Failed attempts * 20 mins)`.
+  - Order results dynamically by Score (descending), then by Penalty (ascending).
 
-## 5. Error Handling & Retry Mechanisms
-- **Exponential Backoff:** If Judge0 API is rate-limited (HTTP 429), the Next.js service employs an exponential backoff retry up to 3 times (1s, 2s, 4s).
-- **Dead Letter Queue (DLQ):** Failed asynchronous callbacks are pushed to a Redis DLQ for manual inspection, ensuring no lost submissions.
+## 5. Error Handling & Validation
+- **Callback Validation:** Incoming webhooks from Judge0 are verified via submission tokens. If a webhook payload fails validation, the system drops the request and logs the error, ensuring database integrity.
+- **Runtime Rate Limiting:** Utilizes rate-limiting configurations at the middleware level to prevent API exhaustion.

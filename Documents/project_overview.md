@@ -10,7 +10,7 @@ LogiQuest is a next-generation interactive learning and interview platform. It u
 
 ### 2.1 Core Frameworks & Languages
 *   **Language:** TypeScript (Fully typed interfaces across server, editor, and database layers).
-*   **Frontend Framework:** Next.js 16 (App Router) with React 19.
+*   **Frontend Framework:** Next.js 15 (App Router) with React 19.
 *   **Styling & UI:** Tailwind CSS 4 with custom PostCSS plugins and Framer Motion for rich animations.
 *   **Stateful Services:** Node.js Socket.IO server (`server.js`) for real-time contests and chat.
 
