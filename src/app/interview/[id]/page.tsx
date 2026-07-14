@@ -420,7 +420,7 @@ export default function InterviewPage({
             className={`p-2.5 rounded-xl border transition-all ${
               isVideoActive 
                 ? (stream ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-purple-500/10 border-purple-500/30 text-purple-400")
-                : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                : "bg-white/5 border-white/10 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
             title="Toggle Webcam simulation feed"
           >
@@ -433,7 +433,7 @@ export default function InterviewPage({
             className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${
               isVoiceMode 
                 ? "bg-purple-600 border-purple-500 text-white" 
-                : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                : "bg-white/5 border-white/10 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
             title="Toggle TTS Voice Mode"
           >
@@ -642,7 +642,7 @@ export default function InterviewPage({
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="flex items-center gap-3 bg-white hover:bg-purple-600 hover:text-white text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 active:scale-95 group shadow-lg shadow-white/5 border border-transparent"
+              className="flex items-center gap-3 bg-white hover:bg-purple-600 hover:text-[var(--foreground)] text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 active:scale-95 group shadow-lg shadow-white/5 border border-transparent"
             >
               {isSubmitting ? (
                 <>

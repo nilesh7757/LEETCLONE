@@ -513,7 +513,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                           <button
                             onClick={() => handleRun((msg) => {})}
                             disabled={isRunning}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-white hover:bg-white/5 border border-[var(--border)] transition-all disabled:opacity-30"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-[var(--foreground)] hover:bg-white/5 border border-[var(--border)] transition-all disabled:opacity-30"
                           >
                             {isRunning ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="text-[#3b82f6]" />}
                             Run
@@ -521,7 +521,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                           <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-[#3b82f6] hover:text-white transition-all disabled:opacity-30 active:scale-95"
+                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all disabled:opacity-30 active:scale-95"
                           >
                             {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
                             Submit

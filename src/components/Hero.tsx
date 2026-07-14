@@ -640,13 +640,13 @@ function Footer() {
             Unleash your inner coding potential on the ultimate sandbox. Owned by NILESH.
           </p>
           <div className="flex items-center gap-3 pt-2 text-[#71717a]">
-            <a href="https://github.com/nilesh7757" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" title="GitHub">
+            <a href="https://github.com/nilesh7757" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] transition-colors" title="GitHub">
               <Github size={16} />
             </a>
-            <a href="https://x.com/Programmer7757" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" title="Twitter / X">
+            <a href="https://x.com/Programmer7757" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] transition-colors" title="Twitter / X">
               <Twitter size={16} />
             </a>
-            <a href="mailto:nileshmori7757@gmail.com" className="hover:text-white transition-colors" title="Email Contact">
+            <a href="mailto:nileshmori7757@gmail.com" className="hover:text-[var(--foreground)] transition-colors" title="Email Contact">
               <Mail size={16} />
             </a>
           </div>
@@ -656,10 +656,10 @@ function Footer() {
         <div>
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Platform</h4>
           <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
-            <li><Link href="/problems" className="hover:text-white transition-colors">Problems</Link></li>
-            <li><Link href="/arena" className="hover:text-white transition-colors">Multiplayer Arena</Link></li>
-            <li><Link href="/profile" className="hover:text-white transition-colors">Performance Dashboard</Link></li>
-            <li><Link href="/study-plans" className="hover:text-white transition-colors">Study Blocks</Link></li>
+            <li><Link href="/problems" className="hover:text-[var(--foreground)] transition-colors">Problems</Link></li>
+            <li><Link href="/arena" className="hover:text-[var(--foreground)] transition-colors">Multiplayer Arena</Link></li>
+            <li><Link href="/profile" className="hover:text-[var(--foreground)] transition-colors">Performance Dashboard</Link></li>
+            <li><Link href="/study-plans" className="hover:text-[var(--foreground)] transition-colors">Study Blocks</Link></li>
           </ul>
         </div>
 
@@ -667,10 +667,10 @@ function Footer() {
         <div>
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Resources</h4>
           <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
-            <li><Link href="/problems" className="hover:text-white transition-colors">AI Coach Guidance</Link></li>
-            <li><Link href="/resources" className="hover:text-white transition-colors">DSA Sheets</Link></li>
-            <li><Link href="/architect" className="hover:text-white transition-colors">System Design Blocks</Link></li>
-            <li><a href="https://takeuforward.org" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Striver SDE Sheet</a></li>
+            <li><Link href="/problems" className="hover:text-[var(--foreground)] transition-colors">AI Coach Guidance</Link></li>
+            <li><Link href="/resources" className="hover:text-[var(--foreground)] transition-colors">DSA Sheets</Link></li>
+            <li><Link href="/architect" className="hover:text-[var(--foreground)] transition-colors">System Design Blocks</Link></li>
+            <li><a href="https://takeuforward.org" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] transition-colors">Striver SDE Sheet</a></li>
           </ul>
         </div>
 
@@ -678,10 +678,10 @@ function Footer() {
         <div>
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Coder Info</h4>
           <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
-            <li><a href="https://codeforces.com/profile/nileshm7757" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Codeforces Profile</a></li>
-            <li><a href="https://leetcode.com/u/nileshmori7757" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LeetCode Profile</a></li>
-            <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-            <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+            <li><a href="https://codeforces.com/profile/nileshm7757" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] transition-colors">Codeforces Profile</a></li>
+            <li><a href="https://leetcode.com/u/nileshmori7757" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] transition-colors">LeetCode Profile</a></li>
+            <li><Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link></li>
+            <li><Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms of Service</Link></li>
           </ul>
         </div>
       </div>

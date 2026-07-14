@@ -87,7 +87,7 @@ export default async function StudyPlansPage() {
 
             <Link
               href="/study-plans/new"
-              className="flex items-center gap-2.5 px-8 py-3.5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-[#3b82f6] hover:text-white active:scale-95 shadow-2xl shadow-white/5"
+              className="flex items-center gap-2.5 px-8 py-3.5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-[#3b82f6] hover:text-[var(--foreground)] active:scale-95 shadow-2xl shadow-white/5"
             >
               <Plus className="w-4 h-4" />
               Create Plan
@@ -136,7 +136,7 @@ export default async function StudyPlansPage() {
                 <p className="text-sm text-[#52525b] mb-10 max-w-sm mx-auto font-medium">Initialize a custom study manifold to target specific cognitive weaknesses identified by the system.</p>
                 <Link
                   href="/study-plans/new"
-                  className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl active:scale-95"
+                  className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95"
                 >
                   New Deployment <Plus className="w-4 h-4" />
                 </Link>
@@ -210,7 +210,7 @@ function StudyPlanCard({ plan, userId }: { plan: StudyPlan, userId?: string }) {
             />
          ) : (
             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/5">
-                <Trophy className="w-8 h-8 transition-all duration-700 text-[#1a1a1a] group-hover:text-white" style={{ color: isPurple ? undefined : '#f59e0b' }} />
+                <Trophy className="w-8 h-8 transition-all duration-700 text-[#1a1a1a] group-hover:text-[var(--foreground)]" style={{ color: isPurple ? undefined : '#f59e0b' }} />
             </div>
          )}
 

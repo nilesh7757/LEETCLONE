@@ -125,7 +125,7 @@ export default function StudioContestEditor() {
       {/* HEADER */}
       <header className="h-16 bg-[#080808] border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-[60]">
          <div className="flex items-center gap-6">
-            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-white transition-all">
+            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-[var(--foreground)] transition-all">
                <ArrowLeft size={18} />
             </Link>
             <div className="h-4 w-px bg-white/5" />
@@ -143,7 +143,7 @@ export default function StudioContestEditor() {
             <button 
                onClick={() => handleUpdate({})} 
                disabled={isSaving}
-               className="px-6 py-2 bg-white text-black rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
+               className="px-6 py-2 bg-white text-black rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all flex items-center gap-2 disabled:opacity-50"
             >
                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                Save Changes
@@ -166,7 +166,7 @@ export default function StudioContestEditor() {
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                      activeTab === tab.id 
                      ? "bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg" 
-                     : "text-[#52525b] hover:text-white hover:bg-white/5"
+                     : "text-[#52525b] hover:text-[var(--foreground)] hover:bg-white/5"
                   }`}
                >
                   <tab.icon size={18} />
@@ -369,7 +369,7 @@ export default function StudioContestEditor() {
                                  <option value="TESTER">Tester (Internal testing)</option>
                               </select>
                            </div>
-                           <button className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl active:scale-95">
+                           <button className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
                               Invite
                            </button>
                         </div>

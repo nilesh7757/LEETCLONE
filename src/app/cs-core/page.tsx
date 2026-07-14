@@ -170,7 +170,7 @@ export default function CsCoreDashboard() {
                       href={res.url} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="flex items-center space-x-2 text-sm text-gray-300 hover:text-white hover:underline bg-gray-800/50 p-2 rounded-lg transition-colors"
+                      className="flex items-center space-x-2 text-sm text-gray-300 hover:text-[var(--foreground)] hover:underline bg-gray-800/50 p-2 rounded-lg transition-colors"
                     >
                       {res.type === 'video' ? <PlayCircle className="w-4 h-4 text-pink-500" /> : <BookOpen className="w-4 h-4 text-blue-400" />}
                       <span>{res.name}</span>

@@ -266,7 +266,7 @@ export default function MasteryCalendar() {
           <button 
             type="button"
             onClick={handlePrevMonth}
-            className="p-1 hover:bg-white/5 rounded-lg border border-[var(--border)]/30 text-[var(--muted-foreground)] hover:text-white transition-all shrink-0"
+            className="p-1 hover:bg-white/5 rounded-lg border border-[var(--border)]/30 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all shrink-0"
           >
             <ChevronLeft size={14} />
           </button>
@@ -276,7 +276,7 @@ export default function MasteryCalendar() {
           <button 
             type="button"
             onClick={handleNextMonth}
-            className="p-1 hover:bg-white/5 rounded-lg border border-[var(--border)]/30 text-[var(--muted-foreground)] hover:text-white transition-all shrink-0"
+            className="p-1 hover:bg-white/5 rounded-lg border border-[var(--border)]/30 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all shrink-0"
           >
             <ChevronRight size={14} />
           </button>
@@ -314,7 +314,7 @@ export default function MasteryCalendar() {
             if (hasContests) return "text-amber-500 dark:text-amber-400 font-black";
             if (hasCompletedGoals) return "text-emerald-500 dark:text-emerald-400 font-black";
             if (isToday) return "text-white font-bold";
-            return "text-[var(--muted-foreground)] hover:text-white";
+            return "text-[var(--muted-foreground)] hover:text-[var(--foreground)]";
           };
 
           return (
@@ -387,7 +387,7 @@ export default function MasteryCalendar() {
                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">Mastery Planner</span>
                 <button 
                   onClick={() => setIsMobileDrawerOpen(false)}
-                  className="p-1.5 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors"
+                  className="p-1.5 hover:bg-white/5 rounded-full text-gray-400 hover:text-[var(--foreground)] transition-colors"
                 >
                   <X size={16} />
                 </button>
@@ -419,7 +419,7 @@ export default function MasteryCalendar() {
                   setIsPopoverOpen(false);
                   setShowAddForm(false);
                 }}
-                className="p-1 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors"
+                className="p-1 hover:bg-white/5 rounded-full text-gray-400 hover:text-[var(--foreground)] transition-colors"
               >
                 <X size={16} />
               </button>

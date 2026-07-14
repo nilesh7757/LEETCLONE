@@ -120,7 +120,7 @@ export default function EditorPanel({
          <div className="flex items-center relative" ref={langDropdownRef}>
             <button
                onClick={() => setIsLangOpen(!isLangOpen)}
-               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#52525b] hover:text-white hover:bg-white/5 transition-all"
+               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#52525b] hover:text-[var(--foreground)] hover:bg-white/5 transition-all"
             >
                <span className="text-[#3b82f6]">{languages.find(l => l.value === language)?.label || language}</span>
                <ChevronDown size={14} className={`opacity-40 transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`} />
@@ -156,7 +156,7 @@ export default function EditorPanel({
                <div className="w-px h-4 bg-white/5 mx-1" />
                <button 
                   onClick={onReset}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-white hover:bg-white/5 transition-all active:scale-95 group"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-[var(--foreground)] hover:bg-white/5 transition-all active:scale-95 group"
                   title="Reset code to starter template"
                >
                   <RotateCcw size={13} className="text-[#eab308] group-hover:rotate-[-45deg] transition-transform duration-300" />
@@ -169,7 +169,7 @@ export default function EditorPanel({
          <button 
             onClick={() => onRun && onRun(parseAndSetMarkers)}
             disabled={isRunning}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-white hover:bg-white/5 transition-all disabled:opacity-30 group"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#a1a1aa] hover:text-[var(--foreground)] hover:bg-white/5 transition-all disabled:opacity-30 group"
          >
             {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} className="text-[#3b82f6] group-hover:scale-110 transition-transform" />}
             Run
@@ -178,7 +178,7 @@ export default function EditorPanel({
          <button 
             onClick={onSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-5 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-[#3b82f6] hover:text-white transition-all disabled:opacity-30 shadow-xl shadow-white/5 active:scale-95"
+            className="flex items-center gap-2 px-5 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all disabled:opacity-30 shadow-xl shadow-white/5 active:scale-95"
          >
             {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             Submit

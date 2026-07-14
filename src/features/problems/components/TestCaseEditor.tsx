@@ -99,7 +99,7 @@ const BulkImportModal = ({
              </div>
              <h3 className="text-sm font-bold uppercase tracking-wider text-white">Bulk Import</h3>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-all text-[#52525b] hover:text-white">
+          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-all text-[#52525b] hover:text-[var(--foreground)]">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -107,13 +107,13 @@ const BulkImportModal = ({
         <div className="p-8 flex-1 overflow-y-auto custom-scrollbar space-y-8 bg-[#050505]">
           <div className="flex p-1 bg-white/5 rounded-2xl w-fit border border-white/5">
             <button
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${activeTab === "text" ? "bg-white text-black shadow-xl" : "text-[#52525b] hover:text-white"}`}
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${activeTab === "text" ? "bg-white text-black shadow-xl" : "text-[#52525b] hover:text-[var(--foreground)]"}`}
               onClick={() => setActiveTab("text")}
             >
               Text
             </button>
             <button
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${activeTab === "file" ? "bg-white text-black shadow-xl" : "text-[#52525b] hover:text-white"}`}
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${activeTab === "file" ? "bg-white text-black shadow-xl" : "text-[#52525b] hover:text-[var(--foreground)]"}`}
               onClick={() => setActiveTab("file")}
             >
               File
@@ -142,7 +142,7 @@ const BulkImportModal = ({
               <div className="w-16 h-16 rounded-3xl bg-[#3b82f6]/5 flex items-center justify-center mb-6 border border-white/5">
                 <Upload className="h-8 w-8 text-[#3b82f6] opacity-40 group-hover:opacity-100 transition-opacity" />
               </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#52525b] group-hover:text-white">Upload test cases (.txt / .json)</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#52525b] group-hover:text-[var(--foreground)]">Upload test cases (.txt / .json)</p>
               <input type="file" ref={fileInputRef} className="hidden" accept=".txt,.json" onChange={(e) => {
                  const file = e.target.files?.[0]; if (!file) return;
                  const reader = new FileReader(); reader.onload = (ev) => { setTextContent(ev.target?.result as string); setActiveTab("text"); };
@@ -153,10 +153,10 @@ const BulkImportModal = ({
         </div>
 
         <div className="px-8 py-6 border-t border-white/5 bg-[#0a0a0a] flex justify-end gap-4 shrink-0">
-          <button onClick={onClose} className="px-8 py-3 text-[10px] font-bold uppercase tracking-widest text-[#52525b] hover:text-white transition-all">Cancel</button>
+          <button onClick={onClose} className="px-8 py-3 text-[10px] font-bold uppercase tracking-widest text-[#52525b] hover:text-[var(--foreground)] transition-all">Cancel</button>
           <button
             onClick={handleImport} disabled={!textContent.trim()}
-            className="flex items-center px-10 py-3 text-[10px] font-bold uppercase tracking-widest text-black bg-white rounded-xl shadow-xl hover:bg-[#3b82f6] hover:text-white active:scale-95 disabled:opacity-30 transition-all"
+            className="flex items-center px-10 py-3 text-[10px] font-bold uppercase tracking-widest text-black bg-white rounded-xl shadow-xl hover:bg-[#3b82f6] hover:text-[var(--foreground)] active:scale-95 disabled:opacity-30 transition-all"
           >
             <CheckCircle className="h-4 w-4 mr-2" /> Import
           </button>

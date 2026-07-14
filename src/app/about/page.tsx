@@ -241,15 +241,15 @@ export default function AboutPage() {
             
             {/* Contact channels */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs font-mono text-[#a1a1aa] pt-2">
-              <a href="https://github.com/nilesh7757" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <a href="https://github.com/nilesh7757" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[var(--foreground)] transition-colors">
                 <Github size={14} />
                 <span>github/nilesh7757</span>
               </a>
-              <a href="mailto:nileshmori7757@gmail.com" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <a href="mailto:nileshmori7757@gmail.com" className="flex items-center gap-1.5 hover:text-[var(--foreground)] transition-colors">
                 <Mail size={14} />
                 <span>nileshmori7757@gmail.com</span>
               </a>
-              <a href="https://codeforces.com/profile/nileshm7757" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <a href="https://codeforces.com/profile/nileshm7757" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[var(--foreground)] transition-colors">
                 <Globe size={14} />
                 <span>codeforces/nileshm7757</span>
               </a>

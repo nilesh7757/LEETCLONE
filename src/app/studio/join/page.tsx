@@ -65,7 +65,7 @@ export default function StudioJoinPage() {
                    <h1 className="text-2xl font-black text-white uppercase tracking-tight">Invalid Invitation</h1>
                    <p className="text-[#52525b] text-[10px] font-bold uppercase tracking-widest">This link may be expired or broken.</p>
                 </div>
-                <button onClick={() => router.push("/studio")} className="mt-8 px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all">Return to Studio</button>
+                <button onClick={() => router.push("/studio")} className="mt-8 px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all">Return to Studio</button>
              </>
           )}
        </div>

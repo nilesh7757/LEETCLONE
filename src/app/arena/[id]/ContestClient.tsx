@@ -260,7 +260,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                <button 
                   onClick={handleRegister}
                   disabled={isRegistering}
-                  className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#f59e0b] hover:text-white transition-all disabled:opacity-50"
+                  className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#f59e0b] hover:text-[var(--foreground)] transition-all disabled:opacity-50"
                >
                  {isRegistering ? "Processing..." : "Join Arena"}
                </button>

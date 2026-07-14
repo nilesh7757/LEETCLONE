@@ -134,7 +134,7 @@ export default function StudioDashboard() {
                     <Plus size={16} /> New Problem
                  </button>
               ) : (
-                 <Link href="/arena/launchpad" className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl active:scale-95">
+                 <Link href="/arena/launchpad" className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
                     <Plus size={16} /> New Contest
                  </Link>
               )}
@@ -200,11 +200,11 @@ function EmptyState({ icon, title, description, action, href, actionLabel }: Emp
          <h3 className="text-3xl font-bold tracking-tight text-white mb-2">{title}</h3>
          <p className="text-[#52525b] text-sm max-w-sm mb-10">{description}</p>
          {href ? (
-            <Link href={href} className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl active:scale-95">
+            <Link href={href} className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
                {actionLabel}
             </Link>
          ) : (
-            <button onClick={action} className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl active:scale-95">
+            <button onClick={action} className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
                {actionLabel}
             </button>
          )}

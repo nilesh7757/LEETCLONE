@@ -403,7 +403,7 @@ export default function StudioProblemEditor() {
       {/* 1. TOP HEADER */}
       <header className="h-16 bg-[#080808]/90 backdrop-blur border-b border-white/5 flex items-center justify-between px-8 shrink-0 z-50">
          <div className="flex items-center gap-6">
-            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-white transition-all">
+            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-[var(--foreground)] transition-all">
                <ArrowLeft size={18} />
             </Link>
             <div className="h-4 w-px bg-white/5" />
@@ -456,7 +456,7 @@ export default function StudioProblemEditor() {
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
                          activeTab === tab.id 
                          ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 
-                         : "text-[#52525b] border-transparent hover:text-white hover:bg-white/5"
+                         : "text-[#52525b] border-transparent hover:text-[var(--foreground)] hover:bg-white/5"
                       }`}
                    >
                       <div className="flex items-center gap-3">
@@ -523,13 +523,13 @@ export default function StudioProblemEditor() {
                         <div className="flex items-center gap-2 bg-white/5 border border-white/5 p-1 rounded-xl">
                            <button 
                               onClick={() => setPreviewMode(false)}
-                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${!previewMode ? "bg-[#3b82f6] text-white" : "text-[#52525b] hover:text-white"}`}
+                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${!previewMode ? "bg-[#3b82f6] text-white" : "text-[#52525b] hover:text-[var(--foreground)]"}`}
                            >
                               Edit Statement
                            </button>
                            <button 
                               onClick={() => setPreviewMode(true)}
-                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${previewMode ? "bg-[#3b82f6] text-white" : "text-[#52525b] hover:text-white"}`}
+                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${previewMode ? "bg-[#3b82f6] text-white" : "text-[#52525b] hover:text-[var(--foreground)]"}`}
                            >
                               <Eye size={10} className="inline mr-1" /> Preview
                            </button>
@@ -615,7 +615,7 @@ export default function StudioProblemEditor() {
                                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
                                     testWorkspaceTab === 'sandbox'
                                     ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 font-semibold"
-                                    : "text-[#52525b] border-transparent hover:text-white"
+                                    : "text-[#52525b] border-transparent hover:text-[var(--foreground)]"
                                  }`}
                               >
                                  <Cpu size={12} /> Sandbox Console
@@ -625,7 +625,7 @@ export default function StudioProblemEditor() {
                                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
                                     testWorkspaceTab === 'vetting'
                                     ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 font-semibold"
-                                    : "text-[#52525b] border-transparent hover:text-white"
+                                    : "text-[#52525b] border-transparent hover:text-[var(--foreground)]"
                                  }`}
                               >
                                  <Database size={12} /> Vetting Suite {!isSandboxPassed && " 🔒"}
@@ -923,7 +923,7 @@ export default function StudioProblemEditor() {
                            </div>
                            <button 
                               onClick={addCollaborator}
-                              className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-white transition-all shadow-xl cursor-pointer"
+                              className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl cursor-pointer"
                            >
                               Invite
                            </button>

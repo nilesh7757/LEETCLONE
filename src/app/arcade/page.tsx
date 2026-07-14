@@ -267,7 +267,7 @@ export default function ArcadeHub() {
                    )}
                 </div>
 
-                <Link href="/leaderboard" className="mt-12 block w-full py-4 text-center text-[10px] font-black uppercase tracking-[0.3em] text-[#52525b] hover:text-white border border-white/5 rounded-2xl hover:bg-white/5 transition-all">
+                <Link href="/leaderboard" className="mt-12 block w-full py-4 text-center text-[10px] font-black uppercase tracking-[0.3em] text-[#52525b] hover:text-[var(--foreground)] border border-white/5 rounded-2xl hover:bg-white/5 transition-all">
                    Open Global Index
                 </Link>
              </div>

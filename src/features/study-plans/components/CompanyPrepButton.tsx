@@ -78,7 +78,7 @@ export default function CompanyPrepButton() {
             <button
               key={company}
               onClick={() => handleCreatePrepKit(company)}
-              className="w-full text-left px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+              className="w-full text-left px-4 py-2 text-xs font-bold text-gray-300 hover:text-[var(--foreground)] hover:bg-white/5 transition-colors"
             >
               {company}
             </button>

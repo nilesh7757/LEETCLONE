@@ -261,7 +261,7 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
                   <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5 tracking-wide">Solve algorithmic challenges related to {selectedCategory.title}.</p>
                </div>
             </div>
-            <button className="w-full sm:w-auto px-5 py-2 bg-[var(--foreground)] text-[var(--background)] hover:bg-[#3b82f6] hover:text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer">
+            <button className="w-full sm:w-auto px-5 py-2 bg-[var(--foreground)] text-[var(--background)] hover:bg-[#3b82f6] hover:text-[var(--foreground)] rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer">
                Initiate Training
             </button>
          </div>
