@@ -89,7 +89,20 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
     whereClause.difficulty = resolvedSearchParams.difficulty;
   }
   if (resolvedSearchParams.category && resolvedSearchParams.category !== "All") {
-    whereClause.category = resolvedSearchParams.category;
+    const cat = resolvedSearchParams.category;
+    if (cat === "Arrays & Hashing") {
+      whereClause.category = { in: ["Arrays & Hashing", "Array", "Arrays"] };
+    } else if (cat === "Math & Geometry") {
+      whereClause.category = { in: ["Math & Geometry", "Math", "Geometry"] };
+    } else if (cat === "1-D DP" || cat === "2-D DP") {
+      whereClause.category = { in: [cat, "Dynamic Programming", "DP"] };
+    } else if (cat === "Trees") {
+      whereClause.category = { in: ["Trees", "Tree"] };
+    } else if (cat === "Graphs" || cat === "Advanced Graphs") {
+      whereClause.category = { in: ["Graphs", "Graph", "Advanced Graphs"] };
+    } else {
+      whereClause.category = cat;
+    }
   }
   if (resolvedSearchParams.company && resolvedSearchParams.company !== "All") {
     whereClause.companies = {

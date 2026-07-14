@@ -29,7 +29,7 @@ interface ProblemTableProps {
 
 const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
   const config = {
-    Easy: { color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    Easy: { color: "text-green-500", bg: "bg-green-500/10 border-green-500/20" },
     Medium: { color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
     Hard: { color: "text-red-500", bg: "bg-red-500/10 border-red-500/20" },
   }[difficulty] || { color: "text-[var(--muted-foreground)]", bg: "bg-[var(--foreground)]/5 border-[var(--border)]" };
@@ -91,7 +91,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center rounded-3xl bg-[var(--foreground)]/[0.01] border border-dashed border-[var(--border)] relative overflow-hidden">
         <HelpCircle className="w-10 h-10 text-[var(--muted-foreground)]/30 mb-4" />
-        <h3 className="text-xl font-bold tracking-tight">No Problems Found</h3>
+        <h3 className="text-xl font-bold tracking-tight">No problems found matching this criteria</h3>
         <p className="text-xs text-[var(--muted-foreground)] mt-2">Try adjusting your active filters.</p>
       </div>
     );

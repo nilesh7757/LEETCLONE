@@ -16,15 +16,22 @@ function useDebounceValue<T>(value: T, delay: number): T {
 }
 
 const tags = [
-  { name: "Arrays", color: "var(--viz-blue)" },
-  { name: "Strings", color: "var(--viz-green)" },
+  { name: "Arrays & Hashing", color: "var(--viz-blue)" },
+  { name: "Two Pointers", color: "var(--viz-green)" },
+  { name: "Sliding Window", color: "var(--viz-cyan)" },
+  { name: "Stack", color: "var(--viz-rose)" },
+  { name: "Binary Search", color: "var(--viz-amber)" },
+  { name: "Linked List", color: "var(--viz-gold)" },
   { name: "Trees", color: "var(--viz-emerald)" },
+  { name: "Tries", color: "var(--viz-purple)" },
+  { name: "Heap", color: "var(--viz-blue)" },
+  { name: "Backtracking", color: "var(--viz-red)" },
   { name: "Graphs", color: "var(--viz-purple)" },
-  { name: "DP", color: "var(--viz-rose)" },
-  { name: "Sorting", color: "var(--viz-amber)" },
+  { name: "Advanced Graphs", color: "var(--viz-rose)" },
+  { name: "1-D DP", color: "var(--viz-rose)" },
+  { name: "2-D DP", color: "var(--viz-rose)" },
   { name: "Greedy", color: "var(--viz-gold)" },
-  { name: "Math", color: "var(--viz-red)" },
-  { name: "Bit Manipulation", color: "var(--viz-cyan)" },
+  { name: "Math & Geometry", color: "var(--viz-red)" },
 ];
 
 const companies = [
@@ -96,8 +103,7 @@ export default function ProblemFilters() {
     if (difficulty && difficulty !== "All") params.set("difficulty", difficulty);
     else params.delete("difficulty");
 
-    if (category && category !== "All" && category !== "DP") params.set("category", category);
-    else if (category === "DP") params.set("category", "Dynamic Programming");
+    if (category && category !== "All") params.set("category", category);
     else params.delete("category");
 
     if (company && company !== "All") params.set("company", company);
@@ -199,7 +205,7 @@ export default function ProblemFilters() {
                 All Topics
               </button>
               {tags.map(tag => {
-                const isSelected = category === tag.name || (tag.name === "DP" && category === "Dynamic Programming");
+                const isSelected = category === tag.name;
                 return (
                   <button
                     key={tag.name}
