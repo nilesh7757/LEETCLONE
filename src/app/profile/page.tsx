@@ -14,7 +14,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import dynamic from 'next/dynamic';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useTheme } from "next-themes";
 import SkillRadar from "@/features/profile/components/HeroProfile/SkillRadar";
 import UserRatingCard from "@/features/profile/components/HeroProfile/UserRatingCard";
@@ -23,6 +22,11 @@ import Image from "next/image";
 const ActivityCalendar = dynamic(() => import("react-activity-calendar").then(mod => {
   return mod.ActivityCalendar;
 }), { ssr: false });
+
+const RatingHistoryChart = dynamic(() => import("@/features/profile/components/RatingHistoryChart"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-[var(--foreground)]/5 animate-pulse rounded-2xl" />
+});
 
 interface RatingHistory {
   date: string;
@@ -568,20 +572,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="h-[200px] w-full">
                     {!loadingStats && stats && stats.ratingHistory.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={stats.ratingHistory}>
-                                <defs>
-                                    <linearGradient id="ratingP" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--viz-cyan)" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="var(--viz-cyan)" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <XAxis dataKey="date" hide />
-                                <YAxis hide domain={['dataMin - 50', 'dataMax + 50']} />
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)' }} />
-                                <Area type="monotone" dataKey="rating" stroke="var(--viz-cyan)" strokeWidth={3} fill="url(#ratingP)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                        <RatingHistoryChart data={stats.ratingHistory} />
                     ) : !loadingStats && stats ? (
                         <div className="h-full flex flex-col items-center justify-center text-[var(--muted-foreground)]">
                             <TrendingUp size={24} className="opacity-20 mb-2" />

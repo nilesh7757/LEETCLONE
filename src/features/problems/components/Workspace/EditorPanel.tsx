@@ -1,8 +1,18 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Editor, Monaco } from "@monaco-editor/react";
+import type { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
+import dynamic from "next/dynamic";
+
+const MonacoEditor = dynamic(() => import("@monaco-editor/react").then((mod) => mod.Editor), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center text-[var(--muted-foreground)] text-sm">
+      Loading Editor Workbench...
+    </div>
+  ),
+});
 import { 
   ChevronDown, Check, Play, Send, Loader2, RotateCcw
 } from "lucide-react";
@@ -183,7 +193,7 @@ export default function EditorPanel({
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden bg-transparent">
       <div className="flex-1 relative min-h-0">
-        <Editor
+        <MonacoEditor
           height="100%"
           language={language}
           theme={editorTheme}

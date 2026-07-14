@@ -7,7 +7,10 @@ import axios from "axios";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 const Split = dynamic(() => import("react-split"), { ssr: false });
-import Editor from "@monaco-editor/react";
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { 
+  ssr: false, 
+  loading: () => <div className="flex h-full items-center justify-center text-[var(--muted-foreground)] text-sm">Loading Editor Workbench...</div>
+});
 import { AnimatePresence, motion } from "framer-motion";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -579,7 +582,7 @@ export default function ProblemForm({
                            <div className="flex flex-col gap-3">
                               <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Schema DDL</label>
                               <div className="h-[200px] rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)]">
-                                 <Editor 
+                                 <MonacoEditor 
                                     language="sql" theme={resolvedTheme === 'dark' || resolvedTheme === 'batman' ? "vs-dark" : "light"} value={initialSchema}
                                     onChange={(v) => setValue("initialSchema", v || "")}
                                     options={{ minimap: { enabled: false }, fontSize: 12, padding: { top: 12 } }}
@@ -589,7 +592,7 @@ export default function ProblemForm({
                            <div className="flex flex-col gap-3">
                               <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Seed Data DML</label>
                               <div className="h-[200px] rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)]">
-                                 <Editor 
+                                 <MonacoEditor 
                                     language="sql" theme={resolvedTheme === 'dark' || resolvedTheme === 'batman' ? "vs-dark" : "light"} value={initialDataVal}
                                     onChange={(v) => setValue("initialData", v || "")}
                                     options={{ minimap: { enabled: false }, fontSize: 12, padding: { top: 12 } }}
@@ -689,7 +692,7 @@ export default function ProblemForm({
             </div>
 
             <div className="flex-1 bg-[var(--background)] relative min-h-0">
-               <Editor 
+               <MonacoEditor 
                   height="100%" language={problemType === "SQL" ? "sql" : language} 
                   theme={resolvedTheme === 'dark' || resolvedTheme === 'batman' ? "vs-dark" : "light"}
                   value={referenceSolution} onChange={(v) => setValue("referenceSolution", v || "")}

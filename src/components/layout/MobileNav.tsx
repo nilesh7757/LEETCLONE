@@ -102,7 +102,7 @@ export default function MobileNav() {
                 </Link>
             )}
             {status === "authenticated" && <NotificationBell />}
-            <ThemeToggle direction="down" />
+            <ThemeToggle />
         </div>
       </nav>
 

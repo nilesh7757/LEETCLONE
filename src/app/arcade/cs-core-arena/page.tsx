@@ -11,7 +11,6 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import axios from "axios";
-import confetti from "canvas-confetti";
 
 interface Obstacle {
   topic: string;
@@ -183,7 +182,7 @@ export default function CsCoreArena() {
   };
 
   // Handle answering
-  const handleAnswerSelect = (index: number) => {
+  const handleAnswerSelect = async (index: number) => {
     if (selectedAnswer !== null || showExplanation || !currentObstacle) return;
     
     if (timerRef.current) clearInterval(timerRef.current);
@@ -217,6 +216,7 @@ export default function CsCoreArena() {
       const calculatedLevel = Math.floor(questionsAnswered / 3) + 1;
       if (calculatedLevel > level) {
         setLevel(calculatedLevel);
+        const confetti = (await import("canvas-confetti")).default;
         confetti({
           particleCount: 80,
           spread: 60,
@@ -227,6 +227,7 @@ export default function CsCoreArena() {
 
       // Confetti for correct answers on specialist streaks
       if (nextStreak >= 3) {
+        const confetti = (await import("canvas-confetti")).default;
         confetti({
           particleCount: 30,
           spread: 40,

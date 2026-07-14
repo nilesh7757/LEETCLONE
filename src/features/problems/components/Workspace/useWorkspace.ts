@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import confetti from "canvas-confetti";
 import { getStarterCode } from "@/lib/starterCode";
 import { Submission } from "@/types/submission";
 
@@ -200,6 +199,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
 
       if (data.submission.status === "Accepted") {
         toast.success("Accepted! 🎉");
+        const confetti = (await import("canvas-confetti")).default;
         confetti({
           particleCount: 150,
           spread: 70,

@@ -63,7 +63,7 @@ export default function UserTopNav() {
 
       <div className="flex items-center gap-3">
         {status === "authenticated" && <NotificationBell />}
-        <ThemeToggle direction="down" />
+        <ThemeToggle />
       </div>
     </div>
   );
