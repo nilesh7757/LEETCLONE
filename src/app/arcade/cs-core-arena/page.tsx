@@ -330,10 +330,10 @@ export default function CsCoreArena() {
                     <div
                       key={topic.id}
                       onClick={() => setSelectedTopic(topic.id)}
-                      className={`relative p-3.5 sm:p-5 rounded-2xl bg-zinc-900/40 border cursor-pointer transition-all duration-300 group hover:scale-[1.02] flex flex-col justify-between h-28 sm:h-40 ${
+                      className={`relative p-3.5 sm:p-5 rounded-2xl bg-[var(--card)] border cursor-pointer transition-all duration-300 group hover:scale-[1.02] flex flex-col justify-between h-28 sm:h-40 ${
                         isSelected 
-                          ? "border-cyan-500/70 bg-gradient-to-br from-cyan-950/20 to-zinc-900/40 shadow-[0_0_25px_rgba(6,182,212,0.15)]" 
-                          : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/30"
+                          ? "border-cyan-500/70 bg-gradient-to-br from-cyan-950/20 to-zinc-900/40 shadow-md" 
+                          : "border-[var(--border)] hover:border-[var(--border)]/80 hover:bg-[var(--foreground)]/10"
                       }`}
                     >
                       <div className="flex flex-col h-full justify-between">
@@ -361,7 +361,7 @@ export default function CsCoreArena() {
             {/* PLAY INITIATE BUTTON */}
             <button
               onClick={handleStartGame}
-              className="px-12 py-5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-sm tracking-[0.2em] transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95"
+              className="px-12 py-5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-sm tracking-[0.2em] transition-all flex items-center gap-3 shadow-md hover:scale-105 active:scale-95"
             >
               Initiate Neural Vector <Play size={16} fill="black" />
             </button>
@@ -372,15 +372,15 @@ export default function CsCoreArena() {
         {gameState === "PLAYING" && (
           <div className="flex-1 flex flex-col gap-6 py-4">
             {/* STATS HEADER */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 p-2.5 sm:p-4 rounded-2xl bg-zinc-900/40 border border-zinc-800 backdrop-blur-md">
-              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 border-r border-zinc-800/50">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 p-2.5 sm:p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] backdrop-blur-md">
+              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 border-r border-[var(--border)]/50">
                 <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-1">
                   <Trophy size={10} className="text-amber-500" /> Score
                 </span>
                 <span className="text-lg sm:text-2xl font-black font-mono text-white mt-0.5 sm:mt-1">{score}</span>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 md:border-r border-zinc-800/50">
+              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 md:border-r border-[var(--border)]/50">
                 <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-1">
                   <Zap size={10} className="text-cyan-400" /> Streak
                 </span>
@@ -389,18 +389,18 @@ export default function CsCoreArena() {
                 </span>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 border-r border-zinc-800/50">
+              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 border-r border-[var(--border)]/50">
                 <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500">Tier Level</span>
                 <span className="text-lg sm:text-2xl font-black font-mono text-white mt-0.5 sm:mt-1">0{level}</span>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 md:border-r border-zinc-800/50">
+              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 md:border-r border-[var(--border)]/50">
                 <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500">Lives</span>
                 <div className="flex gap-1 mt-1.5 sm:mt-2">
                   {Array.from({ length: maxLives }).map((_, idx) => (
                     <Heart
                       key={idx}
-                      className={`w-3.5 h-3.5 sm:w-[18px] sm:h-[18px] ${idx < lives ? "text-rose-500 fill-rose-500 filter drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]" : "text-zinc-800"}`}
+                      className={`w-3.5 h-3.5 sm:w-[18px] sm:h-[18px] ${idx < lives ? "text-rose-500 fill-rose-500 filter drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]" : "text-[var(--muted-foreground)]/30"}`}
                     />
                   ))}
                 </div>
@@ -421,9 +421,9 @@ export default function CsCoreArena() {
 
             {/* MAIN OBSTACLE SCREEN */}
             {loadingObstacle ? (
-              <div className="flex-1 flex flex-col justify-center items-center py-20 bg-zinc-950/20 border border-zinc-900 rounded-3xl relative overflow-hidden">
+              <div className="flex-1 flex flex-col justify-center items-center py-20 bg-[var(--muted)]/30 border border-[var(--border)] rounded-3xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.05),transparent)] pointer-events-none" />
-                <div className="animate-spin rounded-full h-12 w-12 border-2 border-t-cyan-500 border-zinc-800 mb-6" />
+                <div className="animate-spin rounded-full h-12 w-12 border-2 border-t-cyan-500 border-[var(--border)] mb-6" />
                 <div className="space-y-2 text-center">
                   <h3 className="font-mono text-sm tracking-[0.2em] font-bold text-cyan-400 uppercase animate-pulse">Initializing System Compiler...</h3>
                   <p className="text-xs text-gray-500">Injecting dynamic assessment vector</p>
@@ -436,7 +436,7 @@ export default function CsCoreArena() {
                 className="flex-1 flex flex-col gap-6"
               >
                 {/* Timer bar */}
-                <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden">
+                <div className="w-full h-1 bg-[var(--card)] rounded-full overflow-hidden">
                   <motion.div
                     className={`h-full ${timeLeft < 10 ? "bg-red-500" : "bg-cyan-500"}`}
                     initial={{ width: "100%" }}
@@ -447,11 +447,11 @@ export default function CsCoreArena() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
                   {/* Obstacle Left Column: Question */}
-                  <div className="lg:col-span-7 flex flex-col p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-zinc-900/20 border border-zinc-800 justify-between">
+                  <div className="lg:col-span-7 flex flex-col p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[var(--muted)]/50 border border-[var(--border)] justify-between">
                     <div>
                       {/* Topic Tags */}
                       <div className="flex flex-wrap gap-1.5 mb-3 sm:mb-4">
-                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-[var(--muted)] text-[var(--foreground)]/80 border border-[var(--border)]/80">
                           {currentObstacle.topic}
                         </span>
                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-cyan-950/40 text-cyan-400 border border-cyan-900/50">
@@ -509,18 +509,18 @@ export default function CsCoreArena() {
                       const isCorrect = idx === currentObstacle.correctOptionIndex;
                       const showResult = selectedAnswer !== null;
 
-                      let cardStyle = "border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 hover:bg-zinc-800/10";
+                      let cardStyle = "border-[var(--border)] bg-[var(--card)]/80 hover:border-[var(--border)]/80 hover:bg-[var(--foreground)]/5";
                       let iconElement = null;
 
                       if (showResult) {
                         if (isCorrect) {
-                          cardStyle = "border-emerald-500 bg-emerald-500/5 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]";
+                          cardStyle = "border-emerald-500 bg-emerald-500/5 text-emerald-300 shadow-md";
                           iconElement = <Check size={14} className="text-emerald-400 shrink-0" />;
                         } else if (isSelected) {
-                          cardStyle = "border-rose-500 bg-rose-500/5 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.1)]";
+                          cardStyle = "border-rose-500 bg-rose-500/5 text-rose-300 shadow-md";
                           iconElement = <X size={14} className="text-rose-400 shrink-0" />;
                         } else {
-                          cardStyle = "border-zinc-900 bg-zinc-900/10 text-gray-600 opacity-50";
+                          cardStyle = "border-[var(--border)] bg-[var(--muted)]/20 text-gray-600 opacity-50";
                         }
                       }
 
@@ -535,7 +535,7 @@ export default function CsCoreArena() {
                             <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center font-bold text-[10px] sm:text-xs ${
                               showResult && isCorrect ? "bg-emerald-500/20 text-emerald-400" :
                               showResult && isSelected ? "bg-rose-500/20 text-rose-400" :
-                              "bg-zinc-800 text-zinc-400"
+                              "bg-[var(--muted)] text-[var(--muted-foreground)]"
                             }`}>
                               {String.fromCharCode(65 + idx)}
                             </span>
@@ -554,11 +554,11 @@ export default function CsCoreArena() {
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-6 rounded-3xl bg-zinc-900/40 border border-zinc-800 space-y-6"
+                      className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] space-y-6"
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Concept Breakdown */}
-                        <div className="space-y-2 border-r border-zinc-800/80 pr-0 md:pr-6">
+                        <div className="space-y-2 border-r border-[var(--border)]/80 pr-0 md:pr-6">
                           <h4 className="text-xs font-black uppercase tracking-[0.25em] text-cyan-400 flex items-center gap-1.5">
                             <BookOpen size={14} /> Concept Validation
                           </h4>
@@ -578,7 +578,7 @@ export default function CsCoreArena() {
                         </div>
                       </div>
 
-                      <div className="flex justify-end pt-4 border-t border-zinc-850">
+                      <div className="flex justify-end pt-4 border-t border-[var(--border)]">
                         <button
                           onClick={() => fetchNextObstacle(score, streak, level)}
                           className="px-8 py-3.5 rounded-xl bg-white text-black font-black uppercase text-xs tracking-wider flex items-center gap-2 hover:bg-gray-150 transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -602,7 +602,7 @@ export default function CsCoreArena() {
             className="flex-1 flex flex-col py-8"
           >
             {/* Main Stats Block */}
-            <div className="text-center p-8 rounded-3xl bg-gradient-to-b from-zinc-900/60 to-zinc-950/40 border border-zinc-800 backdrop-blur-md mb-8">
+            <div className="text-center p-8 rounded-3xl bg-gradient-to-b from-zinc-900/60 to-zinc-950/40 border border-[var(--border)] backdrop-blur-md mb-8">
               <div className="inline-flex p-3 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 mb-6">
                 <AlertTriangle size={32} />
               </div>
@@ -610,19 +610,19 @@ export default function CsCoreArena() {
               <p className="text-gray-400 text-sm max-w-md mx-auto mb-8 font-medium">Your node lost all firewall shields. Performance indexed below.</p>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-                <div className="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800">
+                <div className="p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
                   <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Final Score</div>
                   <div className="text-3xl font-black font-mono text-white">{score}</div>
                 </div>
-                <div className="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800">
+                <div className="p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
                   <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Arcade Points</div>
                   <div className="text-3xl font-black font-mono text-cyan-400">+{Math.floor(score / 10)} AP</div>
                 </div>
-                <div className="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800">
+                <div className="p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
                   <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Highest Streak</div>
                   <div className="text-3xl font-black font-mono text-purple-400">{maxStreak}x</div>
                 </div>
-                <div className="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800">
+                <div className="p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
                   <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Obstacles Faced</div>
                   <div className="text-3xl font-black font-mono text-white">{questionsAnswered}</div>
                 </div>
@@ -637,7 +637,7 @@ export default function CsCoreArena() {
                 </button>
                 <Link
                   href="/arcade"
-                  className="px-8 py-4 rounded-xl border border-zinc-800 bg-zinc-900/20 text-gray-300 font-black uppercase text-xs tracking-wider hover:bg-zinc-800/40 transition-all flex items-center gap-2"
+                  className="px-8 py-4 rounded-xl border border-[var(--border)] bg-[var(--muted)]/50 text-gray-300 font-black uppercase text-xs tracking-wider hover:bg-[var(--muted)]/40 transition-all flex items-center gap-2"
                 >
                   <LogOut size={14} /> Quit Sandbox
                 </Link>
@@ -650,14 +650,14 @@ export default function CsCoreArena() {
                 <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-800 pb-2">Arena Log File & Decryptions</h3>
                 <div className="space-y-4">
                   {history.map((item, idx) => (
-                    <div key={idx} className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-4">
+                    <div key={idx} className="p-6 rounded-2xl bg-[var(--card)]/80 border border-[var(--border)] space-y-4">
                       <div className="flex justify-between items-start gap-4">
                         <div className="space-y-1">
                           <div className="flex gap-2">
-                            <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+                            <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-[var(--muted)] text-[var(--muted-foreground)]">
                               {item.topic}
                             </span>
-                            <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-zinc-850 text-cyan-400">
+                            <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-[var(--muted)] text-cyan-400">
                               {item.subtopic}
                             </span>
                           </div>
@@ -679,7 +679,7 @@ export default function CsCoreArena() {
                         </pre>
                       )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-gray-400 border-t border-zinc-850 pt-4 leading-relaxed">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-gray-400 border-t border-[var(--border)] pt-4 leading-relaxed">
                         <div className="space-y-1">
                           <strong className="text-[10px] uppercase font-black tracking-wider text-cyan-500 block mb-1">Deep Assessment:</strong>
                           <p>{item.explanation}</p>

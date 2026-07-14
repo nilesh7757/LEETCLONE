@@ -10,7 +10,7 @@ export default function StudyPlansLoading() {
         <div className="space-y-6 max-w-2xl">
           <div className="flex items-center gap-3">
              <div className="p-2.5 bg-white/5 rounded-xl border border-white/5">
-                <BookOpen size={20} className="text-[#52525b]" />
+                <BookOpen size={20} className="text-[var(--muted-foreground)]" />
              </div>
              <div className="w-32 h-3 bg-white/5 rounded-full animate-pulse" />
           </div>

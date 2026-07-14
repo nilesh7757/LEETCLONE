@@ -297,7 +297,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                           <span>Local Max</span>
                           <span className="text-[var(--viz-cyan)]">DP[i]</span>
                         </div>
-                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-[var(--border)] font-mono text-base font-bold text-[var(--viz-cyan)] text-right">
+                        <div className="px-2 py-1.5 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-sm font-mono text-base font-bold text-[var(--viz-cyan)] text-right">
                           {currentStep.currentSum}
                         </div>
                     </div>
@@ -306,7 +306,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                           <span>Global Max</span>
                           <span className="text-[var(--viz-deep-purple)]">Result</span>
                         </div>
-                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-[var(--border)] font-mono text-base font-bold text-[var(--viz-deep-purple)] text-right">
+                        <div className="px-2 py-1.5 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-sm font-mono text-base font-bold text-[var(--viz-deep-purple)] text-right">
                           {currentStep.maxSum}
                         </div>
                     </div>

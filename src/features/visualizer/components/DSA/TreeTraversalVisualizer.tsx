@@ -436,11 +436,11 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                 </div>
                 <div className="pt-6 border-t border-[var(--border)] relative z-10">
                   <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-black/40 rounded-2xl border border-[var(--border)] text-center shadow-inner">
+                      <div className="p-3 bg-[var(--card)] rounded-2xl border border-[var(--border)] text-center shadow-sm">
                         <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Complexity</div>
                         <div className="text-sm font-black text-[var(--viz-green)] font-mono shadow-text">O(N)</div>
                       </div>
-                      <div className="p-3 bg-black/40 rounded-2xl border border-[var(--border)] text-center shadow-inner">
+                      <div className="p-3 bg-[var(--card)] rounded-2xl border border-[var(--border)] text-center shadow-sm">
                         <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Depth</div>
                         <div className="text-sm font-black text-[var(--viz-cyan)] font-mono shadow-text">O(H)</div>
                       </div>
@@ -470,7 +470,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
           </div>
 
           <div className="relative flex items-center group/slider px-6">
-              <div className="absolute left-6 right-6 h-1.5 bg-black/40 rounded-full shadow-inner" />
+              <div className="absolute left-6 right-6 h-1.5 bg-[var(--muted)] rounded-full shadow-inner" />
               <div className="absolute left-6 h-1.5 bg-gradient-to-r from-[var(--viz-lavender)] via-[var(--viz-lavender)] to-[var(--viz-green)] rounded-full shadow-[0_0_20px_var(--viz-lavender)66]" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 48px)` }} />
               <input 
                   type="range" min="0" max={Math.max(0, history.length - 1)} value={currentIndex} 

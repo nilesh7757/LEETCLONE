@@ -229,30 +229,29 @@ export default function ConsolePanel({
                     </div>
                   ) : (
                     <>
-                      {/* IO Diff View */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div className="space-y-3">
-                            <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Actual Output</div>
-                            <pre className={`p-5 bg-[var(--background)] border rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed shadow-sm overflow-x-auto ${
-                              activeResult?.status === 'Accepted' 
-                                ? "text-emerald-500 border-emerald-500/20 bg-emerald-500/[0.01]" 
-                                : "text-rose-400 border-rose-500/20 bg-rose-500/[0.01]"
-                            }`}>
-                               {typeof activeResult?.actual === 'object' 
-                                 ? JSON.stringify(activeResult.actual, null, 2) 
-                                 : (activeResult?.actual || "No return value")}
-                            </pre>
-                         </div>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                             <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Actual Output</div>
+                             <pre className={`p-5 bg-[var(--muted)] border border-[var(--border)] rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed shadow-sm overflow-x-auto ${
+                               activeResult?.status === 'Accepted' 
+                                 ? "text-green-500" 
+                                 : "text-red-500"
+                             }`}>
+                                {typeof activeResult?.actual === 'object' 
+                                  ? JSON.stringify(activeResult.actual, null, 2) 
+                                  : (activeResult?.actual || "No return value")}
+                             </pre>
+                          </div>
 
-                         <div className="space-y-3">
-                            <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Expected Output</div>
-                            <pre className="p-5 bg-[var(--background)] border border-[var(--border)] rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed text-[var(--foreground)]/70 shadow-sm overflow-x-auto">
-                               {typeof activeResult?.expected === 'object' 
-                                 ? JSON.stringify(activeResult.expected, null, 2) 
-                                 : (activeResult?.expected || "N/A")}
-                            </pre>
-                         </div>
-                      </div>
+                          <div className="space-y-3">
+                             <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Expected Output</div>
+                             <pre className="p-5 bg-[var(--muted)] border border-[var(--border)] rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed text-[var(--foreground)]/70 shadow-sm overflow-x-auto">
+                                {typeof activeResult?.expected === 'object' 
+                                  ? JSON.stringify(activeResult.expected, null, 2) 
+                                  : (activeResult?.expected || "N/A")}
+                             </pre>
+                          </div>
+                       </div>
                     </>
                   )}
 

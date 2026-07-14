@@ -19,7 +19,7 @@ export default function Loading() {
                   <Trophy size={28} />
                </div>
                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold tracking-widest text-[#52525b] uppercase w-24 h-3 bg-white/10 rounded" />
+                  <span className="text-[10px] font-bold tracking-widest text-[var(--muted-foreground)] uppercase w-24 h-3 bg-white/10 rounded" />
                   <span className="text-[10px] font-bold tracking-widest uppercase mt-[-2px] w-32 h-3 bg-white/10 rounded" />
                </div>
             </div>

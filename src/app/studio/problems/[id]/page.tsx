@@ -393,7 +393,7 @@ export default function StudioProblemEditor() {
      <main className="h-screen bg-[#050505] flex items-center justify-center font-mono">
         <div className="flex flex-col items-center gap-4">
            <div className="w-10 h-10 border-2 border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin" />
-           <p className="text-[10px] uppercase tracking-widest text-[#52525b]">Syncing Studio Workspace...</p>
+           <p className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)]">Syncing Studio Workspace...</p>
         </div>
      </main>
   );
@@ -403,7 +403,7 @@ export default function StudioProblemEditor() {
       {/* 1. TOP HEADER */}
       <header className="h-16 bg-[#080808]/90 backdrop-blur border-b border-white/5 flex items-center justify-between px-8 shrink-0 z-50">
          <div className="flex items-center gap-6">
-            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-[var(--foreground)] transition-all">
+            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
                <ArrowLeft size={18} />
             </Link>
             <div className="h-4 w-px bg-white/5" />
@@ -456,7 +456,7 @@ export default function StudioProblemEditor() {
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border text-left cursor-pointer ${
                          activeTab === tab.id 
                          ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] font-semibold" 
-                         : "text-[#52525b] border-transparent hover:text-[var(--foreground)] hover:bg-white/5"
+                         : "text-[var(--muted-foreground)] border-transparent hover:text-[var(--foreground)] hover:bg-white/5"
                       }`}
                    >
                       <div className="flex items-center gap-3">
@@ -470,19 +470,19 @@ export default function StudioProblemEditor() {
 
              {/* PROGRESS CHECKLIST */}
              <div className="mt-auto p-4 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
-                <span className="text-[8px] font-bold text-[#52525b] uppercase tracking-widest">Workspace Checklist</span>
+                <span className="text-[8px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Workspace Checklist</span>
                 <div className="space-y-2">
                    <div className="flex items-center gap-2 text-[10px]">
                       {referenceSolution.trim() ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />}
-                      <span className={referenceSolution.trim() ? "text-[#a1a1aa]" : "text-[#52525b]"}>1. Reference Solution</span>
+                      <span className={referenceSolution.trim() ? "text-[#a1a1aa]" : "text-[var(--muted-foreground)]"}>1. Reference Solution</span>
                    </div>
                    <div className="flex items-center gap-2 text-[10px]">
                       {isSandboxPassed ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />}
-                      <span className={isSandboxPassed ? "text-[#a1a1aa]" : "text-[#52525b]"}>2. Sandbox Run (No Errors)</span>
+                      <span className={isSandboxPassed ? "text-[#a1a1aa]" : "text-[var(--muted-foreground)]"}>2. Sandbox Run (No Errors)</span>
                    </div>
                    <div className="flex items-center gap-2 text-[10px]">
                       {(examples.length > 0 || testCases.length > 0) ? <Check size={10} className="text-green-500" /> : <div className="w-2.5 h-2.5 rounded-full border border-white/20" />}
-                      <span className={(examples.length > 0 || testCases.length > 0) ? "text-[#a1a1aa]" : "text-[#52525b]"}>3. Define Test Cases</span>
+                      <span className={(examples.length > 0 || testCases.length > 0) ? "text-[#a1a1aa]" : "text-[var(--muted-foreground)]"}>3. Define Test Cases</span>
                    </div>
                    <div className="flex items-center gap-2 text-[10px]">
                       {(() => {
@@ -499,7 +499,7 @@ export default function StudioProblemEditor() {
                            examples.filter(ex => ex.status === 'Accepted').length + 
                            testCases.filter(tc => tc.status === 'Accepted').length;
                          const isAllValidated = totalCases > 0 && validatedCasesCount === totalCases;
-                         return isAllValidated ? "text-[#a1a1aa]" : "text-[#52525b]";
+                         return isAllValidated ? "text-[#a1a1aa]" : "text-[var(--muted-foreground)]";
                       })()}>4. Validate Test Cases</span>
                    </div>
                 </div>
@@ -518,18 +518,18 @@ export default function StudioProblemEditor() {
                      <div className="flex items-center justify-between">
                         <div className="space-y-1">
                            <h2 className="text-2xl font-black uppercase tracking-tight text-white">Problem Statement</h2>
-                           <p className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Describe the rules, inputs, format, and examples of the task.</p>
+                           <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Describe the rules, inputs, format, and examples of the task.</p>
                         </div>
                         <div className="flex items-center gap-2 bg-white/5 border border-white/5 p-1 rounded-xl">
                            <button 
                               onClick={() => setPreviewMode(false)}
-                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${!previewMode ? "bg-[#3b82f6] text-white" : "text-[#52525b] hover:text-[var(--foreground)]"}`}
+                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${!previewMode ? "bg-[#3b82f6] text-white" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}
                            >
                               Edit Statement
                            </button>
                            <button 
                               onClick={() => setPreviewMode(true)}
-                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${previewMode ? "bg-[#3b82f6] text-white" : "text-[#52525b] hover:text-[var(--foreground)]"}`}
+                              className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${previewMode ? "bg-[#3b82f6] text-white" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}
                            >
                               <Eye size={10} className="inline mr-1" /> Preview
                            </button>
@@ -539,7 +539,7 @@ export default function StudioProblemEditor() {
                      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[480px]">
                         {/* Editor Block */}
                         <div className={`flex flex-col gap-3 ${previewMode ? "hidden lg:flex" : "flex"}`}>
-                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Markdown Content</label>
+                           <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Markdown Content</label>
                            <textarea
                               value={description}
                               onChange={(e) => setDescription(e.target.value)}
@@ -561,7 +561,7 @@ export default function StudioProblemEditor() {
                                     />
                                  </div>
                               ) : (
-                                 <span className="italic text-[#52525b] text-xs">Nothing to render. Write statement to see live render output.</span>
+                                 <span className="italic text-[var(--muted-foreground)] text-xs">Nothing to render. Write statement to see live render output.</span>
                               )}
                            </div>
                         </div>
@@ -578,7 +578,7 @@ export default function StudioProblemEditor() {
                      <div className="flex items-center justify-between">
                         <div className="space-y-1">
                            <h2 className="text-2xl font-black uppercase tracking-tight text-white">Reference Solution</h2>
-                           <p className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Write the correct implementation to automatically verify outputs.</p>
+                           <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Write the correct implementation to automatically verify outputs.</p>
                         </div>
                         <div className="flex items-center gap-3">
                            <select 
@@ -597,7 +597,7 @@ export default function StudioProblemEditor() {
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Reference Code Panel */}
                         <div className="space-y-3">
-                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Reference Code</label>
+                           <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Reference Code</label>
                            <textarea
                               value={referenceSolution}
                               onChange={(e) => setReferenceSolution(e.target.value)}
@@ -615,7 +615,7 @@ export default function StudioProblemEditor() {
                                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
                                     testWorkspaceTab === 'sandbox'
                                     ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 font-semibold"
-                                    : "text-[#52525b] border-transparent hover:text-[var(--foreground)]"
+                                    : "text-[var(--muted-foreground)] border-transparent hover:text-[var(--foreground)]"
                                  }`}
                               >
                                  <Cpu size={12} /> Sandbox Console
@@ -625,7 +625,7 @@ export default function StudioProblemEditor() {
                                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
                                     testWorkspaceTab === 'vetting'
                                     ? "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20 font-semibold"
-                                    : "text-[#52525b] border-transparent hover:text-[var(--foreground)]"
+                                    : "text-[var(--muted-foreground)] border-transparent hover:text-[var(--foreground)]"
                                  }`}
                               >
                                  <Database size={12} /> Vetting Suite {!isSandboxPassed && " 🔒"}
@@ -648,7 +648,7 @@ export default function StudioProblemEditor() {
                                  </div>
 
                                  <div className="space-y-3">
-                                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b]">Console Input (STDIN)</label>
+                                    <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Console Input (STDIN)</label>
                                     <textarea
                                        value={sandboxInput}
                                        onChange={(e) => setSandboxInput(e.target.value)}
@@ -659,8 +659,8 @@ export default function StudioProblemEditor() {
 
                                  <div className="flex-1 flex flex-col min-h-[150px] bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
                                     <div className="h-8 border-b border-white/5 bg-white/[0.02] flex items-center px-4 gap-2">
-                                       <Terminal size={12} className="text-[#52525b]" />
-                                       <span className="text-[8px] font-bold uppercase tracking-widest text-[#52525b]">Console Output</span>
+                                       <Terminal size={12} className="text-[var(--muted-foreground)]" />
+                                       <span className="text-[8px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Console Output</span>
                                     </div>
                                     <div className="flex-1 p-6 font-mono text-xs overflow-y-auto custom-scrollbar max-h-[160px]">
                                        {isSandboxRunning ? (
@@ -672,11 +672,11 @@ export default function StudioProblemEditor() {
                                           <div className="space-y-4">
                                              <div className="flex items-center gap-6 border-b border-white/5 pb-2">
                                                 <div className="flex flex-col">
-                                                   <span className="text-[8px] uppercase text-[#52525b] font-bold">Status</span>
+                                                   <span className="text-[8px] uppercase text-[var(--muted-foreground)] font-bold">Status</span>
                                                    <span className={`text-[10px] font-black uppercase ${sandboxResult.status === 'Accepted' ? 'text-green-500' : 'text-rose-500'}`}>{sandboxResult.status}</span>
                                                 </div>
                                                 <div className="flex flex-col">
-                                                   <span className="text-[8px] uppercase text-[#52525b] font-bold">Runtime</span>
+                                                   <span className="text-[8px] uppercase text-[var(--muted-foreground)] font-bold">Runtime</span>
                                                    <span className="text-[10px] font-black text-white">{sandboxResult.runtime?.toFixed(0)}ms</span>
                                                 </div>
                                              </div>
@@ -706,7 +706,7 @@ export default function StudioProblemEditor() {
                                        </div>
                                        <div className="space-y-1">
                                           <h4 className="text-xs font-bold text-white uppercase tracking-wider">Vetting Suite Locked</h4>
-                                          <p className="text-[10px] text-[#52525b] uppercase font-bold tracking-widest max-w-[280px] leading-relaxed">
+                                          <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold tracking-widest max-w-[280px] leading-relaxed">
                                              Verify your reference solution in the Sandbox Console first.
                                           </p>
                                        </div>
@@ -756,9 +756,9 @@ export default function StudioProblemEditor() {
                                              multiple 
                                              accept=".txt,.in,.out"
                                           />
-                                          <Upload className="mx-auto w-6 h-6 text-[#52525b] group-hover:text-[#3b82f6] transition-all mb-2" />
+                                          <Upload className="mx-auto w-6 h-6 text-[var(--muted-foreground)] group-hover:text-[#3b82f6] transition-all mb-2" />
                                           <h4 className="text-[10px] font-bold text-white uppercase tracking-wider">Drag & Drop files</h4>
-                                          <p className="text-[8px] text-[#52525b] uppercase font-semibold tracking-wider mt-1">Accepts .txt, .in, or .out bulk input files</p>
+                                          <p className="text-[8px] text-[var(--muted-foreground)] uppercase font-semibold tracking-wider mt-1">Accepts .txt, .in, or .out bulk input files</p>
                                        </div>
 
                                        {/* Cases */}
@@ -775,7 +775,7 @@ export default function StudioProblemEditor() {
                                                 </button>
                                              </div>
                                              {examples.length === 0 ? (
-                                                <p className="text-[10px] text-[#52525b] italic">No examples configured.</p>
+                                                <p className="text-[10px] text-[var(--muted-foreground)] italic">No examples configured.</p>
                                              ) : (
                                                 <div className="space-y-2">
                                                    {examples.map((ex, idx) => (
@@ -788,7 +788,7 @@ export default function StudioProblemEditor() {
                                                          </button>
                                                          <div className="grid grid-cols-2 gap-3">
                                                             <div className="space-y-1">
-                                                               <span className="text-[8px] text-[#52525b] uppercase font-bold">Input {idx + 1}</span>
+                                                               <span className="text-[8px] text-[var(--muted-foreground)] uppercase font-bold">Input {idx + 1}</span>
                                                                <textarea 
                                                                   value={ex.input} 
                                                                   onChange={e => setExamples(prev => prev.map(item => item.id === ex.id ? { ...item, input: e.target.value } : item))}
@@ -797,7 +797,7 @@ export default function StudioProblemEditor() {
                                                             </div>
                                                             <div className="space-y-1">
                                                                <div className="flex items-center justify-between">
-                                                                  <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
+                                                                  <span className="text-[8px] text-[var(--muted-foreground)] uppercase font-bold">Expected Output</span>
                                                                   {ex.status && (
                                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
                                                                         ex.status === 'Accepted' ? 'text-green-500' : 
@@ -832,7 +832,7 @@ export default function StudioProblemEditor() {
                                                 </button>
                                              </div>
                                              {testCases.length === 0 ? (
-                                                <p className="text-[10px] text-[#52525b] italic">No hidden test cases configured.</p>
+                                                <p className="text-[10px] text-[var(--muted-foreground)] italic">No hidden test cases configured.</p>
                                              ) : (
                                                 <div className="space-y-2">
                                                    {testCases.map((tc, idx) => (
@@ -845,7 +845,7 @@ export default function StudioProblemEditor() {
                                                          </button>
                                                          <div className="grid grid-cols-2 gap-3">
                                                             <div className="space-y-1">
-                                                               <span className="text-[8px] text-[#52525b] uppercase font-bold">Input {idx + 1}</span>
+                                                               <span className="text-[8px] text-[var(--muted-foreground)] uppercase font-bold">Input {idx + 1}</span>
                                                                <textarea 
                                                                   value={tc.input} 
                                                                   onChange={e => setTestCases(prev => prev.map(item => item.id === tc.id ? { ...item, input: e.target.value } : item))}
@@ -854,7 +854,7 @@ export default function StudioProblemEditor() {
                                                             </div>
                                                             <div className="space-y-1">
                                                                <div className="flex items-center justify-between">
-                                                                  <span className="text-[8px] text-[#52525b] uppercase font-bold">Expected Output</span>
+                                                                  <span className="text-[8px] text-[var(--muted-foreground)] uppercase font-bold">Expected Output</span>
                                                                   {tc.status && (
                                                                      <span className={`text-[8px] font-black uppercase flex items-center gap-1 ${
                                                                         tc.status === 'Accepted' ? 'text-green-500' : 
@@ -902,7 +902,7 @@ export default function StudioProblemEditor() {
 
                         <div className="p-8 bg-[#080808] border border-white/5 rounded-[2.5rem] flex flex-col md:flex-row gap-6 items-end">
                            <div className="flex-1 space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Username or Email</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Username or Email</label>
                               <input 
                                  value={newCollabUsername} 
                                  onChange={e => setNewCollabUsername(e.target.value)}
@@ -911,7 +911,7 @@ export default function StudioProblemEditor() {
                               />
                            </div>
                            <div className="w-48 space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Role</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Role</label>
                               <select 
                                  value={collabRole} 
                                  onChange={e => setCollabRole(e.target.value)}
@@ -949,18 +949,18 @@ export default function StudioProblemEditor() {
                                        <div className="p-2 bg-[#3b82f6]/10 rounded-lg text-[#3b82f6]">{link.icon}</div>
                                        <span className="text-sm font-bold text-white">{link.role} Link</span>
                                     </div>
-                                    <button onClick={() => generateShareLink(link.role)} className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-[#3b82f6] transition-all border-none bg-transparent cursor-pointer">
+                                    <button onClick={() => generateShareLink(link.role)} className="p-2 hover:bg-white/5 rounded-lg text-[var(--muted-foreground)] hover:text-[#3b82f6] transition-all border-none bg-transparent cursor-pointer">
                                        <Clipboard size={16} />
                                     </button>
                                  </div>
-                                 <p className="text-[10px] text-[#52525b] uppercase tracking-widest leading-relaxed">{link.desc}</p>
+                                 <p className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest leading-relaxed">{link.desc}</p>
                               </div>
                            ))}
                         </div>
                      </section>
 
                      <section className="space-y-8">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-[#52525b] ml-1">Active Collaborators</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Active Collaborators</h3>
                         <div className="grid grid-cols-1 gap-3">
                            {problem?.collaborators?.length === 0 ? (
                               <p className="text-[10px] italic text-[#262626] uppercase tracking-widest">No collaborators added yet.</p>
@@ -973,7 +973,7 @@ export default function StudioProblemEditor() {
                                        </div>
                                        <div className="flex flex-col">
                                           <span className="text-sm font-bold text-white">{collab.user.name || "Anonymous"}</span>
-                                          <span className="text-[9px] font-mono text-[#52525b]">{collab.user.email}</span>
+                                          <span className="text-[9px] font-mono text-[var(--muted-foreground)]">{collab.user.email}</span>
                                        </div>
                                     </div>
                                     <div className="flex items-center gap-6">
@@ -1006,7 +1006,7 @@ export default function StudioProblemEditor() {
 
                         <div className="grid grid-cols-1 gap-8 p-8 bg-[#080808] border border-white/5 rounded-[2.5rem]">
                            <div className="space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Problem Title</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Problem Title</label>
                               <input 
                                  value={metaTitle} 
                                  onChange={e => setMetaTitle(e.target.value)}
@@ -1016,7 +1016,7 @@ export default function StudioProblemEditor() {
 
                            <div className="grid grid-cols-2 gap-8">
                               <div className="space-y-3">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Difficulty</label>
+                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Difficulty</label>
                                  <select 
                                     value={metaDifficulty} 
                                     onChange={e => setMetaDifficulty(e.target.value)}
@@ -1028,7 +1028,7 @@ export default function StudioProblemEditor() {
                                  </select>
                               </div>
                               <div className="space-y-3">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Category</label>
+                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Category</label>
                                  <input 
                                     value={metaCategory} 
                                     onChange={e => setMetaCategory(e.target.value)}
@@ -1039,7 +1039,7 @@ export default function StudioProblemEditor() {
 
                            <div className="grid grid-cols-2 gap-8">
                               <div className="space-y-3">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Time Limit (ms)</label>
+                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Time Limit (ms)</label>
                                  <input 
                                     type="number" 
                                     value={metaTimeLimit} 
@@ -1048,7 +1048,7 @@ export default function StudioProblemEditor() {
                                  />
                               </div>
                               <div className="space-y-3">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Memory Limit (MB)</label>
+                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Memory Limit (MB)</label>
                                  <input 
                                     type="number" 
                                     value={metaMemoryLimit} 
@@ -1062,7 +1062,7 @@ export default function StudioProblemEditor() {
                               <div className="flex items-center justify-between">
                                  <div className="flex flex-col">
                                     <span className="text-sm font-bold text-white">Public problem pool</span>
-                                    <span className="text-[9px] font-bold text-[#52525b] uppercase tracking-widest mt-1">Make this problem visible inside public library</span>
+                                    <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mt-1">Make this problem visible inside public library</span>
                                  </div>
                                  <div className="relative inline-flex items-center h-5 w-9 shrink-0 cursor-pointer rounded-full bg-white/5">
                                     <input 

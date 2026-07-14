@@ -98,7 +98,7 @@ export default function StudioDashboard() {
       <main className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin" />
-          <p className="text-[10px] uppercase tracking-widest text-[#52525b]">Entering Studio...</p>
+          <p className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)]">Entering Studio...</p>
         </div>
       </main>
     );
@@ -115,13 +115,13 @@ export default function StudioDashboard() {
               </div>
               <div className="flex flex-col">
                  <h1 className="text-xl font-black uppercase tracking-tight text-white">Creator Studio</h1>
-                 <span className="text-[9px] font-bold text-[#52525b] uppercase tracking-widest">Unified Management Hub</span>
+                 <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">Unified Management Hub</span>
               </div>
            </div>
 
            <div className="flex items-center gap-6">
               <div className="relative group">
-                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#52525b] group-focus-within:text-[#3b82f6] transition-colors" />
+                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] group-focus-within:text-[#3b82f6] transition-colors" />
                  <input 
                     value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                     placeholder="Search your work..."
@@ -144,14 +144,14 @@ export default function StudioDashboard() {
         <div className="max-w-[1600px] mx-auto px-8 flex items-center gap-10">
            <button 
               onClick={() => setActiveTab("problems")}
-              className={`h-12 text-[10px] font-bold uppercase tracking-widest relative transition-all ${activeTab === "problems" ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"}`}
+              className={`h-12 text-[10px] font-bold uppercase tracking-widest relative transition-all ${activeTab === "problems" ? "text-white" : "text-[var(--muted-foreground)] hover:text-[#a1a1aa]"}`}
            >
               My Problems
               {activeTab === "problems" && <motion.div layoutId="studio-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#3b82f6]" />}
            </button>
            <button 
               onClick={() => setActiveTab("contests")}
-              className={`h-12 text-[10px] font-bold uppercase tracking-widest relative transition-all ${activeTab === "contests" ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"}`}
+              className={`h-12 text-[10px] font-bold uppercase tracking-widest relative transition-all ${activeTab === "contests" ? "text-white" : "text-[var(--muted-foreground)] hover:text-[#a1a1aa]"}`}
            >
               My Contests
               {activeTab === "contests" && <motion.div layoutId="studio-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#3b82f6]" />}
@@ -198,7 +198,7 @@ function EmptyState({ icon, title, description, action, href, actionLabel }: Emp
       <div className="col-span-full py-40 flex flex-col items-center justify-center text-center bg-white/[0.01] border border-dashed border-white/5 rounded-[3rem]">
          <div className="p-6 bg-white/5 rounded-3xl mb-8 text-[#262626]">{icon}</div>
          <h3 className="text-3xl font-bold tracking-tight text-white mb-2">{title}</h3>
-         <p className="text-[#52525b] text-sm max-w-sm mb-10">{description}</p>
+         <p className="text-[var(--muted-foreground)] text-sm max-w-sm mb-10">{description}</p>
          {href ? (
             <Link href={href} className="px-10 py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
                {actionLabel}
@@ -226,7 +226,7 @@ function ProblemCard({ problem, index }: { problem: DraftUnit, index: number }) 
                   <div className="text-[#262626] group-hover:text-[#3b82f6] transition-colors"><Target size={18} /></div>
                </div>
                <h3 className="text-xl font-bold tracking-tight text-white mb-3 group-hover:text-[#3b82f6] transition-colors line-clamp-2">{problem.title}</h3>
-               <div className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-widest text-[#52525b] mb-12">
+               <div className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-12">
                   <span className={problem.difficulty === 'Easy' ? 'text-green-500' : problem.difficulty === 'Medium' ? 'text-amber-500' : 'text-rose-500'}>{problem.difficulty}</span>
                   <div className="w-1 h-1 rounded-full bg-white/5" />
                   <span>{problem.category}</span>
@@ -260,11 +260,11 @@ function ContestCard({ contest, index }: { contest: ContestUnit, index: number }
                <div className="grid grid-cols-2 gap-4 mb-10">
                   <div className="space-y-1">
                      <span className="text-[8px] font-bold text-[#262626] uppercase tracking-widest flex items-center gap-2"><Layers size={10} /> Problems</span>
-                     <p className="text-xs font-mono font-bold text-[#52525b]">{contest.problems.length} Units</p>
+                     <p className="text-xs font-mono font-bold text-[var(--muted-foreground)]">{contest.problems.length} Units</p>
                   </div>
                   <div className="space-y-1">
                      <span className="text-[8px] font-bold text-[#262626] uppercase tracking-widest flex items-center gap-2"><Clock size={10} /> Starts</span>
-                     <p className="text-xs font-mono font-bold text-[#52525b]">{new Date(contest.startTime).toLocaleDateString()}</p>
+                     <p className="text-xs font-mono font-bold text-[var(--muted-foreground)]">{new Date(contest.startTime).toLocaleDateString()}</p>
                   </div>
                </div>
                <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">

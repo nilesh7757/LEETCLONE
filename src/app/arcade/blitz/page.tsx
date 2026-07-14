@@ -168,7 +168,7 @@ export default function BigOBlitz() {
               <button 
                 onClick={startGame}
                 disabled={isLoading}
-                className="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.3em] rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] disabled:opacity-50"
+                className="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.3em] rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-md disabled:opacity-50"
               >
                 {isLoading ? "Generating Mission..." : "Start Mission"}
               </button>

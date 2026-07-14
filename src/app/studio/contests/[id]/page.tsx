@@ -113,7 +113,7 @@ export default function StudioContestEditor() {
      <main className="h-screen bg-[#050505] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
            <div className="w-10 h-10 border-2 border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin" />
-           <p className="text-[10px] uppercase tracking-widest text-[#52525b]">Loading Manager...</p>
+           <p className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)]">Loading Manager...</p>
         </div>
      </main>
   );
@@ -125,7 +125,7 @@ export default function StudioContestEditor() {
       {/* HEADER */}
       <header className="h-16 bg-[#080808] border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-[60]">
          <div className="flex items-center gap-6">
-            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-[var(--foreground)] transition-all">
+            <Link href="/studio" className="p-2 hover:bg-white/5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
                <ArrowLeft size={18} />
             </Link>
             <div className="h-4 w-px bg-white/5" />
@@ -166,7 +166,7 @@ export default function StudioContestEditor() {
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                      activeTab === tab.id 
                      ? "bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg" 
-                     : "text-[#52525b] hover:text-[var(--foreground)] hover:bg-white/5"
+                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-white/5"
                   }`}
                >
                   <tab.icon size={18} />
@@ -190,7 +190,7 @@ export default function StudioContestEditor() {
                         
                         <div className="grid grid-cols-1 gap-8 p-8 bg-white/[0.02] border border-white/5 rounded-[2rem]">
                            <div className="space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Contest Title</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Contest Title</label>
                               <input 
                                  value={contest.title} onChange={e => setContest({...contest, title: e.target.value})}
                                  className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-lg font-bold text-white focus:outline-none focus:border-[#3b82f6]/50 transition-all"
@@ -198,7 +198,7 @@ export default function StudioContestEditor() {
                               />
                            </div>
                            <div className="space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Description & Rules</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Description & Rules</label>
                               <textarea 
                                  value={contest.description} onChange={e => setContest({...contest, description: e.target.value})}
                                  className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-sm text-[#a1a1aa] focus:outline-none focus:border-[#3b82f6]/50 transition-all min-h-[120px] resize-none"
@@ -207,7 +207,7 @@ export default function StudioContestEditor() {
                            </div>
                            <div className="grid grid-cols-2 gap-8">
                               <div className="space-y-3">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Visibility</label>
+                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Visibility</label>
                                  <select 
                                     value={contest.visibility} onChange={e => setContest({...contest, visibility: e.target.value})}
                                     className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-white outline-none focus:border-[#3b82f6]/50"
@@ -217,7 +217,7 @@ export default function StudioContestEditor() {
                                  </select>
                               </div>
                               <div className="space-y-3">
-                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Status</label>
+                                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Status</label>
                                  <select 
                                     value={contest.status} onChange={e => setContest({...contest, status: e.target.value})}
                                     className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-white outline-none focus:border-[#3b82f6]/50"
@@ -242,7 +242,7 @@ export default function StudioContestEditor() {
 
                         <div className="grid grid-cols-2 gap-8 p-8 bg-white/[0.02] border border-white/5 rounded-[2rem]">
                            <div className="space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Start Time</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Start Time</label>
                               <input 
                                  type="datetime-local" value={contest.startTime ? new Date(contest.startTime).toISOString().slice(0, 16) : ""} 
                                  onChange={e => setContest({...contest, startTime: e.target.value})}
@@ -250,7 +250,7 @@ export default function StudioContestEditor() {
                               />
                            </div>
                            <div className="space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">End Time</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">End Time</label>
                               <input 
                                  type="datetime-local" value={contest.endTime ? new Date(contest.endTime).toISOString().slice(0, 16) : ""}
                                  onChange={e => setContest({...contest, endTime: e.target.value})}
@@ -267,7 +267,7 @@ export default function StudioContestEditor() {
                      <div className="flex items-center justify-between">
                         <div className="space-y-1">
                            <h2 className="text-2xl font-black uppercase tracking-tight text-white">Contest Problems</h2>
-                           <p className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest">{contest.problems.length} problems added</p>
+                           <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">{contest.problems.length} problems added</p>
                         </div>
                         <button 
                            onClick={() => setIsAddingProblem(!isAddingProblem)}
@@ -281,7 +281,7 @@ export default function StudioContestEditor() {
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                         {/* CURRENT PROBLEMS */}
                         <div className="space-y-4">
-                           <h3 className="text-[10px] font-black uppercase tracking-widest text-[#52525b] ml-1">Current Roster</h3>
+                           <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Current Roster</h3>
                            <div className="space-y-3">
                               {contest.problems.length === 0 ? (
                                  <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-[2rem] text-[#262626] uppercase text-[10px] font-bold tracking-widest">No problems added yet</div>
@@ -289,10 +289,10 @@ export default function StudioContestEditor() {
                                  contest.problems.map((p, idx) => (
                                     <div key={p.id} className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between group hover:border-amber-500/30 transition-all">
                                        <div className="flex items-center gap-6">
-                                          <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center font-black text-[#52525b] group-hover:text-amber-500">{String.fromCharCode(65 + idx)}</div>
+                                          <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center font-black text-[var(--muted-foreground)] group-hover:text-amber-500">{String.fromCharCode(65 + idx)}</div>
                                           <div className="flex flex-col">
                                              <span className="text-sm font-bold text-white">{p.title}</span>
-                                             <span className="text-[8px] uppercase font-bold text-[#52525b] tracking-widest">{p.difficulty} • {p.category}</span>
+                                             <span className="text-[8px] uppercase font-bold text-[var(--muted-foreground)] tracking-widest">{p.difficulty} • {p.category}</span>
                                           </div>
                                        </div>
                                        <button onClick={() => removeProblemFromContest(p.id)} className="p-2 text-rose-500/30 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100">
@@ -308,7 +308,7 @@ export default function StudioContestEditor() {
                         <div className={`space-y-6 transition-all duration-500 ${isAddingProblem ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"}`}>
                            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#3b82f6] ml-1">My Problem Bank</h3>
                            <div className="relative">
-                              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#52525b]" />
+                              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
                               <input 
                                  value={problemSearch} onChange={e => setProblemSearch(e.target.value)}
                                  placeholder="Filter bank..."
@@ -327,7 +327,7 @@ export default function StudioContestEditor() {
                                     >
                                        <div className="flex flex-col items-start text-left">
                                           <span className="text-xs font-bold text-white">{p.title}</span>
-                                          <span className="text-[8px] uppercase text-[#52525b] font-bold">{p.difficulty}</span>
+                                          <span className="text-[8px] uppercase text-[var(--muted-foreground)] font-bold">{p.difficulty}</span>
                                        </div>
                                        {isAlreadyAdded ? <CheckCircle2 size={16} className="text-green-500" /> : <Plus size={16} className="text-[#3b82f6]" />}
                                     </button>
@@ -351,7 +351,7 @@ export default function StudioContestEditor() {
 
                         <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col md:flex-row gap-6 items-end">
                            <div className="flex-1 space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Username or Email</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Username or Email</label>
                               <input 
                                  value={newCollabUsername} onChange={e => setNewCollabUsername(e.target.value)}
                                  placeholder="Search by username..."
@@ -359,7 +359,7 @@ export default function StudioContestEditor() {
                               />
                            </div>
                            <div className="w-48 space-y-3">
-                              <label className="text-[9px] font-bold uppercase tracking-widest text-[#52525b] ml-1">Role</label>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] ml-1">Role</label>
                               <select 
                                  value={collabRole} onChange={e => setCollabRole(e.target.value)}
                                  className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-white outline-none"
@@ -394,11 +394,11 @@ export default function StudioContestEditor() {
                                        <div className="p-2 bg-[#3b82f6]/10 rounded-lg text-[#3b82f6]">{link.icon}</div>
                                        <span className="text-sm font-bold text-white">{link.role} Link</span>
                                     </div>
-                                    <button className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-[#3b82f6] transition-all">
+                                    <button className="p-2 hover:bg-white/5 rounded-lg text-[var(--muted-foreground)] hover:text-[#3b82f6] transition-all">
                                        <Clipboard size={16} />
                                     </button>
                                  </div>
-                                 <p className="text-[10px] text-[#52525b] uppercase tracking-widest leading-relaxed">{link.desc}</p>
+                                 <p className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest leading-relaxed">{link.desc}</p>
                               </div>
                            ))}
                         </div>

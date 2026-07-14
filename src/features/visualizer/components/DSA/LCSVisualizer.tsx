@@ -251,7 +251,7 @@ export default function LCSVisualizer({ speed = 800 }: { speed?: number }) {
                         </div>
                         <div className="text-[10px] font-mono text-muted-foreground space-y-1">
                             <p className="opacity-50">1 + Diagonal Value</p>
-                            <div className="flex items-center justify-between bg-black/20 p-1.5 rounded">
+                            <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
                                 <span>1 + DP[{currentStep.i-1}][{currentStep.j-1}]</span>
                                 <span className="text-[var(--viz-deep-purple)] font-bold text-sm">
                                     {currentStep.i > 0 && currentStep.j > 0 ? 1 + currentStep.dp[currentStep.i-1][currentStep.j-1] : "N/A"}
@@ -269,7 +269,7 @@ export default function LCSVisualizer({ speed = 800 }: { speed?: number }) {
                         </div>
                         <div className="text-[10px] font-mono text-muted-foreground space-y-1">
                             <p className="opacity-50">Max of Top / Left</p>
-                            <div className="flex items-center justify-between bg-black/20 p-1.5 rounded">
+                            <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
                                 <span className="truncate max-w-[120px]">
                                     Max({currentStep.i > 0 ? currentStep.dp[currentStep.i-1][currentStep.j] : 0}, {currentStep.j > 0 ? currentStep.dp[currentStep.i][currentStep.j-1] : 0})
                                 </span>

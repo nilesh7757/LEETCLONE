@@ -59,7 +59,7 @@ export default async function StudyPlansPage() {
             <div className="p-2.5 bg-[#3b82f6]/10 rounded-xl text-[#3b82f6] border border-[#3b82f6]/20">
               <BookOpen size={20} />
             </div>
-            <span className="text-[10px] font-black tracking-[0.3em] text-[#52525b] uppercase font-mono">Curriculum Manifolds</span>
+            <span className="text-[10px] font-black tracking-[0.3em] text-[var(--muted-foreground)] uppercase font-mono">Curriculum Manifolds</span>
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight text-white leading-tight">
             Study <span className="text-[#3b82f6]">Dashboard</span>
@@ -113,7 +113,7 @@ export default async function StudyPlansPage() {
           <section>
             <div className="flex items-center gap-4 mb-12">
                 <div className="h-[1px] flex-1 bg-white/5" />
-                <h2 className="text-[10px] font-black text-[#52525b] uppercase tracking-[0.4em] flex items-center gap-3">
+                <h2 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.4em] flex items-center gap-3">
                   <Layers size={14} className="text-[#3b82f6]" />
                   Personal Registry
                 </h2>
@@ -133,7 +133,7 @@ export default async function StudyPlansPage() {
                     <Layers className="w-8 h-8 text-[#262626] transition-transform group-hover:scale-110 duration-500" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3">Empty Protocol Buffer</h3>
-                <p className="text-sm text-[#52525b] mb-10 max-w-sm mx-auto font-medium">Initialize a custom study manifold to target specific cognitive weaknesses identified by the system.</p>
+                <p className="text-sm text-[var(--muted-foreground)] mb-10 max-w-sm mx-auto font-medium">Initialize a custom study manifold to target specific cognitive weaknesses identified by the system.</p>
                 <Link
                   href="/study-plans/new"
                   className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95"
@@ -150,7 +150,7 @@ export default async function StudyPlansPage() {
           <section>
             <div className="flex items-center gap-4 mb-12">
                 <div className="h-[1px] flex-1 bg-white/5" />
-                <h2 className="text-[10px] font-black text-[#52525b] uppercase tracking-[0.4em] flex items-center gap-3">
+                <h2 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.4em] flex items-center gap-3">
                   <Trophy size={14} className="text-amber-500" />
                   Official Protocols
                 </h2>
@@ -170,7 +170,7 @@ export default async function StudyPlansPage() {
                 <Zap className="w-10 h-10 text-[#262626]" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3 uppercase tracking-tighter">System Standby</h2>
-            <p className="text-[#52525b] font-mono text-[10px] uppercase tracking-[0.3em]">Authentication required to synchronize training sets.</p>
+            <p className="text-[var(--muted-foreground)] font-mono text-[10px] uppercase tracking-[0.3em]">Authentication required to synchronize training sets.</p>
           </div>
         )}
       </div>
@@ -229,7 +229,7 @@ function StudyPlanCard({ plan, userId }: { plan: StudyPlan, userId?: string }) {
         <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#3b82f6] transition-colors line-clamp-1">
           {plan.title}
         </h3>
-        <p className="text-[13px] text-[#52525b] line-clamp-2 mb-8 font-medium leading-relaxed group-hover:text-[#71717a] transition-colors">
+        <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 mb-8 font-medium leading-relaxed group-hover:text-[#71717a] transition-colors">
           {plan.description}
         </p>
         

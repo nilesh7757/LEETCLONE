@@ -1538,7 +1538,7 @@ let q = []; q.push(10); let f = q.shift();`
 
             <div className="mt-12 p-8 bg-white/[0.03] border border-white/10 rounded-[2rem]">
                 <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Sparkles className="text-[var(--viz-amber)]" size={20} /> Handling Negative Cycles</h4>
-                <p className="text-sm text-white/60 leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                     Floyd-Warshall can detect <strong>Negative Weight Cycles</strong>. If after the algorithm finishes, any diagonal element `dist[i][i]` is less than 0, then a negative cycle exists that passes through node $i$. This is a unique advantage over Dijkstra&apos;s algorithm.
                 </p>
             </div>

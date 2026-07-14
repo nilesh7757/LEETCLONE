@@ -259,7 +259,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                         </div>
                         <div className="text-[10px] font-mono text-muted-foreground space-y-1">
                             <p className="opacity-50">Inherit Previous State</p>
-                            <div className="flex items-center justify-between bg-black/20 p-1.5 rounded">
+                            <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
                                 <span>DP[{currentStep.itemIdx-1}][{currentStep.weight}]</span>
                                 <span className="text-[var(--viz-rose)] font-bold text-sm">
                                     {currentStep.itemIdx > 0 ? currentStep.dp[currentStep.itemIdx-1][currentStep.weight] : 0}
@@ -277,7 +277,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                         </div>
                         <div className="text-[10px] font-mono text-muted-foreground space-y-1">
                             <p className="opacity-50">Item Value + Rem. Cap.</p>
-                            <div className="flex items-center justify-between bg-black/20 p-1.5 rounded">
+                            <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
                                 <span className="truncate max-w-[80px]">
                                     {currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].v : 0} + DP[{currentStep.itemIdx-1}][{Math.max(0, currentStep.weight - (currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].w : 0))}]
                                 </span>

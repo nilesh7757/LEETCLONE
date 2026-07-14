@@ -132,7 +132,7 @@ export default function BinaryGuessGame() {
               </div>
               <button 
                 onClick={initGame}
-                className="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.3em] rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.3em] rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-md"
               >
                 Launch Search
               </button>
@@ -253,7 +253,7 @@ export default function BinaryGuessGame() {
               <div className="flex flex-col gap-4 max-w-xs mx-auto">
                 <button 
                   onClick={initGame}
-                  className="px-8 py-4 bg-white text-black font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2"
+                  className="px-8 py-4 bg-white text-black font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2"
                 >
                   <RotateCcw size={16} /> Re-Initialize
                 </button>

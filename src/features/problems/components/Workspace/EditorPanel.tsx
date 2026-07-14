@@ -67,6 +67,15 @@ export default function EditorPanel({
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     internalEditorRef.current = editor;
     internalMonacoRef.current = monaco;
+    
+    if (monaco && monaco.languages && monaco.languages.typescript) {
+      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.Latest,
+        allowNonTsExtensions: true,
+        lib: ["es2020", "dom"] 
+      });
+    }
+
     if (onMount) onMount(editor, monaco);
   };
 
@@ -120,7 +129,7 @@ export default function EditorPanel({
          <div className="flex items-center relative" ref={langDropdownRef}>
             <button
                onClick={() => setIsLangOpen(!isLangOpen)}
-               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[#52525b] hover:text-[var(--foreground)] hover:bg-white/5 transition-all"
+               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-white/5 transition-all"
             >
                <span className="text-[#3b82f6]">{languages.find(l => l.value === language)?.label || language}</span>
                <ChevronDown size={14} className={`opacity-40 transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`} />
@@ -201,6 +210,10 @@ export default function EditorPanel({
           options={{
             minimap: { enabled: false },
             fontSize: 14,
+            quickSuggestions: true,
+            suggestOnTriggerCharacters: true,
+            parameterHints: { enabled: true },
+            snippetSuggestions: "inline",
             lineNumbers: "on",
             scrollBeyondLastLine: false,
             automaticLayout: true,

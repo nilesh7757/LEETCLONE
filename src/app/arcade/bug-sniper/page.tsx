@@ -218,7 +218,7 @@ export default function BugSniper() {
                <button 
                 onClick={startGame}
                 disabled={isLoading}
-                className="group relative px-12 py-5 bg-red-600 text-white font-black uppercase tracking-[0.4em] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="group relative px-12 py-5 bg-red-600 text-white font-black uppercase tracking-[0.4em] rounded-2xl overflow-hidden shadow-md transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                >
                  <div className="absolute inset-0 bg-[var(--foreground)]/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                  <span className="relative flex items-center gap-3">

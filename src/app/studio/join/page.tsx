@@ -55,7 +55,7 @@ export default function StudioJoinPage() {
                 <div className="w-16 h-16 border-2 border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin" />
                 <div className="space-y-2">
                    <h1 className="text-2xl font-black text-white uppercase tracking-tight">Joining Workspace</h1>
-                   <p className="text-[#52525b] text-[10px] font-bold uppercase tracking-widest">Verifying invitation token...</p>
+                   <p className="text-[var(--muted-foreground)] text-[10px] font-bold uppercase tracking-widest">Verifying invitation token...</p>
                 </div>
              </>
           ) : (
@@ -63,7 +63,7 @@ export default function StudioJoinPage() {
                 <AlertCircle className="w-16 h-16 text-rose-500" />
                 <div className="space-y-2">
                    <h1 className="text-2xl font-black text-white uppercase tracking-tight">Invalid Invitation</h1>
-                   <p className="text-[#52525b] text-[10px] font-bold uppercase tracking-widest">This link may be expired or broken.</p>
+                   <p className="text-[var(--muted-foreground)] text-[10px] font-bold uppercase tracking-widest">This link may be expired or broken.</p>
                 </div>
                 <button onClick={() => router.push("/studio")} className="mt-8 px-10 py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all">Return to Studio</button>
              </>

@@ -166,7 +166,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                         {res.input !== undefined && res.input !== null && (
                           <div className="space-y-1">
                             <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Input</span>
-                            <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">{String(res.input)}</pre>
+                            <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">{String(res.input)}</pre>
                           </div>
                         )}
 
@@ -174,7 +174,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
                             <div className="space-y-1">
                               <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Expected</span>
-                              <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono">
+                              <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono">
                                 {res.expected !== undefined 
                                   ? (typeof res.expected === 'string' ? res.expected : JSON.stringify(res.expected))
                                   : (res.expectedOutput !== undefined 
@@ -184,7 +184,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                             </div>
                             <div className="space-y-1">
                               <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Actual</span>
-                              <pre className="p-3 bg-black/20 rounded-lg text-xs font-mono text-red-400">
+                              <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono text-red-500">
                                 {res.actual !== undefined 
                                   ? (typeof res.actual === 'string' ? res.actual : JSON.stringify(res.actual))
                                   : (res.actualOutput !== undefined 
@@ -197,8 +197,8 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
 
                         {res.error && (
                           <div className="space-y-1">
-                            <span className="text-[9px] font-bold text-[var(--viz-red)] uppercase tracking-wider">Error Details</span>
-                            <pre className="p-3 bg-red-950/20 text-red-400 border border-red-950/30 rounded-lg text-xs font-mono whitespace-pre-wrap">{res.error}</pre>
+                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider">Error Details</span>
+                            <pre className="p-3 bg-red-500/5 text-red-500 border border-red-500/20 rounded-lg text-xs font-mono whitespace-pre-wrap">{res.error}</pre>
                           </div>
                         )}
                       </div>

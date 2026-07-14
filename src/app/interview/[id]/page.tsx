@@ -625,7 +625,7 @@ export default function InterviewPage({
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your structured answer here... (list concepts, logic flows, or architectural decisions)"
-                  className="w-full h-full bg-transparent p-6 text-sm text-white placeholder:text-[#52525b] focus:outline-none resize-none font-mono leading-relaxed"
+                  className="w-full h-full bg-transparent p-6 text-sm text-white placeholder:text-[var(--muted-foreground)] focus:outline-none resize-none font-mono leading-relaxed"
                 />
               )}
             </div>

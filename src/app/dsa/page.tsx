@@ -234,11 +234,11 @@ export default function DSAPage() {
             </div>
 
             {/* Stage Header */}
-            <div className="h-14 flex items-center justify-between px-4 md:px-8 bg-transparent border-b border-[var(--border)] shrink-0 z-20 overflow-x-auto no-scrollbar">
-               <div className="flex items-center gap-4 shrink-0">
+            <div className="h-14 flex items-center justify-between px-4 md:px-8 bg-transparent border-b border-[var(--border)] shrink-0 z-20 overflow-hidden">
+               <div className="flex items-center gap-2 sm:gap-4 shrink overflow-hidden">
                   <div className="flex items-center gap-2">
                      <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_#22c55e]" />
-                     <span className="text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.3em] whitespace-nowrap">Neural Sync: Active</span>
+                     <span className="hidden sm:inline text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.3em] whitespace-nowrap">Neural Sync: Active</span>
                   </div>
                   <div className="h-3 w-px border-[var(--border)] hidden sm:block" />
                   <div className="hidden sm:flex items-center gap-2">

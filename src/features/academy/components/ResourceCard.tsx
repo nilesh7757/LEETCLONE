@@ -56,7 +56,7 @@ export default function ResourceCard({ resource, index }: ResourceCardProps) {
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.02] border border-white/5 rounded-lg">
              <div className="w-1 h-1 rounded-full bg-[#3b82f6]" />
-             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#52525b]">{resource.type}</span>
+             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">{resource.type}</span>
           </div>
         </div>
 
@@ -65,10 +65,10 @@ export default function ResourceCard({ resource, index }: ResourceCardProps) {
           <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[#3b82f6] transition-colors line-clamp-2 leading-snug">
             {resource.title}
           </h3>
-          <p className="text-[12px] text-[#52525b] font-medium uppercase tracking-widest mb-4">
+          <p className="text-[12px] text-[var(--muted-foreground)] font-medium uppercase tracking-widest mb-4">
              by <span className="text-[#71717a]">{resource.creator || "System Curated"}</span>
           </p>
-          <p className="text-[13px] text-[#52525b] line-clamp-2 leading-relaxed group-hover:text-[#71717a] transition-colors">
+          <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 leading-relaxed group-hover:text-[#71717a] transition-colors">
             {resource.description}
           </p>
         </div>

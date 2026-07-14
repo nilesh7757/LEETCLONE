@@ -15,13 +15,13 @@ interface DSAHeaderProps {
 export const DSAHeader = ({ animationSpeed, setAnimationSpeed, handleShare, isStudio }: DSAHeaderProps) => {
   if (isStudio) {
     return (
-      <div className="flex items-center gap-8">
-         <div className="flex items-center gap-4 bg-[var(--foreground)]/[0.03] border border-[var(--border)] px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl">
-            <div className="flex items-center gap-2">
-               <span className="text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Speed</span>
-               <span className="text-[11px] font-mono font-bold text-[#3b82f6] tabular-nums w-12">{animationSpeed}ms</span>
+      <div className="flex items-center gap-3 sm:gap-8 shrink overflow-hidden">
+         <div className="flex items-center gap-2 sm:gap-4 bg-[var(--foreground)]/[0.03] border border-[var(--border)] px-2.5 sm:px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl shrink overflow-hidden">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+               <span className="hidden xs:inline text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Speed</span>
+               <span className="text-[10px] sm:text-[11px] font-mono font-bold text-[#3b82f6] tabular-nums w-10 sm:w-12">{animationSpeed}ms</span>
             </div>
-            <div className="w-40 h-1.5 relative flex items-center group/slider">
+            <div className="w-16 sm:w-40 h-1.5 relative flex items-center group/slider shrink overflow-hidden">
                <div className="absolute w-full h-1 bg-[var(--foreground)]/5 rounded-full overflow-hidden" />
                <input 
                   type="range" min="100" max="2000" step="100" 

@@ -36,7 +36,7 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-[480px] flex items-center justify-center bg-[#050505]">
       <div className="flex flex-col items-center gap-6">
         <div className="w-16 h-16 border-[1px] border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
-        <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-[#52525b] animate-pulse">Initializing Component...</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-[var(--muted-foreground)] animate-pulse">Initializing Component...</p>
       </div>
     </div>
   );

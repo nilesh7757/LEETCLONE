@@ -219,7 +219,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
                         <Cpu size={14} />
                         Core Formula
                     </h3>
-                    <div className="p-4 bg-black/20 rounded-2xl font-mono text-xs space-y-2 border border-white/5">
+                    <div className="p-4 bg-[var(--card)] rounded-2xl font-mono text-xs space-y-2 border border-[var(--border)] shadow-sm">
                         {viewMode === "PRECOMPUTE" ? (
                             <>
                                 <div className="text-[var(--viz-cyan)] font-bold">up[u][k] = up[ up[u][k-1] ][k-1]</div>
