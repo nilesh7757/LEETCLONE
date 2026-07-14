@@ -4,30 +4,13 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { Flame } from "lucide-react";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import NotificationBell from "../ui/NotificationBell";
+import StreakWidget from "./StreakWidget";
 
 export default function UserTopNav() {
   const { status } = useSession();
   const [dailySlug, setDailySlug] = useState<string>("");
-  const [streak, setStreak] = useState<number>(0);
-  const [solvedToday, setSolvedToday] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchStreak = async () => {
-      if (status === "authenticated") {
-        try {
-          const { data } = await axios.get("/api/profile/streak");
-          setStreak(data.streak);
-          setSolvedToday(data.solvedToday);
-        } catch (error) {
-          console.error("Failed to fetch streak", error);
-        }
-      }
-    };
-    fetchStreak();
-  }, [status]);
 
   useEffect(() => {
     const fetchDaily = async () => {
@@ -48,14 +31,9 @@ export default function UserTopNav() {
       {status === "authenticated" && (
         <Link
           href={dailySlug ? `/problems/${dailySlug}` : "/problems"}
-          className="group relative flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-[var(--foreground)]/5"
+          className="hover:scale-105 transition-transform duration-200"
         >
-          <div className={`relative flex items-center justify-center transition-all duration-500 ${solvedToday ? "text-[var(--viz-gold)]" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"}`}>
-             <Flame className={`w-5 h-5 ${solvedToday ? "fill-[var(--viz-gold)] drop-shadow-[0_0_10px_rgba(245,158,11,0.6)] animate-pulse" : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100"}`} />
-          </div>
-          <span className={`text-sm font-bold font-mono transition-colors ${solvedToday ? "text-[var(--viz-gold)]" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"}`}>
-            {streak}
-          </span>
+          <StreakWidget />
         </Link>
       )}
 

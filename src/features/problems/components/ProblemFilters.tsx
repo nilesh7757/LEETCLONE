@@ -192,14 +192,14 @@ export default function ProblemFilters() {
           </button>
 
           {isTagsOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto custom-scrollbar">
-              <div className="px-3 py-1.5 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 mb-1.5">
+            <div className="absolute right-0 mt-2 w-56 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto custom-scrollbar">
+              <div className="px-3 py-1.5 text-[9px] font-black text-[var(--muted-foreground)]/80 uppercase tracking-widest border-b border-[var(--border)] mb-1.5">
                 Topic Tag Filters
               </div>
               <button
                 onClick={() => { setCategory("All"); setIsTagsOpen(false); }}
                 className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                  category === "All" ? "text-blue-400 bg-white/5" : "text-gray-300 hover:text-[var(--foreground)] hover:bg-white/5"
+                  category === "All" ? "text-blue-400 bg-[var(--foreground)]/5" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
                 }`}
               >
                 All Topics
@@ -211,7 +211,7 @@ export default function ProblemFilters() {
                     key={tag.name}
                     onClick={() => { setCategory(tag.name); setIsTagsOpen(false); }}
                     className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                      isSelected ? "text-white bg-white/10" : "text-gray-300 hover:text-[var(--foreground)] hover:bg-white/5"
+                      isSelected ? "text-[var(--foreground)] bg-[var(--foreground)]/10" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
                     }`}
                     style={isSelected ? { color: tag.color } : {}}
                   >
@@ -228,7 +228,7 @@ export default function ProblemFilters() {
           <button
             onClick={() => setIsCompaniesOpen(!isCompaniesOpen)}
             type="button"
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-white/5 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-all cursor-pointer"
           >
             <Briefcase size={12} className="text-emerald-400" />
             {company === "All" ? "Companies" : company}
@@ -236,14 +236,14 @@ export default function ProblemFilters() {
           </button>
 
           {isCompaniesOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto custom-scrollbar">
-              <div className="px-3 py-1.5 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 mb-1.5">
+            <div className="absolute right-0 mt-2 w-56 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto custom-scrollbar">
+              <div className="px-3 py-1.5 text-[9px] font-black text-[var(--muted-foreground)]/80 uppercase tracking-widest border-b border-[var(--border)] mb-1.5">
                 Company Filters
               </div>
               <button
                 onClick={() => { setCompany("All"); setIsCompaniesOpen(false); }}
                 className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                  company === "All" ? "text-emerald-400 bg-white/5" : "text-gray-300 hover:text-[var(--foreground)] hover:bg-white/5"
+                  company === "All" ? "text-emerald-400 bg-[var(--foreground)]/5" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
                 }`}
               >
                 All Companies
@@ -255,7 +255,7 @@ export default function ProblemFilters() {
                     key={c}
                     onClick={() => { setCompany(c); setIsCompaniesOpen(false); }}
                     className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                      isSelected ? "text-emerald-400 bg-white/10" : "text-gray-300 hover:text-[var(--foreground)] hover:bg-white/5"
+                      isSelected ? "text-emerald-400 bg-[var(--foreground)]/10" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
                     }`}
                   >
                     {c}

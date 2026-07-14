@@ -33,7 +33,7 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
     setHasMounted(true);
   }, []);
   if (!hasMounted) return (
-    <div className="min-h-[480px] flex items-center justify-center bg-[#050505]">
+    <div className="min-h-[480px] flex items-center justify-center bg-[var(--card)]">
       <div className="flex flex-col items-center gap-6">
         <div className="w-16 h-16 border-[1px] border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
         <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-[var(--muted-foreground)] animate-pulse">Initializing Component...</p>
@@ -117,12 +117,12 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
     <div 
       ref={vizContainerRef}
       style={isFullscreen ? {} : { minHeight: `${580 * scale}px` }}
-      className="w-full relative bg-[#020202] rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl transition-all duration-500"
+      className="w-full relative bg-[var(--card)] rounded-[3rem] border border-[var(--border)] overflow-hidden shadow-2xl transition-all duration-500"
     >
       {/* HUD Elements */}
       <div className="absolute top-8 left-8 flex items-center gap-3 z-20 pointer-events-none opacity-40">
          <Target size={16} className="text-[#3b82f6]" />
-         <span className="text-[9px] font-mono uppercase tracking-widest text-white">Studio_Live_Feed.v2</span>
+         <span className="text-[9px] font-mono uppercase tracking-widest text-[var(--foreground)]">Studio_Live_Feed.v2</span>
       </div>
       
       <div className="absolute top-8 right-8 flex items-center gap-4 z-20">
