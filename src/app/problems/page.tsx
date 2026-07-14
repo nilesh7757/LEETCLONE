@@ -3,6 +3,7 @@ import ProblemTable from "@/features/problems/components/ProblemTable";
 import ProblemFilters from "@/features/problems/components/ProblemFilters";
 import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
 import MasteryCalendar from "@/features/problems/components/MasteryCalendar";
+import ReviewQueueWidget from "@/features/problems/components/ReviewQueueWidget";
 import { auth } from "@/auth"; 
 import Link from "next/link";
 import { Trophy, Target, Sparkles } from "lucide-react";
@@ -245,6 +246,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
 
           {/* SIDEBAR */}
           <div className="lg:col-span-3 space-y-10">
+            {userId && <ReviewQueueWidget />}
             <div className="space-y-3">
                <div className="flex items-center gap-2 px-1">
                   <div className="w-1 h-1 rounded-full bg-[var(--primary)]" />
