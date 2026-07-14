@@ -2,8 +2,9 @@
 
 import { 
   ArrowRight, Trophy, Sparkles, Code2, Terminal,
-  Github, Twitter, Mail, Zap
+  Github, Twitter, Mail, Zap, Brain, Users, Repeat
 } from "lucide-react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import IDEShowcase from "@/components/IDEShowcase";
@@ -134,261 +135,83 @@ export default function Hero() {
         </div>
       </section>
 
-      {/* Feature Glimpses Capsule Row */}
-      <section className="max-w-7xl mx-auto mb-32 border-y border-[var(--border)] py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="p-2">
-            <span className="text-[#8F44F0] font-black text-xs uppercase tracking-widest block mb-1">01. Skill Analytics</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Dynamic performance profiles</span>
-          </div>
-          <div className="p-2">
-            <span className="text-[#eab308] font-black text-xs uppercase tracking-widest block mb-1">02. H2H Arena</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Real-time peer matchings</span>
-          </div>
-          <div className="p-2">
-            <span className="text-blue-400 font-black text-xs uppercase tracking-widest block mb-1">03. AI Code Coach</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Gemini-assisted optimization</span>
-          </div>
-          <div className="p-2">
-            <span className="text-green-400 font-black text-xs uppercase tracking-widest block mb-1">04. Sandbox IDE</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Secure compilation engine</span>
-          </div>
-        </div>
-      </section>
+      {/* Bento Box Grid */}
+      <section className="max-w-7xl mx-auto mb-32 px-4">
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
+            
+            {/* Bento 1: Advanced Execution Engine */}
+            <motion.div 
+               whileHover={{ scale: 1.02 }}
+               className="md:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-[var(--primary)]/30 transition-all duration-300 text-left"
+            >
+               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)]">
+                  <Terminal className="w-6 h-6" />
+               </div>
+               <div className="space-y-3 z-10 max-w-lg">
+                  <div className="text-[10px] font-black text-[#8F44F0] uppercase tracking-[0.2em]">Sandboxed Sandbox</div>
+                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Advanced Execution Engine</h3>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                     Compile and run your C++, Python, JavaScript, and Java solutions with zero-latency. Utilizes Judge0, advanced web workers, and compiler tests to evaluate custom test cases instantly.
+                  </p>
+               </div>
+               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-[var(--primary)]/[0.02] rounded-full blur-3xl group-hover:bg-[var(--primary)]/[0.05] transition-all duration-500" />
+            </motion.div>
 
-      {/* Zig-Zag Puzzles detailed features representation */}
-      <section className="max-w-7xl mx-auto space-y-40 mb-32">
+            {/* Bento 2: Socratic AI Coach */}
+            <motion.div 
+               whileHover={{ scale: 1.02 }}
+               className="md:col-span-1 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-purple-500/40 transition-all duration-300 text-left"
+            >
+               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                  <Sparkles className="w-6 h-6" />
+               </div>
+               <div className="space-y-3 z-10">
+                  <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Built-In AI Assistant</div>
+                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Socratic AI Coach</h3>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                     Get progressive prompts, logic hints, time/space complexity analysis, and custom case breakdowns from Gemini AI, designed to guide you without revealing the direct solution.
+                  </p>
+               </div>
+               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-blue-500/[0.02] rounded-full blur-3xl group-hover:bg-blue-500/[0.05] transition-all duration-500" />
+            </motion.div>
 
-        {/* Feature 1: Coder Cards & Creator (Left: Text, Right: Compact Card + Selector) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8F44F0]/10 border border-[#8F44F0]/20 text-[#c084fc]">
-              <Trophy size={12} />
-              <span className="text-[10px] uppercase font-black tracking-widest">Interactive Skill Analytics</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
-              Dynamic Performance Cards
-            </h2>
-            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
-              Every solved problem, contest submission, and language proficiency feeds directly into your interactive coder profile. Progress through six specialized skill brackets from Novice to Master, and display your capabilities dynamically.
-            </p>
-            <div className="grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-6">
-              <div>
-                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Novice</h4>
-                <div className="text-xs font-bold text-[var(--foreground)]">Foundational Level</div>
-              </div>
-              <div>
-                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest font-mono">Advanced</h4>
-                <div className="text-xs font-bold text-[var(--foreground)]">100+ Challenges</div>
-              </div>
-              <div>
-                <h4 className="text-[9px] text-[#71717a] uppercase font-black tracking-widest">Master</h4>
-                <div className="text-xs font-bold text-[var(--foreground)]">Top 10 Global</div>
-              </div>
-            </div>
-          </div>
+            {/* Bento 3: Multiplayer Arena */}
+            <motion.div 
+               whileHover={{ scale: 1.02 }}
+               className="md:col-span-1 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-[var(--primary)]/30 transition-all duration-300 text-left"
+            >
+               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-[#eab308]/10 flex items-center justify-center text-[#eab308]">
+                  <Trophy className="w-6 h-6" />
+               </div>
+               <div className="space-y-3 z-10">
+                  <div className="text-[10px] font-black text-[#eab308] uppercase tracking-[0.2em]">Real-time matchmaker</div>
+                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Multiplayer Arena</h3>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                     Challenge global developers in Head-To-Head coding contests. Solve algorithms under match stress, check constraints, and secure top rankings on socket-synchronized leaderboards.
+                  </p>
+               </div>
+               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-[#eab308]/[0.02] rounded-full blur-3xl group-hover:bg-[#eab308]/[0.05] transition-all duration-500" />
+            </motion.div>
 
-          <div className="lg:col-span-6 flex flex-col items-center justify-center gap-6">
-            <CodingCard 
-              name="LOGIQUEST"
-              role={
-                selectedDetailTier === "toty" ? "MASTER" : 
-                selectedDetailTier === "icon" ? "EXPERT" : 
-                selectedDetailTier === "inform" ? "SPECIALIST" : 
-                selectedDetailTier === "gold" ? "ADVANCED" : 
-                selectedDetailTier === "silver" ? "INTERMEDIATE" : "NOVICE"
-              }
-              rating={
-                selectedDetailTier === "toty" ? 99 : 
-                selectedDetailTier === "icon" ? 92 : 
-                selectedDetailTier === "inform" ? 86 : 
-                selectedDetailTier === "gold" ? 82 : 
-                selectedDetailTier === "silver" ? 73 : 62
-              }
-              tier={selectedDetailTier}
-              stats={
-                selectedDetailTier === "toty" ? { alg: 99, spd: 98, log: 99, acc: 96, opz: 95, prs: 99 } :
-                selectedDetailTier === "icon" ? { alg: 93, spd: 91, log: 90, acc: 92, opz: 88, prs: 94 } :
-                selectedDetailTier === "inform" ? { alg: 87, spd: 84, log: 89, acc: 80, opz: 78, prs: 85 } :
-                selectedDetailTier === "gold" ? { alg: 82, spd: 79, log: 80, acc: 75, opz: 72, prs: 78 } :
-                selectedDetailTier === "silver" ? { alg: 71, spd: 68, log: 72, acc: 65, opz: 60, prs: 66 } :
-                { alg: 60, spd: 55, log: 58, acc: 52, opz: 45, prs: 50 }
-              }
-              interactive={true}
-            />
+            {/* Bento 4: Spaced Repetition System */}
+            <motion.div 
+               whileHover={{ scale: 1.02 }}
+               className="md:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-[var(--primary)]/30 transition-all duration-300 text-left"
+            >
+               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
+                  <Repeat className="w-6 h-6" />
+               </div>
+               <div className="space-y-3 z-10 max-w-lg">
+                  <div className="text-[10px] font-black text-green-400 uppercase tracking-[0.2em]">Long-term retention</div>
+                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Spaced Repetition System</h3>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                     Lock in patterns for standard algorithm paradigms. Custom Anki-style review queues scan your coding velocity and edge case flags to suggest reviews right when your retention drops.
+                  </p>
+               </div>
+               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-green-500/[0.02] rounded-full blur-3xl group-hover:bg-green-500/[0.05] transition-all duration-500" />
+            </motion.div>
 
-            <div className="flex flex-wrap justify-center gap-2">
-              {(["bronze", "silver", "gold", "inform", "icon", "toty"] as CardTier[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedDetailTier(t)}
-                  className={`px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${
-                    selectedDetailTier === t
-                      ? "bg-[#8F44F0] text-white border-transparent"
-                      : "bg-[var(--input)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                  }`}
-                >
-                  {t === "toty" ? "Master" : t === "icon" ? "Expert" : t === "inform" ? "Specialist" : t === "gold" ? "Advanced" : t === "silver" ? "Intermediate" : "Novice"}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Feature 2: Head-To-Head Arena (Left: Visual Mock, Right: Text) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 lg:order-2 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#eab308]/10 border border-[#eab308]/20 text-[#fef08a]">
-              <Trophy size={12} />
-              <span className="text-[10px] uppercase font-black tracking-widest">High-Intensity Battle</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
-              Real-Time Multiplayer Arena
-            </h2>
-            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
-              Match up against developers globally in timed coding faceoffs. Solve algorithms under extreme pressure, edge case checks, and earn rating points to upgrade your player attributes.
-            </p>
-            <div className="border-t border-[var(--border)] pt-6 flex gap-8">
-              <div>
-                <span className="block text-2xl font-black text-[var(--foreground)]">Podium</span>
-                <span className="text-[10px] text-[#71717a] font-bold">Top rank bragging rights</span>
-              </div>
-              <div>
-                <span className="block text-2xl font-black text-[#eab308]">Interactive</span>
-                <span className="text-[10px] text-[#71717a] font-bold">Live sockets sync</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 lg:order-1 flex justify-center">
-            {/* Arena Podium Visual Mockup */}
-            <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl w-full max-w-sm flex flex-col gap-6 shadow-2xl relative overflow-hidden">
-              <div className="text-[10px] font-mono text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-3 flex justify-between">
-                <span>Contest Bracket</span>
-                <span className="text-[#eab308] font-bold">Rankings</span>
-              </div>
-              <div className="flex justify-between items-end gap-3 h-32 pt-4 relative">
-                {/* 2nd place */}
-                <div className="flex-1 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-[var(--foreground)] mb-2">91 OVR</span>
-                  <div className="w-full bg-[var(--input)] h-16 rounded-t-xl flex items-center justify-center text-[#71717a] border border-[var(--border)]">
-                    2
-                  </div>
-                </div>
-                {/* 1st place */}
-                <div className="flex-1 flex flex-col items-center">
-                  <Trophy size={18} className="text-[#eab308] mb-2 animate-bounce" />
-                  <div className="w-full bg-[#8F44F0]/20 h-24 rounded-t-xl flex flex-col items-center justify-center text-[var(--foreground)] border border-[#8F44F0]/30 relative shadow-[0_0_20px_rgba(143,68,240,0.15)]">
-                    <span className="font-black text-lg">1</span>
-                    <span className="text-[8px] uppercase tracking-widest text-[#8F44F0]">Champion</span>
-                  </div>
-                </div>
-                {/* 3rd place */}
-                <div className="flex-1 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-[var(--foreground)] mb-2">84 OVR</span>
-                  <div className="w-full bg-[var(--input)] h-12 rounded-t-xl flex items-center justify-center text-[#71717a] border border-[var(--border)]">
-                    3
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature 3: AI Code Coach (Left: Text, Right: Chat Mockup) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[#93c5fd]">
-              <Sparkles size={12} />
-              <span className="text-[10px] uppercase font-black tracking-widest">Built-in Guidance</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
-              Gemini AI Code Coach
-            </h2>
-            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
-              Stagnating on a hard algorithm or hit by compile errors? Get instant, context-aware optimizations, visual algorithm hints, and complex trace suggestions from your built-in AI Coach.
-            </p>
-            <div className="border-t border-[var(--border)] pt-6 flex gap-8">
-              <div>
-                <span className="block text-2xl font-black text-[var(--foreground)]">Hint system</span>
-                <span className="text-[10px] text-[#71717a] font-bold">Step-by-step guidance</span>
-              </div>
-              <div>
-                <span className="block text-2xl font-black text-blue-400">Optimize</span>
-                <span className="text-[10px] text-[#71717a] font-bold">Complexity reducer</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 flex justify-center">
-            {/* AI Coach Mini Chat Bubble Mock */}
-            <div className="p-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl relative">
-              <div className="text-[10px] font-mono text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-2 flex items-center gap-1.5">
-                <Sparkles size={12} className="text-[#8F44F0]" />
-                <span>Coach Gemini Chat</span>
-              </div>
-              
-              <div className="space-y-3 text-[11px] font-mono leading-relaxed">
-                {/* User message */}
-                <div className="bg-[var(--input)] rounded-2xl p-3 border border-[var(--border)] max-w-[85%] self-start text-[var(--muted-foreground)]">
-                  <span className="text-[var(--foreground)] block font-bold text-[9px] uppercase tracking-wider mb-1">User</span>
-                  How do I reduce nested loop time complexity?
-                </div>
-                {/* AI response */}
-                <div className="bg-[#8F44F0]/10 rounded-2xl p-3 border border-[var(--border)] max-w-[90%] ml-auto text-[var(--foreground)]">
-                  <span className="text-purple-400 block font-bold text-[9px] uppercase tracking-wider mb-1">Coach Gemini</span>
-                  Use a HashMap to store values. That reduces the complexity from <span className="text-red-400">O(N²)</span> to <span className="text-green-400">O(N)</span>.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature 4: High-Speed Sandbox (Left: Code Editor Mock, Right: Text) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 lg:order-2 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-[#a7f3d0]">
-              <Code2 size={12} />
-              <span className="text-[10px] uppercase font-black tracking-widest">Fast Execution</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
-              Compilation Workbench
-            </h2>
-            <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
-              Code seamlessly inside a Monaco-powered sandbox editor. Execute complex custom inputs instantly, run compiler test checks, and view results with inline code error markers.
-            </p>
-            <div className="border-t border-[var(--border)] pt-6 flex gap-8">
-              <div>
-                <span className="block text-2xl font-black text-[var(--foreground)]">Monaco</span>
-                <span className="text-[10px] text-[#71717a] font-bold">Standard features</span>
-              </div>
-              <div>
-                <span className="block text-2xl font-black text-green-400">Judge0</span>
-                <span className="text-[10px] text-[#71717a] font-bold">Sandboxed runner</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 lg:order-1 flex justify-center">
-            {/* Sandbox Mini Editor Window */}
-            <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl relative font-mono">
-              <div className="flex justify-between items-center text-[10px] text-[var(--muted-foreground)] border-b border-[var(--border)] pb-2">
-                <span className="flex items-center gap-1.5"><Terminal size={10} /> solution.js</span>
-                <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400 text-[8px] font-bold tracking-widest">Run Finished</span>
-              </div>
-              <div className="text-[11px] text-[#71717a] space-y-2 py-2">
-                <div><span className="text-[#8F44F0]">const</span> solve = (arr) =&gt; &#123;</div>
-                <div className="pl-3">let map = <span className="text-yellow-400">new</span> <span className="text-blue-400">Map</span>();</div>
-                <div className="pl-3">return arr.reduce((acc, val) =&gt; &#123;</div>
-                <div className="pl-6 text-purple-400">acc.set(val, (acc.get(val) || 0) + 1);</div>
-                <div className="pl-6 text-[var(--muted-foreground)]">return acc;</div>
-                <div className="pl-3">&#125;, map);</div>
-                <div>&#125;</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+         </div>
       </section>
       
       <Footer />
