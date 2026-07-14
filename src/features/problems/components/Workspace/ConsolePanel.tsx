@@ -229,29 +229,39 @@ export default function ConsolePanel({
                     </div>
                   ) : (
                     <>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-3">
-                             <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Actual Output</div>
-                             <pre className={`p-5 bg-[var(--muted)] border border-[var(--border)] rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed shadow-sm overflow-x-auto ${
-                               activeResult?.status === 'Accepted' 
-                                 ? "text-green-500" 
-                                 : "text-red-500"
-                             }`}>
-                                {typeof activeResult?.actual === 'object' 
-                                  ? JSON.stringify(activeResult.actual, null, 2) 
-                                  : (activeResult?.actual || "No return value")}
-                             </pre>
-                          </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+                                 <span>Actual Output</span>
+                                 {activeResult?.status !== 'Accepted' ? (
+                                    <XCircle size={12} className="text-red-500" />
+                                 ) : (
+                                    <CheckCircle2 size={12} className="text-green-500" />
+                                 )}
+                              </div>
+                              <pre className={`p-5 rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed shadow-sm overflow-x-auto border ${
+                                 activeResult?.status === 'Accepted' 
+                                   ? "bg-green-500/5 border-green-500/20 text-green-500" 
+                                   : "bg-red-500/5 border-red-500/20 text-red-500"
+                              }`}>
+                                 {typeof activeResult?.actual === 'object' 
+                                   ? JSON.stringify(activeResult.actual, null, 2) 
+                                   : (activeResult?.actual || "No return value")}
+                              </pre>
+                           </div>
 
-                          <div className="space-y-3">
-                             <div className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Expected Output</div>
-                             <pre className="p-5 bg-[var(--muted)] border border-[var(--border)] rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed text-[var(--foreground)]/70 shadow-sm overflow-x-auto">
-                                {typeof activeResult?.expected === 'object' 
-                                  ? JSON.stringify(activeResult.expected, null, 2) 
-                                  : (activeResult?.expected || "N/A")}
-                             </pre>
-                          </div>
-                       </div>
+                           <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+                                 <span>Expected Output</span>
+                                 <CheckCircle2 size={12} className="text-green-500" />
+                              </div>
+                              <pre className="p-5 bg-green-500/5 border border-green-500/20 rounded-2xl font-mono text-[13px] min-h-[120px] break-all leading-relaxed text-green-500 shadow-sm overflow-x-auto">
+                                 {typeof activeResult?.expected === 'object' 
+                                   ? JSON.stringify(activeResult.expected, null, 2) 
+                                   : (activeResult?.expected || "N/A")}
+                              </pre>
+                           </div>
+                        </div>
                     </>
                   )}
 

@@ -173,22 +173,28 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                         {res.status !== 'Accepted' && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
                             <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Expected</span>
-                              <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono">
-                                {res.expected !== undefined 
-                                  ? (typeof res.expected === 'string' ? res.expected : JSON.stringify(res.expected))
-                                  : (res.expectedOutput !== undefined 
-                                      ? (typeof res.expectedOutput === 'string' ? res.expectedOutput : JSON.stringify(res.expectedOutput))
-                                      : "N/A")}
-                              </pre>
-                            </div>
-                            <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Actual</span>
-                              <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono text-red-500">
+                              <div className="flex items-center gap-1.5 text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                                 <span>Actual</span>
+                                 <XCircle size={10} className="text-red-500" />
+                              </div>
+                              <pre className="p-3 bg-red-500/5 border border-red-500/20 text-red-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">
                                 {res.actual !== undefined 
                                   ? (typeof res.actual === 'string' ? res.actual : JSON.stringify(res.actual))
                                   : (res.actualOutput !== undefined 
                                       ? (typeof res.actualOutput === 'string' ? res.actualOutput : JSON.stringify(res.actualOutput))
+                                      : "N/A")}
+                              </pre>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5 text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                                 <span>Expected</span>
+                                 <CheckCircle size={10} className="text-green-500" />
+                              </div>
+                              <pre className="p-3 bg-green-500/5 border border-green-500/20 text-green-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">
+                                {res.expected !== undefined 
+                                  ? (typeof res.expected === 'string' ? res.expected : JSON.stringify(res.expected))
+                                  : (res.expectedOutput !== undefined 
+                                      ? (typeof res.expectedOutput === 'string' ? res.expectedOutput : JSON.stringify(res.expectedOutput))
                                       : "N/A")}
                               </pre>
                             </div>
