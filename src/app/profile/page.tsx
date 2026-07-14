@@ -366,10 +366,10 @@ export default function ProfilePage() {
                     </form>
 
                     <div className="w-full mt-4 pt-4 border-t border-[var(--border)]/30 flex items-center justify-between">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">Arcade Points</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">Global Score</span>
                         <div className="flex items-center gap-1 text-amber-500 font-mono text-xs font-black">
                             <Zap size={11} fill="currentColor" />
-                            <span>{arcadePoints} AP</span>
+                            <span>{arcadePoints} GS</span>
                         </div>
                     </div>
                 </div>
@@ -547,7 +547,7 @@ export default function ProfilePage() {
                 </AnimatePresence>
             </div>
 
-            {/* FUT Rating Card */}
+            {/* Developer Statistics Dashboard */}
             <div className="flex justify-center w-full">
                 <UserRatingCard user={session?.user} stats={stats} />
             </div>

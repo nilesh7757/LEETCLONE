@@ -85,11 +85,12 @@ export async function executeJavaScriptLocally(
       
       try {
         worker = new Worker(workerUrl);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         URL.revokeObjectURL(workerUrl);
         resolve({
           status: "Runtime Error",
-          error: "Failed to initialize Web Worker: " + (err.message || String(err)),
+          error: "Failed to initialize Web Worker: " + errorMsg,
           input: tc.input,
           expected: tc.expectedOutput,
           actual: ""

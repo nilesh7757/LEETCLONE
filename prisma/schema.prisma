@@ -252,7 +252,7 @@ model User {
   website               String?
   description           String?
   rating                Int                       @default(1500)
-  arcadePoints          Int                       @default(0)
+  arcadePoints          Int                       @default(0) // TODO: Rename arcadePoints to globalScore in the next DB migration
   createdAt             DateTime                  @default(now())
   updatedAt             DateTime?                 @updatedAt
   role                  String                    @default("USER")
