@@ -111,11 +111,11 @@ export default function TopicLabPage({ params }: { params: Promise<{ topicId: st
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#09090b] text-white font-sans">
-      <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5 backdrop-blur-md sticky top-0 z-10">
+    <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] font-sans">
+      <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-[var(--foreground)]/5 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <Link href="/cs-core" className="p-2 hover:bg-white/10 rounded-xl transition-all">
-            <ArrowLeft className="w-5 h-5 text-gray-400" />
+          <Link href="/cs-core" className="p-2 hover:bg-[var(--foreground)]/10 rounded-xl transition-all">
+            <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
           </Link>
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function TopicLabPage({ params }: { params: Promise<{ topicId: st
                 {topicTitle}
               </span>
             </h1>
-            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">
+            <p className="text-[10px] text-[var(--muted-foreground)]/80 uppercase tracking-[0.2em] font-bold mt-1">
               Feynman Memory Active
             </p>
           </div>
@@ -152,8 +152,8 @@ export default function TopicLabPage({ params }: { params: Promise<{ topicId: st
               <div
                 className={`p-5 rounded-3xl text-[15px] leading-relaxed shadow-xl whitespace-pre-wrap ${
                   msg.role === "user"
-                    ? "bg-[#18181b] border border-white/5 text-gray-100 rounded-tr-none"
-                    : "bg-[#18181b] border border-purple-500/20 text-gray-300 rounded-tl-none"
+                    ? "bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] rounded-tr-none"
+                    : "bg-[var(--card)] border border-purple-500/20 text-[var(--foreground)]/90 rounded-tl-none"
                 }`}
               >
                 {msg.analysis && (
@@ -172,16 +172,16 @@ export default function TopicLabPage({ params }: { params: Promise<{ topicId: st
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shrink-0">
               <Bot className="w-5 h-5 text-white" />
             </div>
-            <div className="bg-[#18181b] border border-purple-500/20 p-5 rounded-3xl rounded-tl-none flex items-center shadow-xl">
+            <div className="bg-[var(--card)] border border-purple-500/20 p-5 rounded-3xl rounded-tl-none flex items-center shadow-xl">
               <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
-              <span className="ml-3 text-sm text-gray-400 font-medium tracking-wide">Synthesizing Feynman Response...</span>
+              <span className="ml-3 text-sm text-[var(--muted-foreground)] font-medium tracking-wide">Synthesizing Feynman Response...</span>
             </div>
           </motion.div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-6 bg-[#09090b] border-t border-white/5 pb-12">
+      <div className="p-6 bg-[var(--background)] border-t border-[var(--border)] pb-12">
         <div className="max-w-4xl mx-auto relative group">
           <textarea
             value={input}
@@ -189,7 +189,7 @@ export default function TopicLabPage({ params }: { params: Promise<{ topicId: st
             onKeyDown={handleKeyDown}
             disabled={isLoading}
             placeholder="Explain your analogy here..."
-            className="w-full pl-6 pr-16 py-5 bg-[#18181b] border border-white/10 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 rounded-3xl text-sm text-white outline-none transition-all resize-none h-[72px] custom-scrollbar shadow-inner"
+            className="w-full pl-6 pr-16 py-5 bg-[var(--card)] border border-[var(--border)] focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 rounded-3xl text-sm text-[var(--foreground)] outline-none transition-all resize-none h-[72px] custom-scrollbar shadow-inner"
           />
           <button
             onClick={handleSend}

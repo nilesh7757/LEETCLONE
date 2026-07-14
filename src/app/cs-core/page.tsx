@@ -105,13 +105,13 @@ export default function CsCoreDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] p-8">
       <div className="max-w-6xl mx-auto space-y-12">
         <header className="space-y-6">
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">
             CS Core Interactive Labs
           </h1>
-          <p className="text-gray-400 text-lg max-w-2xl">
+          <p className="text-[var(--muted-foreground)] text-lg max-w-2xl">
             Master OS, DBMS, CN, and OOPS using the Feynman Technique. 
             Review the top recommended resources, then step into the Interactive Labs where our AI will relentlessly grill your understanding to guarantee that 10+ LPA package.
           </p>
@@ -119,14 +119,14 @@ export default function CsCoreDashboard() {
           <div className="flex flex-col sm:flex-row gap-4 items-center max-w-2xl pt-4">
             <form onSubmit={handleCustomSubmit} className="relative flex-1 w-full group">
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-500 group-focus-within:text-purple-400 transition-colors" />
+                <Search className="h-5 w-5 text-[var(--muted-foreground)]/60 group-focus-within:text-purple-400 transition-colors" />
               </div>
               <input 
                 type="text" 
                 value={customTopic}
                 onChange={(e) => setCustomTopic(e.target.value)}
                 placeholder="Or enter ANY custom topic (e.g. 'Kafka')..." 
-                className="w-full pl-12 pr-16 py-4 bg-gray-900/50 border border-gray-800 focus:border-purple-500/50 rounded-2xl text-white outline-none transition-all shadow-inner focus:ring-4 focus:ring-purple-500/10"
+                className="w-full pl-12 pr-16 py-4 bg-[var(--foreground)]/5 border border-[var(--border)] focus:border-purple-500/50 rounded-2xl text-[var(--foreground)] outline-none transition-all shadow-inner focus:ring-4 focus:ring-purple-500/10"
               />
               <button 
                 type="submit"
@@ -140,7 +140,7 @@ export default function CsCoreDashboard() {
             <button 
               onClick={handleRecommend}
               disabled={isRecommending}
-              className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/40 hover:to-blue-600/40 border border-purple-500/30 rounded-2xl text-purple-300 font-bold transition-all shadow-lg whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600/10 to-blue-600/10 hover:from-purple-600/20 hover:to-blue-600/20 border border-purple-500/30 rounded-2xl text-purple-400 font-bold transition-all shadow-lg whitespace-nowrap cursor-pointer"
             >
               {isRecommending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
               {isRecommending ? "Scanning..." : "Suggest Topic"}
@@ -150,19 +150,19 @@ export default function CsCoreDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {CS_DOMAINS.map((domain) => (
-            <div key={domain.id} className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 flex flex-col space-y-6">
+            <div key={domain.id} className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col space-y-6">
               <div className="flex items-center space-x-4">
-                <div className="p-3 bg-gray-800 rounded-xl">
+                <div className="p-3 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl">
                   {domain.icon}
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold">{domain.title}</h2>
-                  <p className="text-sm text-gray-400">{domain.description}</p>
+                  <p className="text-sm text-[var(--muted-foreground)]">{domain.description}</p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wider">Top Resources</h3>
+                <h3 className="text-xs uppercase font-bold text-[var(--muted-foreground)]/50 tracking-wider">Top Resources</h3>
                 <div className="flex flex-col space-y-2">
                   {domain.resources.map((res, idx) => (
                     <a 
@@ -170,7 +170,7 @@ export default function CsCoreDashboard() {
                       href={res.url} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="flex items-center space-x-2 text-sm text-gray-300 hover:text-[var(--foreground)] hover:underline bg-gray-800/50 p-2 rounded-lg transition-colors"
+                      className="flex items-center space-x-2 text-sm text-[var(--foreground)]/80 hover:text-[var(--foreground)] hover:underline bg-[var(--foreground)]/5 border border-[var(--border)]/10 p-2 rounded-lg transition-colors"
                     >
                       {res.type === 'video' ? <PlayCircle className="w-4 h-4 text-pink-500" /> : <BookOpen className="w-4 h-4 text-blue-400" />}
                       <span>{res.name}</span>
@@ -180,15 +180,15 @@ export default function CsCoreDashboard() {
               </div>
 
               <div className="space-y-3 flex-1">
-                <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wider">Interactive Labs (Feynman Grilling)</h3>
+                <h3 className="text-xs uppercase font-bold text-[var(--muted-foreground)]/50 tracking-wider">Interactive Labs (Feynman Grilling)</h3>
                 <div className="grid grid-cols-1 gap-2">
                   {domain.topics.map((topic) => (
                     <Link 
                       key={topic.id} 
                       href={`/cs-core/${topic.id}?title=${encodeURIComponent(topic.title)}`}
                     >
-                      <div className="flex items-center justify-between p-3 bg-gray-800/80 hover:bg-purple-900/30 border border-transparent hover:border-purple-500/50 rounded-xl cursor-pointer transition-all group">
-                        <span className="text-sm font-medium text-gray-200 group-hover:text-purple-300">
+                      <div className="flex items-center justify-between p-3 bg-[var(--foreground)]/5 hover:bg-purple-500/10 border border-[var(--border)] hover:border-purple-500/50 rounded-xl cursor-pointer transition-all group">
+                        <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-purple-500">
                           {topic.title}
                         </span>
                         <span className="text-xs font-bold text-purple-500 bg-purple-500/10 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
