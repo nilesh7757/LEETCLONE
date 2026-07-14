@@ -67,6 +67,9 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
+  const [isGhostMatch, setIsGhostMatch] = useState(false);
+  const [ghostTarget, setGhostTarget] = useState<string | null>(null);
+
   const router = useRouter();
 
   const fetchLeaderboard = useCallback(async () => {
@@ -116,13 +119,31 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
       });
     }
 
+    // Ghost Matchmaking Timeout Simulation
+    let timeoutId: NodeJS.Timeout;
+    if (isRegistered && status === "Active") {
+      timeoutId = setTimeout(() => {
+        const playersCount = (contest.registrations?.length || 0) || leaderboard.length;
+        if (playersCount < 2) {
+          setIsGhostMatch(true);
+          setGhostTarget("Ghost_Master_01");
+          toast("Live opponent not found. Matched against Ghost Replay.", {
+            icon: <Cpu className="text-[var(--primary)]" size={16} />
+          });
+        }
+      }, 5000);
+    }
+
     return () => {
       if (socket) {
         socket.off("contest_announcement");
         socket.off("leaderboard_update");
       }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [contest.id]);
+  }, [contest.id, isRegistered, status, contest.registrations, leaderboard.length]);
 
   useEffect(() => {
     const calculateTime = () => {
@@ -169,6 +190,21 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
 
   const isCreator = userId === contest.creatorId;
 
+  // Insert virtual ghost player in leaderboard standings if in ghost mode
+  const displayLeaderboard = [...leaderboard];
+  if (isGhostMatch && ghostTarget && !displayLeaderboard.some(entry => entry.user.name === ghostTarget)) {
+    displayLeaderboard.push({
+      user: {
+        id: "ghost-id-01",
+        name: ghostTarget,
+        image: null
+      },
+      rank: displayLeaderboard.length + 1,
+      score: 850,
+      totalPenalty: 12
+    });
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-12 relative z-10">
       {/* 1. ARENA HEADER */}
@@ -184,6 +220,9 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                    <span className="text-[10px] font-bold uppercase tracking-widest text-green-500">Live</span>
                 </div>
+             )}
+             {isGhostMatch && (
+                <span className="px-2 py-0.5 rounded text-xs bg-gray-500/20 text-gray-400 border border-gray-500/30">Ghost Player</span>
              )}
           </div>
           <h1 className="text-5xl font-black tracking-tight text-[var(--foreground)] uppercase italic">{contest.title}</h1>
@@ -328,14 +367,14 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                             </tr>
                          </thead>
                          <tbody className="divide-y divide-[var(--border)]">
-                            {leaderboard.length === 0 ? (
+                            {displayLeaderboard.length === 0 ? (
                                <tr>
                                   <td colSpan={4} className="px-8 py-20 text-center">
                                      <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)] animate-pulse">Standings will be updated soon...</p>
                                   </td>
                                </tr>
                             ) : (
-                               leaderboard.map((entry) => (
+                               displayLeaderboard.map((entry) => (
                                   <tr key={entry.user.id} className="group hover:bg-[var(--foreground)]/[0.01] transition-all">
                                      <td className="px-8 py-4">
                                         <span className={`text-sm font-bold font-mono ${
@@ -345,11 +384,14 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
                                         }`}>#{entry.rank}</span>
                                      </td>
                                      <td className="px-8 py-4">
-                                        <Link href={`/profile/${entry.user.id}`} className="flex items-center gap-3 group/user">
+                                        <Link href={entry.user.id === "ghost-id-01" ? "#" : `/profile/${entry.user.id}`} className="flex items-center gap-3 group/user">
                                            <div className="w-8 h-8 rounded-lg bg-[var(--foreground)]/5 border border-[var(--border)] overflow-hidden flex items-center justify-center relative">
                                               {entry.user.image ? <Image src={entry.user.image} alt="" fill className="object-cover" /> : <User className="w-4 h-4 text-[var(--muted-foreground)]" />}
                                            </div>
                                            <span className="text-sm font-bold text-[var(--foreground)] group-hover/user:text-[var(--primary)] transition-colors">{entry.user.name || "Unknown"}</span>
+                                           {entry.user.name === ghostTarget && (
+                                              <span className="px-2 py-0.5 rounded text-xs bg-gray-500/20 text-gray-400 border border-gray-500/30">Ghost Player</span>
+                                           )}
                                         </Link>
                                      </td>
                                      <td className="px-8 py-4 text-right font-mono text-lg font-bold text-[var(--primary)]">
