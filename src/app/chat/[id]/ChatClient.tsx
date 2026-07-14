@@ -42,6 +42,7 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [lastActive, setLastActive] = useState<Date | null>(otherUser?.lastActive ? new Date(otherUser.lastActive) : null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -57,15 +58,20 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     }, 100);
   }, []);
 
-  const fetchMessages = useCallback(async () => {
+  const fetchMessages = useCallback(async (isSilent = false) => {
     try {
       const { data } = await axios.get(`/api/chat/${conversationId}`);
-      setMessages(data.messages);
-      scrollToBottom();
+      setMessages((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(data.messages)) {
+          if (!isSilent) scrollToBottom();
+          return data.messages;
+        }
+        return prev;
+      });
     } catch (error) {
       console.error("Failed to load messages", error);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }, [conversationId, scrollToBottom]);
 
@@ -95,6 +101,7 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
+      setSocketConnected(true);
       newSocket.emit("join_conversation", conversationId);
       newSocket.emit("join_user", currentUser.id);
       
@@ -103,6 +110,10 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
           setIsOnline(true);
         }
       });
+    });
+
+    newSocket.on("disconnect", () => {
+      setSocketConnected(false);
     });
 
     newSocket.on("new_message", (message: Message) => {
@@ -148,6 +159,17 @@ export default function ChatClient({ conversationId, currentUser, otherUser, rec
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
+
+  // Fallback Polling Effect (every 3.5 seconds)
+  useEffect(() => {
+    if (socketConnected) return;
+
+    const interval = setInterval(() => {
+      fetchMessages(true);
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [socketConnected, fetchMessages]);
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
