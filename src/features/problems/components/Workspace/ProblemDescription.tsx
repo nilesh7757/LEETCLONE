@@ -42,7 +42,7 @@ export default function ProblemDescription({
     parseMarkdown();
   }, [description]);
 
-  const isDark = resolvedTheme !== "light" && resolvedTheme !== "cream";
+  const isDark = resolvedTheme !== "light";
 
   const diffColor = 
     difficulty.toLowerCase() === "easy" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :

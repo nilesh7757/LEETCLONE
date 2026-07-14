@@ -98,7 +98,7 @@ export default function EditorPanel({
   // Determine Monaco editor theme
   const getEditorTheme = () => {
     if (theme) return theme;
-    if (resolvedTheme === "light" || resolvedTheme === "cream") {
+    if (resolvedTheme === "light") {
       return "light";
     }
     return "vs-dark";

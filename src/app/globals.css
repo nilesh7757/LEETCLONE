@@ -13,12 +13,12 @@
 
 :root {
   /* Global Design System - Moctale Inspired (Dark/Neon) */
-  --background: #080808;
+  --background: #0A0A0A;
   --foreground: #fafafa;
   
   --card: #111111;
   --card-foreground: #fafafa;
-  --popover: #080808;
+  --popover: #0A0A0A;
   --popover-foreground: #fafafa;
   
   --primary: #8F44F0;
@@ -122,128 +122,6 @@
   --viz-deep-purple-rgb: 126, 34, 206;
 }
 
-[data-theme='cream'] {
-  --background: #FDFCF0;
-  --foreground: #443B34;
-  
-  --card: #FFFDF5;
-  --card-foreground: #443B34;
-  --popover: #FFFDF5;
-  --popover-foreground: #443B34;
-  
-  --primary: #8A6A4B;
-  --primary-foreground: #FDFCF0;
-  
-  --muted: #F5F2E1;
-  --muted-foreground: #5c5248;
-  /* #5c5248 on #FDFCF0 = ~7.5:1 — passes WCAG AAA */
-  --muted-subtle: #7D746C;
-  
-  --accent: #F5F2E1;
-  --accent-foreground: #443B34;
-  
-  --border: rgba(68, 59, 52, 0.08);
-  --border-strong: rgba(68, 59, 52, 0.15);
-  --input: rgba(68, 59, 52, 0.08);
-  --ring: #8A6A4B;
-
-  --grid-color: rgba(68, 59, 52, 0.04);
-
-  /* Cream Theme Specific Aero-Palette */
-  --viz-blue: #7FB3D5;
-  --viz-blue-rgb: 127, 179, 213;
-  --viz-green: #94ad4e;
-  --viz-green-rgb: 148, 173, 78;
-  --viz-gold: #F7DC6F;
-  --viz-gold-rgb: 247, 220, 111;
-  --viz-red: #E6B0AA;
-  --viz-red-rgb: 230, 176, 170;
-  --viz-purple: #D7BDE2;
-  --viz-purple-rgb: 215, 189, 226;
-
-  --viz-lime-rgb: 148, 173, 78;
-  --viz-lavender-rgb: 215, 189, 226;
-  --viz-cyan-rgb: 127, 179, 213;
-  --viz-rose-rgb: 230, 176, 170;
-  --viz-amber-rgb: 247, 220, 111;
-  --viz-deep-purple-rgb: 139, 92, 246;
-}
-
-[data-theme='batman'] {
-  --background: #000000;
-  --foreground: #ffffff;
-
-  --card: #0a0a0a;
-  --card-foreground: #ffffff;
-  --popover: #000000;
-  --popover-foreground: #ffffff;
-
-  --primary: #ff0000;
-  --primary-foreground: #ffffff;
-
-  --muted: #1a1a1a;
-  --muted-foreground: #666666;
-
-  --accent: #ff0000;
-  --accent-foreground: #ffffff;
-
-  --border: rgba(255, 0, 0, 0.15);
-  --border-strong: rgba(255, 0, 0, 0.4);
-  --input: rgba(20, 20, 20, 0.8);
-  --ring: #ff0000;
-
-  --grid-color: rgba(255, 0, 0, 0.03);
-
-  /* Batman Vengeance Aero-Palette */
-  --viz-blue: #ff0000;
-  --viz-blue-rgb: 255, 0, 0;
-  --viz-green: #ff0000;
-  --viz-green-rgb: 255, 0, 0;
-  --viz-gold: #ffffff;
-  --viz-gold-rgb: 255, 255, 255;
-  --viz-red: #ff0000;
-  --viz-red-rgb: 255, 0, 0;
-  --viz-purple: #1a1a1a;
-  --viz-purple-rgb: 26, 26, 26;
-
-  --viz-lime: #ff0000;
-  --viz-lime-rgb: 255, 0, 0;
-  --viz-lavender: #666666;
-  --viz-lavender-rgb: 102, 102, 102;
-  --viz-cyan: #ff0000;
-  --viz-cyan-rgb: 255, 0, 0;
-  --viz-rose: #ff0000;
-  --viz-rose-rgb: 255, 0, 0;
-  --viz-amber: #ff0000;
-  --viz-amber-rgb: 255, 0, 0;
-  --viz-deep-purple: #1a1a1a;
-  --viz-deep-purple-rgb: 26, 26, 26;
-
-  --viz-emerald: #ff0000;
-  --viz-emerald-rgb: 255, 0, 0;
-  --viz-slate: #1a1a1a;
-  --viz-slate-rgb: 26, 26, 26;
-  --viz-fuchsia: #ff0000;
-  --viz-fuchsia-rgb: 255, 0, 0;
-}
-[data-theme='batman'] body {
-  background-color: #000000 !important;
-}
-
-[data-theme='batman'] body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 85% 15%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
-    #000000;
-  z-index: -2;
-  pointer-events: none;
-}
-
 /* Base Styles */
 
 html {
@@ -257,25 +135,6 @@ body {
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   position: relative;
-}
-
-/* Atmospheric Background Glows */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 20% 30%, rgba(var(--viz-blue-rgb), 0.03) 0%, transparent 40%),
-              radial-gradient(circle at 80% 70%, rgba(var(--viz-purple-rgb), 0.03) 0%, transparent 40%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-[data-theme='cream'] body::before {
-  background: radial-gradient(circle at 20% 30%, rgba(var(--viz-gold-rgb), 0.05) 0%, transparent 40%),
-              radial-gradient(circle at 80% 70%, rgba(var(--viz-green-rgb), 0.05) 0%, transparent 40%);
 }
 
 /* Custom Grid Background Utility */

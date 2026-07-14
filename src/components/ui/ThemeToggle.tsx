@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun, Coffee, Check, Zap } from "lucide-react";
+import { Moon, Sun, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,8 +32,6 @@ export function ThemeToggle({ direction = "down" }: { direction?: "up" | "down" 
   const themes = [
     { id: "dark", label: "Dark", icon: Moon, color: "text-blue-400" },
     { id: "light", label: "Light", icon: Sun, color: "text-amber-400" },
-    { id: "cream", label: "Cream", icon: Coffee, color: "text-orange-400" },
-    { id: "batman", label: "Vengeance", icon: Zap, color: "text-red-600" },
   ];
 
   const currentTheme = themes.find((t) => t.id === theme) || themes[0];

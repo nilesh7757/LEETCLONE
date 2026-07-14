@@ -14,10 +14,10 @@ type CardTier = "bronze" | "silver" | "gold" | "inform" | "icon" | "toty";
 interface CardStats {
   alg: number;
   spd: number;
-  str: number;
-  db: number;
-  sql: number;
-  ai: number;
+  log: number;
+  acc: number;
+  opz: number;
+  prs: number;
 }
 
 export default function Hero() {
@@ -58,8 +58,7 @@ export default function Hero() {
 
   return (
     <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-x-hidden pt-20 md:pt-28 pb-20 px-4">
-      {/* Background radial glow */}
-      <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1400px] h-[600px] bg-gradient-to-b from-[#8F44F0]/10 via-[#740DF6]/5 to-transparent rounded-full blur-[150px] -z-10 pointer-events-none" />
+      {/* Background radial grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(143,68,240,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(143,68,240,0.02)_1px,transparent_1px)] bg-[size:40px_40px] -z-10 pointer-events-none" />
 
       {/* Hero Section - Above the Fold Landing */}
@@ -75,10 +74,10 @@ export default function Hero() {
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-7xl font-black tracking-tight leading-[0.95] mb-8 uppercase text-left">
-              ELEVATE YOUR CODE.<br />
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-7xl font-black tracking-tight leading-[0.95] mb-8 text-left">
+              Elevate Your Code.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8F44F0] via-[#c084fc] to-[#60a5fa]">
-                MASTER YOUR CRAFT.
+                Master Your Craft.
               </span>
             </h1>
 
@@ -89,14 +88,14 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-start">
               <Link
                 href="/problems"
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#8F44F0] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#6d28d9] text-[var(--primary-foreground)] font-bold rounded-xl transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(143,68,240,0.4)] active:scale-95 group text-sm uppercase tracking-wider"
+                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#8F44F0] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#6d28d9] text-[var(--primary-foreground)] font-bold rounded-xl transition-all flex items-center justify-center gap-3 active:scale-95 group text-sm tracking-wider font-semibold"
               >
                 Start Practicing 
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/arena"
-                className="w-full sm:w-auto px-8 py-4 bg-[var(--input)] text-[var(--foreground)] font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--accent)] transition-all flex items-center justify-center gap-3 backdrop-blur-md active:scale-95 text-sm uppercase tracking-wider"
+                className="w-full sm:w-auto px-8 py-4 bg-[var(--input)] text-[var(--foreground)] font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--accent)] transition-all flex items-center justify-center gap-3 backdrop-blur-md active:scale-95 text-sm tracking-wider font-semibold"
               >
                 Enter Arena 
                 <Trophy className="w-4 h-4 text-[#eab308]" />
@@ -127,7 +126,6 @@ export default function Hero() {
 
           {/* Right Column - Unified Glassmorphic IDE Showcase Panel */}
           <div className="lg:col-span-5 flex items-center justify-center relative min-h-[380px] w-full max-w-lg lg:mx-0 mx-auto">
-            <div className="absolute -inset-10 bg-[#8F44F0]/10 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse" />
             <div className="w-full h-full min-h-[380px] bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden relative">
               <IDEShowcase />
             </div>
@@ -141,19 +139,19 @@ export default function Hero() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="p-2">
             <span className="text-[#8F44F0] font-black text-xs uppercase tracking-widest block mb-1">01. Skill Analytics</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Dynamic performance profiles</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Dynamic performance profiles</span>
           </div>
           <div className="p-2">
             <span className="text-[#eab308] font-black text-xs uppercase tracking-widest block mb-1">02. H2H Arena</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Real-time peer matchings</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Real-time peer matchings</span>
           </div>
           <div className="p-2">
             <span className="text-blue-400 font-black text-xs uppercase tracking-widest block mb-1">03. AI Code Coach</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Gemini-assisted optimization</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Gemini-assisted optimization</span>
           </div>
           <div className="p-2">
             <span className="text-green-400 font-black text-xs uppercase tracking-widest block mb-1">04. Sandbox IDE</span>
-            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-bold">Secure compilation engine</span>
+            <span className="text-[10px] text-[var(--muted-foreground)] font-bold">Secure compilation engine</span>
           </div>
         </div>
       </section>
@@ -168,8 +166,8 @@ export default function Hero() {
               <Trophy size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">Interactive Skill Analytics</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
-              DYNAMIC PERFORMANCE CARDS
+            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
+              Dynamic Performance Cards
             </h2>
             <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Every solved problem, contest submission, and language proficiency feeds directly into your interactive coder profile. Progress through six specialized skill brackets from Novice to Master, and display your capabilities dynamically.
@@ -209,12 +207,12 @@ export default function Hero() {
               }
               tier={selectedDetailTier}
               stats={
-                selectedDetailTier === "toty" ? { alg: 99, spd: 98, str: 99, db: 96, sql: 95, ai: 99 } :
-                selectedDetailTier === "icon" ? { alg: 93, spd: 91, str: 90, db: 92, sql: 88, ai: 94 } :
-                selectedDetailTier === "inform" ? { alg: 87, spd: 84, str: 89, db: 80, sql: 78, ai: 85 } :
-                selectedDetailTier === "gold" ? { alg: 82, spd: 79, str: 80, db: 75, sql: 72, ai: 78 } :
-                selectedDetailTier === "silver" ? { alg: 71, spd: 68, str: 72, db: 65, sql: 60, ai: 66 } :
-                { alg: 60, spd: 55, str: 58, db: 52, sql: 45, ai: 50 }
+                selectedDetailTier === "toty" ? { alg: 99, spd: 98, log: 99, acc: 96, opz: 95, prs: 99 } :
+                selectedDetailTier === "icon" ? { alg: 93, spd: 91, log: 90, acc: 92, opz: 88, prs: 94 } :
+                selectedDetailTier === "inform" ? { alg: 87, spd: 84, log: 89, acc: 80, opz: 78, prs: 85 } :
+                selectedDetailTier === "gold" ? { alg: 82, spd: 79, log: 80, acc: 75, opz: 72, prs: 78 } :
+                selectedDetailTier === "silver" ? { alg: 71, spd: 68, log: 72, acc: 65, opz: 60, prs: 66 } :
+                { alg: 60, spd: 55, log: 58, acc: 52, opz: 45, prs: 50 }
               }
               interactive={true}
             />
@@ -244,8 +242,8 @@ export default function Hero() {
               <Trophy size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">High-Intensity Battle</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
-              REAL-TIME MULTIPLAYER ARENA
+            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
+              Real-Time Multiplayer Arena
             </h2>
             <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Match up against developers globally in timed coding faceoffs. Solve algorithms under extreme pressure, edge case checks, and earn rating points to upgrade your player attributes.
@@ -253,11 +251,11 @@ export default function Hero() {
             <div className="border-t border-[var(--border)] pt-6 flex gap-8">
               <div>
                 <span className="block text-2xl font-black text-[var(--foreground)]">Podium</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">Top rank bragging rights</span>
+                <span className="text-[10px] text-[#71717a] font-bold">Top rank bragging rights</span>
               </div>
               <div>
                 <span className="block text-2xl font-black text-[#eab308]">Interactive</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">Live sockets sync</span>
+                <span className="text-[10px] text-[#71717a] font-bold">Live sockets sync</span>
               </div>
             </div>
           </div>
@@ -304,8 +302,8 @@ export default function Hero() {
               <Sparkles size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">Built-in Guidance</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
-              GEMINI AI CODE COACH
+            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
+              Gemini AI Code Coach
             </h2>
             <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Stagnating on a hard algorithm or hit by compile errors? Get instant, context-aware optimizations, visual algorithm hints, and complex trace suggestions from your built-in AI Coach.
@@ -313,11 +311,11 @@ export default function Hero() {
             <div className="border-t border-[var(--border)] pt-6 flex gap-8">
               <div>
                 <span className="block text-2xl font-black text-[var(--foreground)]">Hint system</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">Step-by-step guidance</span>
+                <span className="text-[10px] text-[#71717a] font-bold">Step-by-step guidance</span>
               </div>
               <div>
                 <span className="block text-2xl font-black text-blue-400">Optimize</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">Complexity reducer</span>
+                <span className="text-[10px] text-[#71717a] font-bold">Complexity reducer</span>
               </div>
             </div>
           </div>
@@ -353,8 +351,8 @@ export default function Hero() {
               <Code2 size={12} />
               <span className="text-[10px] uppercase font-black tracking-widest">Fast Execution</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[var(--foreground)] leading-none">
-              COMPILATION WORKBENCH
+            <h2 className="text-3xl sm:text-5xl font-black text-[var(--foreground)] leading-none">
+              Compilation Workbench
             </h2>
             <p className="text-[var(--muted-foreground)] text-base leading-relaxed">
               Code seamlessly inside a Monaco-powered sandbox editor. Execute complex custom inputs instantly, run compiler test checks, and view results with inline code error markers.
@@ -362,11 +360,11 @@ export default function Hero() {
             <div className="border-t border-[var(--border)] pt-6 flex gap-8">
               <div>
                 <span className="block text-2xl font-black text-[var(--foreground)]">Monaco</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">Standard features</span>
+                <span className="text-[10px] text-[#71717a] font-bold">Standard features</span>
               </div>
               <div>
                 <span className="block text-2xl font-black text-green-400">Judge0</span>
-                <span className="text-[10px] text-[#71717a] uppercase font-bold">Sandboxed runner</span>
+                <span className="text-[10px] text-[#71717a] font-bold">Sandboxed runner</span>
               </div>
             </div>
           </div>
@@ -590,23 +588,23 @@ function CodingCard({ name, role, rating, tier, stats, interactive = false }: Co
               <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.spd}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>STR</span>
-              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.str}</span>
+              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>LOG</span>
+              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.log}</span>
             </div>
           </div>
           {/* Col 2 */}
           <div className="space-y-0.5">
             <div className="flex justify-between items-center">
-              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>DB</span>
-              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.db}</span>
+              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>ACC</span>
+              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.acc}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>SQL</span>
-              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.sql}</span>
+              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>OPZ</span>
+              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.opz}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>AI</span>
-              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.ai}</span>
+              <span className={`uppercase font-black text-[8px] ${styleSet.statLabelColor}`}>PRS</span>
+              <span className={tier === "icon" ? "text-stone-900 font-extrabold" : "text-white font-extrabold"}>{stats.prs}</span>
             </div>
           </div>
         </div>
