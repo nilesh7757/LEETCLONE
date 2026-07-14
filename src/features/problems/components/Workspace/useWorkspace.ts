@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { getStarterCode } from "@/lib/starterCode";
 import { Submission } from "@/types/submission";
+import { executeJavaScriptLocally } from "@/lib/browserExecution";
 
 interface TestCase {
   input: string | object;
@@ -138,6 +139,26 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
             ? JSON.stringify(tc.expectedOutput)
             : String(tc.expectedOutput || ""),
       }));
+
+      if (language === "javascript") {
+        const localResults = await executeJavaScriptLocally(code, sanitizedTestCases);
+        setResults(localResults);
+
+        const errorResult = localResults.find(
+          (r) => r.status === "Compilation Error" || r.status === "Runtime Error" || r.error
+        );
+        if (errorResult && errorResult.error) {
+          parseAndSetMarkers(errorResult.error);
+        }
+
+        if (localResults.some((r) => r.status !== "Accepted")) {
+          toast.error("Execution failed.");
+        } else {
+          toast.success("Finished");
+        }
+        setIsRunning(false);
+        return;
+      }
 
       const { data } = await axios.post("/api/run", {
         problemId: problem.id,
