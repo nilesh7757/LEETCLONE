@@ -313,7 +313,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             setCode={setCode}
                             language={language}
                             setLanguage={setLanguage}
-                            theme="vs-dark"
                             onMount={onEditorMount}
                         />
                     </div>
@@ -448,7 +447,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             setCode={setCode}
                             language={language}
                             setLanguage={setLanguage}
-                            theme="vs-dark"
                             onMount={onEditorMount}
                         />
                         
