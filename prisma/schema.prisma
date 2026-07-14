@@ -46,6 +46,7 @@ model Problem {
   verifiedSolutions  Json                 @default("[]") // Store metadata about different language solutions verified
   resources          LearningResource[]
   companies          String[]             @default([])
+  companyTags        String[]             @default([])
   starredBy          StarredProblem[]
   reviewItems        ReviewQueue[]
 

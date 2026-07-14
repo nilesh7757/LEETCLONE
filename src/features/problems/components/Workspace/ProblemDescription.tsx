@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Lightbulb, Hash, Timer, Cpu, Tag } from "lucide-react";
+import { FileText, Lightbulb, Hash, Timer, Cpu, Tag, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import DOMPurify from "dompurify";
@@ -20,6 +20,7 @@ interface ProblemDescriptionProps {
   timeLimit: number;
   memoryLimit: number;
   companies?: string[];
+  companyTags?: string[];
 }
 
 export default function ProblemDescription({
@@ -30,6 +31,7 @@ export default function ProblemDescription({
   timeLimit,
   memoryLimit,
   companies = [],
+  companyTags = [],
 }: ProblemDescriptionProps) {
   const [sanitizedHtml, setSanitizedHtml] = useState("");
   const { resolvedTheme } = useTheme();
@@ -69,6 +71,19 @@ export default function ProblemDescription({
           {memoryLimit}MB Limit
         </span>
       </div>
+
+      {/* Company Tags Section */}
+      {companyTags && companyTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 -mt-4 border-b border-[var(--border)]/20 pb-5">
+          <Briefcase size={14} className="text-[var(--muted-foreground)]" />
+          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--muted-foreground)]/60 mr-1">Target Companies:</span>
+          {companyTags.map(tag => (
+            <span key={tag} className="px-2.5 py-0.5 rounded-md bg-[var(--foreground)]/5 text-[9px] font-bold text-[var(--muted-foreground)]/80 border border-[var(--border)] uppercase tracking-wider">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Main Prose description */}
       <div

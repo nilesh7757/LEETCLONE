@@ -25,6 +25,7 @@ export async function GET() {
           { input: "nums = [3,2,4], target = 6", output: "[1,2]" },
         ]),
         testCases: JSON.stringify([]),
+        companyTags: ["Google", "Amazon", "Meta", "Microsoft"],
       },
       {
         title: "Reverse Linked List",
@@ -36,6 +37,7 @@ export async function GET() {
           { input: "head = [1,2,3,4,5]", output: "[5,4,3,2,1]" },
         ]),
         testCases: JSON.stringify([]),
+        companyTags: ["Amazon", "Microsoft", "Meta"],
       },
       {
         title: "Longest Substring Without Repeating Characters",
@@ -48,6 +50,7 @@ export async function GET() {
           { input: "s = \"bbbbb\"", output: "1" },
         ]),
         testCases: JSON.stringify([]),
+        companyTags: ["Google", "Meta", "Uber"],
       },
       {
         title: "Median of Two Sorted Arrays",
@@ -59,6 +62,7 @@ export async function GET() {
           { input: "nums1 = [1,3], nums2 = [2]", output: "2.00000" },
         ]),
         testCases: JSON.stringify([]),
+        companyTags: ["Google", "Amazon"],
       },
       {
         title: "Valid Parentheses",
@@ -71,6 +75,7 @@ export async function GET() {
           { input: "s = \"()[]{}\"", output: "true" },
         ]),
         testCases: JSON.stringify([]),
+        companyTags: ["Meta", "Amazon", "Microsoft"],
       },
     ];
 

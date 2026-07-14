@@ -189,6 +189,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       isAttempted: attemptedProblemIds.has(problem.id) && !solvedProblemIds.has(problem.id),
       isStarred: userId ? ((problem as unknown as { starredBy?: { id: string }[] }).starredBy?.length ?? 0) > 0 : false,
       acceptanceRate: rateStr,
+      companyTags: problem.companyTags || [],
     };
   });
 

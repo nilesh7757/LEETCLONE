@@ -48,6 +48,7 @@ export interface Problem {
   memoryLimit: number;
   isStarred?: boolean;
   companies?: string[];
+  companyTags?: string[];
   type: "CODING" | "SHELL" | "INTERACTIVE" | "SYSTEM_DESIGN" | "SQL" | "READING";
   initialSchema?: string | null;
   initialData?: string | null;
@@ -234,6 +235,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         timeLimit={problem.timeLimit}
                         memoryLimit={problem.memoryLimit}
                         companies={problem.companies}
+                        companyTags={problem.companyTags}
                       />
                     )}
                     {activeTab === 'database' && (
@@ -379,6 +381,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             category={problem.category}
                             timeLimit={problem.timeLimit}
                             memoryLimit={problem.memoryLimit}
+                            companyTags={problem.companyTags}
                           />
                         )}
                         {activeTab === 'database' && (

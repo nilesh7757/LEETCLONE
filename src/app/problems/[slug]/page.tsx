@@ -49,6 +49,7 @@ interface ProblemData {
   }[];
   starredBy?: { id: string }[];
   companies: string[];
+  companyTags: string[];
 }
 
 export default async function Workspace({ params, searchParams }: WorkspaceProps) {
@@ -88,6 +89,7 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
       pattern: true,
       blueprint: true,
       companies: true,
+      companyTags: true,
       resources: {
         select: {
           id: true,

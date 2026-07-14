@@ -15,6 +15,7 @@ interface Problem {
   difficulty: string;
   category: string;
   companies?: string[];
+  companyTags?: string[];
   isSolved?: boolean;
   isAttempted?: boolean;
   acceptanceRate?: string;
@@ -147,23 +148,30 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
 
                 {/* Title Column */}
                 <td className="py-4 pr-4">
-                  <Link href={`/problems/${problem.slug}`} className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-[var(--muted-foreground)]/40 group-hover:text-[var(--primary)]/60 transition-colors">
-                      {String(idx + 1 + (currentPage - 1) * 12).padStart(3, '0')}.
-                    </span>
-                    <span className="font-bold text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors tracking-tight">
-                      {problem.title}
-                    </span>
-                    {problem.companies && problem.companies.length > 0 && (
-                      <div className="hidden lg:flex items-center gap-1">
-                        {problem.companies.slice(0, 2).map(company => (
-                          <span key={company} className="px-1.5 py-0.5 rounded-md bg-[var(--foreground)]/5 text-[8px] font-extrabold text-[var(--muted-foreground)]/70 uppercase tracking-widest border border-[var(--border)]">
+                  <div className="flex flex-col gap-1">
+                    <Link href={`/problems/${problem.slug}`} className="flex items-center gap-3">
+                      <span className="font-mono text-xs text-[var(--muted-foreground)]/40 group-hover:text-[var(--primary)]/60 transition-colors">
+                        {String(idx + 1 + (currentPage - 1) * 12).padStart(3, '0')}.
+                      </span>
+                      <span className="font-bold text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors tracking-tight">
+                        {problem.title}
+                      </span>
+                    </Link>
+                    {problem.companyTags && problem.companyTags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 ml-7 mt-0.5">
+                        {problem.companyTags.slice(0, 3).map(company => (
+                          <span key={company} className="px-1.5 py-0.5 rounded-md bg-[var(--foreground)]/5 border border-[var(--border)] text-[8px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
                             {company}
                           </span>
                         ))}
+                        {problem.companyTags.length > 3 && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-[var(--foreground)]/5 border border-[var(--border)] text-[8px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                            +{problem.companyTags.length - 3}
+                          </span>
+                        )}
                       </div>
                     )}
-                  </Link>
+                  </div>
                 </td>
 
                 {/* Difficulty Column */}
