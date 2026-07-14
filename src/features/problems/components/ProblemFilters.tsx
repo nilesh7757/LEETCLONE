@@ -192,7 +192,7 @@ export default function ProblemFilters() {
           </button>
 
           {isTagsOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-56 bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto custom-scrollbar">
               <div className="px-3 py-1.5 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 mb-1.5">
                 Topic Tag Filters
               </div>
