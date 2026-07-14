@@ -110,105 +110,50 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
   };
 
   const tabs = [
-    { id: "viz", label: "Visualization", icon: Activity },
-    { id: "docs", label: "Logic Trace", icon: Info },
-    { id: "code", label: "Source Protocol", icon: Code2 },
+    { id: "viz", label: "Visualizer", icon: Activity },
+    { id: "code", label: "Code", icon: Code2 },
+    { id: "docs", label: "Resources", icon: Info },
   ] as const;
 
   const VisualizationStage = (
-    <div 
-      ref={vizContainerRef}
-      style={isFullscreen ? {} : { minHeight: `${580 * scale}px` }}
-      className="w-full relative bg-[var(--card)] rounded-[3rem] border border-[var(--border)] overflow-hidden shadow-2xl transition-all duration-500"
-    >
-      {/* HUD Elements */}
-      <div className="absolute top-8 left-8 flex items-center gap-3 z-20 pointer-events-none opacity-40">
-         <Target size={16} className="text-[#3b82f6]" />
-         <span className="text-[9px] font-mono uppercase tracking-widest text-[var(--foreground)]">Studio_Live_Feed.v2</span>
-      </div>
-      
-      <div className="absolute top-8 right-8 flex items-center gap-4 z-20">
-         <div className="flex gap-6 pointer-events-none opacity-20 mr-4 font-sans">
-            <div className="flex flex-col items-end">
-               <span className="text-[8px] font-black uppercase text-[var(--muted-foreground)] tracking-widest">Render Layer</span>
-               <span className="text-[10px] font-mono text-[var(--foreground)]">GL-Core_04</span>
-            </div>
-            <div className="flex flex-col items-end">
-               <span className="text-[8px] font-black uppercase text-[var(--muted-foreground)] tracking-widest">Sync</span>
-               <span className="text-[10px] font-mono text-[#22c55e]">Active</span>
-            </div>
-         </div>
-
-         <button 
-            onClick={toggleFullscreen}
-            className="p-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-2xl text-[var(--foreground)] transition-all backdrop-blur-xl group cursor-pointer"
-            title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen (F11 style)"}
-         >
-            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} className="group-hover:scale-110 transition-transform" />}
-         </button>
-      </div>
-      
-      <div className="absolute bottom-8 left-8 z-20 pointer-events-none opacity-20">
-         <span className="text-[9px] font-mono uppercase tracking-widest text-[#3b82f6]">{selectedCategory.id} {"// System.Loaded"}</span>
-      </div>
-
-      <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: `linear-gradient(to right, transparent, ${themeColor}4D, transparent)` }} />
-
-      <div className={`transition-all duration-700 ${isFullscreen ? "h-full flex items-center justify-center pt-10" : "p-2 md:p-4"}`}>
-         <ErrorBoundary name={selectedCategory.title} key={selectedCategory.id}>
-            <ClientOnly>
-               <div ref={wrapperRef} className="w-full flex justify-center items-center overflow-hidden">
-                  <div 
-                     style={isFullscreen ? { width: "100%", height: "100%" } : {
-                        transform: `scale(${scale})`,
-                        transformOrigin: "center center",
-                        width: "760px",
-                        height: `${500 * scale}px`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        transition: "transform 0.15s ease-out"
-                     }}
-                  >
-                     {selectedCategory.component(animationSpeed, isFullscreen)}
-                  </div>
-               </div>
-            </ClientOnly>
-         </ErrorBoundary>
-      </div>
+    <div ref={vizContainerRef} className="w-full">
+       <ErrorBoundary name={selectedCategory.title} key={selectedCategory.id}>
+          <ClientOnly>
+             {selectedCategory.component(animationSpeed, isFullscreen)}
+          </ClientOnly>
+       </ErrorBoundary>
     </div>
   );
 
   return (
-    <div className="w-full space-y-8 md:space-y-12 p-4 md:p-10">
+    <div className="w-full space-y-6 md:space-y-12 px-0 py-4 md:p-10">
       {/* 1. STAGE TABS */}
       {!isFullscreen && (
-         <div className="flex items-center justify-between border-b border-[var(--border)] pb-6">
+         <div className="flex items-center justify-between border-b border-[var(--border)] pb-6 px-2 md:px-0">
             <div className="flex gap-2">
                {tabs.map((tab) => (
                   <button
                      key={tab.id}
                      onClick={() => setActiveTab(tab.id)}
-                     className={`flex items-center gap-3 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all relative ${
+                     className={`flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all relative ${
                         activeTab === tab.id ? "text-[var(--foreground)] bg-[var(--foreground)]/5 border border-[var(--border)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                      }`}
                   >
                      <tab.icon size={14} style={{ color: activeTab === tab.id ? themeColor : "inherit" }} />
-                     {tab.label}
-                     {activeTab === tab.id && (
-                        <motion.div layoutId="tab-underline" className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-[#3b82f6] shadow-[0_0_10px_#3b82f6]" />
-                     )}
+                     <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                ))}
             </div>
-            
-            <div className="flex items-center gap-4">
-               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--foreground)]/[0.02] border border-[var(--border)]">
-                  <Terminal size={12} className="text-[#3b82f6]" />
-                  <span className="text-[9px] font-mono text-[var(--muted-foreground)]">trace_layer: core.01</span>
-               </div>
-            </div>
+
+            {activeTab === "viz" && (
+               <button 
+                  onClick={toggleFullscreen}
+                  className="p-2 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-xl text-[var(--foreground)] transition-all cursor-pointer flex items-center justify-center"
+                  title="Fullscreen"
+               >
+                  <Maximize2 size={14} />
+               </button>
+            )}
          </div>
       )}
 
@@ -251,23 +196,7 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
         </motion.div>
       </AnimatePresence>
 
-      {/* Footer Info */}
-      {!isFullscreen && (
-         <div className="flex flex-col sm:flex-row items-center justify-between p-4 px-6 bg-[var(--foreground)]/[0.02] border border-[var(--border)] rounded-2xl gap-4">
-            <div className="flex items-center gap-4">
-               <div className="w-9 h-9 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shrink-0">
-                  <Cpu size={18} />
-               </div>
-               <div>
-                  <h4 className="text-xs font-bold text-[var(--foreground)] tracking-tight">Practice Module</h4>
-                  <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5 tracking-wide">Solve algorithmic challenges related to {selectedCategory.title}.</p>
-               </div>
-            </div>
-            <button className="w-full sm:w-auto px-5 py-2 bg-[var(--foreground)] text-[var(--background)] hover:bg-[#3b82f6] hover:text-[var(--foreground)] rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer">
-               Initiate Training
-            </button>
-         </div>
-      )}
+
     </div>
   );
 };

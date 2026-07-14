@@ -11,7 +11,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   const hiddenPaths = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify"];
 
   const isHidden = hiddenPaths.some(path => pathname === path || pathname.startsWith(path + "/"));
-  const isWorkspace = pathname.startsWith("/problems/") && !pathname.endsWith("/edit") && !pathname.endsWith("/new");
+  const isWorkspace = (pathname.startsWith("/problems/") && !pathname.endsWith("/edit") && !pathname.endsWith("/new")) || pathname.startsWith("/dsa");
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 

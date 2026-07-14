@@ -15,7 +15,7 @@ interface DSAHeaderProps {
 export const DSAHeader = ({ animationSpeed, setAnimationSpeed, handleShare, isStudio }: DSAHeaderProps) => {
   if (isStudio) {
     return (
-      <div className="flex items-center gap-3 sm:gap-8 shrink overflow-hidden">
+      <div className="flex items-center justify-between w-full gap-3 sm:gap-8 shrink overflow-hidden">
          <div className="flex items-center gap-2 sm:gap-4 bg-[var(--foreground)]/[0.03] border border-[var(--border)] px-2.5 sm:px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl shrink overflow-hidden">
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                <span className="hidden xs:inline text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Speed</span>

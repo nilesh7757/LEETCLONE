@@ -185,20 +185,8 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Visualization Area */}
-        <div className="lg:col-span-3 relative min-h-[350px] md:min-h-[320px] w-full bg-muted/10 rounded-[2rem] /50 overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-6 md:p-10">
+        <div className="lg:col-span-3 relative w-full h-[50vh] md:h-[60vh] min-h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-x-auto overflow-y-hidden no-scrollbar flex items-center justify-center px-4 md:px-8 shadow-inner">
           
-          {/* Logic Step Badge */}
-          <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col gap-3 z-30">
-            <AnimatePresence>
-              {currentStep.stepType !== "INIT" && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full w-fit">
-                  <Zap size={10} className="text-[var(--viz-cyan)]" />
-                  <span className="text-[8px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-[0.2em]">{currentStep.stepType}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
           {/* Sum Potential Indicator */}
           <div className="absolute top-6 right-6 flex flex-col items-end gap-1 pointer-events-none">
             <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/40">Potential Sum</span>
@@ -214,15 +202,6 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
               </div>
             </div>
           </div>
-
-          {/* Subtitle / Narrative */}
-          <AnimatePresence mode="wait">
-              <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-6 w-full max-w-[400px] px-6 text-center z-30 pointer-events-none">
-                  <div className="p-3 bg-card/90  rounded-xl backdrop-blur-md shadow-xl">
-                      <p className="text-[10px] text-[var(--viz-deep-purple)] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.explanation}</p>
-                  </div>
-              </motion.div>
-          </AnimatePresence>
 
           {/* Array Visualization */}
           <div className="relative flex items-center justify-center gap-2 w-full">
@@ -316,27 +295,27 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
       </div>
 
       {/* Control Interface */}
-      <div className="mt-4 p-4 bg-muted/10 /50 rounded-[2rem] flex flex-col gap-4 relative z-10 backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl mt-4 relative z-10">
+          <div className="flex items-center justify-between w-full md:w-auto gap-4">
               <div className="flex items-center gap-2">
                   <Hash size={12} className="text-[var(--viz-deep-purple)]" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Step {currentIndex + 1} / {history.length || 1}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/45">Step {currentIndex + 1} / {history.length || 1}</span>
               </div>
-              <div className="flex items-center gap-1">
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all active:scale-90"><ChevronLeft size={16} /></button>
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all active:scale-90"><ChevronRight size={16} /></button>
+              <div className="flex items-center gap-2">
+                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all"><ChevronLeft size={18} /></button>
+                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all"><ChevronRight size={18} /></button>
               </div>
           </div>
 
-          <div className="relative flex items-center group/slider px-2">
-              <div className="absolute left-2 right-2 h-0.5 bg-background/20 rounded-full" />
-              <div className="absolute left-2 h-0.5 bg-[var(--viz-cyan)] rounded-full" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 16px)` }} />
+          <div className="relative flex items-center group/slider w-full md:w-auto flex-1 h-6">
+              <div className="absolute w-full h-1 bg-background/20 rounded-full" />
+              <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full" style={{ width: `${(currentIndex / Math.max(1, (history.length - 1))) * 100}%` }} />
               <input 
                   type="range" min="0" max={history.length - 1} value={currentIndex} 
                   onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                  className="w-full h-4 opacity-0 cursor-pointer z-10"
+                  className="w-full h-6 opacity-0 cursor-pointer z-10"
               />
-              <div className="absolute w-1.5 h-3 bg-[var(--viz-deep-purple)] rounded-full shadow-[0_0_10px_var(--viz-deep-purple)] pointer-events-none transition-all"
+              <div className="absolute w-1.5 h-4 bg-[var(--viz-deep-purple)] rounded-full shadow-[0_0_10px_var(--viz-deep-purple)] pointer-events-none transition-all"
                   style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 3px)` }}
               />
           </div>

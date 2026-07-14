@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   RotateCcw, ChevronLeft, ChevronRight, Zap, 
-  ArrowRight, Plus, Trash2, Search, Hash, Link as LinkIcon
+  ArrowRight, Plus, Trash2, Search, Hash
 } from "lucide-react";
 
 // --- Configuration ---
@@ -222,171 +222,132 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     COLORS.blue;
 
   return (
-    <div className="flex flex-col gap-6 select-none font-sans">
+    <div className="flex flex-col gap-6 select-none font-sans w-full">
       
-      {/* --- Main Dashboard --- */}
-      <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
-         {/* Background Grid */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-
-         {/* Header & Inputs */}
-         <div className="relative z-10 p-3 md:p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-                <div className="p-3 bg-[var(--viz-lime)]/10 rounded-2xl text-[var(--viz-lime)]">
-                    <LinkIcon size={24} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">Linked List</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Dynamic Memory Allocation</p>
-                </div>
+      {/* Action Controls Toolbar - Clean and elegant */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+         <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-wider">Linked List Operations</span>
+         </div>
+         <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-3 px-3 py-1.5 bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl">
+               <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-wider">Data</span>
+               <input 
+                  type="number" value={inputValue} 
+                  onChange={e => setInputValue(e.target.value)}
+                  placeholder="VAL"
+                  className="w-12 bg-transparent font-mono text-xs font-bold text-[var(--viz-amber)] focus:outline-none text-center placeholder:text-muted-foreground/30"
+               />
             </div>
+            <button onClick={pushBack} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Push Back">
+               <Plus size={14} /> Add
+            </button>
+            <button onClick={popBack} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-rose)]/10 hover:bg-[var(--viz-rose)]/20 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Pop Back">
+               <Trash2 size={14} /> Delete
+            </button>
+            <button onClick={search} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-lime)]/10 hover:bg-[var(--viz-lime)]/20 rounded-xl text-[var(--viz-lime)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Search">
+               <Search size={14} /> Find
+            </button>
+            <div className="w-[1px] h-6 bg-[var(--border)] mx-1" />
+            <button onClick={() => { setList([]); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-[var(--accent)] rounded-xl text-[var(--muted-foreground)] transition-all cursor-pointer" title="Reset">
+               <RotateCcw size={14} />
+            </button>
+         </div>
+      </div>
 
-            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl  shadow-sm">
-                <div className="flex items-center gap-3 px-4 border-r border-border">
-                    <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-wider">Data</span>
-                    <input 
-                        type="number" value={inputValue} 
-                        onChange={e => setInputValue(e.target.value)}
-                        placeholder="VAL"
-                        className="w-12 bg-transparent font-mono text-sm font-bold text-[var(--viz-amber)] focus:outline-none text-center placeholder:text-muted-foreground/30"
-                    />
-                </div>
-                <button onClick={pushBack} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all" title="Push Back">
-                    <Plus size={18} />
-                </button>
-                <button onClick={popBack} className="p-2 hover:bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)] transition-all" title="Pop Back">
-                    <Trash2 size={18} />
-                </button>
-                <button onClick={search} className="p-2 hover:bg-[var(--viz-lime)]/10 rounded-xl text-[var(--viz-lime)] transition-all" title="Search">
-                    <Search size={18} />
-                </button>
-                <div className="w-[1px] h-6 bg-border mx-1" />
-                <button onClick={() => { setList([]); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all" title="Reset">
-                    <RotateCcw size={16} />
-                </button>
-            </div>
+      {/* The Visual Stage Canvas */}
+      <div className="relative w-full h-[50vh] md:h-[60vh] min-h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-x-auto overflow-y-hidden no-scrollbar flex items-center justify-center px-4 md:px-8 shadow-inner">
+         
+         {/* Active Phase Badge */}
+         <div className="absolute top-4 left-4 z-20">
+             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-[var(--card)]/80 backdrop-blur-md shadow-sm" style={{ borderColor: `${activeColor}40` }}>
+                 <Zap size={10} fill={activeColor} className="text-transparent" />
+                 <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: activeColor }}>{currentStep.phase}</span>
+             </div>
          </div>
 
-         {/* --- The Visual Stage --- */}
-         <div className="relative min-h-[350px] md:min-h-[400px] w-full bg-muted/5 flex flex-col items-center justify-center p-4 md:p-8 overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
-            
-            {/* Logic Badge */}
-            <div className="absolute top-4 left-4 md:top-6 md:left-6">
-                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border bg-card/50 backdrop-blur-md shadow-sm`} style={{ borderColor: `${activeColor}40` }}>
-                    <Zap size={12} fill={activeColor} className="text-transparent" />
-                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: activeColor }}>{currentStep.phase}</span>
-                </div>
-            </div>
+         {/* List Nodes Wrapper */}
+         <div className="flex items-center justify-center flex-wrap max-w-full gap-y-12 py-10 min-w-[600px]">
+             <AnimatePresence mode="popLayout">
+                 {currentStep.nodes.map((node) => {
+                     const isActive = node.id === currentStep.activeId;
+                     const isVisited = currentStep.highlightIds.includes(node.id);
+                     
+                     return (
+                         <React.Fragment key={node.id}>
+                             {/* Node */}
+                             <motion.div
+                                 layout
+                                 initial={{ scale: 0, opacity: 0 }}
+                                 animate={{ 
+                                     scale: isActive ? 1.15 : 1, 
+                                     opacity: currentStep.phase === "DELETE" && isActive ? 0.5 : 1,
+                                     borderColor: isActive ? activeColor : isVisited ? COLORS.gold : "var(--border)",
+                                     backgroundColor: isActive ? `${activeColor}20` : isVisited ? `${COLORS.gold}10` : "var(--card)",
+                                     boxShadow: isActive ? `0 0 25px ${activeColor}44` : "none"
+                                 }}
+                                 exit={{ scale: 0, opacity: 0, y: 20 }}
+                                 transition={{ type: "spring", stiffness: 150, damping: 20 }}
+                                 className="relative w-16 h-16 border-2 rounded-2xl flex flex-col items-center justify-center bg-card z-10"
+                             >
+                                 <span className={`text-sm font-bold font-mono ${isActive ? "text-white" : "text-muted-foreground"}`}>{node.value}</span>
+                             </motion.div>
 
-            {/* List Container */}
-            <div className="flex items-center justify-center flex-wrap max-w-[90%] gap-y-12">
-                <AnimatePresence mode="popLayout">
-                    {currentStep.nodes.map((node) => {
-                        const isActive = node.id === currentStep.activeId;
-                        const isVisited = currentStep.highlightIds.includes(node.id);
-                        
-                        return (
-                            <React.Fragment key={node.id}>
-                                {/* Node */}
-                                <motion.div
-                                    layout
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ 
-                                        scale: isActive ? 1.15 : 1, 
-                                        opacity: currentStep.phase === "DELETE" && isActive ? 0.5 : 1,
-                                        borderColor: isActive ? activeColor : isVisited ? COLORS.gold : "var(--border)",
-                                        backgroundColor: isActive ? `${activeColor}20` : isVisited ? `${COLORS.gold}10` : "var(--card)",
-                                        boxShadow: isActive ? `0 0 25px ${activeColor}44` : "none"
-                                    }}
-                                    exit={{ scale: 0, opacity: 0, y: 20 }}
-                                    transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                                    className="relative w-16 h-16 border-2 rounded-2xl flex flex-col items-center justify-center bg-card z-10"
-                                >
-                                    <span className={`text-sm font-bold font-mono ${isActive ? "text-white" : "text-muted-foreground"}`}>{node.value}</span>
-                                    
-                                    {/* Address Label */}
-                                    <div className="absolute -top-6 text-[8px] font-mono text-muted-foreground/40">
-                                        0x{node.id.split('-')[1].slice(-3)}
-                                    </div>
-                                </motion.div>
-
-                                {/* Arrow (Edge) */}
-                                <motion.div 
-                                    layout
-                                    className="flex items-center justify-center w-16 text-muted-foreground/20"
-                                    initial={{ width: 0, opacity: 0 }}
-                                    animate={{ width: GAP_SIZE, opacity: 1 }}
-                                    exit={{ width: 0, opacity: 0 }}
-                                >
-                                    <ArrowRight size={24} strokeWidth={3} />
-                                </motion.div>
-                            </React.Fragment>
-                        );
-                    })}
-                </AnimatePresence>
-                
-                {/* NULL Terminator */}
-                <motion.div 
-                    layout
-                    className="w-12 h-12 rounded-xl border-2 border-dashed border-muted-foreground/20 flex items-center justify-center"
-                >
-                    <span className="text-[8px] font-black text-muted-foreground/30">NULL</span>
-                </motion.div>
-            </div>
-
-         </div>
-
-         {/* --- Info Footer --- */}
-         <div className="bg-[var(--card)] p-6 flex flex-col md:flex-row gap-8 items-center">
-            
-            <div className="flex-1 w-full space-y-4">
-                <div className="p-4 rounded-2xl bg-muted/30  flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-card ">
-                        <Hash size={14} className="text-muted-foreground" />
-                    </div>
-                    <p className="font-mono text-sm leading-relaxed text-foreground/80 flex-1">
-                        <span className="text-[var(--viz-lime)] mr-2">»</span>
-                        {currentStep.message}
-                    </p>
-                </div>
-            </div>
-
-            {/* Playback Scrubber */}
-            <div className="flex items-center gap-4">
-                <button 
-                    onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }}
-                    className="p-2 hover:bg-muted rounded-xl transition-all disabled:opacity-50"
-                    disabled={currentIndex === 0}
-                >
-                    <ChevronLeft size={20} />
-                </button>
-                <div className="text-[10px] font-black font-mono text-muted-foreground w-12 text-center">
-                    {currentIndex + 1} / {history.length}
-                </div>
-                <button 
-                    onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }}
-                    className="p-2 hover:bg-muted rounded-xl transition-all disabled:opacity-50"
-                    disabled={currentIndex === history.length - 1}
-                >
-                    <ChevronRight size={20} />
-                </button>
-            </div>
-
-         </div>
-
-         {/* Progress Line */}
-         <div className="h-1 w-full bg-muted">
+                             {/* Arrow (Edge) */}
+                             <motion.div 
+                                 layout
+                                 className="flex items-center justify-center w-16 text-muted-foreground/20"
+                                 initial={{ width: 0, opacity: 0 }}
+                                 animate={{ width: GAP_SIZE, opacity: 1 }}
+                                 exit={{ width: 0, opacity: 0 }}
+                             >
+                                 <ArrowRight size={24} strokeWidth={3} />
+                             </motion.div>
+                         </React.Fragment>
+                     );
+                 })}
+             </AnimatePresence>
+             
+             {/* NULL Terminator */}
              <motion.div 
-                className="h-full bg-[var(--viz-lime)]" 
-                initial={{ width: 0 }}
-                animate={{ width: `${((currentIndex + 1) / history.length) * 100}%` }}
-             />
+                 layout
+                 className="w-12 h-12 rounded-xl border-2 border-dashed border-muted-foreground/20 flex items-center justify-center"
+             >
+                 <span className="text-[8px] font-black text-muted-foreground/30">NULL</span>
+             </motion.div>
          </div>
 
       </div>
+
+      {/* Info Footer & Playback Controls */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl mt-4 relative z-10">
+         <div className="flex items-center justify-between w-full md:w-auto gap-4 flex-1">
+             <div className="flex items-center gap-2">
+                 <Hash size={14} className="text-[var(--primary)]" />        
+                 <span className="text-[10px] font-mono text-[var(--foreground)]/80 italic">{currentStep.message}</span>
+             </div>
+             <div className="flex items-center gap-2 shrink-0">
+                 <button 
+                     onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }}
+                     className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"
+                     disabled={currentIndex === 0}
+                 >
+                     <ChevronLeft size={18} />
+                 </button>
+                 <span className="text-[10px] font-black font-mono text-muted-foreground w-12 text-center">
+                     {currentIndex + 1} / {history.length}
+                 </span>
+                 <button 
+                     onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }}
+                     className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"
+                     disabled={currentIndex === history.length - 1}
+                 >
+                     <ChevronRight size={18} />
+                 </button>
+             </div>
+         </div>
+      </div>
+
     </div>
   );
 }
-
-
