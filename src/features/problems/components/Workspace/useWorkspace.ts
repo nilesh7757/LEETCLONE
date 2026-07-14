@@ -220,6 +220,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
 
       if (data.submission.status === "Accepted") {
         toast.success("Accepted! 🎉");
+        axios.post("/api/review", { problemId: problem.id, quality: 4 }).catch(() => {});
         const confetti = (await import("canvas-confetti")).default;
         confetti({
           particleCount: 150,
@@ -232,6 +233,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         setSelectedSubmission(data.submission);
       } else {
         toast.error(data.submission.status || "Wrong Answer");
+        axios.post("/api/review", { problemId: problem.id, quality: 1 }).catch(() => {});
         setConsoleOpen(true);
         setConsoleTab("result");
         setActiveTestCaseId(0);

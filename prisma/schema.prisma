@@ -47,6 +47,7 @@ model Problem {
   resources          LearningResource[]
   companies          String[]             @default([])
   starredBy          StarredProblem[]
+  reviewItems        ReviewQueue[]
 
   @@index([creatorId])
   @@index([difficulty, category, isPublic])
@@ -306,6 +307,7 @@ model User {
   goals                 Goal[]
   following             User[]                    @relation("UserFollows")
   followedBy            User[]                    @relation("UserFollows")
+  reviewItems           ReviewQueue[]
   problemCollaborations ProblemCollaborator[]
   contestCollaborations ContestCollaborator[]
   starredProblems       StarredProblem[]
@@ -655,4 +657,20 @@ model StarredProblem {
   @@unique([userId, problemId])
   @@index([userId])
   @@index([problemId])
+}
+
+model ReviewQueue {
+  id             String   @id @default(uuid())
+  userId         String
+  problemId      String
+  nextReviewDate DateTime @default(now())
+  interval       Int      @default(1) // Days until next review
+  easeFactor     Float    @default(2.5) // SuperMemo-2 algorithm multiplier
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem        Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
 }

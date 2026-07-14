@@ -188,6 +188,9 @@ export default function GeminiChat({
   const handleSend = async () => {
     if (!input.trim() || isLoading || cooldown > 0) return;
 
+    // Spaced Repetition Trigger: AI Coach Hint / Help Used (Quality = 2)
+    axios.post("/api/review", { problemId, quality: 2 }).catch(() => {});
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
