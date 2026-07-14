@@ -58,7 +58,7 @@ export default function CompanyPrepButton() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading !== null}
-        className="flex items-center gap-2 px-6 py-3.5 bg-[#0a0a0a] border border-white/5 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/5 active:scale-95 shadow-xl disabled:opacity-50"
+        className="flex items-center gap-2 px-6 py-3.5 bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] rounded-2xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-[var(--foreground)]/5 active:scale-95 shadow-xl disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
@@ -70,15 +70,15 @@ export default function CompanyPrepButton() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-[#0e0e11] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="px-3 py-1.5 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 mb-1.5">
+        <div className="absolute right-0 mt-2 w-48 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="px-3 py-1.5 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-[var(--border)] mb-1.5">
             Select Targeted Company
           </div>
           {companies.map((company) => (
             <button
               key={company}
               onClick={() => handleCreatePrepKit(company)}
-              className="w-full text-left px-4 py-2 text-xs font-bold text-gray-300 hover:text-[var(--foreground)] hover:bg-white/5 transition-colors"
+              className="w-full text-left px-4 py-2 text-xs font-bold text-gray-300 hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors"
             >
               {company}
             </button>

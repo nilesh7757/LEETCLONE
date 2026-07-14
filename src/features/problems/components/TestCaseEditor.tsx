@@ -87,25 +87,25 @@ const BulkImportModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[var(--background)]/85 backdrop-blur-xl p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,1)] w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden"
+        className="bg-[var(--card)] border border-[var(--border)] rounded-[2.5rem] shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden"
       >
-        <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--border)] bg-[var(--foreground)]/5">
           <div className="flex items-center gap-3">
              <div className="w-8 h-8 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center border border-[#3b82f6]/20">
                 <Database size={16} className="text-[#3b82f6]" />
              </div>
-             <h3 className="text-sm font-bold uppercase tracking-wider text-white">Bulk Import</h3>
+             <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--foreground)]">Bulk Import</h3>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          <button onClick={onClose} className="p-2 hover:bg-[var(--foreground)]/5 rounded-xl transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-8 flex-1 overflow-y-auto custom-scrollbar space-y-8 bg-[#050505]">
-          <div className="flex p-1 bg-white/5 rounded-2xl w-fit border border-white/5">
+        <div className="p-8 flex-1 overflow-y-auto custom-scrollbar space-y-8 bg-[var(--background)]">
+          <div className="flex p-1 bg-[var(--foreground)]/5 rounded-2xl w-fit border border-[var(--border)]">
             <button
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${activeTab === "text" ? "bg-white text-black shadow-xl" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}
               onClick={() => setActiveTab("text")}
@@ -133,13 +133,13 @@ const BulkImportModal = ({
               </div>
               <textarea
                 value={textContent} onChange={(e) => setTextContent(e.target.value)}
-                className="w-full h-64 p-6 font-mono text-xs rounded-2xl bg-[#020202] border border-white/5 text-[#f5f5f5] focus:border-[#3b82f6]/20 outline-none resize-none transition-all"
+                className="w-full h-64 p-6 font-mono text-xs rounded-2xl bg-[#020202] border border-[var(--border)] text-[#f5f5f5] focus:border-[#3b82f6]/20 outline-none resize-none transition-all"
                 placeholder={showOutputs ? "Input:\n1 2\nOutput:\n3" : "Enter inputs..."}
               />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.01] hover:bg-white/[0.03] transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-              <div className="w-16 h-16 rounded-3xl bg-[#3b82f6]/5 flex items-center justify-center mb-6 border border-white/5">
+            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-[var(--border)] rounded-3xl bg-white/[0.01] hover:bg-white/[0.03] transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+              <div className="w-16 h-16 rounded-3xl bg-[#3b82f6]/5 flex items-center justify-center mb-6 border border-[var(--border)]">
                 <Upload className="h-8 w-8 text-[#3b82f6] opacity-40 group-hover:opacity-100 transition-opacity" />
               </div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">Upload test cases (.txt / .json)</p>
@@ -152,7 +152,7 @@ const BulkImportModal = ({
           )}
         </div>
 
-        <div className="px-8 py-6 border-t border-white/5 bg-[#0a0a0a] flex justify-end gap-4 shrink-0">
+        <div className="px-8 py-6 border-t border-[var(--border)] bg-[#0a0a0a] flex justify-end gap-4 shrink-0">
           <button onClick={onClose} className="px-8 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">Cancel</button>
           <button
             onClick={handleImport} disabled={!textContent.trim()}
@@ -177,7 +177,7 @@ const TestCaseEditor = <T extends FieldValues>({
       <div className="flex items-center justify-between px-1">
         <div className="flex flex-col gap-1">
            <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">{label}</label>
-           <span className="text-[8px] font-mono text-[#262626] uppercase">Test Cases: {fields.length}</span>
+           <span className="text-[8px] font-mono text-[var(--muted-foreground)]/40 uppercase">Test Cases: {fields.length}</span>
         </div>
         <div className="flex gap-4">
           <button
@@ -201,9 +201,9 @@ const TestCaseEditor = <T extends FieldValues>({
       />
 
       {fields.length === 0 && (
-        <div className="py-20 rounded-3xl border border-dashed border-white/5 bg-white/[0.01] flex flex-col items-center justify-center space-y-4">
-           <Binary size={32} className="text-[#262626]" />
-           <p className="text-[9px] font-bold uppercase tracking-widest text-[#262626]">No test cases added</p>
+        <div className="py-20 rounded-3xl border border-dashed border-[var(--border)] bg-white/[0.01] flex flex-col items-center justify-center space-y-4">
+           <Binary size={32} className="text-[var(--muted-foreground)]/40" />
+           <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]/40">No test cases added</p>
         </div>
       )}
 
@@ -211,7 +211,7 @@ const TestCaseEditor = <T extends FieldValues>({
         {fields.map((field, index) => (
           <motion.div 
             key={field.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 relative group hover:border-white/10 transition-all shadow-xl"
+            className="p-8 rounded-3xl bg-white/[0.02] border border-[var(--border)] relative group hover:border-[var(--border)] transition-all shadow-xl"
           >
             <button
               type="button" onClick={() => remove(index)}
@@ -221,10 +221,10 @@ const TestCaseEditor = <T extends FieldValues>({
             </button>
 
             <div className="flex items-center gap-4 mb-8">
-               <div className="w-8 h-8 rounded-lg bg-black border border-white/5 flex items-center justify-center text-[10px] font-mono font-bold text-[var(--muted-foreground)]">
+               <div className="w-8 h-8 rounded-lg bg-black border border-[var(--border)] flex items-center justify-center text-[10px] font-mono font-bold text-[var(--muted-foreground)]">
                   {String(index + 1).padStart(2, '0')}
                </div>
-               <div className="h-px flex-1 bg-white/5" />
+               <div className="h-px flex-1 bg-[var(--foreground)]/5" />
             </div>
 
             <div className={`grid grid-cols-1 ${showOutputs && !hideInput ? "xl:grid-cols-2" : ""} gap-10`}>
@@ -237,7 +237,7 @@ const TestCaseEditor = <T extends FieldValues>({
                   <textarea
                     {...register(`${name}.${index}.input` as Path<T>, { required: true })}
                     rows={4}
-                    className="w-full p-5 font-mono text-xs rounded-2xl bg-[#020202] border border-white/5 focus:border-[#3b82f6]/30 text-white outline-none resize-none transition-all shadow-inner"
+                    className="w-full p-5 font-mono text-xs rounded-2xl bg-[#020202] border border-[var(--border)] focus:border-[#3b82f6]/30 text-[var(--foreground)] outline-none resize-none transition-all shadow-inner"
                     placeholder="Enter input data..."
                   />
                 </div>
@@ -251,7 +251,7 @@ const TestCaseEditor = <T extends FieldValues>({
                   <textarea
                     {...register(`${name}.${index}.output` as Path<T>, { required: true })}
                     rows={4}
-                    className="w-full p-5 font-mono text-xs rounded-2xl bg-[#020202] border border-white/5 focus:border-[#22c55e]/30 text-[#22c55e] font-bold outline-none resize-none transition-all shadow-inner"
+                    className="w-full p-5 font-mono text-xs rounded-2xl bg-[#020202] border border-[var(--border)] focus:border-[#22c55e]/30 text-[#22c55e] font-bold outline-none resize-none transition-all shadow-inner"
                     placeholder="Enter expected output..."
                   />
                 </div>
@@ -260,7 +260,7 @@ const TestCaseEditor = <T extends FieldValues>({
             
             {/* HUD Decoration */}
             <div className="absolute bottom-4 right-8 opacity-[0.02] pointer-events-none">
-               <Fingerprint size={80} className="text-white" />
+               <Fingerprint size={80} className="text-[var(--foreground)]" />
             </div>
           </motion.div>
         ))}

@@ -71,7 +71,7 @@ export default async function StudyPlansPage() {
         
         {userId && (
           <div className="flex flex-wrap items-center gap-4">
-            <div className="p-1 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-1">
+            <div className="p-1 bg-[var(--foreground)]/5 rounded-2xl border border-[var(--border)] flex items-center gap-1">
                 <GeneratePlanButton />
             </div>
             
@@ -79,7 +79,7 @@ export default async function StudyPlansPage() {
             
             <Link
               href="/interview"
-              className="flex items-center gap-2.5 px-6 py-3.5 bg-[#0a0a0a] border border-white/5 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/5 active:scale-95 shadow-xl"
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] rounded-2xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-[var(--foreground)]/5 active:scale-95 shadow-xl"
             >
               <Mic className="w-4 h-4 text-rose-500" />
               Mock Session
@@ -112,12 +112,12 @@ export default async function StudyPlansPage() {
         {userId && (
           <section>
             <div className="flex items-center gap-4 mb-12">
-                <div className="h-[1px] flex-1 bg-white/5" />
+                <div className="h-[1px] flex-1 bg-[var(--foreground)]/5" />
                 <h2 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.4em] flex items-center gap-3">
                   <Layers size={14} className="text-[#3b82f6]" />
                   Personal Registry
                 </h2>
-                <div className="h-[1px] flex-1 bg-white/5" />
+                <div className="h-[1px] flex-1 bg-[var(--foreground)]/5" />
             </div>
             
             {myPlans.length > 0 ? (
@@ -127,12 +127,12 @@ export default async function StudyPlansPage() {
                 ))}
               </div>
             ) : (
-              <div className="py-24 px-8 bg-[#0a0a0a] rounded-[3rem] border border-white/5 text-center relative overflow-hidden group">
+              <div className="py-24 px-8 bg-[var(--card)] rounded-[3rem] border border-[var(--border)] text-center relative overflow-hidden group">
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-grid-pattern" />
-                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/5">
+                <div className="w-20 h-20 bg-[var(--foreground)]/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-[var(--border)]">
                     <Layers className="w-8 h-8 text-[#262626] transition-transform group-hover:scale-110 duration-500" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">Empty Protocol Buffer</h3>
+                <h3 className="text-xl font-bold text-[var(--foreground)] mb-3">Empty Protocol Buffer</h3>
                 <p className="text-sm text-[var(--muted-foreground)] mb-10 max-w-sm mx-auto font-medium">Initialize a custom study manifold to target specific cognitive weaknesses identified by the system.</p>
                 <Link
                   href="/study-plans/new"
@@ -149,12 +149,12 @@ export default async function StudyPlansPage() {
         {officialPlans.length > 0 && (
           <section>
             <div className="flex items-center gap-4 mb-12">
-                <div className="h-[1px] flex-1 bg-white/5" />
+                <div className="h-[1px] flex-1 bg-[var(--foreground)]/5" />
                 <h2 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.4em] flex items-center gap-3">
                   <Trophy size={14} className="text-amber-500" />
                   Official Protocols
                 </h2>
-                <div className="h-[1px] flex-1 bg-white/5" />
+                <div className="h-[1px] flex-1 bg-[var(--foreground)]/5" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {officialPlans.map(plan => (
@@ -165,8 +165,8 @@ export default async function StudyPlansPage() {
         )}
 
         {plans.length === 0 && !userId && (
-          <div className="text-center py-40 bg-[#0a0a0a] rounded-[3rem] border border-white/5 shadow-2xl">
-            <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/5">
+          <div className="text-center py-40 bg-[var(--card)] rounded-[3rem] border border-[var(--border)] shadow-2xl">
+            <div className="w-24 h-24 bg-[var(--foreground)]/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-[var(--border)]">
                 <Zap className="w-10 h-10 text-[#262626]" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3 uppercase tracking-tighter">System Standby</h2>
@@ -185,13 +185,13 @@ function StudyPlanCard({ plan, userId }: { plan: StudyPlan, userId?: string }) {
   return (
     <Link 
       href={`/study-plans/${plan.slug}`}
-      className="group relative bg-[#0a0a0a] rounded-[2.5rem] border border-white/5 overflow-hidden transition-all duration-700 hover:shadow-[0_20px_80px_-15px_rgba(0,0,0,1)] hover:-translate-y-2 flex flex-col h-[420px]"
+      className="group relative bg-[var(--card)] rounded-[2.5rem] border border-[var(--border)] overflow-hidden transition-all duration-700 hover:shadow-[0_20px_80px_-15px_rgba(0,0,0,1)] hover:-translate-y-2 flex flex-col h-[420px]"
     >
-      <div className="aspect-video w-full bg-[#050505] flex items-center justify-center relative overflow-hidden border-b border-white/5">
+      <div className="aspect-video w-full bg-[var(--background)] flex items-center justify-center relative overflow-hidden border-b border-[var(--border)]">
          <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-grid-pattern" />
          
          {!plan.isPublic && (
-            <div className="absolute top-6 left-6 px-2.5 py-1.5 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 text-[8px] font-black text-white flex items-center gap-1.5 uppercase tracking-widest z-20">
+            <div className="absolute top-6 left-6 px-2.5 py-1.5 bg-[var(--muted)]/60 backdrop-blur-md rounded-xl border border-[var(--border)] text-[8px] font-black text-[var(--foreground)] flex items-center gap-1.5 uppercase tracking-widest z-20">
                <Lock className="w-3 h-3 text-rose-500" /> Encrypted
             </div>
          )}
@@ -209,32 +209,32 @@ function StudyPlanCard({ plan, userId }: { plan: StudyPlan, userId?: string }) {
                 className="object-cover transition-transform duration-1000 group-hover:scale-110" 
             />
          ) : (
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/5">
+            <div className="w-20 h-20 bg-[var(--foreground)]/5 rounded-full flex items-center justify-center border border-[var(--border)]">
                 <Trophy className="w-8 h-8 transition-all duration-700 text-[#1a1a1a] group-hover:text-[var(--foreground)]" style={{ color: isPurple ? undefined : '#f59e0b' }} />
             </div>
          )}
 
          {/* Gradient Overlay */}
-         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
+         <div className="absolute inset-0 bg-gradient-to-t from-[var(--card)] via-transparent to-transparent opacity-80" />
          
          {/* AI Indicator for Personal Plans */}
          {isPurple && (
-             <div className="absolute bottom-6 right-6 w-10 h-10 bg-white/5 rounded-full border border-white/5 flex items-center justify-center backdrop-blur-sm">
+             <div className="absolute bottom-6 right-6 w-10 h-10 bg-[var(--foreground)]/5 rounded-full border border-[var(--border)] flex items-center justify-center backdrop-blur-sm">
                  <Sparkles size={16} className="text-[#3b82f6]/40" />
              </div>
          )}
       </div>
 
       <div className="p-8 flex flex-col flex-1 relative">
-        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#3b82f6] transition-colors line-clamp-1">
+        <h3 className="text-xl font-bold text-[var(--foreground)] mb-3 group-hover:text-[#3b82f6] transition-colors line-clamp-1">
           {plan.title}
         </h3>
-        <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 mb-8 font-medium leading-relaxed group-hover:text-[#71717a] transition-colors">
+        <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 mb-8 font-medium leading-relaxed group-hover:text-[var(--muted-foreground)] transition-colors">
           {plan.description}
         </p>
         
-        <div className="mt-auto flex items-center justify-between pt-6 border-t border-white/5">
-          <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-[#262626] group-hover:text-[#3f3f46] transition-colors">
+        <div className="mt-auto flex items-center justify-between pt-6 border-t border-[var(--border)]">
+          <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/40 group-hover:text-[var(--muted-foreground)] transition-colors">
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }} />
             {plan._count.problems} Challenges
           </div>

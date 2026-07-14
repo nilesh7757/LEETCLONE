@@ -140,7 +140,7 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
              
              {/* Code Preview (Static Placeholder for now, could integrate Monaco) */}
              <div className="mt-auto">
-                <div className="p-6 bg-black rounded-3xl border border-white/5 font-mono text-xs text-white/40 leading-loose overflow-hidden relative">
+                <div className="p-6 bg-[var(--muted)] rounded-3xl border border-[var(--border)] font-mono text-xs text-[var(--muted-foreground)]/80 leading-loose overflow-hidden relative">
                    <div className="absolute top-0 right-0 p-4 text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Source Preview</div>
                    <pre className="whitespace-pre-wrap">
                       {code.split('\n').map((line, i) => (

@@ -128,7 +128,7 @@ export default function StudioDashboard() {
                     className="bg-black border border-white/5 rounded-xl py-2.5 pl-12 pr-6 text-sm focus:outline-none focus:border-[#3b82f6]/30 w-80 transition-all"
                  />
               </div>
-              <div className="h-8 w-px bg-white/5" />
+              <div className="h-8 w-px bg-[var(--border)]" />
               {activeTab === "problems" ? (
                  <button onClick={initializeProblem} className="flex items-center gap-2 px-6 py-2.5 bg-[#3b82f6] text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#2563eb] transition-all shadow-xl active:scale-95">
                     <Plus size={16} /> New Problem
@@ -196,7 +196,7 @@ interface EmptyStateProps {
 function EmptyState({ icon, title, description, action, href, actionLabel }: EmptyStateProps) {
    return (
       <div className="col-span-full py-40 flex flex-col items-center justify-center text-center bg-white/[0.01] border border-dashed border-white/5 rounded-[3rem]">
-         <div className="p-6 bg-white/5 rounded-3xl mb-8 text-[#262626]">{icon}</div>
+         <div className="p-6 bg-[var(--border)] rounded-3xl mb-8 text-[var(--muted-foreground)]/40">{icon}</div>
          <h3 className="text-3xl font-bold tracking-tight text-white mb-2">{title}</h3>
          <p className="text-[var(--muted-foreground)] text-sm max-w-sm mb-10">{description}</p>
          {href ? (
@@ -216,23 +216,23 @@ function ProblemCard({ problem, index }: { problem: DraftUnit, index: number }) 
    return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
          <Link href={`/studio/problems/${problem.id}`} className="group block h-full">
-            <div className="p-8 rounded-[2rem] bg-[#0a0a0a] border border-white/5 transition-all duration-500 group-hover:border-[#3b82f6]/30 group-hover:bg-[#111] flex flex-col h-full shadow-xl">
+            <div className="p-8 rounded-[2rem] bg-[var(--card)] border border-[var(--border)] transition-all duration-500 group-hover:border-[#3b82f6]/30 group-hover:bg-[var(--muted)] flex flex-col h-full shadow-xl">
                <div className="flex justify-between items-start mb-10">
                   <div className={`px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border ${
                      problem.verificationStatus === 'STABLE' ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                   }`}>
                      {problem.verificationStatus}
                   </div>
-                  <div className="text-[#262626] group-hover:text-[#3b82f6] transition-colors"><Target size={18} /></div>
+                  <div className="text-[var(--muted-foreground)]/40 group-hover:text-[#3b82f6] transition-colors"><Target size={18} /></div>
                </div>
-               <h3 className="text-xl font-bold tracking-tight text-white mb-3 group-hover:text-[#3b82f6] transition-colors line-clamp-2">{problem.title}</h3>
+               <h3 className="text-xl font-bold tracking-tight text-[var(--foreground)] mb-3 group-hover:text-[#3b82f6] transition-colors line-clamp-2">{problem.title}</h3>
                <div className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-12">
                   <span className={problem.difficulty === 'Easy' ? 'text-green-500' : problem.difficulty === 'Medium' ? 'text-amber-500' : 'text-rose-500'}>{problem.difficulty}</span>
-                  <div className="w-1 h-1 rounded-full bg-white/5" />
+                  <div className="w-1 h-1 rounded-full bg-[var(--border)]" />
                   <span>{problem.category}</span>
                </div>
-               <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-[#262626]">{new Date(problem.updatedAt).toLocaleDateString()}</span>
+               <div className="mt-auto pt-6 border-t border-[var(--border)] flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[var(--muted-foreground)]/40">{new Date(problem.updatedAt).toLocaleDateString()}</span>
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#3b82f6] opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
                      Edit <ArrowRight size={14} />
                   </div>
@@ -247,28 +247,28 @@ function ContestCard({ contest, index }: { contest: ContestUnit, index: number }
    return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
          <Link href={`/studio/contests/${contest.id}`} className="group block h-full">
-            <div className="p-8 rounded-[2rem] bg-[#0a0a0a] border border-white/5 transition-all duration-500 group-hover:border-[#3b82f6]/30 group-hover:bg-[#111] flex flex-col h-full shadow-xl">
+            <div className="p-8 rounded-[2rem] bg-[var(--card)] border border-[var(--border)] transition-all duration-500 group-hover:border-[#3b82f6]/30 group-hover:bg-[var(--muted)] flex flex-col h-full shadow-xl">
                <div className="flex justify-between items-start mb-10">
                   <div className={`px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border ${
                      contest.status === 'LIVE' ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                   }`}>
                      {contest.status}
                   </div>
-                  <div className="text-[#262626] group-hover:text-[#3b82f6] transition-colors"><Trophy size={18} /></div>
+                  <div className="text-[var(--muted-foreground)]/40 group-hover:text-[#3b82f6] transition-colors"><Trophy size={18} /></div>
                </div>
-               <h3 className="text-2xl font-bold tracking-tight text-white mb-4 group-hover:text-[#3b82f6] transition-colors">{contest.title}</h3>
+               <h3 className="text-2xl font-bold tracking-tight text-[var(--foreground)] mb-4 group-hover:text-[#3b82f6] transition-colors">{contest.title}</h3>
                <div className="grid grid-cols-2 gap-4 mb-10">
                   <div className="space-y-1">
-                     <span className="text-[8px] font-bold text-[#262626] uppercase tracking-widest flex items-center gap-2"><Layers size={10} /> Problems</span>
+                     <span className="text-[8px] font-bold text-[var(--muted-foreground)]/40 uppercase tracking-widest flex items-center gap-2"><Layers size={10} /> Problems</span>
                      <p className="text-xs font-mono font-bold text-[var(--muted-foreground)]">{contest.problems.length} Units</p>
                   </div>
                   <div className="space-y-1">
-                     <span className="text-[8px] font-bold text-[#262626] uppercase tracking-widest flex items-center gap-2"><Clock size={10} /> Starts</span>
+                     <span className="text-[8px] font-bold text-[var(--muted-foreground)]/40 uppercase tracking-widest flex items-center gap-2"><Clock size={10} /> Starts</span>
                      <p className="text-xs font-mono font-bold text-[var(--muted-foreground)]">{new Date(contest.startTime).toLocaleDateString()}</p>
                   </div>
                </div>
-               <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-[#262626]">#{contest.id.slice(0, 8)}</span>
+               <div className="mt-auto pt-6 border-t border-[var(--border)] flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[var(--muted-foreground)]/40">#{contest.id.slice(0, 8)}</span>
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#3b82f6] opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
                      Manage <ArrowRight size={14} />
                   </div>

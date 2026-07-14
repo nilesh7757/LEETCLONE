@@ -56,7 +56,7 @@ export default function AboutPage() {
           <Layers size={12} className="text-[#8F44F0]" />
           <span className="text-[10px] uppercase font-black tracking-widest">Engineering Walkthrough</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight text-white mb-4">
+        <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight text-[var(--foreground)] mb-4">
           System Architecture & Case Study
         </h1>
         <p className="text-base sm:text-lg text-[#a1a1aa] max-w-3xl leading-relaxed">
@@ -70,7 +70,7 @@ export default function AboutPage() {
           <Code2 size={20} className="text-[#8F44F0]" />
           System Architecture
         </h2>
-        <div className="p-6 bg-[#0e0e11] border border-white/5 rounded-3xl relative overflow-hidden shadow-2xl">
+        <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-3xl relative overflow-hidden shadow-2xl">
           <div className="absolute -inset-10 bg-radial-gradient from-[#8F44F0]/5 to-transparent pointer-events-none -z-10" />
           
           {/* Custom SVG Architecture Diagram */}
@@ -102,31 +102,31 @@ export default function AboutPage() {
 
               {/* Node 1: Client Layer */}
               <g transform="translate(30, 80)">
-                <rect width="140" height="260" rx="12" fill="#16161a" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="2"/>
+                <rect width="140" height="260" rx="12" fill="var(--card)" stroke="var(--border)" strokeWidth="2"/>
                 <text x="70" y="30" fill="#a1a1aa" fontWeight="bold" textAnchor="middle">CLIENT SIDE</text>
-                <rect x="15" y="60" width="110" height="40" rx="8" fill="#27272a" />
-                <text x="70" y="85" fill="#ffffff" textAnchor="middle" fontSize="10">Monaco Editor</text>
-                <rect x="15" y="120" width="110" height="40" rx="8" fill="#27272a" />
-                <text x="70" y="145" fill="#ffffff" textAnchor="middle" fontSize="10">Real-Time Lobbies</text>
-                <rect x="15" y="180" width="110" height="40" rx="8" fill="#27272a" />
-                <text x="70" y="205" fill="#ffffff" textAnchor="middle" fontSize="10">DSA Visualizers</text>
+                <rect x="15" y="60" width="110" height="40" rx="8" fill="var(--muted)" />
+                <text x="70" y="85" fill="var(--foreground)" textAnchor="middle" fontSize="10">Monaco Editor</text>
+                <rect x="15" y="120" width="110" height="40" rx="8" fill="var(--muted)" />
+                <text x="70" y="145" fill="var(--foreground)" textAnchor="middle" fontSize="10">Real-Time Lobbies</text>
+                <rect x="15" y="180" width="110" height="40" rx="8" fill="var(--muted)" />
+                <text x="70" y="205" fill="var(--foreground)" textAnchor="middle" fontSize="10">DSA Visualizers</text>
               </g>
 
               {/* Node 2: App & API Server */}
               <g transform="translate(290, 80)">
-                <rect width="140" height="260" rx="12" fill="#1a1226" stroke="#8F44F0" strokeWidth="2"/>
+                <rect width="140" height="260" rx="12" fill="var(--muted)" stroke="var(--primary)" strokeWidth="2"/>
                 <text x="70" y="35" fill="url(#glowPurple)" fontWeight="bold" textAnchor="middle">NEXT.JS ENGINE</text>
-                <rect x="15" y="65" width="110" height="40" rx="8" fill="#2a1b40" />
-                <text x="70" y="90" fill="#ffffff" textAnchor="middle" fontSize="10">API routes</text>
-                <rect x="15" y="125" width="110" height="40" rx="8" fill="#2a1b40" />
-                <text x="70" y="150" fill="#ffffff" textAnchor="middle" fontSize="10">Server Components</text>
-                <rect x="15" y="185" width="110" height="40" rx="8" fill="#2a1b40" />
-                <text x="70" y="210" fill="#ffffff" textAnchor="middle" fontSize="10">WebSockets Sync</text>
+                <rect x="15" y="65" width="110" height="40" rx="8" fill="var(--card)" />
+                <text x="70" y="90" fill="var(--foreground)" textAnchor="middle" fontSize="10">API routes</text>
+                <rect x="15" y="125" width="110" height="40" rx="8" fill="var(--card)" />
+                <text x="70" y="150" fill="var(--foreground)" textAnchor="middle" fontSize="10">Server Components</text>
+                <rect x="15" y="185" width="110" height="40" rx="8" fill="var(--card)" />
+                <text x="70" y="210" fill="var(--foreground)" textAnchor="middle" fontSize="10">WebSockets Sync</text>
               </g>
 
               {/* Node 3: Cache / Queues */}
               <g transform="translate(530, 80)">
-                <rect width="120" height="70" rx="10" fill="#1c1c1f" stroke="#3b82f6" strokeWidth="2" />
+                <rect width="120" height="70" rx="10" fill="var(--muted)" stroke="#3b82f6" strokeWidth="2" />
                 <text x="60" y="25" fill="#3b82f6" fontWeight="bold" textAnchor="middle">REDIS</text>
                 <text x="60" y="45" fill="#a1a1aa" textAnchor="middle" fontSize="9">Pub/Sub Matchmaker</text>
                 <text x="60" y="58" fill="#a1a1aa" textAnchor="middle" fontSize="9">Job Queuing (BullMQ)</text>
@@ -134,7 +134,7 @@ export default function AboutPage() {
 
               {/* Node 4: Isolated Executor */}
               <g transform="translate(530, 180)">
-                <rect width="120" height="70" rx="10" fill="#1e1313" stroke="#ef4444" strokeWidth="2" />
+                <rect width="120" height="70" rx="10" fill="var(--muted)" stroke="#ef4444" strokeWidth="2" />
                 <text x="60" y="25" fill="#ef4444" fontWeight="bold" textAnchor="middle">SANDBOX RUNNER</text>
                 <text x="60" y="45" fill="#a1a1aa" textAnchor="middle" fontSize="9">Judge0 API</text>
                 <text x="60" y="58" fill="#a1a1aa" textAnchor="middle" fontSize="9">BullMQ Workers</text>
@@ -142,7 +142,7 @@ export default function AboutPage() {
 
               {/* Node 5: Database */}
               <g transform="translate(530, 280)">
-                <rect width="120" height="70" rx="10" fill="#131e1c" stroke="#10b989" strokeWidth="2" />
+                <rect width="120" height="70" rx="10" fill="var(--muted)" stroke="#10b989" strokeWidth="2" />
                 <text x="60" y="25" fill="#10b989" fontWeight="bold" textAnchor="middle">POSTGRESQL</text>
                 <text x="60" y="45" fill="#a1a1aa" textAnchor="middle" fontSize="9">Prisma Client DB</text>
                 <text x="60" y="58" fill="#a1a1aa" textAnchor="middle" fontSize="9">Relational Store</text>
@@ -150,7 +150,7 @@ export default function AboutPage() {
 
               {/* Node 6: AI Orchestrator */}
               <g transform="translate(680, 180)">
-                <rect width="100" height="70" rx="10" fill="#1e1811" stroke="#eab308" strokeWidth="2" />
+                <rect width="100" height="70" rx="10" fill="var(--muted)" stroke="#eab308" strokeWidth="2" />
                 <text x="50" y="25" fill="#eab308" fontWeight="bold" textAnchor="middle">GEMINI AI</text>
                 <text x="50" y="45" fill="#a1a1aa" textAnchor="middle" fontSize="9">Contextual Prompts</text>
                 <text x="50" y="58" fill="#a1a1aa" textAnchor="middle" fontSize="9">AI Code Coach</text>
@@ -162,7 +162,7 @@ export default function AboutPage() {
 
       {/* Hard Engineering Challenges */}
       <section className="mb-20">
-        <h2 className="text-xl sm:text-2xl font-black uppercase text-white tracking-wider mb-8 flex items-center gap-2.5">
+        <h2 className="text-xl sm:text-2xl font-black uppercase text-[var(--foreground)] tracking-wider mb-8 flex items-center gap-2.5">
           <Cpu size={20} className="text-[#8F44F0]" />
           Engineering Case Studies
         </h2>
@@ -178,7 +178,7 @@ export default function AboutPage() {
                 className={`p-6 md:p-8 bg-[#0e0e11] border rounded-3xl transition-all duration-300 relative overflow-hidden flex flex-col md:flex-row gap-6 ${
                   hoveredFeature === idx 
                     ? "border-[#8F44F0]/30 shadow-[0_0_30px_rgba(143,68,240,0.05)] translate-x-1" 
-                    : "border-white/5"
+                    : "border-[var(--border)]"
                 }`}
               >
                 {/* Left icon wrapper */}
@@ -189,7 +189,7 @@ export default function AboutPage() {
                 {/* Right content */}
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-lg font-black text-white uppercase tracking-wider">{ch.title}</h3>
+                    <h3 className="text-lg font-black text-[var(--foreground)] uppercase tracking-wider">{ch.title}</h3>
                     <span className="text-[10px] font-mono font-bold uppercase bg-white/5 border border-white/10 px-2 py-0.5 rounded-md text-[#a1a1aa]">{ch.tech}</span>
                   </div>
                   <p className="text-sm text-[#a1a1aa] leading-relaxed">
@@ -208,16 +208,16 @@ export default function AboutPage() {
 
       {/* Tech Stack Details */}
       <section className="mb-20">
-        <h2 className="text-xl sm:text-2xl font-black uppercase text-white tracking-wider mb-8 flex items-center gap-2.5">
+        <h2 className="text-xl sm:text-2xl font-black uppercase text-[var(--foreground)] tracking-wider mb-8 flex items-center gap-2.5">
           <Database size={20} className="text-[#8F44F0]" />
           Production Technology Stack
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {techStack.map((tech, idx) => (
-            <div key={idx} className="p-5 bg-[#0e0e11] border border-white/5 hover:border-white/10 transition-colors rounded-2xl flex flex-col gap-2">
+            <div key={idx} className="p-5 bg-[var(--card)] border border-[var(--border)] hover:border-white/10 transition-colors rounded-2xl flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-black text-white tracking-wider">{tech.name}</span>
+                <span className="text-sm font-black text-[var(--foreground)] tracking-wider">{tech.name}</span>
                 <span className="text-[9px] font-bold text-[#71717a] uppercase tracking-widest">{tech.category}</span>
               </div>
               <p className="text-xs text-[#a1a1aa] leading-relaxed">{tech.desc}</p>
@@ -228,11 +228,11 @@ export default function AboutPage() {
 
       {/* Developer Card (Built by Nilesh) */}
       <section className="mb-12">
-        <div className="p-8 bg-gradient-to-br from-[#0e0e11] to-[#050505] border border-white/5 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+        <div className="p-8 bg-gradient-to-br from-[#0e0e11] to-[#050505] border border-[var(--border)] rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-[#8F44F0]/5 to-transparent rounded-full blur-[100px] pointer-events-none -z-10" />
           
           <div className="space-y-4 text-center md:text-left">
-            <h2 className="text-2xl font-black uppercase text-white tracking-wide">
+            <h2 className="text-2xl font-black uppercase text-[var(--foreground)] tracking-wide">
               Created by Nilesh Mori
             </h2>
             <p className="text-sm text-[#a1a1aa] max-w-xl leading-relaxed">
@@ -262,7 +262,7 @@ export default function AboutPage() {
               href="https://github.com/nilesh7757/LEETCLONE" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2.5 active:scale-95 text-center"
+              className="px-6 py-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 text-[var(--foreground)] border border-[var(--border)] font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2.5 active:scale-95 text-center"
             >
               <Github size={14} />
               Explore Repository

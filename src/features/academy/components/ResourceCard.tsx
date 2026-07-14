@@ -47,14 +47,14 @@ export default function ResourceCard({ resource, index }: ResourceCardProps) {
         href={resource.url} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="block h-full bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 transition-all duration-500 hover:border-[#3b82f6]/30 hover:bg-[#0c0c0c] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,1)] relative overflow-hidden"
+        className="block h-full bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 transition-all duration-500 hover:border-[#3b82f6]/30 hover:bg-[var(--muted)]/50 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,1)] relative overflow-hidden"
       >
         {/* Type Badge */}
         <div className="flex justify-between items-start mb-6">
-          <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 flex items-center justify-center">
+          <div className="p-2.5 bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] flex items-center justify-center">
             {getIcon(resource.type)}
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.02] border border-white/5 rounded-lg">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-lg">
              <div className="w-1 h-1 rounded-full bg-[#3b82f6]" />
              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">{resource.type}</span>
           </div>
@@ -62,20 +62,20 @@ export default function ResourceCard({ resource, index }: ResourceCardProps) {
 
         {/* Content */}
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[#3b82f6] transition-colors line-clamp-2 leading-snug">
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-2 group-hover:text-[#3b82f6] transition-colors line-clamp-2 leading-snug">
             {resource.title}
           </h3>
           <p className="text-[12px] text-[var(--muted-foreground)] font-medium uppercase tracking-widest mb-4">
-             by <span className="text-[#71717a]">{resource.creator || "System Curated"}</span>
+             by <span className="text-[var(--muted-foreground)]">{resource.creator || "System Curated"}</span>
           </p>
-          <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 leading-relaxed group-hover:text-[#71717a] transition-colors">
+          <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 leading-relaxed group-hover:text-[var(--muted-foreground)] transition-colors">
             {resource.description}
           </p>
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#262626] group-hover:text-[#3f3f46] transition-colors">
+        <div className="mt-auto pt-6 border-t border-[var(--border)] flex items-center justify-between">
+           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)]/40 group-hover:text-[var(--muted-foreground)] transition-colors">
               {resource.topic}
            </span>
            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#3b82f6] opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
