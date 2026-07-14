@@ -146,6 +146,21 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
       contestName: h.contest?.title || "Unknown Contest"
   }));
 
+  const recentSubmissions = await prisma.submission.findMany({
+    where: { userId: id },
+    take: 10,
+    orderBy: { createdAt: "desc" },
+    include: {
+      problem: {
+        select: {
+          title: true,
+          difficulty: true,
+          slug: true
+        }
+      }
+    }
+  });
+
   return NextResponse.json({
     user: {
       name: user.name,
@@ -162,6 +177,7 @@ export const GET = apiHandler(async (req: Request, { params }: { params: Promise
       categoryStats: categoryMap
     },
     ratingHistory: ratingHistoryData,
-    calendarData
+    calendarData,
+    recentSubmissions
   });
 });

@@ -8,7 +8,7 @@ import {
   UserCircle, LogOut, Camera, Save, Loader2, 
   TrendingUp, Calendar, Trophy,
   Award, X, Sparkles, Zap, Rocket,
-  Github, CheckCircle2, AlertCircle
+  Github, CheckCircle2, AlertCircle, Clock
 } from "lucide-react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import { useTheme } from "next-themes";
 import SkillRadar from "@/features/profile/components/HeroProfile/SkillRadar";
 import UserRatingCard from "@/features/profile/components/HeroProfile/UserRatingCard";
 import Image from "next/image";
+import Link from "next/link";
 
 const ActivityCalendar = dynamic(() => import("react-activity-calendar").then(mod => {
   return mod.ActivityCalendar;
@@ -366,10 +367,10 @@ export default function ProfilePage() {
                     </form>
 
                     <div className="w-full mt-4 pt-4 border-t border-[var(--border)]/30 flex items-center justify-between">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">Global Score</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">Platform Score</span>
                         <div className="flex items-center gap-1 text-amber-500 font-mono text-xs font-black">
                             <Zap size={11} fill="currentColor" />
-                            <span>{arcadePoints} GS</span>
+                            <span>{arcadePoints} PTS</span>
                         </div>
                     </div>
                 </div>
@@ -563,7 +564,7 @@ export default function ProfilePage() {
             <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-md relative overflow-hidden">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-1">Skill Trajectory</h3>
+                        <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-1">Rating History</h3>
                         <div className="text-3xl font-black font-mono tracking-tight">{ratingValue}</div>
                     </div>
                     <div className="p-2 rounded-xl bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]">
@@ -585,23 +586,82 @@ export default function ProfilePage() {
             {/* Activity Calendar */}
             <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-md overflow-hidden">
                 <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-6 flex items-center gap-2">
-                    <Calendar size={12} /> Synaptic Transmission Log
+                    <Calendar size={12} /> Submission Activity
                 </h3>
                 <div className="flex justify-center overflow-x-auto pb-2 custom-scrollbar">
                     {!loadingStats && stats?.calendarData && (
                         <ActivityCalendar 
                             data={stats.calendarData}
                             theme={{
-                                dark: ['rgba(255,255,255,0.05)', '#38bdf8'],
-                                light: ['#f1f5f9', '#0ea5e9']
+                                light: ['#f0f0f0', '#c4b5fd', '#a855f7', '#9333ea', '#7e22ce'],
+                                dark: ['#18181b', '#4c1d95', '#6b21a8', '#7e22ce', '#9333ea']
                             }}
                             colorScheme={(theme === 'dark' ? 'dark' : 'light') as any}
                             blockSize={12}
                             blockMargin={4}
                             blockRadius={3}
+                            showWeekdayLabels={true}
                         />
                     )}
                 </div>
+            </div>
+
+            {/* Recent Submissions Section */}
+            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-md overflow-hidden">
+              <h3 className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/50 mb-6 flex items-center gap-2">
+                <Clock size={12} /> Recent Submissions
+              </h3>
+              <div className="overflow-x-auto">
+                {(stats as any)?.recentSubmissions && (stats as any).recentSubmissions.length > 0 ? (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-[var(--border)] text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">
+                        <th className="pb-3 pl-2">Problem</th>
+                        <th className="pb-3">Difficulty</th>
+                        <th className="pb-3">Status</th>
+                        <th className="pb-3">Language</th>
+                        <th className="pb-3 pr-2 text-right">Submitted</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--border)]/30">
+                      {(stats as any).recentSubmissions.map((sub: any) => {
+                        const isAccepted = sub.status === "Accepted";
+                        const diff = sub.problem?.difficulty || "Medium";
+                        const diffColor = diff === "Easy" ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" : diff === "Hard" ? "text-red-500 bg-red-500/10 border-red-500/20" : "text-amber-500 bg-amber-500/10 border-amber-500/20";
+                        return (
+                          <tr key={sub.id} className="text-xs hover:bg-[var(--foreground)]/[0.01] transition-colors">
+                            <td className="py-3 pl-2 font-bold text-[var(--foreground)]">
+                              <Link href={`/problems/${sub.problem?.slug}`} className="hover:text-[var(--primary)] transition-colors">
+                                {sub.problem?.title || "Untitled Problem"}
+                              </Link>
+                            </td>
+                            <td className="py-3">
+                              <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${diffColor}`}>
+                                {diff}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <span className={`font-bold uppercase tracking-wider text-[9px] ${isAccepted ? "text-emerald-500" : "text-red-500"}`}>
+                                {sub.status}
+                              </span>
+                            </td>
+                            <td className="py-3 font-mono text-[var(--muted-foreground)] uppercase text-[9px]">
+                              {sub.language}
+                            </td>
+                            <td className="py-3 pr-2 text-right text-[9px] font-mono text-[var(--muted-foreground)]">
+                              {new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-6 text-xs text-[var(--muted-foreground)] font-mono uppercase tracking-widest">
+                    No recent activity.
+                  </div>
+                )}
+              </div>
             </div>
 
           </motion.div>

@@ -4,7 +4,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   UserCircle, TrendingUp, 
-  Zap, Award, Target, MessageSquare, Shield, Rocket, Sparkles, Github
+  Zap, Award, Target, MessageSquare, Shield, Rocket, Sparkles, Github, Clock, Calendar
 } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
@@ -18,6 +18,7 @@ import SkillRadar from "@/features/profile/components/HeroProfile/SkillRadar";
 import UserRatingCard from "@/features/profile/components/HeroProfile/UserRatingCard";
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 const ActivityCalendar = dynamic(() => import("react-activity-calendar").then(mod => {
   return mod.ActivityCalendar;
@@ -256,7 +257,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
           >
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-1">Elo Trajectory</h3>
+                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-1">Rating History</h3>
                     <div className="text-5xl font-black font-mono tracking-tighter">{user.rating}</div>
                 </div>
                 <div className={`p-4 rounded-2xl bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)]`}>
@@ -285,25 +286,82 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
 
           <motion.div className="lg:col-span-12 p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl overflow-hidden">
                 <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-8 flex items-center gap-2">
-                    <TrendingUp size={14} /> Chronological Activity
+                    <Calendar size={14} /> Submission Activity
                 </h3>
                 <div className="flex justify-center overflow-x-auto pb-4">
                     {!loadingStats && stats?.calendarData && (
-                         
                         <ActivityCalendar 
                             data={stats.calendarData}
                             theme={{
-                                dark: ['rgba(255,255,255,0.05)', '#38bdf8'],
-                                light: ['#f1f5f9', '#0ea5e9']
+                                light: ['#f0f0f0', '#c4b5fd', '#a855f7', '#9333ea', '#7e22ce'],
+                                dark: ['#18181b', '#4c1d95', '#6b21a8', '#7e22ce', '#9333ea']
                             }}
-                             
                             colorScheme={(theme === 'dark' ? 'dark' : 'light') as any}
                             blockSize={14}
                             blockMargin={5}
                             blockRadius={4}
+                            showWeekdayLabels={true}
                         />
                     )}
                 </div>
+          </motion.div>
+
+          {/* Recent Submissions Section */}
+          <motion.div className="lg:col-span-12 p-8 rounded-[3rem] bg-[var(--card)] border border-[var(--border)] shadow-xl overflow-hidden">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--muted-foreground)] mb-6 flex items-center gap-2">
+                <Clock size={14} /> Recent Submissions
+              </h3>
+              <div className="overflow-x-auto">
+                {(user as any).submissions && (user as any).submissions.length > 0 ? (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-[var(--border)] text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">
+                        <th className="pb-3 pl-2">Problem</th>
+                        <th className="pb-3">Difficulty</th>
+                        <th className="pb-3">Status</th>
+                        <th className="pb-3">Language</th>
+                        <th className="pb-3 pr-2 text-right">Submitted</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--border)]/30">
+                      {(user as any).submissions.map((sub: any) => {
+                        const isAccepted = sub.status === "Accepted";
+                        const diff = sub.problem?.difficulty || "Medium";
+                        const diffColor = diff === "Easy" ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" : diff === "Hard" ? "text-red-500 bg-red-500/10 border-red-500/20" : "text-amber-500 bg-amber-500/10 border-amber-500/20";
+                        return (
+                          <tr key={sub.id} className="text-xs hover:bg-[var(--foreground)]/[0.01] transition-colors">
+                            <td className="py-3.5 pl-2 font-bold text-[var(--foreground)]">
+                              <Link href={`/problems/${sub.problem?.slug}`} className="hover:text-[var(--primary)] transition-colors">
+                                {sub.problem?.title || "Untitled Problem"}
+                              </Link>
+                            </td>
+                            <td className="py-3.5">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${diffColor}`}>
+                                {diff}
+                              </span>
+                            </td>
+                            <td className="py-3.5">
+                              <span className={`font-bold uppercase tracking-wider text-[10px] ${isAccepted ? "text-emerald-500" : "text-red-500"}`}>
+                                {sub.status}
+                              </span>
+                            </td>
+                            <td className="py-3.5 font-mono text-[var(--muted-foreground)] uppercase text-[10px]">
+                              {sub.language}
+                            </td>
+                            <td className="py-3.5 pr-2 text-right text-[10px] font-mono text-[var(--muted-foreground)]">
+                              {new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-8 text-xs text-[var(--muted-foreground)] font-mono uppercase tracking-widest">
+                    No recent activity.
+                  </div>
+                )}
+              </div>
           </motion.div>
 
         </div>

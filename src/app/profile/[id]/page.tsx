@@ -28,7 +28,20 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       countryCode: true,
       avatarId: true,
       aiProfileFeedback: true,
-      externalStats: true
+      externalStats: true,
+      submissions: {
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          problem: {
+            select: {
+              title: true,
+              difficulty: true,
+              slug: true
+            }
+          }
+        }
+      }
     }
   });
 
