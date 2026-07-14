@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 
 // --- Configuration ---
-const UNIT_WIDTH = 60;
 
 interface SearchStep {
   low: number;
@@ -50,29 +49,29 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
       });
     };
 
-    record("Algorithm Booted. Target localized in vector manifold.", l, -1, r);
+    record("Array ready. Searching for target.", l, -1, r);
 
     while (l <= r) {
       const mid = Math.floor((l + r) / 2);
       
       if (data[mid] === target) {
-        record(`CRITICAL MATCH: Target ${target} verified at index ${mid}.`, l, mid, r, true);
+        record(`Found! Target ${target} at index ${mid}.`, l, mid, r, true);
         break;
       }
 
-      record(`Probing manifold at index ${mid} (Value: ${data[mid]}).`, l, mid, r);
+      record(`Checking index ${mid} (value: ${data[mid]}).`, l, mid, r);
 
       if (data[mid] < target) {
         l = mid + 1;
-        record(`Target ${target} > ${data[mid]}. Shifting lower boundary to ${l}.`, l, mid, r);
+        record(`${data[mid]} < ${target}. Moving low to ${l}.`, l, mid, r);
       } else {
         r = mid - 1;
-        record(`Target ${target} < ${data[mid]}. Shifting upper boundary to ${r}.`, l, mid, r);
+        record(`${data[mid]} > ${target}. Moving high to ${r}.`, l, mid, r);
       }
     }
 
     if (!steps.find(s => s.found)) {
-        record("Target not found in current manifold state.", l, -1, r);
+        record("Target not found in array.", l, -1, r);
     }
 
     return steps;
@@ -107,8 +106,8 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col border border-[var(--border)]">
+    <div className="flex flex-col gap-6 font-sans w-full">
+      <div className="p-2 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col border border-[var(--border)]">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
         
@@ -121,7 +120,7 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
                 </div>
                 <div>
                     <h2 className="text-xl font-bold tracking-tight">Binary Search</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Logarithmic Vector Scan</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">O(log n) Search</p>
                 </div>
             </div>
           </div>
@@ -145,100 +144,75 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
           </div>
         </div>
 
-        {/* Visual Canvas */}
-        <div className="relative min-h-[350px] md:min-h-[450px] w-full bg-muted/30 rounded-[3rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-12">
-            
-            <div className="relative flex items-center justify-center w-full h-full">
-                {/* Boundary Highlights */}
-                <AnimatePresence>
-                    <motion.div 
-                        initial={false}
-                        animate={{ 
-                            x: (currentStep.activeRange[0] + currentStep.activeRange[1]) / 2 * UNIT_WIDTH - (data.length - 1) / 2 * UNIT_WIDTH,
-                            width: (currentStep.activeRange[1] - currentStep.activeRange[0] + 1) * UNIT_WIDTH,
-                            opacity: 1
-                        }}
-                        className="absolute h-24 bg-[var(--viz-cyan)]/5 border-x-2 border-dashed border-[var(--viz-cyan)]/20 rounded-2xl z-0"
-                    />
-                </AnimatePresence>
+        {/* Visual Canvas — full-width, no horizontal scroll */}
+        <div className="relative min-h-[220px] md:min-h-[320px] w-full bg-[var(--muted)]/30 rounded-[3rem] overflow-hidden shadow-inner flex flex-col items-center justify-center px-4 md:px-8 py-10">
 
-                {/* Array Nodes */}
-                <div className="relative flex items-center justify-center z-10">
-                    {data.map((val, idx) => {
-                        const isMid = idx === currentStep.mid;
-                        const isFound = isMid && currentStep.found;
-                        const isActive = idx >= currentStep.activeRange[0] && idx <= currentStep.activeRange[1];
-                        const xPos = (idx - (data.length - 1) / 2) * UNIT_WIDTH;
+            {/* Array Nodes — flex row, full width */}
+            <div className="w-full flex items-center justify-center gap-1 md:gap-2 flex-wrap">
+                {data.map((val, idx) => {
+                    const isMid    = idx === currentStep.mid;
+                    const isFound  = isMid && currentStep.found;
+                    const isActive = idx >= currentStep.activeRange[0] && idx <= currentStep.activeRange[1];
 
-                        return (
-                            <motion.div
-                                key={idx}
-                                initial={false}
-                                animate={{ 
-                                    x: xPos,
-                                    scale: isMid ? 1.25 : 1,
-                                    opacity: isActive ? 1 : 0.15,
-                                    backgroundColor: isFound ? "var(--viz-green)" : isMid ? "var(--viz-cyan)" : "var(--card)",
-                                    borderColor: isFound ? "var(--viz-green)" : isMid ? "var(--viz-cyan)" : "var(--border)",
-                                    color: isMid ? "black" : "var(--foreground)",
-                                    boxShadow: isMid ? `0 0 30px rgba(var(--viz-cyan-rgb), 0.3)` : "none"
-                                }}
-                                className="absolute w-12 h-12 border-2 rounded-xl flex items-center justify-center font-mono text-sm font-black shadow-lg"
-                            >
-                                {val}
-                                <div className="absolute -top-6 text-[8px] text-muted-foreground/30 font-mono font-bold uppercase">{idx}</div>
-                                
-                                {isMid && (
-                                    <motion.div layoutId="ptr" className="absolute -bottom-10 flex flex-col items-center">
-                                        <ArrowDown size={14} className="text-[var(--viz-cyan)] mb-1" />
-                                        <span className="text-[8px] font-black text-[var(--viz-cyan)] uppercase tracking-tighter">Probe</span>
-                                    </motion.div>
-                                )}
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Explanation Toast */}
-            <AnimatePresence mode="wait">
-                <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-10 w-full flex justify-center z-30 pointer-events-none">
-                    <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md border border-border shadow-2xl max-w-[400px] text-center">
-                        <p className="text-xs text-[var(--viz-amber)] font-mono font-medium tracking-tight uppercase">{currentStep.message}</p>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
-
-            {/* Metrics Overlay */}
-            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 flex flex-col gap-4 pointer-events-none">
-                <div className="bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2 mb-3">
-                            <Activity size={12} /> Scan Log
-                    </span>
-                    <div className="flex flex-col gap-1.5 h-[120px] overflow-hidden">
-                        <AnimatePresence mode="popLayout">
-                            {currentStep.logs.map((log, i) => (
-                                <motion.div 
-                                    key={`${currentIndex}-${i}`}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="text-[9px] font-mono text-muted-foreground/70 leading-tight border-l-2 border-[var(--viz-cyan)]/20 pl-2"
-                                >
-                                    {log}
+                    return (
+                        <motion.div
+                            key={idx}
+                            initial={false}
+                            animate={{
+                                scale: isMid ? 1.2 : 1,
+                                opacity: isActive ? 1 : 0.15,
+                                backgroundColor: isFound ? "var(--viz-green)" : isMid ? "var(--viz-cyan)" : isActive ? "var(--card)" : "var(--card)",
+                                borderColor: isFound ? "var(--viz-green)" : isMid ? "var(--viz-cyan)" : isActive ? "var(--viz-cyan)" : "var(--border)",
+                                color: isMid ? "#000" : "var(--foreground)",
+                                boxShadow: isMid ? `0 0 28px rgba(var(--viz-cyan-rgb), 0.35)` : "none"
+                            }}
+                            className="relative flex-1 max-w-[52px] min-w-[28px] h-11 md:h-12 border-2 rounded-xl flex items-center justify-center font-mono text-sm font-black shadow-md flex-shrink-0"
+                        >
+                            {val}
+                            <div className="absolute -top-5 text-[7px] text-[var(--muted-foreground)]/30 font-mono font-bold">{idx}</div>
+                            {isMid && (
+                                <motion.div layoutId="ptr" className="absolute -bottom-8 flex flex-col items-center">
+                                    <ArrowDown size={12} className="text-[var(--viz-cyan)]" />
+                                    <span className="text-[7px] font-black text-[var(--viz-cyan)] uppercase tracking-tighter">Mid</span>
                                 </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                </div>
+                            )}
+                        </motion.div>
+                    );
+                })}
             </div>
         </div>
+
+        {/* Explanation — below canvas */}
+        <AnimatePresence mode="wait">
+            <motion.div key={currentIndex} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="w-full pointer-events-none">
+                <div className="px-5 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-xl w-full text-center">
+                    <p className="text-xs text-[var(--viz-amber)] font-mono font-medium tracking-tight uppercase">{currentStep.message}</p>
+                </div>
+            </motion.div>
+        </AnimatePresence>
+
+        {/* Scan Log — full-width strip below explanation */}
+        {currentStep.logs.length > 0 && (
+            <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+                    <Activity size={10} /> Scan Log
+                </span>
+                <div className="flex flex-row flex-wrap gap-x-4 gap-y-1 overflow-hidden max-h-[52px]">
+                    {currentStep.logs.slice(0, 4).map((log, i) => (
+                        <span key={i} className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight border-l-2 border-[var(--viz-cyan)]/20 pl-2">
+                            {log}
+                        </span>
+                    ))}
+                </div>
+            </div>
+        )}
 
         {/* Timeline Scrubber */}
         <div className="mt-8 p-3 md:p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4 relative z-10 border border-border/50">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--viz-cyan)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-mono">Iteration Sequence {currentIndex + 1} of {history.length}</span>
+                    <Hash size={14} className="text-blue-500" />
+                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-mono">Step {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
@@ -263,8 +237,8 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
 
       {/* Legend */}
       <div className="px-4 md:px-10 py-6 bg-muted/10  rounded-[2.5rem] border border-border/20 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Pivot Pointer</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Optimal State</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Mid Pointer</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Found</span></div>
       </div>
     </div>
   );

@@ -159,15 +159,15 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
   const currentStep = history[currentIndex] || { nodes: initialData, explanation: "Initializing...", activeStep: null, keyIdx: null, sortedBound: null };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+    <div className="flex flex-col gap-6 w-full">
+      <div className="p-2 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         
         <div className="flex items-center justify-between mb-12 relative z-10">
           <div className="space-y-1">
             <h2 className="text-2xl font-light tracking-tight text-[var(--viz-amber)]">
-              Insertion Sort <span className="text-muted-foreground/40">Protocol</span>
+              Insertion Sort <span className="text-[var(--muted-foreground)]/40">Algorithm</span>
             </h2>
             <div className="flex items-center gap-2">
                 <div className="h-1 w-12 bg-[var(--viz-amber)] rounded-full" />
@@ -184,74 +184,76 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
           </div>
         </div>
 
-        <div className="relative w-full h-[50vh] md:h-[60vh] min-h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-x-auto overflow-y-hidden no-scrollbar flex items-end justify-center px-4 md:px-8">
-            
-            {/* Key Element Pointer */}
-            <AnimatePresence>
-                {currentStep.keyIdx !== null && (
-                    <motion.div 
-                        className="absolute top-24 flex flex-col items-center gap-2 z-30"
-                        animate={{ x: (currentStep.keyIdx - (ARRAY_SIZE - 1) / 2) * 65 }}
-                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                    >
-                        <ArrowDown size={20} className="text-[var(--viz-amber)] animate-bounce" />
-                        <div className="px-2 py-1 bg-[var(--viz-amber)] text-white text-[8px] font-black rounded-md uppercase tracking-tighter">Current Key</div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+        <div className="relative w-full h-[50vh] md:h-[60vh] min-h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden flex items-end justify-center px-4 md:px-8 py-6">
 
-            {/* Sorted Bound Line */}
-            {currentStep.sortedBound !== null && (
-                <motion.div 
-                    className="absolute bottom-32 h-1 bg-[var(--viz-green)]/40 rounded-full z-10"
-                    animate={{ 
-                        x: ( (currentStep.sortedBound / 2) - (ARRAY_SIZE - 1) / 2 ) * 65,
-                        width: (currentStep.sortedBound + 1) * 65 - 15
-                    }}
-                    transition={{ type: "spring", stiffness: 120, damping: 25 }}
-                />
+            {/* Key badge pinned top-left */}
+            {currentStep.keyIdx !== null && (
+                <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2 py-1 bg-[var(--viz-amber)] text-[var(--background)] rounded-lg text-[8px] font-black uppercase tracking-wider z-30">
+                    <ArrowDown size={10} />
+                    Key @ {currentStep.keyIdx}
+                </div>
             )}
 
-            <div className="relative w-full h-full min-w-[600px] flex items-end justify-center pb-10">
-                {currentStep.nodes.map((node) => {
-                    const isComparing = node.status === 'comparing';
-                    const isSwapping = node.status === 'swapping';
-                    const isSorted = node.status === 'sorted';
-                    const isActive = node.status === 'active';
-                    
-                    return (
-                        <motion.div
-                            key={node.id}
-                            layout
-                            animate={{ 
-                                x: (node.logicalIndex - (ARRAY_SIZE - 1) / 2) * 65, 
-                                height: `${node.value}%`,
-                                backgroundColor: isSwapping ? MANIM_COLORS.red : isActive ? MANIM_COLORS.indigo : isComparing ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : "rgba(99,102,241,0.1)",
-                                borderColor: isSwapping ? MANIM_COLORS.red : isActive ? MANIM_COLORS.indigo : isComparing ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : "rgba(99,102,241,0.3)",
-                                boxShadow: isComparing || isSwapping || isActive ? `0 0 35px ${isSwapping ? MANIM_COLORS.red : isActive ? MANIM_COLORS.indigo : MANIM_COLORS.gold}44` : isSorted ? `0 0 15px ${MANIM_COLORS.green}22` : "none",
-                                scale: isComparing || isSwapping || isActive ? 1.1 : 1,
-                                opacity: 1,
-                                y: isActive ? -20 : 0
-                            }}
-                            transition={{ type: "spring", stiffness: 120, damping: 25 }}
-                            className="absolute bottom-0 w-12 border-t-2 border-x-2 rounded-t-xl z-20 flex flex-col items-center justify-start pt-2 font-mono overflow-hidden"
-                        >
-                            <span className={`text-xs font-bold ${isComparing || isSwapping || isActive ? 'text-black' : 'text-foreground/60'}`}>{node.value}</span>
-                        </motion.div>
-                    );
-                })}
+            {/* Bars — full-width flex row */}
+            <div className="relative w-full h-full flex items-end justify-center gap-1.5 md:gap-3">
+                {[...currentStep.nodes]
+                    .sort((a, b) => a.logicalIndex - b.logicalIndex)
+                    .map((node) => {
+                        const isComparing = node.status === 'comparing';
+                        const isSwapping = node.status === 'swapping';
+                        const isSorted = node.status === 'sorted';
+                        const isActive = node.status === 'active';
+
+                        const nodeColor =
+                            isSwapping ? "var(--viz-rose)" :
+                            isActive ? "var(--viz-amber)" :
+                            isComparing ? "var(--viz-cyan)" :
+                            isSorted ? "var(--viz-green)" :
+                            "rgba(99,102,241,0.1)";
+
+                        const nodeBorder =
+                            isSwapping ? "var(--viz-rose)" :
+                            isActive ? "var(--viz-amber)" :
+                            isComparing ? "var(--viz-cyan)" :
+                            isSorted ? "var(--viz-green)" :
+                            "rgba(99,102,241,0.3)";
+
+                        return (
+                            <motion.div
+                                key={node.id}
+                                layout
+                                animate={{
+                                    height: `${node.value}%`,
+                                    backgroundColor: nodeColor,
+                                    borderColor: nodeBorder,
+                                    boxShadow: isComparing || isSwapping || isActive
+                                        ? `0 0 30px ${nodeColor}66`
+                                        : isSorted ? `0 0 15px var(--viz-green)22` : "none",
+                                    scale: isComparing || isSwapping || isActive ? 1.05 : 1,
+                                    y: isActive ? -10 : 0,
+                                }}
+                                transition={{ type: "spring", stiffness: 150, damping: 25 }}
+                                className="flex-1 border-t-2 border-x-2 rounded-t-xl z-20 flex flex-col items-center justify-start pt-2 font-mono overflow-hidden max-w-[80px]"
+                                style={{ height: `${node.value}%` }}
+                            >
+                                <span className={`text-xs font-bold ${isComparing || isSwapping || isActive ? 'text-[var(--background)]' : 'text-[var(--foreground)]/60'}`}>
+                                    {node.value}
+                                </span>
+                            </motion.div>
+                        );
+                    })}
             </div>
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl mt-4 relative z-10">
-            <div className="flex items-center justify-between w-full md:w-auto gap-4">
+            <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-4">
                 <div className="flex items-center gap-2">
-                    <Hash size={14} className="text-primary" />        
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Step {currentIndex + 1} of {history.length}</span>
+                    <Hash size={14} className="text-[var(--primary)]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/45">Step {currentIndex + 1} of {history.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"><ChevronLeft size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"><ChevronRight size={18} /></button>
                 </div>
             </div>
             <div className="relative flex items-center group/slider w-full md:w-auto flex-1 h-6">
@@ -270,13 +272,11 @@ export default function InsertionSortVisualizer({ speed = 600 }: { speed?: numbe
       </div>
 
       <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Key</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Temporal Comparison</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Shifting Manifold</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Sorted Sub-Manifold</span></div>
+        <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Current Key</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Comparing</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Shifting</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Sorted</span></div>
       </div>
     </div>
   );
 }
-
-

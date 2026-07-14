@@ -78,7 +78,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             activeId: currentNodes[i].id,
             highlightIds: currentNodes.slice(0, i+1).map(n => n.id),
             phase: "TRAVERSE",
-            message: `Traversing to tail... (Node ${i})`
+            message: `Traversing to end... visiting node ${i + 1} of ${currentNodes.length}`
         });
     }
 
@@ -89,7 +89,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         activeId: newNode.id,
         highlightIds: [],
         phase: "INSERT",
-        message: `Allocated new node [${val}] and linked next pointer.`
+        message: `New node [${val}] created and appended to the end.`
     });
 
     // 3. Idle
@@ -98,7 +98,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         activeId: null,
         highlightIds: [],
         phase: "IDLE",
-        message: "Insertion Complete."
+        message: `Node [${val}] added. List size is now ${newNodes.length}.`
     });
 
     updateHistory(steps, newNodes);
@@ -116,7 +116,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             activeId: currentNodes[i].id,
             highlightIds: currentNodes.slice(0, i+1).map(n => n.id),
             phase: "TRAVERSE",
-            message: i === currentNodes.length - 1 ? "Tail found." : "Traversing..."
+            message: i === currentNodes.length - 1 ? `Tail found at index ${i}.` : `Traversing... at node ${i + 1}.`
         });
     }
 
@@ -129,7 +129,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         activeId: target.id,
         highlightIds: [target.id],
         phase: "DELETE",
-        message: `Releasing memory for node [${target.value}]. Setting prev->next = NULL.`
+        message: `Removing node [${target.value}] from the end. Updating previous node's pointer to NULL.`
     });
 
     // 3. Final State
@@ -138,7 +138,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         activeId: null,
         highlightIds: [],
         phase: "IDLE",
-        message: "Deletion Complete."
+        message: `Node [${target.value}] deleted. List size is now ${newNodes.length}.`
     });
 
     updateHistory(steps, newNodes);
@@ -158,7 +158,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             activeId: currentNodes[i].id,
             highlightIds: currentNodes.slice(0, i).map(n => n.id),
             phase: isMatch ? "FOUND" : "TRAVERSE",
-            message: isMatch ? `Value ${val} found at index ${i}!` : `Checking node [${currentNodes[i].value}]...`
+            message: isMatch ? `Found! Value ${val} is at index ${i}.` : `Node [${currentNodes[i].value}] does not match. Moving next.`
         });
         if (isMatch) {
             found = true;
@@ -255,10 +255,10 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
          </div>
       </div>
 
-      {/* The Visual Stage Canvas */}
-      <div className="relative w-full h-[50vh] md:h-[60vh] min-h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-x-auto overflow-y-hidden no-scrollbar flex items-center justify-center px-4 md:px-8 shadow-inner">
-         
-         {/* Active Phase Badge */}
+      {/* The Visual Stage Canvas — no horizontal overflow */}
+      <div className="relative w-full min-h-[300px] md:min-h-[420px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden flex flex-col items-center justify-center px-4 md:px-8 py-10 shadow-inner">
+
+         {/* Phase Badge */}
          <div className="absolute top-4 left-4 z-20">
              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-[var(--card)]/80 backdrop-blur-md shadow-sm" style={{ borderColor: `${activeColor}40` }}>
                  <Zap size={10} fill={activeColor} className="text-transparent" />
@@ -266,78 +266,86 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
              </div>
          </div>
 
-         {/* List Nodes Wrapper */}
-         <div className="flex items-center justify-center flex-wrap max-w-full gap-y-12 py-10 min-w-[600px]">
+         {/* Empty state */}
+         {currentStep.nodes.length === 0 && (
+             <div className="flex flex-col items-center gap-3 opacity-40">
+                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Empty List</span>
+                 <span className="text-[9px] font-mono text-[var(--muted-foreground)]/60">Add a node to get started</span>
+             </div>
+         )}
+
+         {/* Node Row — fully responsive, wraps on small screens */}
+         <div className="flex items-center justify-center flex-wrap gap-y-8 gap-x-0 max-w-full w-full">
              <AnimatePresence mode="popLayout">
                  {currentStep.nodes.map((node) => {
                      const isActive = node.id === currentStep.activeId;
                      const isVisited = currentStep.highlightIds.includes(node.id);
-                     
+
                      return (
                          <React.Fragment key={node.id}>
-                             {/* Node */}
+                             {/* Node box */}
                              <motion.div
                                  layout
                                  initial={{ scale: 0, opacity: 0 }}
-                                 animate={{ 
-                                     scale: isActive ? 1.15 : 1, 
-                                     opacity: currentStep.phase === "DELETE" && isActive ? 0.5 : 1,
+                                 animate={{
+                                     scale: isActive ? 1.15 : 1,
+                                     opacity: currentStep.phase === "DELETE" && isActive ? 0.4 : 1,
                                      borderColor: isActive ? activeColor : isVisited ? COLORS.gold : "var(--border)",
                                      backgroundColor: isActive ? `${activeColor}20` : isVisited ? `${COLORS.gold}10` : "var(--card)",
                                      boxShadow: isActive ? `0 0 25px ${activeColor}44` : "none"
                                  }}
                                  exit={{ scale: 0, opacity: 0, y: 20 }}
                                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                                 className="relative w-16 h-16 border-2 rounded-2xl flex flex-col items-center justify-center bg-card z-10"
+                                 className="relative w-14 h-14 md:w-16 md:h-16 border-2 rounded-2xl flex flex-col items-center justify-center bg-[var(--card)] z-10 flex-shrink-0"
                              >
-                                 <span className={`text-sm font-bold font-mono ${isActive ? "text-white" : "text-muted-foreground"}`}>{node.value}</span>
+                                 <span className={`text-sm font-bold font-mono ${isActive ? "text-white" : "text-[var(--muted-foreground)]"}`}>{node.value}</span>
                              </motion.div>
 
-                             {/* Arrow (Edge) */}
-                             <motion.div 
+                             {/* Arrow */}
+                             <motion.div
                                  layout
-                                 className="flex items-center justify-center w-16 text-muted-foreground/20"
-                                 initial={{ width: 0, opacity: 0 }}
-                                 animate={{ width: GAP_SIZE, opacity: 1 }}
-                                 exit={{ width: 0, opacity: 0 }}
+                                 className="flex items-center justify-center w-8 md:w-12 text-[var(--muted-foreground)]/20 flex-shrink-0"
+                                 initial={{ opacity: 0 }}
+                                 animate={{ opacity: 1 }}
+                                 exit={{ opacity: 0 }}
                              >
-                                 <ArrowRight size={24} strokeWidth={3} />
+                                 <ArrowRight size={18} strokeWidth={2.5} />
                              </motion.div>
                          </React.Fragment>
                      );
                  })}
              </AnimatePresence>
-             
-             {/* NULL Terminator */}
-             <motion.div 
-                 layout
-                 className="w-12 h-12 rounded-xl border-2 border-dashed border-muted-foreground/20 flex items-center justify-center"
-             >
-                 <span className="text-[8px] font-black text-muted-foreground/30">NULL</span>
-             </motion.div>
-         </div>
 
+             {/* NULL terminator */}
+             {currentStep.nodes.length > 0 && (
+                 <motion.div layout className="w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 border-dashed border-[var(--muted-foreground)]/20 flex items-center justify-center flex-shrink-0">
+                     <span className="text-[7px] md:text-[8px] font-black text-[var(--muted-foreground)]/30">NULL</span>
+                 </motion.div>
+             )}
+         </div>
       </div>
 
-      {/* Info Footer & Playback Controls */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl mt-4 relative z-10">
-         <div className="flex items-center justify-between w-full md:w-auto gap-4 flex-1">
+      {/* Step message */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
+          <p className="text-xs text-[var(--viz-lime)] font-mono font-medium">{currentStep.message}</p>
+      </div>
+
+      {/* Playback Controls + Scrubber */}
+      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+         <div className="flex items-center justify-between">
              <div className="flex items-center gap-2">
-                 <Hash size={14} className="text-[var(--primary)]" />        
-                 <span className="text-[10px] font-mono text-[var(--foreground)]/80 italic">{currentStep.message}</span>
+                 <Hash size={14} className="text-[var(--viz-lime)]" />
+                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
              </div>
-             <div className="flex items-center gap-2 shrink-0">
-                 <button 
+             <div className="flex items-center gap-2">
+                 <button
                      onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }}
                      className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"
                      disabled={currentIndex === 0}
                  >
                      <ChevronLeft size={18} />
                  </button>
-                 <span className="text-[10px] font-black font-mono text-muted-foreground w-12 text-center">
-                     {currentIndex + 1} / {history.length}
-                 </span>
-                 <button 
+                 <button
                      onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }}
                      className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"
                      disabled={currentIndex === history.length - 1}
@@ -345,6 +353,24 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
                      <ChevronRight size={18} />
                  </button>
              </div>
+         </div>
+
+         {/* Scrubber */}
+         <div className="relative flex items-center w-full">
+             <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
+             <div
+                 className="absolute h-1 rounded-full transition-all"
+                 style={{ width: `${(currentIndex / Math.max(history.length - 1, 1)) * 100}%`, backgroundColor: "var(--viz-lime)" }}
+             />
+             <input
+                 type="range" min="0" max={Math.max(history.length - 1, 0)} value={currentIndex}
+                 onChange={e => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                 className="w-full h-6 opacity-0 cursor-pointer z-10"
+             />
+             <div
+                 className="absolute w-1.5 h-4 rounded-full pointer-events-none transition-all"
+                 style={{ left: `calc(${(currentIndex / Math.max(history.length - 1, 1)) * 100}% - 3px)`, backgroundColor: "var(--viz-lime)" }}
+             />
          </div>
       </div>
 

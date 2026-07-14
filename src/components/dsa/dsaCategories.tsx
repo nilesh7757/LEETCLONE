@@ -1202,45 +1202,159 @@ let q = []; q.push(10); let f = q.shift();`
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Pattern Autocorrelation" icon={Microscope}>
-            <p>The Knuth-Morris-Pratt (KMP) algorithm optimizes pattern matching by exploiting the <strong>Self-Similarity</strong> of the pattern. When a mismatch occurs, we don&apos;t need to backtrack the text pointer; we only shift the pattern pointer.</p>
-            <p>This is achieved via the <strong>Prefix Function</strong> ($\\$pi$), which maps the length of the longest proper prefix that is also a suffix.</p>
+          <DocSection title="How it Works" icon={Microscope} color="var(--viz-cyan)">
+            <p>The Knuth-Morris-Pratt (KMP) algorithm finds all occurrences of a pattern in a text in <strong>O(N + M)</strong> time, where N is the text length and M is the pattern length.</p>
+            <p>When a mismatch occurs, instead of restarting, KMP uses a pre-computed <strong>LPS (Longest Prefix Suffix)</strong> array to skip characters that are guaranteed to match.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N + M)" space="O(M)" />
             <DocSection title="No Backtracking" icon={FastForward} color="var(--viz-amber)">
-              <p>Unlike naive matching which backtracks to $i+1$, KMP slides the pattern by $\\$pi$[q] characters, guaranteeing linear time complexity $O(N)$.</p>
+              <p>The text pointer <strong>never moves backward</strong>. Only the pattern pointer jumps using the LPS table, guaranteeing linear time even in the worst case.</p>
             </DocSection>
           </div>
         </div>
-        
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> LPS Array</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-                        Compute the Longest Prefix Suffix (LPS) array to determine jump distances.
-                    </p>
-                    <CodeSnippet code={{ "C++": `vector<int> computeLPS(string P) {\n    int m = P.length();\n    vector<int> lps(m, 0);\n    int len = 0, i = 1;\n    while (i < m) {\n        if (P[i] == P[len]) lps[i++] = ++len;\n        else if (len != 0) len = lps[len-1];\n        else lps[i++] = 0;\n    }\n    return lps;
-}` }} />
-                </div>
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Matching Logic</h4>
-                    <CodeSnippet code={{ "C++": `void KMPSearch(string pat, string txt) {\n    int M = pat.length();\n    int N = txt.length();\n    vector<int> lps = computeLPS(pat);\n    int i = 0, j = 0;\n    while (i < N) {\n        if (pat[j] == txt[i]) { j++; i++; }\n        if (j == M) {\n            cout << "Found at " << i - j;
-            j = lps[j - 1];\n        } else if (i < N && pat[j] != txt[i]) {\n            if (j != 0) j = lps[j - 1];\n            else i++;\n        }
-    }
-}` }} />
-                </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DocSection title="LPS Array" icon={Cpu} color="var(--viz-purple)">
+            <p>LPS[i] = length of the longest proper prefix of <code>pattern[0..i]</code> that is also a suffix. Built in O(M) using two pointers.</p>
+            <p>Example: For <code>ABABCABAB</code>, LPS = [0,0,1,2,0,1,2,3,4]</p>
+          </DocSection>
+          <DocSection title="Matching Logic" icon={Search} color="var(--viz-cyan)">
+            <p>On match: advance both i and j. On mismatch with j &gt; 0: set j = LPS[j-1], keep i. On mismatch with j = 0: advance i. When j == M: match found at i - M.</p>
+          </DocSection>
         </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `// Build LPS (Longest Prefix Suffix) array
+vector<int> computeLPS(string pattern) {
+    int m = pattern.length();
+    vector<int> lps(m, 0);
+    int len = 0, i = 1;
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            lps[i++] = ++len;
+        } else if (len != 0) {
+            len = lps[len - 1];
+        } else {
+            lps[i++] = 0;
+        }
+    }
+    return lps;
+}
+
+// KMP Search
+void KMPSearch(string text, string pattern) {
+    int n = text.length(), m = pattern.length();
+    vector<int> lps = computeLPS(pattern);
+    int i = 0, j = 0;
+    while (i < n) {
+        if (pattern[j] == text[i]) { i++; j++; }
+        if (j == m) {
+            cout << "Match at index " << i - j << endl;
+            j = lps[j - 1];
+        } else if (i < n && pattern[j] != text[i]) {
+            if (j != 0) j = lps[j - 1];
+            else i++;
+        }
+    }
+}`,
+      "Python": `def compute_lps(pattern):
+    m = len(pattern)
+    lps = [0] * m
+    length, i = 0, 1
+    while i < m:
+        if pattern[i] == pattern[length]:
+            length += 1
+            lps[i] = length
+            i += 1
+        elif length != 0:
+            length = lps[length - 1]
+        else:
+            lps[i] = 0
+            i += 1
+    return lps
+
+def kmp_search(text, pattern):
+    n, m = len(text), len(pattern)
+    lps = compute_lps(pattern)
+    i = j = 0
+    while i < n:
+        if pattern[j] == text[i]:
+            i += 1
+            j += 1
+        if j == m:
+            print(f"Match at index {i - j}")
+            j = lps[j - 1]
+        elif i < n and pattern[j] != text[i]:
+            if j != 0:
+                j = lps[j - 1]
+            else:
+                i += 1`,
+      "Java": `public class KMP {
+    static int[] computeLPS(String pattern) {
+        int m = pattern.length();
+        int[] lps = new int[m];
+        int len = 0, i = 1;
+        while (i < m) {
+            if (pattern.charAt(i) == pattern.charAt(len)) {
+                lps[i++] = ++len;
+            } else if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i++] = 0;
+            }
+        }
+        return lps;
+    }
+
+    static void kmpSearch(String text, String pattern) {
+        int n = text.length(), m = pattern.length();
+        int[] lps = computeLPS(pattern);
+        int i = 0, j = 0;
+        while (i < n) {
+            if (pattern.charAt(j) == text.charAt(i)) { i++; j++; }
+            if (j == m) {
+                System.out.println("Match at index " + (i - j));
+                j = lps[j - 1];
+            } else if (i < n && pattern.charAt(j) != text.charAt(i)) {
+                if (j != 0) j = lps[j - 1];
+                else i++;
+            }
+        }
+    }
+}`,
+      "JavaScript": `function computeLPS(pattern) {
+    const m = pattern.length;
+    const lps = new Array(m).fill(0);
+    let len = 0, i = 1;
+    while (i < m) {
+        if (pattern[i] === pattern[len]) {
+            lps[i++] = ++len;
+        } else if (len !== 0) {
+            len = lps[len - 1];
+        } else {
+            lps[i++] = 0;
+        }
+    }
+    return lps;
+}
+
+function kmpSearch(text, pattern) {
+    const n = text.length, m = pattern.length;
+    const lps = computeLPS(pattern);
+    let i = 0, j = 0;
+    while (i < n) {
+        if (pattern[j] === text[i]) { i++; j++; }
+        if (j === m) {
+            console.log(\`Match at index \${i - j}\`);
+            j = lps[j - 1];
+        } else if (i < n && pattern[j] !== text[i]) {
+            if (j !== 0) j = lps[j - 1];
+            else i++;
+        }
+    }
+}`
+    }
   },
   {
     id: "DSU",

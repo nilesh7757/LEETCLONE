@@ -20,8 +20,6 @@ const MANIM_COLORS = {
   purple: "var(--viz-purple)"
 };
 
-const UNIT_WIDTH = 60;
-
 interface VisualNode {
   id: string;
   value: number;
@@ -122,8 +120,8 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
 
     const addLog = (l: string) => { logs = [l, ...logs]; };
 
-    addLog("Vector manifold initialized.");
-    record("Ready for recursive partition sequence.", "BOOT");
+    addLog("Array initialized.");
+    record("Ready to start Quick Sort.", "BOOT");
 
     const performSwap = (i: number, j: number) => {
         const temp = currentNodes[i];
@@ -223,8 +221,8 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+    <div className="flex flex-col gap-6 w-full">
+      <div className="p-2 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -284,63 +282,52 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[350px] md:min-h-[500px] w-full bg-muted/40 rounded-[2.5rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-4 md:p-8">
-            
-            {/* Range Indicator */}
-            <AnimatePresence>
-                {currentStep.activeRange && !isEditing && (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ 
-                            opacity: 1,
-                            x: ( (currentStep.activeRange[0] + currentStep.activeRange[1]) / 2 - (currentStep.nodes.length - 1) / 2 ) * UNIT_WIDTH,
-                            width: (currentStep.activeRange[1] - currentStep.activeRange[0] + 1) * UNIT_WIDTH + 20,
-                        }}
-                        exit={{ opacity: 0 }}
-                        className="absolute h-[200px] border-2 border-dashed border-[var(--viz-amber)]/20 rounded-3xl bg-[var(--viz-amber)]/5 z-0 pointer-events-none"
-                    />
-                )}
-            </AnimatePresence>
+        <div className="relative min-h-[300px] md:min-h-[420px] w-full bg-[var(--muted)]/40 rounded-[2.5rem] overflow-hidden shadow-inner flex flex-col items-center justify-center px-4 md:px-8 py-8">
 
-            {/* Elements */}
-            <div className="relative h-[100px] flex items-center justify-center" style={{ width: currentStep.nodes.length * UNIT_WIDTH }}>
+            {/* Elements — full-width flex row */}
+            <div className="relative w-full flex items-end justify-center gap-2 md:gap-3 h-[120px]">
                 <AnimatePresence mode="popLayout">
                     {currentStep.nodes.map((node, index) => {
                         const isPivot = currentStep.pivotIndex === index;
                         const isComparing = currentStep.comparingIndices?.includes(index);
                         const isSwapping = currentStep.swappingIndices?.includes(index);
                         const isSorted = currentStep.sortedIndices.includes(index);
-                        
+                        const isInRange = currentStep.activeRange
+                            ? index >= currentStep.activeRange[0] && index <= currentStep.activeRange[1]
+                            : false;
+
                         return (
                             <motion.div
                                 key={node.id}
                                 layout
                                 initial={{ scale: 0, opacity: 0 }}
-                                animate={{ 
-                                    x: (index - (currentStep.nodes.length - 1) / 2) * UNIT_WIDTH,
-                                    scale: isSwapping ? 1.1 : 1,
-                                    y: isPivot ? -40 : isSwapping ? 20 : 0,
+                                animate={{
+                                    scale: isSwapping ? 1.15 : 1,
+                                    y: isPivot ? -24 : isSwapping ? 8 : 0,
                                     opacity: 1,
-                                    backgroundColor: isPivot ? MANIM_COLORS.red : isSorted ? MANIM_COLORS.green : isComparing ? MANIM_COLORS.gold : "var(--card)",
-                                    borderColor: isPivot ? MANIM_COLORS.red : isSorted ? MANIM_COLORS.green : isComparing ? MANIM_COLORS.gold : "var(--border)"
+                                    backgroundColor: isPivot ? MANIM_COLORS.red : isSorted ? MANIM_COLORS.green : isComparing ? MANIM_COLORS.gold : isInRange ? "rgba(var(--viz-amber-rgb),0.08)" : "var(--card)",
+                                    borderColor: isPivot ? MANIM_COLORS.red : isSorted ? MANIM_COLORS.green : isComparing ? MANIM_COLORS.gold : isInRange ? "rgba(var(--viz-amber-rgb),0.3)" : "var(--border)",
+                                    boxShadow: isPivot || isComparing || isSwapping
+                                        ? `0 0 24px ${isPivot ? MANIM_COLORS.red : MANIM_COLORS.gold}66`
+                                        : isSorted ? `0 0 12px ${MANIM_COLORS.green}44` : "none",
                                 }}
                                 exit={{ scale: 0, opacity: 0 }}
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                                className="absolute w-12 h-12 border-2 rounded-xl flex items-center justify-center font-mono shadow-lg z-10"
+                                className="relative flex-1 max-w-[72px] min-w-[32px] h-14 border-2 rounded-xl flex items-center justify-center font-mono shadow-lg z-10"
                             >
-                                <span className={`text-sm font-bold ${isPivot || isSorted || isComparing ? "text-white" : "text-foreground"}`}>
+                                <span className={`text-sm font-bold ${isPivot || isSorted || isComparing ? "text-white" : "text-[var(--foreground)]"}`}>
                                     {node.value}
                                 </span>
                                 {isEditing && (
-                                    <button 
+                                    <button
                                         onClick={() => removeItem(node.id)}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 hover:opacity-100 transition-opacity"
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 transition-opacity"
                                     >
                                         <X size={8} />
                                     </button>
                                 )}
                                 {isPivot && !isEditing && (
-                                    <div className="absolute -top-6 text-[8px] font-bold text-[var(--viz-rose)] uppercase tracking-widest">Pivot</div>
+                                    <div className="absolute -top-5 text-[7px] font-bold text-[var(--viz-rose)] uppercase tracking-widest whitespace-nowrap">Pivot</div>
                                 )}
                             </motion.div>
                         );
@@ -348,39 +335,34 @@ export default function QuickSortVisualizer({ speed = 800 }: { speed?: number })
                 </AnimatePresence>
             </div>
 
-            {/* Logs Overlay */}
-            <div className={`absolute top-4 left-4 md:top-6 md:left-6 z-30 w-[250px] bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm max-h-[200px] overflow-hidden flex flex-col transition-opacity ${isEditing ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-2">
-                        <Activity size={12} /> Partition Log
+        </div>
+
+        {/* Explanation — below canvas, full width */}
+        <AnimatePresence mode="wait">
+            {!isEditing && (
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="w-full flex justify-center z-10 pointer-events-none">
+                    <div className="px-5 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-xl w-full text-center">
+                        <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+        {/* Partition Log — full-width card, no overlap */}
+        {!isEditing && currentStep.logs.length > 0 && (
+            <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+                    <Activity size={10} /> Step Log
                 </span>
-                <div className="flex flex-col gap-1 overflow-y-auto pr-1 scrollbar-thin">
-                    <AnimatePresence mode="popLayout">
-                        {currentStep.logs.map((log, i) => (
-                            <motion.div 
-                                key={`log-${i}`}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="text-[9px] font-mono text-muted-foreground/70 leading-tight"
-                            >
-                                <span className="text-[var(--viz-amber)] mr-1">›</span>{log}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                <div className="flex flex-row flex-wrap gap-x-4 gap-y-1 overflow-hidden max-h-[52px]">
+                    {currentStep.logs.slice(0, 4).map((log, i) => (
+                        <span key={i} className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
+                            <span className="text-[var(--viz-amber)] mr-1">›</span>{log}
+                        </span>
+                    ))}
                 </div>
             </div>
-
-            {/* Explanation Toast */}
-            <AnimatePresence mode="wait">
-                {!isEditing && (
-                    <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-8 w-full flex justify-center z-30 pointer-events-none">
-                        <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
-                            <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-        </div>
+        )}
 
         {/* Timeline Scrubber */}
         <div className={`mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>

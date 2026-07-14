@@ -62,7 +62,7 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
       });
     };
 
-    record("Vector space initialized. Press Execute to begin monotonic transformation.", "INIT");
+    record("Array initialized. Press Start to begin Bubble Sort.", "INIT");
 
     const arr = [...currentNodes].sort((a, b) => a.logicalIndex - b.logicalIndex);
     const n = arr.length;
@@ -98,7 +98,7 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
           });
           
           [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
-          record(`Transformation executed. Indices updated.`, "SWAP_DONE", [j, j+1]);
+          record(`Swap done.`, "SWAP_DONE", [j, j+1]);
 
           currentNodes = currentNodes.map(node => 
             (node.id === idJ || node.id === idJ1) ? { ...node, status: 'idle' } : node
@@ -114,10 +114,10 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
       currentNodes = currentNodes.map(node => 
         node.logicalIndex === sortedIdx ? { ...node, status: 'sorted' } : node
       );
-      record(`Pass complete. Index ${sortedIdx} is now part of the sorted manifold.`, "BUBBLED");
+      record(`Pass complete. Index ${sortedIdx} is now sorted.`, "BUBBLED");
     }
 
-    record("Monotonic order achieved. Algorithm terminated.", "COMPLETE");
+    record("Array fully sorted. Bubble Sort complete.", "COMPLETE");
     return steps;
   }, [initialData]);
 
@@ -166,9 +166,9 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
           <div className="flex items-center gap-3 bg-[var(--muted)] p-2 rounded-2xl border border-[var(--border)] shadow-inner">
             <button onClick={generateArray} className="p-2 hover:bg-[var(--accent)] rounded-xl text-[var(--muted-foreground)] active:scale-95 transition-all cursor-pointer"><RotateCcw size={20} /></button>
             {!isPlaying ? (
-              <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-amber)] text-[var(--background)] rounded-xl hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest shadow-lg cursor-pointer"><Play size={14} fill="currentColor" /> EXECUTE</button>
+              <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-amber)] text-[var(--background)] rounded-xl hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest shadow-lg cursor-pointer"><Play size={14} fill="currentColor" /> START</button>
             ) : (
-              <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/50 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[var(--viz-rose)]/30 transition-all cursor-pointer"><Pause size={14} fill="currentColor" /> HALT</button>
+              <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/50 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[var(--viz-rose)]/30 transition-all cursor-pointer"><Pause size={14} fill="currentColor" /> PAUSE</button>
             )}
           </div>
         </div>
@@ -247,9 +247,9 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
       </div>
 
       <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-4 md:gap-12 text-center text-[8px] md:text-[10px]">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Scanning Manifold</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Displacement</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Ordered Manifold</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Comparing</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Swapping</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Sorted</span></div>
       </div>
     </div>
   );

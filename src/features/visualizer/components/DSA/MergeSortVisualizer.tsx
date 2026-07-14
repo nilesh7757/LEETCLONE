@@ -18,8 +18,6 @@ const MANIM_COLORS = {
   purple: "var(--viz-purple)"
 };
 
-const UNIT_WIDTH = 60;
-const LEVEL_HEIGHT = 80;
 
 interface VisualNode {
   id: string;
@@ -120,8 +118,8 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
 
     const addLog = (l: string) => { logs = [l, ...logs]; };
 
-    addLog("Vector manifold initialized.");
-    record("Ready for recursive decomposition.", "BOOT");
+    addLog("Array initialized.");
+    record("Ready to start Merge Sort.", "BOOT");
 
     // Helper to update node state in bulk
     const updateNodes = (indices: number[], updates: Partial<VisualNode>) => {
@@ -133,7 +131,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
     const mergeArrays = (l: number, m: number, r: number, level: number) => {
         // Prepare for merge
         addLog(`Merging [${l}, ${m}] and [${m+1}, ${r}].`);
-        record(`Merging sub-manifolds at depth ${level + 1}.`, "MERGE_START", [l, r], [[l, m], [m + 1, r]]);
+        record(`Merging sub-arrays [${l}, ${m}] and [${m+1}, ${r}].`, "MERGE_START", [l, r], [[l, m], [m + 1, r]]);
 
         // Perform Merge (Standard Logic)
         const leftArr = currentNodesState.filter((n: VisualNode) => n.logicalIndex >= l && n.logicalIndex <= m);
@@ -158,7 +156,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
         currentNodesState = newNodesState;
 
         addLog(`Range [${l}, ${r}] merged and sorted.`);
-        record(`Reconstruction complete for range [${l}, ${r}].`, "MERGE_END", [l, r]);
+        record(`Merge done for range [${l}, ${r}].`, "MERGE_END", [l, r]);
     };
 
     const mergeSort = (l: number, r: number, level: number, group: number) => {
@@ -174,7 +172,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
         updateNodes(rightIndices, { level: level + 1, group: group * 2 + 1 });
         
         addLog(`Split range [${l}, ${r}] into [${l}, ${m}] and [${m+1}, ${r}].`);
-        record(`Dividing manifold at depth ${level}.`, "SPLIT", [l, r]);
+        record(`Splitting [${l}, ${r}] into [${l}, ${m}] and [${m+1}, ${r}].`, "SPLIT", [l, r]);
 
         mergeSort(l, m, level + 1, group * 2);
         mergeSort(m + 1, r, level + 1, group * 2 + 1);
@@ -185,7 +183,7 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
     mergeSort(0, initialData.length - 1, 0, 0);
     
     currentNodesState = currentNodesState.map((n: VisualNode) => ({ ...n, level: 0 }));
-    record("Recursion complete. Vector sorted.", "COMPLETE");
+    record("All sub-arrays merged. Array fully sorted.", "COMPLETE");
 
     return steps;
   }, [initialData]);
@@ -213,8 +211,8 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
+    <div className="flex flex-col gap-6 w-full">
+      <div className="p-2 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden">
         {/* Grid Backdrop */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
@@ -274,90 +272,83 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[350px] md:min-h-[550px] w-full bg-muted/40 rounded-[2.5rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-4 md:p-8">
-            
-            {/* Tree Structure */}
-            <div className="relative w-full h-full flex items-center justify-center">
+        <div className="relative min-h-[280px] md:min-h-[420px] w-full bg-[var(--muted)]/40 rounded-[2.5rem] overflow-hidden shadow-inner flex flex-col items-center justify-center px-4 md:px-8 py-10">
+
+            {/* Full-width flex row — nodes animate only on y axis for depth effect */}
+            <div className="w-full flex items-center justify-center gap-2 md:gap-3 flex-wrap">
                 <AnimatePresence mode="popLayout">
-                    {currentStep.nodes.map((node) => {
-                        const isInActiveRange = currentStep.activeRange && node.logicalIndex >= currentStep.activeRange[0] && node.logicalIndex <= currentStep.activeRange[1];
-                        const isMerging = currentStep.mergingRanges && (
-                            (node.logicalIndex >= currentStep.mergingRanges[0][0] && node.logicalIndex <= currentStep.mergingRanges[0][1]) || 
-                            (node.logicalIndex >= currentStep.mergingRanges[1][0] && node.logicalIndex <= currentStep.mergingRanges[1][1])
-                        );
-                        const isSorted = currentStep.step === "COMPLETE";
+                    {[...currentStep.nodes]
+                        .sort((a, b) => a.logicalIndex - b.logicalIndex)
+                        .map((node) => {
+                            const isInActiveRange = currentStep.activeRange &&
+                                node.logicalIndex >= currentStep.activeRange[0] &&
+                                node.logicalIndex <= currentStep.activeRange[1];
+                            const isMerging = currentStep.mergingRanges && (
+                                (node.logicalIndex >= currentStep.mergingRanges[0][0] && node.logicalIndex <= currentStep.mergingRanges[0][1]) ||
+                                (node.logicalIndex >= currentStep.mergingRanges[1][0] && node.logicalIndex <= currentStep.mergingRanges[1][1])
+                            );
+                            const isSorted = currentStep.step === "COMPLETE";
 
-                        const xPos = (node.logicalIndex - (currentStep.nodes.length - 1) / 2) * UNIT_WIDTH;
-                        const yPos = (node.level * LEVEL_HEIGHT) - 100;
-
-                        return (
-                            <motion.div
-                                key={node.id}
-                                layout
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ 
-                                    x: xPos,
-                                    y: yPos,
-                                    scale: isMerging ? 1.1 : 1,
-                                    opacity: 1,
-                                    backgroundColor: isMerging ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : isInActiveRange ? MANIM_COLORS.blue : "var(--card)",
-                                    borderColor: isMerging ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : isInActiveRange ? MANIM_COLORS.blue : "var(--border)",
-                                    color: isMerging || isSorted || isInActiveRange ? "black" : "var(--foreground)"
-                                }}
-                                exit={{ scale: 0, opacity: 0 }}
-                                transition={{ type: "spring", stiffness: 180, damping: 24 }}
-                                className="absolute w-12 h-12 border-2 rounded-xl flex items-center justify-center font-mono shadow-lg z-10"
-                            >
-                                <span className="text-sm font-bold">
-                                    {node.value}
-                                </span>
-                                {isEditing && (
-                                    <button 
-                                        onClick={() => removeItem(node.id)}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 hover:opacity-100 transition-opacity"
-                                    >
-                                        <X size={8} />
-                                    </button>
-                                )}
-                            </motion.div>
-                        );
-                    })}
+                            return (
+                                <motion.div
+                                    key={node.id}
+                                    layout
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{
+                                        y: node.level * 20,
+                                        scale: isMerging ? 1.12 : 1,
+                                        opacity: 1,
+                                        backgroundColor: isMerging ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : isInActiveRange ? MANIM_COLORS.blue : "var(--card)",
+                                        borderColor: isMerging ? MANIM_COLORS.gold : isSorted ? MANIM_COLORS.green : isInActiveRange ? MANIM_COLORS.blue : "var(--border)",
+                                        boxShadow: isMerging ? `0 0 24px ${MANIM_COLORS.gold}66` : isSorted ? `0 0 16px ${MANIM_COLORS.green}44` : "none",
+                                        color: isMerging || isSorted || isInActiveRange ? "#000" : "var(--foreground)"
+                                    }}
+                                    exit={{ scale: 0, opacity: 0 }}
+                                    transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                                    className="relative w-11 h-11 md:w-12 md:h-12 border-2 rounded-xl flex items-center justify-center font-mono shadow-lg z-10 flex-shrink-0"
+                                >
+                                    <span className="text-sm font-bold">{node.value}</span>
+                                    {isEditing && (
+                                        <button
+                                            onClick={() => removeItem(node.id)}
+                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 transition-opacity"
+                                        >
+                                            <X size={8} />
+                                        </button>
+                                    )}
+                                </motion.div>
+                            );
+                        })}
                 </AnimatePresence>
             </div>
+        </div>
 
-            {/* Logs Overlay */}
-            <div className={`absolute top-4 left-4 md:top-6 md:left-6 z-30 w-[250px] bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm max-h-[200px] overflow-hidden flex flex-col transition-opacity ${isEditing ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-2">
-                        <Activity size={12} /> Recursion Log
+        {/* Explanation — below canvas */}
+        <AnimatePresence mode="wait">
+            {!isEditing && (
+                <motion.div key={currentIndex} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="w-full pointer-events-none">
+                    <div className="px-5 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-xl w-full text-center">
+                        <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+        {/* Recursion Log — full-width below explanation */}
+        {!isEditing && currentStep.logs.length > 0 && (
+            <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+                    <Activity size={10} /> Step Log
                 </span>
-                <div className="flex flex-col gap-1 overflow-y-auto pr-1 scrollbar-thin">
-                    <AnimatePresence mode="popLayout">
-                        {currentStep.logs.map((log, i) => (
-                            <motion.div 
-                                key={`log-${i}`}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="text-[9px] font-mono text-muted-foreground/70 leading-tight"
-                            >
-                                <span className="text-[var(--viz-amber)] mr-1">›</span>{log}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                <div className="flex flex-row flex-wrap gap-x-4 gap-y-1 overflow-hidden max-h-[52px]">
+                    {currentStep.logs.slice(0, 4).map((log, i) => (
+                        <span key={i} className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
+                            <span className="text-[var(--viz-amber)] mr-1">›</span>{log}
+                        </span>
+                    ))}
                 </div>
             </div>
-
-            {/* Explanation Toast */}
-            <AnimatePresence mode="wait">
-                {!isEditing && (
-                    <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-8 w-full flex justify-center z-30 pointer-events-none">
-                        <div className="px-6 py-3 bg-card/90  rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
-                            <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-        </div>
+        )}
 
         {/* Timeline Scrubber */}
         <div className={`mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>

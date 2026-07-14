@@ -72,14 +72,14 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
     // Initial State
     steps.push({
       i: 0, j: 0, lps: [...lps], matchIndices: [], 
-      phase: "COMPARE", message: "Algorithm Initialized."
+      phase: "COMPARE", message: "Algorithm ready. Press Start to begin KMP search."
     });
 
     while (i < n) {
       steps.push({
         i, j, lps: [...lps], matchIndices: [...matches], 
         phase: "COMPARE", 
-        message: `Comparing T[${i}] ('${text[i]}') vs P[${j}] ('${pattern[j]}')`
+        message: `Comparing text[${i}] ('${text[i]}') with pattern[${j}] ('${pattern[j]}')`
       });
 
       if (pattern[j] === text[i]) {
@@ -88,36 +88,36 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
           matches.push(i - j);
           steps.push({
             i: i - 1, j: j - 1, lps: [...lps], matchIndices: [...matches], 
-            phase: "FOUND", message: `Full pattern match found at index ${i - j}!`
+            phase: "FOUND", message: `Match found at index ${i - j}!`
           });
           j = lps[j - 1]; 
           steps.push({
             i, j, lps: [...lps], matchIndices: [...matches], 
-            phase: "JUMP", message: "Resetting pattern index using LPS to find overlaps."
+            phase: "JUMP", message: `Pattern matched. Using LPS to skip to index ${j} for next search.`
           });
         } else {
           steps.push({
             i: i - 1, j: j - 1, lps: [...lps], matchIndices: [...matches], 
-            phase: "MATCH", message: "Characters match! Advancing both pointers."
+            phase: "MATCH", message: `'${text[i-1]}' matches '${pattern[j-1]}'. Both pointers move forward.`
           });
         }
       } else {
         steps.push({
           i, j, lps: [...lps], matchIndices: [...matches], 
-          phase: "MISMATCH", message: `Mismatch detected at T[${i}] vs P[${j}].`
+          phase: "MISMATCH", message: `Mismatch: text[${i}]='${text[i]}' ≠ pattern[${j}]='${pattern[j]}'.`
         });
         
         if (j !== 0) {
           j = lps[j - 1];
           steps.push({
             i, j, lps: [...lps], matchIndices: [...matches], 
-            phase: "JUMP", message: `Backtracking pattern to index ${j} (LPS[${j-1}]). Text pointer stays.`
+            phase: "JUMP", message: `Using LPS: jump pattern pointer from ${j + lps[j-1]} → ${lps[j - 1]}. Text stays at ${i}.`
           });
         } else {
           i++;
           steps.push({
             i, j, lps: [...lps], matchIndices: [...matches], 
-            phase: "JUMP", message: "Mismatch at pattern start. Advancing text pointer."
+            phase: "JUMP", message: `Mismatch at start of pattern. Moving text pointer to ${i + 1}.`
           });
         }
       }
@@ -125,7 +125,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
 
     steps.push({
       i: Math.max(0, n-1), j: 0, lps: [...lps], matchIndices: [...matches], 
-      phase: "DONE", message: "Search Complete."
+      phase: "DONE", message: `Search done. Found ${matches.length} match(es).`
     });
 
     return steps;
@@ -165,9 +165,9 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
   const patternTranslateX = -(currentStep.j * STEP) - (CELL_SIZE / 2);
 
   return (
-    <div className="flex flex-col gap-6 select-none font-sans">
+    <div className="flex flex-col gap-6 select-none font-sans w-full">
       
-      <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
@@ -177,7 +177,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                     <Search size={24} />
                 </div>
                 <div>
-                    <h2 className="text-xl font-bold tracking-tight">KMP Engine</h2>
+                    <h2 className="text-xl font-bold tracking-tight">KMP Search</h2>
                     <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Knuth-Morris-Pratt Algorithm</p>
                 </div>
             </div>
@@ -212,12 +212,12 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
          </div>
 
-         <div className="relative min-h-[350px] md:min-h-[400px] w-full bg-muted/5 flex flex-col items-center justify-center overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
+         <div className="relative min-h-[280px] md:min-h-[340px] w-full bg-[var(--muted)]/5 flex flex-col items-center justify-center overflow-hidden">
             
             <div className="absolute left-1/2 top-0 bottom-0 w-[60px] -ml-[30px] border-x-2 border-dashed border-[var(--viz-cyan)]/20 bg-[var(--viz-cyan)]/5 z-0" />
             <div className="absolute left-1/2 top-8 -translate-x-1/2 flex flex-col items-center z-10 opacity-50">
                 <ArrowDown size={16} className="text-[var(--viz-cyan)] animate-bounce" />
-                <span className="text-[9px] font-mono font-black text-[var(--viz-cyan)] tracking-widest mt-1">LENS</span>
+                <span className="text-[9px] font-mono font-black text-[var(--viz-cyan)] tracking-widest mt-1">Pointer</span>
             </div>
 
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-card to-transparent z-20 pointer-events-none" />
@@ -290,7 +290,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
                                     {isCurrent && currentStep.phase === "MISMATCH" && currentStep.lps[j-1] > 0 && (
                                         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center w-max">
                                             <div className="text-[8px] font-black text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30 mb-1">
-                                                LPS JUMP: {currentStep.lps[j-1]}
+                                                LPS Jump → {currentStep.lps[j-1]}
                                             </div>
                                         </div>
                                     )}
@@ -306,7 +306,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
          <div className="bg-[var(--card)] p-6 flex flex-col lg:flex-row gap-8">
             <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-3">
-                    <div className="px-2 py-1 rounded-lg bg-muted text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</div>
+                    <div className="px-2 py-1 rounded-lg bg-muted text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase</div>
                     <div className={`text-xs font-mono font-bold uppercase tracking-wider`} style={{ color: activeColor }}>
                         {currentStep.phase}
                     </div>

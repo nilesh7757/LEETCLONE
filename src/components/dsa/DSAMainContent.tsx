@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Search, ChevronRight, Activity, Code2, Info, Target, Cpu, Terminal, Maximize2, Minimize2, X } from "lucide-react";
+import { BookOpen, Search, ChevronRight, Activity, Code2, Info, Target, Cpu, Terminal, Maximize2, Minimize2, X, Gauge, ChevronLeft, ChevronDown } from "lucide-react";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { CodeSnippet } from "./DocComponents";
 
@@ -36,19 +36,30 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-[480px] flex items-center justify-center bg-[var(--card)]">
       <div className="flex flex-col items-center gap-6">
         <div className="w-16 h-16 border-[1px] border-[#3b82f6]/20 border-t-[#3b82f6] rounded-full animate-spin shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
-        <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-[var(--muted-foreground)] animate-pulse">Initializing Component...</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-[var(--muted-foreground)] animate-pulse">Loading visualizer...</p>
       </div>
     </div>
   );
   return <>{children}</>;
 };
 
-export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: DSAMainContentProps) => {
+export const DSAMainContent = ({ selectedCategory, isStudio }: DSAMainContentProps) => {
   const [activeTab, setActiveTab] = React.useState<"viz" | "docs" | "code">("viz");
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [animationSpeed, setAnimationSpeed] = React.useState(800);
+  const [showSpeedMenu, setShowSpeedMenu] = React.useState(false);
   const vizContainerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = React.useState(1);
+
+  const speedOptions = [
+    { label: "0.5×", value: 1600 },
+    { label: "1×", value: 800 },
+    { label: "1.5×", value: 533 },
+    { label: "2×", value: 400 },
+    { label: "3×", value: 267 },
+  ];
+  const currentSpeedLabel = speedOptions.find(s => s.value === animationSpeed)?.label ?? "1×";
   
   const themeColor = selectedCategory.themeColor || "#3b82f6";
   const themeRGB = selectedCategory.themeRGB || "59, 130, 246";
@@ -56,6 +67,7 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
   React.useEffect(() => {
     setActiveTab("viz");
     setScale(1);
+    setShowSpeedMenu(false);
   }, [selectedCategory.id]);
 
   // Sync state with browser fullscreen changes
@@ -145,15 +157,53 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
                ))}
             </div>
 
-            {activeTab === "viz" && (
-               <button 
-                  onClick={toggleFullscreen}
-                  className="p-2 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-xl text-[var(--foreground)] transition-all cursor-pointer flex items-center justify-center"
-                  title="Fullscreen"
-               >
-                  <Maximize2 size={14} />
-               </button>
-            )}
+            {/* Right side controls */}
+            <div className="flex items-center gap-2">
+               {/* Speed selector (only on viz tab) */}
+               {activeTab === "viz" && (
+                  <div className="relative">
+                     <button
+                        onClick={() => setShowSpeedMenu(v => !v)}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-[10px] font-black uppercase tracking-wider"
+                        title="Playback Speed"
+                     >
+                        <Gauge size={12} />
+                        <span className="hidden sm:inline">{currentSpeedLabel}</span>
+                        <ChevronDown size={10} />
+                     </button>
+                     {showSpeedMenu && (
+                        <motion.div
+                           initial={{ opacity: 0, y: -6 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           className="absolute right-0 mt-2 w-28 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl py-1.5 z-50"
+                        >
+                           {speedOptions.map(opt => (
+                              <button
+                                 key={opt.value}
+                                 onClick={() => { setAnimationSpeed(opt.value); setShowSpeedMenu(false); }}
+                                 className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all hover:bg-[var(--foreground)]/5 ${
+                                    animationSpeed === opt.value ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
+                                 }`}
+                              >
+                                 {animationSpeed === opt.value && <span className="text-[var(--viz-green)] mr-1">✓</span>}
+                                 {opt.label}
+                              </button>
+                           ))}
+                        </motion.div>
+                     )}
+                  </div>
+               )}
+
+               {activeTab === "viz" && (
+                  <button
+                     onClick={toggleFullscreen}
+                     className="p-2 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-xl text-[var(--foreground)] transition-all cursor-pointer flex items-center justify-center"
+                     title="Fullscreen"
+                  >
+                     <Maximize2 size={14} />
+                  </button>
+               )}
+            </div>
          </div>
       )}
 
@@ -172,7 +222,7 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
             <div className="min-h-[400px]">
               {selectedCategory.detailedDocs || (
                   <div className="p-24 rounded-[3rem] text-center bg-[var(--foreground)]/[0.01] border border-[var(--border)] relative overflow-hidden">
-                      <p className="text-[var(--muted-foreground)] text-[10px] font-mono uppercase tracking-[0.4em] animate-pulse relative z-10">Neural documentation synthesizing...</p>
+                      <p className="text-[var(--muted-foreground)] text-[10px] font-mono uppercase tracking-[0.4em] animate-pulse relative z-10">Resources coming soon...</p>
                   </div>
               )}
             </div>
@@ -187,9 +237,9 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
                {selectedCategory.codeImplementations ? (
                   <CodeSnippet code={selectedCategory.codeImplementations} />
                ) : (
-                  <div className="p-16 rounded-[2.5rem] text-center bg-[var(--foreground)]/[0.01] border border-dashed border-[var(--border)]">
-                     <p className="text-[9px] text-[var(--muted-foreground)] font-black uppercase tracking-[0.4em]">Protocol Source Restricted</p>
-                  </div>
+                   <div className="p-16 rounded-[2.5rem] text-center bg-[var(--foreground)]/[0.01] border border-dashed border-[var(--border)]">
+                      <p className="text-[9px] text-[var(--muted-foreground)] font-black uppercase tracking-[0.4em]">No code available yet</p>
+                   </div>
                )}
             </div>
           )}
