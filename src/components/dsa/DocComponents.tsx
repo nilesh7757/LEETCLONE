@@ -27,8 +27,8 @@ export const CodeSnippet = ({ code, activeLine }: CodeSnippetProps) => {
   const lines = currentCode.split('\n');
 
   return (
-    <div className="rounded-2xl overflow-hidden bg-[#0d1117] group shadow-2xl border border-white/5">
-      <div className="flex items-center justify-between px-6 py-3 bg-[#161b22] border-b border-white/5">
+    <div className="rounded-2xl overflow-hidden bg-[#0d1117] group shadow-2xl border border-[var(--border)]">
+      <div className="flex items-center justify-between px-6 py-3 bg-[#161b22] border-b border-[var(--border)]">
         <div className="flex gap-4">
           {availableLangs.map((lang) => (
             <button
@@ -47,7 +47,7 @@ export const CodeSnippet = ({ code, activeLine }: CodeSnippetProps) => {
         <button 
           onClick={handleCopy} 
           disabled={!selectedLang}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-white/5 rounded-md disabled:opacity-30"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-[var(--foreground)]/5 rounded-md disabled:opacity-30"
         >
           {copied ? <Check size={14} className="text-[var(--viz-green)]" /> : <Copy size={14} />}
         </button>

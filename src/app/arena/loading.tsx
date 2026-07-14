@@ -6,7 +6,7 @@ const shimmer = "animate-pulse";
 
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-[#020202] text-[#e1e1e1] font-sans overflow-x-hidden pb-32">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans overflow-x-hidden pb-32">
       <div className="fixed inset-0 pointer-events-none z-0">
          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '100px 100px', perspective: '1200px', transform: 'rotateX(65deg) translateY(-10%)', transformOrigin: 'top' }} />
       </div>
@@ -48,7 +48,7 @@ export default function Loading() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
            {[1,2,3,4,5,6].map(i => (
-             <div key={i} className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 h-96" />
+             <div key={i} className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 h-96" />
            ))}
         </div>
       </div>

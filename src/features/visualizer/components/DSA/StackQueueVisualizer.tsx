@@ -149,7 +149,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
           </div>
 
           <div className="flex items-center gap-3">
-             <button onClick={() => { setItems([]); setHistory([]); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
+             <button onClick={() => { setItems([]); setHistory([]); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-[var(--foreground)]/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
           </div>
         </div>
 

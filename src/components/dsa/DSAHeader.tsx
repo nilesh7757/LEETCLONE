@@ -16,13 +16,13 @@ export const DSAHeader = ({ animationSpeed, setAnimationSpeed, handleShare, isSt
   if (isStudio) {
     return (
       <div className="flex items-center gap-8">
-         <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl">
+         <div className="flex items-center gap-4 bg-[var(--foreground)]/[0.03] border border-[var(--border)] px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl">
             <div className="flex items-center gap-2">
-               <span className="text-[9px] font-black text-[#52525b] uppercase tracking-widest">Speed</span>
+               <span className="text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Speed</span>
                <span className="text-[11px] font-mono font-bold text-[#3b82f6] tabular-nums w-12">{animationSpeed}ms</span>
             </div>
             <div className="w-40 h-1.5 relative flex items-center group/slider">
-               <div className="absolute w-full h-1 bg-white/5 rounded-full overflow-hidden" />
+               <div className="absolute w-full h-1 bg-[var(--foreground)]/5 rounded-full overflow-hidden" />
                <input 
                   type="range" min="100" max="2000" step="100" 
                   value={animationSpeed} 
@@ -34,14 +34,14 @@ export const DSAHeader = ({ animationSpeed, setAnimationSpeed, handleShare, isSt
                   style={{ width: `${((animationSpeed - 100) / 1900) * 100}%` }}
                />
                <div 
-                  className="absolute w-3 h-3 bg-white rounded-full shadow-lg transition-transform group-hover/slider:scale-125 border-2 border-[#050505]"
+                  className="absolute w-3 h-3 bg-white rounded-full shadow-lg transition-transform group-hover/slider:scale-125 border-2 border-[var(--background)]"
                   style={{ left: `calc(${((animationSpeed - 100) / 1900) * 100}% - 6px)` }}
                />
             </div>
          </div>
 
          <div className="flex items-center gap-2">
-            <button onClick={handleShare} className="p-2 hover:bg-white/5 rounded-lg text-[#52525b] hover:text-white transition-all border border-transparent hover:border-white/5">
+            <button onClick={handleShare} className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all border border-transparent hover:border-[var(--border)]">
                <Share2 size={16} />
             </button>
             <Link href="/problems" className="p-2 bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 rounded-lg text-[#3b82f6] transition-all border border-[#3b82f6]/20 flex items-center gap-2 group">
@@ -59,9 +59,9 @@ export const DSAHeader = ({ animationSpeed, setAnimationSpeed, handleShare, isSt
        <div className="flex items-center justify-between pt-4">
           <div className="flex items-center gap-3">
               <Link href="/" className="p-2 bg-[#3b82f6]/10 rounded-xl text-[#3b82f6]"><ChevronLeft size={20} /></Link>
-              <h1 className="text-xl font-bold tracking-tight text-white">DSA <span className="text-[#3b82f6]">Studio</span></h1>
+              <h1 className="text-xl font-bold tracking-tight text-[var(--foreground)]">DSA <span className="text-[#3b82f6]">Studio</span></h1>
           </div>
-          <button onClick={handleShare} className="p-2 bg-white/5 border border-white/5 rounded-xl text-[#52525b]">
+          <button onClick={handleShare} className="p-2 bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl text-[var(--muted-foreground)]">
               <Share2 size={20} />
           </button>
       </div>

@@ -128,18 +128,18 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
       <div className="absolute top-8 right-8 flex items-center gap-4 z-20">
          <div className="flex gap-6 pointer-events-none opacity-20 mr-4 font-sans">
             <div className="flex flex-col items-end">
-               <span className="text-[8px] font-black uppercase text-[#52525b] tracking-widest">Render Layer</span>
-               <span className="text-[10px] font-mono text-white">GL-Core_04</span>
+               <span className="text-[8px] font-black uppercase text-[var(--muted-foreground)] tracking-widest">Render Layer</span>
+               <span className="text-[10px] font-mono text-[var(--foreground)]">GL-Core_04</span>
             </div>
             <div className="flex flex-col items-end">
-               <span className="text-[8px] font-black uppercase text-[#52525b] tracking-widest">Sync</span>
+               <span className="text-[8px] font-black uppercase text-[var(--muted-foreground)] tracking-widest">Sync</span>
                <span className="text-[10px] font-mono text-[#22c55e]">Active</span>
             </div>
          </div>
 
          <button 
             onClick={toggleFullscreen}
-            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all backdrop-blur-xl group cursor-pointer"
+            className="p-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-2xl text-[var(--foreground)] transition-all backdrop-blur-xl group cursor-pointer"
             title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen (F11 style)"}
          >
             {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} className="group-hover:scale-110 transition-transform" />}
@@ -182,14 +182,14 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
     <div className="w-full space-y-8 md:space-y-12 p-4 md:p-10">
       {/* 1. STAGE TABS */}
       {!isFullscreen && (
-         <div className="flex items-center justify-between border-b border-white/5 pb-6">
+         <div className="flex items-center justify-between border-b border-[var(--border)] pb-6">
             <div className="flex gap-2">
                {tabs.map((tab) => (
                   <button
                      key={tab.id}
                      onClick={() => setActiveTab(tab.id)}
                      className={`flex items-center gap-3 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all relative ${
-                        activeTab === tab.id ? "text-white bg-white/5 border border-white/10" : "text-[#52525b] hover:text-[#a1a1aa]"
+                        activeTab === tab.id ? "text-[var(--foreground)] bg-[var(--foreground)]/5 border border-[var(--border)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                      }`}
                   >
                      <tab.icon size={14} style={{ color: activeTab === tab.id ? themeColor : "inherit" }} />
@@ -202,9 +202,9 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
             </div>
             
             <div className="flex items-center gap-4">
-               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/5">
+               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--foreground)]/[0.02] border border-[var(--border)]">
                   <Terminal size={12} className="text-[#3b82f6]" />
-                  <span className="text-[9px] font-mono text-[#52525b]">trace_layer: core.01</span>
+                  <span className="text-[9px] font-mono text-[var(--muted-foreground)]">trace_layer: core.01</span>
                </div>
             </div>
          </div>
@@ -224,15 +224,15 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
           {activeTab === "docs" && (
             <div className="min-h-[400px]">
               {selectedCategory.detailedDocs || (
-                  <div className="p-24 rounded-[3rem] text-center bg-white/[0.01] border border-white/5 relative overflow-hidden">
-                      <p className="text-[#52525b] text-[10px] font-mono uppercase tracking-[0.4em] animate-pulse relative z-10">Neural documentation synthesizing...</p>
+                  <div className="p-24 rounded-[3rem] text-center bg-[var(--foreground)]/[0.01] border border-[var(--border)] relative overflow-hidden">
+                      <p className="text-[var(--muted-foreground)] text-[10px] font-mono uppercase tracking-[0.4em] animate-pulse relative z-10">Neural documentation synthesizing...</p>
                   </div>
               )}
             </div>
           )}
 
           {activeTab === "code" && (
-            <div className="p-10 bg-[#050505] rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
+            <div className="p-10 bg-[var(--card)] rounded-[3rem] border border-[var(--border)] shadow-2xl relative overflow-hidden">
                <h3 className="text-xl font-bold mb-10 flex items-center gap-4">
                   <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: themeColor }} />
                   Source Implementation
@@ -240,8 +240,8 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
                {selectedCategory.codeImplementations ? (
                   <CodeSnippet code={selectedCategory.codeImplementations} />
                ) : (
-                  <div className="p-16 rounded-[2.5rem] text-center bg-white/[0.01] border border-dashed border-white/10">
-                     <p className="text-[9px] text-[#52525b] font-black uppercase tracking-[0.4em]">Protocol Source Restricted</p>
+                  <div className="p-16 rounded-[2.5rem] text-center bg-[var(--foreground)]/[0.01] border border-dashed border-[var(--border)]">
+                     <p className="text-[9px] text-[var(--muted-foreground)] font-black uppercase tracking-[0.4em]">Protocol Source Restricted</p>
                   </div>
                )}
             </div>
@@ -251,17 +251,17 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
 
       {/* Footer Info */}
       {!isFullscreen && (
-         <div className="flex flex-col sm:flex-row items-center justify-between p-4 px-6 bg-white/[0.02] border border-white/5 rounded-2xl gap-4">
+         <div className="flex flex-col sm:flex-row items-center justify-between p-4 px-6 bg-[var(--foreground)]/[0.02] border border-[var(--border)] rounded-2xl gap-4">
             <div className="flex items-center gap-4">
                <div className="w-9 h-9 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shrink-0">
                   <Cpu size={18} />
                </div>
                <div>
-                  <h4 className="text-xs font-bold text-white tracking-tight">Practice Module</h4>
-                  <p className="text-[10px] text-[#52525b] mt-0.5 tracking-wide">Solve algorithmic challenges related to {selectedCategory.title}.</p>
+                  <h4 className="text-xs font-bold text-[var(--foreground)] tracking-tight">Practice Module</h4>
+                  <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5 tracking-wide">Solve algorithmic challenges related to {selectedCategory.title}.</p>
                </div>
             </div>
-            <button className="w-full sm:w-auto px-5 py-2 bg-white text-black hover:bg-[#3b82f6] hover:text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer">
+            <button className="w-full sm:w-auto px-5 py-2 bg-[var(--foreground)] text-[var(--background)] hover:bg-[#3b82f6] hover:text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer">
                Initiate Training
             </button>
          </div>

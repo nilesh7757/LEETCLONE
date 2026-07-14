@@ -281,7 +281,7 @@ export default function ProfilePage() {
   else { rankColor = "var(--viz-slate)"; rankTitle = "Newbie"; }
 
   return (
-    <div className="min-h-screen w-full relative pb-12 overflow-x-hidden pt-6 select-none bg-[var(--background)]">
+    <div className="min-h-screen w-full relative pb-12 overflow-x-hidden pt-6 select-none bg-[var(--background)] text-[var(--foreground)]">
       <div className="max-w-[1600px] mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           

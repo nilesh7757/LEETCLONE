@@ -40,7 +40,7 @@ export default async function ArenaParticipationPage({ params }: PageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-[#020202] text-[#e1e1e1] font-sans selection:bg-[#f59e0b]/30">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[#f59e0b]/30">
       {/* Background Architecture */}
       <div className="fixed inset-0 pointer-events-none z-0">
          <div 

@@ -131,14 +131,14 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
                 <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Target</span>
                 <span className="text-sm font-black text-[var(--viz-cyan)] font-mono">{target}</span>
              </div>
-             <button onClick={resetSimulation} className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-muted-foreground hover:text-foreground" title="Randomize Target"><RotateCcw size={18}/></button>
+             <button onClick={resetSimulation} className="p-2.5 hover:bg-[var(--foreground)]/5 rounded-xl transition-all text-muted-foreground hover:text-foreground" title="Randomize Target"><RotateCcw size={18}/></button>
              
              {!isPlaying ? (
                 <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2.5 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                     <Play size={16} fill="currentColor"/> SCAN
                 </button>
              ) : (
-                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2.5 bg-white/10 text-foreground rounded-xl font-bold text-xs hover:bg-white/20 transition-all">
+                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2.5 bg-[var(--foreground)]/10 text-foreground rounded-xl font-bold text-xs hover:bg-[var(--foreground)]/20 transition-all">
                     <Pause size={16} fill="currentColor"/> HALT
                 </button>
              )}

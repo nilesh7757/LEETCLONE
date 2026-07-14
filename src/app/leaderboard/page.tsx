@@ -55,7 +55,7 @@ const PodiumCard = ({ user, delay }: { user: LeaderboardUser; delay: number }) =
       />
       
       {/* Border Gradient (Subtle) */}
-      <div className="absolute inset-0 rounded-[3rem] border border-white/5 group-hover:border-white/10 transition-colors" />
+      <div className="absolute inset-0 rounded-[3rem] border border-[var(--border)] group-hover:border-[var(--border)] transition-colors" />
 
       {/* Avatar Section */}
       <div className="absolute top-0 -translate-y-1/2">
@@ -75,7 +75,7 @@ const PodiumCard = ({ user, delay }: { user: LeaderboardUser; delay: number }) =
             </div>
             
             {/* Rank Badge Indicator */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 bg-[var(--card)] px-3 py-1 rounded-full border border-white/10 shadow-xl flex items-center gap-1">
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 bg-[var(--card)] px-3 py-1 rounded-full border border-[var(--border)] shadow-xl flex items-center gap-1">
                  <RankBadge rank={user.rank} />
             </div>
          </div>
@@ -157,7 +157,7 @@ export default function LeaderboardPage() {
             <motion.div 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/5 text-xs font-bold uppercase tracking-[0.2em] text-[var(--muted-foreground)]"
+                className="flex items-center gap-2 px-5 py-2 rounded-full bg-[var(--foreground)]/5 backdrop-blur-md border border-[var(--border)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--muted-foreground)]"
             >
                 <Flame size={12} className="text-[var(--viz-amber)]" fill="currentColor" /> Hall of Fame
             </motion.div>

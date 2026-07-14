@@ -237,7 +237,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
         </div>
 
         <div className="flex items-center gap-3 bg-muted/50 p-2 rounded-2xl  shadow-inner">
-          <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-3 bg-card hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
+          <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-3 bg-card hover:bg-[var(--foreground)]/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
             <RotateCcw size={20}/>
           </button>
           <div className="w-[1px] h-10 bg-border mx-1" />
@@ -365,7 +365,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                 style={{ position: 'absolute', left: 0, top: 0, translateX: '-50%', translateY: '-50%' }}
             >
                 <div className="w-3 h-3 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_20px_var(--viz-cyan)] animate-pulse" />
-                <div className="absolute inset-0 border-2 border-white/5 rounded-full animate-spin-slow" />
+                <div className="absolute inset-0 border-2 border-[var(--border)] rounded-full animate-spin-slow" />
             </motion.div>
           </div>
         </div>
@@ -373,7 +373,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
         {/* Sidebar Intelligence */}
         <div className="lg:col-span-4 flex flex-col gap-6">
             {/* Recursion Stack - Depth Visualization */}
-            <div className="p-4 md:p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl h-[260px] flex flex-col shadow-2xl relative overflow-hidden">
+            <div className="p-4 md:p-8 bg-card border border-[var(--border)] rounded-[3rem] space-y-6 backdrop-blur-3xl h-[260px] flex flex-col shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-5">
                     <Layers size={80} className="text-[var(--viz-lavender)]" />
                 </div>
@@ -409,7 +409,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
             </div>
 
             {/* Sequence Resolution */}
-            <div className="p-4 md:p-8 bg-card border border-white/5 rounded-[3rem] space-y-6 backdrop-blur-3xl flex-1 flex flex-col shadow-2xl overflow-hidden relative">
+            <div className="p-4 md:p-8 bg-card border border-[var(--border)] rounded-[3rem] space-y-6 backdrop-blur-3xl flex-1 flex flex-col shadow-2xl overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-6 opacity-5">
                     <ListTree size={100} className="text-[var(--viz-lavender)]" />
                 </div>
@@ -434,13 +434,13 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                         </AnimatePresence>
                     </div>
                 </div>
-                <div className="pt-6 border-t border-white/5 relative z-10">
+                <div className="pt-6 border-t border-[var(--border)] relative z-10">
                   <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-black/40 rounded-2xl border border-white/5 text-center shadow-inner">
+                      <div className="p-3 bg-black/40 rounded-2xl border border-[var(--border)] text-center shadow-inner">
                         <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Complexity</div>
                         <div className="text-sm font-black text-[var(--viz-green)] font-mono shadow-text">O(N)</div>
                       </div>
-                      <div className="p-3 bg-black/40 rounded-2xl border border-white/5 text-center shadow-inner">
+                      <div className="p-3 bg-black/40 rounded-2xl border border-[var(--border)] text-center shadow-inner">
                         <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Depth</div>
                         <div className="text-sm font-black text-[var(--viz-cyan)] font-mono shadow-text">O(H)</div>
                       </div>
@@ -451,7 +451,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       </div>
 
       {/* Controller Interface */}
-      <div className="mt-6 p-4 md:p-8 bg-card/30 border border-white/5 rounded-[3.5rem] flex flex-col gap-8 relative z-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
+      <div className="mt-6 p-4 md:p-8 bg-card/30 border border-[var(--border)] rounded-[3.5rem] flex flex-col gap-8 relative z-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--viz-lavender)]/30 to-transparent" />
           <div className="flex items-center justify-between px-6">
               <div className="flex items-center gap-4">
@@ -464,8 +464,8 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
                   </div>
               </div>
               <div className="flex items-center gap-3">
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-muted-foreground transition-all active:scale-90 shadow-xl"><ChevronLeft size={24} /></button>
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-muted-foreground transition-all active:scale-90 shadow-xl"><ChevronRight size={24} /></button>
+                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-2xl text-muted-foreground transition-all active:scale-90 shadow-xl"><ChevronLeft size={24} /></button>
+                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-2xl text-muted-foreground transition-all active:scale-90 shadow-xl"><ChevronRight size={24} /></button>
               </div>
           </div>
 

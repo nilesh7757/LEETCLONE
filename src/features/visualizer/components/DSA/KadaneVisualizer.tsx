@@ -165,7 +165,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-xl  shadow-inner">
-          <button onClick={generateArray} className="p-2 bg-card hover:bg-white/5 rounded-lg  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
+          <button onClick={generateArray} className="p-2 bg-card hover:bg-[var(--foreground)]/5 rounded-lg  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
             <RotateCcw size={16}/>
           </button>
           <div className="w-[1px] h-6 bg-border mx-1" />
@@ -297,7 +297,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                           <span>Local Max</span>
                           <span className="text-[var(--viz-cyan)]">DP[i]</span>
                         </div>
-                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-white/5 font-mono text-base font-bold text-[var(--viz-cyan)] text-right">
+                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-[var(--border)] font-mono text-base font-bold text-[var(--viz-cyan)] text-right">
                           {currentStep.currentSum}
                         </div>
                     </div>
@@ -306,7 +306,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                           <span>Global Max</span>
                           <span className="text-[var(--viz-deep-purple)]">Result</span>
                         </div>
-                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-white/5 font-mono text-base font-bold text-[var(--viz-deep-purple)] text-right">
+                        <div className="px-2 py-1.5 bg-black/20 rounded-lg border border-[var(--border)] font-mono text-base font-bold text-[var(--viz-deep-purple)] text-right">
                           {currentStep.maxSum}
                         </div>
                     </div>
@@ -323,8 +323,8 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Step {currentIndex + 1} / {history.length || 1}</span>
               </div>
               <div className="flex items-center gap-1">
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-white/5 rounded-lg text-muted-foreground transition-all active:scale-90"><ChevronLeft size={16} /></button>
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-white/5 rounded-lg text-muted-foreground transition-all active:scale-90"><ChevronRight size={16} /></button>
+                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all active:scale-90"><ChevronLeft size={16} /></button>
+                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all active:scale-90"><ChevronRight size={16} /></button>
               </div>
           </div>
 

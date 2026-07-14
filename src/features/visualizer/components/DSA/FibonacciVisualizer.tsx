@@ -136,13 +136,13 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
             </div>
             
             <div className="flex gap-1">
-              <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-white/5 rounded-xl text-muted-foreground/40 transition-all"><RotateCcw size={20}/></button>
+              <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-[var(--foreground)]/5 rounded-xl text-muted-foreground/40 transition-all"><RotateCcw size={20}/></button>
               {!isPlaying ? (
                 <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-2 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                     <Play size={16} fill="currentColor"/> EXECUTE
                 </button>
               ) : (
-                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-white/10 text-foreground rounded-xl font-bold text-xs hover:bg-white/20 transition-all">
+                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-2 bg-[var(--foreground)]/10 text-foreground rounded-xl font-bold text-xs hover:bg-[var(--foreground)]/20 transition-all">
                     <Pause size={16} fill="currentColor"/> HALT
                 </button>
               )}

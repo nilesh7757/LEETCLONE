@@ -257,14 +257,14 @@ export default function MergeSortVisualizer({ speed = 800 }: { speed?: number })
 
              {!isEditing && (
                 <>
-                    <button onClick={generateArray} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground" title="Randomize"><RotateCcw size={20}/></button>
+                    <button onClick={generateArray} className="p-3 bg-muted hover:bg-[var(--foreground)]/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground" title="Randomize"><RotateCcw size={20}/></button>
                     
                     {!isPlaying ? (
                         <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-amber)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                             <Play size={16} fill="currentColor"/> START
                         </button>
                     ) : (
-                        <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-3 bg-white/10 text-foreground rounded-xl font-bold text-xs hover:bg-white/20 transition-all">
+                        <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-3 bg-[var(--foreground)]/10 text-foreground rounded-xl font-bold text-xs hover:bg-[var(--foreground)]/20 transition-all">
                             <Pause size={16} fill="currentColor"/> PAUSE
                         </button>
                     )}

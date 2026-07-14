@@ -27,11 +27,11 @@ export const DSAControls = ({ searchTerm, setSearchTerm, activeGroup, setActiveG
             placeholder="search_manifolds..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-5 pl-24 pr-8 text-sm text-[#f5f5f5] focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/20 transition-all placeholder:text-[#52525b] font-mono shadow-2xl"
+            className="w-full bg-[var(--foreground)]/[0.02] border border-[var(--border)] rounded-2xl py-5 pl-24 pr-8 text-sm text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/20 transition-all placeholder:text-[var(--muted-foreground)] font-mono shadow-2xl"
           />
           <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none opacity-20 group-focus-within:opacity-40 transition-opacity">
-            <kbd className="px-2 py-1 bg-white/5 rounded-md text-[9px] font-mono font-black text-white shadow-sm">CTRL</kbd>
-            <kbd className="px-2 py-1 bg-white/5 rounded-md text-[9px] font-mono font-black text-white shadow-sm">K</kbd>
+            <kbd className="px-2 py-1 bg-[var(--foreground)]/5 rounded-md text-[9px] font-mono font-black text-[var(--foreground)] shadow-sm">CTRL</kbd>
+            <kbd className="px-2 py-1 bg-[var(--foreground)]/5 rounded-md text-[9px] font-mono font-black text-[var(--foreground)] shadow-sm">K</kbd>
           </div>
         </div>
         
@@ -46,8 +46,8 @@ export const DSAControls = ({ searchTerm, setSearchTerm, activeGroup, setActiveG
                   onClick={() => setActiveGroup(group.id)}
                   className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative overflow-hidden group/btn border ${
                     isActive 
-                      ? "bg-[#3b82f6]/10 text-white border-[#3b82f6]/30 shadow-[0_0_25px_rgba(59,130,246,0.15)]" 
-                      : "bg-white/[0.02] text-[#52525b] hover:text-[#a1a1aa] hover:bg-white/5 border-white/5 shadow-lg"
+                      ? "bg-[#3b82f6]/10 text-[var(--foreground)] border-[#3b82f6]/30 shadow-[0_0_25px_rgba(59,130,246,0.15)]" 
+                      : "bg-[var(--foreground)]/[0.02] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 border-[var(--border)] shadow-lg"
                   }`}
                 >
                   <span className={`transition-all duration-500 ${isActive ? "text-[#3b82f6] scale-110" : "group-hover/btn:rotate-12"}`}>
@@ -65,12 +65,12 @@ export const DSAControls = ({ searchTerm, setSearchTerm, activeGroup, setActiveG
       </div>
       
       <div className="flex items-center gap-6 px-4">
-        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
         <div className="flex items-center gap-3">
            <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse shadow-[0_0_8px_#22c55e]" />
-           <span className="text-[9px] font-black text-[#52525b] uppercase tracking-[0.4em]">System Status: Ready</span>
+           <span className="text-[9px] font-black text-[var(--muted-foreground)] uppercase tracking-[0.4em]">System Status: Ready</span>
         </div>
-        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
       </div>
     </div>
   );

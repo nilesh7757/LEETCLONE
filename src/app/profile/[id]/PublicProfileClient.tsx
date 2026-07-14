@@ -143,7 +143,7 @@ export default function PublicProfileClient({ user }: PublicProfileClientProps) 
   const externalStats = user.externalStats;
 
   return (
-    <div className={`min-h-screen w-full relative pb-20 overflow-x-hidden transition-colors duration-500`}>
+    <div className="min-h-screen w-full relative pb-20 overflow-x-hidden transition-colors duration-500 bg-[var(--background)] text-[var(--foreground)]">
       
       <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         

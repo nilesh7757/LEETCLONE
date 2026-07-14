@@ -397,7 +397,7 @@ export default function InterviewPage({
   const progress = ((currentStep + 1) / interview.questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--foreground)] p-4 md:p-8 flex flex-col items-center">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] p-4 md:p-8 flex flex-col items-center">
       {/* Session Title Header & Timer */}
       <header className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/5 pb-6 mb-8">
         <div>
@@ -468,7 +468,7 @@ export default function InterviewPage({
         
         {/* Left Side: Interviewer AI Room */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          <div className="p-6 md:p-8 bg-[#111111]/80 border border-white/5 rounded-3xl relative overflow-hidden shadow-xl">
+          <div className="p-6 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl relative overflow-hidden shadow-xl">
             {/* Visual Webcam Mirror overlay frame */}
             {isVideoActive && (
               <div className="absolute top-4 right-4 w-28 h-20 rounded-xl overflow-hidden border border-white/10 bg-black/80 z-20 shadow-md flex items-center justify-center font-mono">
@@ -567,7 +567,7 @@ export default function InterviewPage({
 
         {/* Right Side: Interactive Coder Workbench Workspace */}
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="bg-[#111111]/80 border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xl">
             
             {/* Workbench Tab bar header */}
             <div className="flex items-center justify-between bg-white/[0.02] border-b border-white/5 px-6 py-3">
@@ -672,14 +672,14 @@ function InterviewReport({ results, interview, answers, visibleCount, setVisible
   setVisibleCount: (val: number | ((prev: number) => number)) => void;
 }) {
   return (
-    <div className="min-h-screen bg-[#050505] p-4 md:p-12 max-w-5xl mx-auto space-y-12">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] p-4 md:p-12 max-w-5xl mx-auto space-y-12">
       {/* Header Summary */}
       <div className="text-center relative py-12">
         <div className="absolute inset-0 bg-[#8F44F0]/5 blur-3xl -z-10 rounded-full" />
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="inline-block p-8 rounded-[40px] bg-[#111] border border-white/5 shadow-2xl mb-8"
+          className="inline-block p-8 rounded-[40px] bg-[var(--card)] border border-[var(--border)] shadow-2xl mb-8"
         >
           <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#a1a1aa] mb-2">Overall Score</div>
           <div className="text-7xl font-black bg-gradient-to-r from-[#8F44F0] to-[#c084fc] bg-clip-text text-transparent">
@@ -700,7 +700,7 @@ function InterviewReport({ results, interview, answers, visibleCount, setVisible
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
             key={category}
-            className="p-6 bg-[#111] border border-white/5 rounded-3xl hover:border-[#8F44F0]/30 transition-all group"
+            className="p-6 bg-[var(--card)] border border-[var(--border)] hover:border-[#8F44F0]/30 transition-all group"
           >
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-[#a1a1aa]">{category}</span>
@@ -721,7 +721,7 @@ function InterviewReport({ results, interview, answers, visibleCount, setVisible
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Feedback & Recs */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="p-10 bg-[#111] border border-white/5 rounded-[32px] shadow-xl">
+          <div className="p-10 bg-[var(--card)] border border-[var(--border)] rounded-[32px] shadow-xl">
             <h3 className="flex items-center gap-3 text-lg font-black uppercase tracking-widest mb-8 text-white">
               <Bot className="w-5 h-5 text-purple-400" />
               Detailed AI Feedback
@@ -734,7 +734,7 @@ function InterviewReport({ results, interview, answers, visibleCount, setVisible
             />
           </div>
 
-          <div className="p-10 bg-[#111] border border-white/5 rounded-[32px] shadow-xl">
+          <div className="p-10 bg-[var(--card)] border border-[var(--border)] rounded-[32px] shadow-xl">
             <h3 className="flex items-center gap-3 text-lg font-black uppercase tracking-widest mb-8 text-amber-500">
               <Lightbulb className="w-5 h-5" />
               Learning Roadmap
@@ -794,7 +794,7 @@ function InterviewReport({ results, interview, answers, visibleCount, setVisible
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="p-8 bg-[#111] border border-white/5 rounded-3xl group hover:border-[#8F44F0]/20 transition-all text-left"
+                className="p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl group hover:border-[#8F44F0]/20 transition-all text-left"
               >
                 <div className="flex justify-between items-start mb-6">
                   <div className="space-y-1">

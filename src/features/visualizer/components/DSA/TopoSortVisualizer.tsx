@@ -165,15 +165,15 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
           </div>
 
           <div className="flex items-center gap-3">
-             <button onClick={generateRandomEdges} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><Shuffle size={20}/></button>
-             <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-white/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
+             <button onClick={generateRandomEdges} className="p-3 bg-muted hover:bg-[var(--foreground)]/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><Shuffle size={20}/></button>
+             <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-3 bg-muted hover:bg-[var(--foreground)]/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground"><RotateCcw size={20}/></button>
              
              {!isPlaying ? (
                 <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-rose)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
                     <Play size={16} fill="currentColor"/> EXECUTE
                 </button>
              ) : (
-                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-3 bg-white/10 text-foreground rounded-xl font-bold text-xs hover:bg-white/20 transition-all">
+                <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-3 bg-[var(--foreground)]/10 text-foreground rounded-xl font-bold text-xs hover:bg-[var(--foreground)]/20 transition-all">
                     <Pause size={16} fill="currentColor"/> HALT
                 </button>
              )}

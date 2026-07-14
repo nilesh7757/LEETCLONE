@@ -389,7 +389,7 @@ export default function SegmentTreeVisualizer({ speed = 800 }: { speed?: number 
                 <button onClick={() => {
                      const arr = arrayInput.split(',').map(Number).filter(n => !isNaN(n));
                      if(arr.length > 0) { setArrayData(arr); setHistory([]); recordOperation('BUILD'); }
-                }} className="p-2 hover:bg-white/5 rounded-xl text-xs font-bold text-foreground transition-all flex items-center gap-2 px-3 "><Hammer size={14}/> BUILD</button>
+                }} className="p-2 hover:bg-[var(--foreground)]/5 rounded-xl text-xs font-bold text-foreground transition-all flex items-center gap-2 px-3 "><Hammer size={14}/> BUILD</button>
             </div>
             
             <div className="flex items-center gap-2 bg-muted p-2 rounded-2xl  shadow-inner">

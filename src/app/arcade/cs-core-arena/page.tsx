@@ -290,10 +290,10 @@ export default function CsCoreArena() {
   };
 
   return (
-    <div className={`min-h-screen bg-[#09090b] text-gray-100 p-4 md:p-8 flex flex-col items-center justify-start overflow-x-hidden relative ${shakeScreen ? 'animate-shake' : ''}`}>
+    <div className={`min-h-screen bg-[var(--background)] text-[var(--foreground)] p-4 md:p-8 flex flex-col items-center justify-start overflow-x-hidden relative ${shakeScreen ? 'animate-shake' : ''}`}>
       {/* Dynamic scanlines & carbon grids */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none z-0" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#09090b] via-transparent to-[#09090b] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)] pointer-events-none z-0" />
       
       {/* Background glow flares */}
       <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none" />
@@ -460,13 +460,13 @@ export default function CsCoreArena() {
                       </div>
 
                       {/* Question */}
-                      <h2 className="text-sm sm:text-xl font-bold leading-relaxed mb-4 sm:mb-6 text-white font-sans">
+                      <h2 className="text-sm sm:text-xl font-bold leading-relaxed mb-4 sm:mb-6 text-[var(--foreground)] font-sans">
                         {currentObstacle.question}
                       </h2>
 
                       {/* Optional Code Snippet */}
                       {currentObstacle.codeBlock && (
-                        <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-zinc-800/80 bg-[#0c0c0e] p-3.5 sm:p-5 font-mono text-[10px] sm:text-xs text-cyan-300/90 mb-4 sm:mb-6 leading-relaxed max-w-full overflow-x-auto shadow-inner">
+                        <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--background)] p-3.5 sm:p-5 font-mono text-[10px] sm:text-xs text-cyan-300/90 mb-4 sm:mb-6 leading-relaxed max-w-full overflow-x-auto shadow-inner">
                           <pre>{currentObstacle.codeBlock}</pre>
                         </div>
                       )}
@@ -674,7 +674,7 @@ export default function CsCoreArena() {
                       </div>
 
                       {item.codeBlock && (
-                        <pre className="p-4 rounded-xl bg-[#0c0c0e] border border-zinc-850 font-mono text-xs text-cyan-300/80 leading-relaxed overflow-x-auto max-w-full">
+                        <pre className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-cyan-300/80 leading-relaxed overflow-x-auto max-w-full">
                           {item.codeBlock}
                         </pre>
                       )}
