@@ -87,16 +87,6 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
     router.push(`?${params.toString()}`);
   };
 
-  if (problems.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center rounded-3xl bg-[var(--foreground)]/[0.01] border border-dashed border-[var(--border)] relative overflow-hidden">
-        <HelpCircle className="w-10 h-10 text-[var(--muted-foreground)]/30 mb-4" />
-        <h3 className="text-xl font-bold tracking-tight">No problems found matching this criteria</h3>
-        <p className="text-xs text-[var(--muted-foreground)] mt-2">Try adjusting your active filters.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8 select-none">
       <div className="overflow-x-auto">
@@ -112,7 +102,14 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]/40">
-            {problems.map((problem, idx) => (
+            {problems.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-8 text-[var(--muted-foreground)]">
+                  No problems found matching these criteria.
+                </td>
+              </tr>
+            ) : (
+              problems.map((problem, idx) => (
               <tr 
                 key={problem.id}
                 className="group hover:bg-[var(--foreground)]/[0.02] transition-colors"
@@ -188,7 +185,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                   </span>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

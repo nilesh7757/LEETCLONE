@@ -115,7 +115,7 @@ export default function ProblemFilters() {
     params.set("page", "1");
     
     startTransition(() => {
-      router.push(`?${params.toString()}`);
+      router.push(`?${params.toString()}`, { scroll: false });
     });
   }, [debouncedSearch, difficulty, category, company, starred, router]);
 
