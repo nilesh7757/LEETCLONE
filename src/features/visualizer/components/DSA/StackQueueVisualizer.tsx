@@ -154,7 +154,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[500px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-12">
+        <div className="relative min-h-[350px] md:min-h-[500px] w-full bg-muted/40 rounded-[2.5rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-12">
             
             {/* Controls Overlay */}
             <div className="absolute top-6 right-6 z-30 flex flex-col gap-2 pointer-events-auto bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm">
@@ -182,7 +182,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
             </div>
 
             {/* Info Overlay */}
-            <div className="absolute top-6 left-6 z-30 flex flex-col gap-2 pointer-events-none max-w-[200px]">
+            <div className="absolute top-4 left-4 md:top-6 md:left-6 z-30 flex flex-col gap-2 pointer-events-none max-w-[200px]">
                 <div className="bg-card/90 backdrop-blur  p-4 rounded-2xl shadow-sm">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
                             <Activity size={12} /> Buffer Specs
@@ -322,8 +322,8 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
         </div>
 
         {/* Timeline Scrubber */}
-        <div className={`mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity`}>
-            <div className="flex items-center justify-between px-2">
+        <div className={`mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity`}>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Operation Sequence {currentIndex + 1} of {history.length || 1}</span>
@@ -334,7 +334,7 @@ export default function StackQueueVisualizer({ speed = 800 }: { speed?: number }
                 </div>
             </div>
 
-            <div className="relative flex items-center group/slider">
+            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
                 <div className="absolute h-1 rounded-full shadow-[0_0_10px_rgba(88,196,221,0.3)]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%`, backgroundColor: activeColor }} />
                 <input 

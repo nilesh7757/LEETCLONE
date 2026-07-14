@@ -85,7 +85,7 @@ export default function SieveVisualizer({ speed = 400 }: { speed?: number }) {
 
   return (
     <div className="flex flex-col gap-6 font-sans select-none">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col min-h-[550px]">
+      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar relative flex flex-col min-h-[350px] md:min-h-[550px] w-full">
         <div className="relative z-10 flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
                 <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)]">
@@ -105,8 +105,8 @@ export default function SieveVisualizer({ speed = 400 }: { speed?: number }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
-            <div className="lg:col-span-12 relative p-6 bg-muted/30 rounded-[2rem] flex flex-wrap gap-2 items-center justify-center">
-                <div className="absolute top-6 left-6 z-20">
+            <div className="lg:col-span-12 relative p-3 md:p-6 bg-muted/30 rounded-[2rem] flex flex-wrap gap-2 items-center justify-center">
+                <div className="absolute top-4 left-4 md:top-6 md:left-6 z-20">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-md rounded-full shadow-sm border border-border/50">
                         <Zap size={12} className="text-[var(--viz-cyan)]" fill="var(--viz-cyan)" />
                         <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-widest">{currentStep.step}</span>
@@ -140,8 +140,8 @@ export default function SieveVisualizer({ speed = 400 }: { speed?: number }) {
             </div>
         </div>
 
-        <div className="mt-4 p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4">
-            <div className="flex items-center justify-between px-2">
+        <div className="mt-4 p-3 md:p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Sieve Progress</span>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>

@@ -169,8 +169,8 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
-                <div className="absolute top-6 left-6 z-20">
+            <div className="lg:col-span-8 relative p-3 md:p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
+                <div className="absolute top-4 left-4 md:top-6 md:left-6 z-20">
                     <AnimatePresence mode="wait">
                         <motion.div 
                             key={currentStep.step}
@@ -293,7 +293,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             </div>
 
             <div className="lg:col-span-4 flex flex-col gap-6">
-                <div className="p-6 bg-muted/20  rounded-[2rem]">
+                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
                         <ShoppingBag size={14}/> Active Item
                     </h3>
@@ -329,7 +329,7 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
                     </AnimatePresence>
                 </div>
 
-                <div className="p-6 bg-muted/20  rounded-[2rem] flex-1 min-h-[200px]">
+                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem] flex-1 min-h-[350px] md:min-h-[200px] w-full overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
                         <Cpu size={14}/> Logic Flow
                     </h3>
@@ -348,8 +348,8 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             </div>
         </div>
 
-        <div className="mt-4 p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
-            <div className="flex items-center justify-between px-2">
+        <div className="mt-4 p-3 md:p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">

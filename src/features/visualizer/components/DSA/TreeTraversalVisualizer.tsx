@@ -257,14 +257,14 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Visual Engine - Main Canvas */}
-        <div ref={containerRef} className="lg:col-span-8 relative min-h-[450px] bg-muted/10 rounded-[3rem]  overflow-hidden shadow-inner flex items-center justify-center p-10">
+        <div ref={containerRef} className="lg:col-span-8 relative min-h-[350px] md:min-h-[450px] w-full bg-muted/10 rounded-[3rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex items-center justify-center p-10">
           
           {/* Manim Grid Backdrop */}
           <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
                style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
 
           {/* Real-time Status */}
-          <div className="absolute top-8 left-10 flex flex-col gap-4 z-30">
+          <div className="absolute top-4 left-4 md:top-8 md:left-10 flex flex-col gap-4 z-30">
             <AnimatePresence>
               {currentStep.stepType !== "IDLE" && (
                 <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="flex items-center gap-3 px-5 py-2.5 bg-card/80 backdrop-blur-xl  rounded-2xl shadow-xl">

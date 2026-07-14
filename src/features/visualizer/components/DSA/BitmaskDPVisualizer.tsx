@@ -137,7 +137,7 @@ export default function BitmaskDPVisualizer({ speed = 800 }: { speed?: number })
 
   return (
     <div className="flex flex-col gap-6 font-sans select-none">
-      <div className="p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl relative overflow-hidden flex flex-col min-h-[750px]">
+      <div className="p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl relative overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar flex flex-col min-h-[350px] md:min-h-[750px] w-full">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '32px 32px' }} />
 
@@ -300,8 +300,8 @@ export default function BitmaskDPVisualizer({ speed = 800 }: { speed?: number })
         </div>
 
         {/* Controls */}
-        <div className="mt-8 p-6 bg-[var(--muted)] border border-border rounded-3xl flex flex-col gap-5">
-            <div className="flex items-center justify-between">
+        <div className="mt-8 p-3 md:p-6 bg-[var(--muted)] border border-border rounded-3xl flex flex-col gap-5">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
                 <div className="flex items-center gap-3">
                     <Binary size={16} className="text-[var(--viz-purple)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Step {currentIndex + 1} / {history.length}</span>

@@ -231,7 +231,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
          {/* Header & Inputs */}
-         <div className="relative z-10 p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
+         <div className="relative z-10 p-3 md:p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
                 <div className="p-3 bg-[var(--viz-lime)]/10 rounded-2xl text-[var(--viz-lime)]">
                     <LinkIcon size={24} />
@@ -269,10 +269,10 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
          </div>
 
          {/* --- The Visual Stage --- */}
-         <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
+         <div className="relative min-h-[350px] md:min-h-[400px] w-full bg-muted/5 flex flex-col items-center justify-center p-4 md:p-8 overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
             
             {/* Logic Badge */}
-            <div className="absolute top-6 left-6">
+            <div className="absolute top-4 left-4 md:top-6 md:left-6">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border bg-card/50 backdrop-blur-md shadow-sm`} style={{ borderColor: `${activeColor}40` }}>
                     <Zap size={12} fill={activeColor} className="text-transparent" />
                     <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: activeColor }}>{currentStep.phase}</span>

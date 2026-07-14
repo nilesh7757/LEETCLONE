@@ -191,7 +191,7 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
           </div>
         </div>
 
-        <div className="relative min-h-[480px] bg-muted/40 rounded-[2.5rem]  overflow-hidden shadow-2xl flex flex-col items-center justify-center px-4 md:px-10">
+        <div className="relative min-h-[350px] md:min-h-[480px] w-full bg-muted/40 rounded-[2.5rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-2xl flex flex-col items-center justify-center px-4 md:px-10">
             
             {/* Target Indicator for Current Minimum */}
             {currentStep.currentMinIdx !== null && (
@@ -207,7 +207,7 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
 
             <AnimatePresence>
                 {currentStep.activeStep && (
-                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-8 left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-amber)]/10 border border-[var(--viz-amber)]/30 rounded-full z-30">
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-4 left-4 md:top-8 md:left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-amber)]/10 border border-[var(--viz-amber)]/30 rounded-full z-30">
                         <Sparkles size={12} className="text-[var(--viz-amber)]" />
                         <span className="text-[9px] font-black font-mono text-[var(--viz-amber)] uppercase tracking-[0.2em]">{currentStep.activeStep}</span>
                     </motion.div>
@@ -226,7 +226,7 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
                 </motion.div>
             </AnimatePresence>
 
-            <div className="relative w-full h-full flex items-end justify-center pb-40">
+            <div className="relative w-full h-full min-w-[600px] flex items-end justify-center pb-40">
                 {currentStep.nodes.map((node) => {
                     const isComparing = node.status === 'comparing';
                     const isSwapping = node.status === 'swapping';
@@ -257,8 +257,8 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
             </div>
         </div>
 
-        <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
-            <div className="flex items-center justify-between px-2">
+        <div className="mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Hash size={14} className="text-primary" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Phase {currentIndex + 1} of {history.length}</span>
@@ -269,7 +269,7 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
                 </div>
             </div>
 
-            <div className="relative flex items-center group/slider">
+            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
                 <div className="absolute w-full h-1 bg-background/10 rounded-full" />
                 <div className="absolute h-1 bg-[var(--viz-amber)] rounded-full shadow-[0_0_10px_var(--viz-amber)44]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 
@@ -285,10 +285,10 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
       </div>
 
       <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Global Minimum</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Scanning Manifold</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Displacement</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Stable Subspace</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Global Minimum</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Scanning Manifold</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Displacement</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Stable Subspace</span></div>
       </div>
     </div>
   );

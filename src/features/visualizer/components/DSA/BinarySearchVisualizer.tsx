@@ -146,7 +146,7 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
         </div>
 
         {/* Visual Canvas */}
-        <div className="relative min-h-[450px] bg-muted/30 rounded-[3rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center p-12">
+        <div className="relative min-h-[350px] md:min-h-[450px] w-full bg-muted/30 rounded-[3rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-12">
             
             <div className="relative flex items-center justify-center w-full h-full">
                 {/* Boundary Highlights */}
@@ -210,7 +210,7 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
             </AnimatePresence>
 
             {/* Metrics Overlay */}
-            <div className="absolute top-8 left-8 z-30 flex flex-col gap-4 pointer-events-none">
+            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 flex flex-col gap-4 pointer-events-none">
                 <div className="bg-card/90 backdrop-blur border border-border p-4 rounded-2xl shadow-sm">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2 mb-3">
                             <Activity size={12} /> Scan Log
@@ -234,8 +234,8 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
         </div>
 
         {/* Timeline Scrubber */}
-        <div className="mt-8 p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4 relative z-10 border border-border/50">
-            <div className="flex items-center justify-between px-2">
+        <div className="mt-8 p-3 md:p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4 relative z-10 border border-border/50">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Hash size={14} className="text-[var(--viz-cyan)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-mono">Iteration Sequence {currentIndex + 1} of {history.length}</span>
@@ -263,8 +263,8 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
 
       {/* Legend */}
       <div className="px-4 md:px-10 py-6 bg-muted/10  rounded-[2.5rem] border border-border/20 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Pivot Pointer</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Optimal State</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Pivot Pointer</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest font-mono">Optimal State</span></div>
       </div>
     </div>
   );

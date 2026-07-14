@@ -74,10 +74,12 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isStudio }: D
       if (wrapperRef.current) {
         const width = wrapperRef.current.getBoundingClientRect().width;
         const targetWidth = 760;
-        if (width < targetWidth) {
-          setScale(width / targetWidth);
-        } else {
-          setScale(1);
+        if (width > 100) {
+          if (width < targetWidth) {
+            setScale(Math.max(0.4, width / targetWidth));
+          } else {
+            setScale(1);
+          }
         }
       }
     };

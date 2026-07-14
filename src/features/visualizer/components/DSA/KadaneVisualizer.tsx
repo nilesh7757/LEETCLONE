@@ -185,10 +185,10 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Visualization Area */}
-        <div className="lg:col-span-3 relative min-h-[320px] bg-muted/10 rounded-[2rem] /50 overflow-hidden shadow-inner flex flex-col items-center justify-center p-6 md:p-10">
+        <div className="lg:col-span-3 relative min-h-[350px] md:min-h-[320px] w-full bg-muted/10 rounded-[2rem] /50 overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center p-6 md:p-10">
           
           {/* Logic Step Badge */}
-          <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
+          <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col gap-3 z-30">
             <AnimatePresence>
               {currentStep.stepType !== "INIT" && (
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full w-fit">
@@ -317,7 +317,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
       {/* Control Interface */}
       <div className="mt-4 p-4 bg-muted/10 /50 rounded-[2rem] flex flex-col gap-4 relative z-10 backdrop-blur-sm">
-          <div className="flex items-center justify-between px-2">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
               <div className="flex items-center gap-2">
                   <Hash size={12} className="text-[var(--viz-deep-purple)]" />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Step {currentIndex + 1} / {history.length || 1}</span>

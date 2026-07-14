@@ -288,7 +288,7 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
                 style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         )}
         
-        <div className={`flex flex-col xl:flex-row items-start xl:items-center justify-between mb-8 relative z-40 gap-6 ${isFullscreen ? "bg-[#050505]/60 p-4 rounded-2xl backdrop-blur-xl border border-white/5 shadow-2xl" : ""}`}>
+        <div className={`flex flex-col xl:flex-row items-start xl:items-center justify-between mb-8 relative z-40 gap-6 ${isFullscreen ? "bg-[var(--card)]/60 p-4 rounded-2xl backdrop-blur-xl border border-[var(--border)] shadow-2xl" : ""}`}>
           <div className="space-y-1">
             <h2 className="text-xl md:text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
               {mode} <span className="text-[var(--muted-foreground)]/40">Traversal Explorer</span>
@@ -341,7 +341,7 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
           </div>
         </div>
 
-        <div className={`relative flex-1 min-h-[400px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair ${isFullscreen ? "bg-transparent border-white/5" : ""}`}>
+        <div className={`relative flex-1 min-h-[350px] md:min-h-[400px] w-full bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center cursor-crosshair ${isFullscreen ? "bg-transparent border-white/5" : ""}`}>
             
             <div ref={containerRef} className="absolute inset-0 w-full h-full">
                 <AnimatePresence>
@@ -477,8 +477,8 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
             </div>
         </div>
 
-        <div className={`mt-8 p-4 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"} ${isFullscreen ? "bg-[#111]/40" : ""}`}>
-            <div className="flex items-center justify-between px-2">
+        <div className={`mt-8 p-4 md:p-3 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"} ${isFullscreen ? "bg-[#111]/40" : ""}`}>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Activity size={14} className="text-[var(--viz-rose)]" />
                     <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Lemma Execution {currentIndex + 1} of {history.length}</span>
@@ -489,7 +489,7 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
                 </div>
             </div>
 
-            <div className="relative flex items-center group/slider">
+            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
                 <div className="absolute w-full h-1 bg-[var(--background)]/10 rounded-full" />
                 <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(88,196,221,0.4)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 
@@ -506,10 +506,10 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
 
       {!isFullscreen && (
          <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Expand</span></div>
-            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Visited Node</span></div>
-            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Next Coordinate</span></div>
-            <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Topology Engine</span></div>
+            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Expand</span></div>
+            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Visited Node</span></div>
+            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Next Coordinate</span></div>
+            <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Topology Engine</span></div>
          </div>
       )}
     </div>

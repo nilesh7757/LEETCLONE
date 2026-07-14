@@ -171,7 +171,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
-         <div className="relative z-10 p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
+         <div className="relative z-10 p-3 md:p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
                 <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl text-[var(--viz-cyan)]">
                     <Search size={24} />
@@ -212,7 +212,7 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
             </div>
          </div>
 
-         <div className="relative min-h-[400px] bg-muted/5 flex flex-col items-center justify-center overflow-hidden">
+         <div className="relative min-h-[350px] md:min-h-[400px] w-full bg-muted/5 flex flex-col items-center justify-center overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
             
             <div className="absolute left-1/2 top-0 bottom-0 w-[60px] -ml-[30px] border-x-2 border-dashed border-[var(--viz-cyan)]/20 bg-[var(--viz-cyan)]/5 z-0" />
             <div className="absolute left-1/2 top-8 -translate-x-1/2 flex flex-col items-center z-10 opacity-50">

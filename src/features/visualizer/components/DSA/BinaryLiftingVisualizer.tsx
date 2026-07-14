@@ -159,7 +159,7 @@ export default function BinaryLiftingVisualizer({ speed = 800 }: { speed?: numbe
 
   return (
     <div className="flex flex-col gap-6 font-sans select-none">
-      <div className="p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl relative overflow-hidden flex flex-col min-h-[950px]">
+      <div className="p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl relative overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar flex flex-col min-h-[350px] md:min-h-[950px] w-full">
         
         {/* Header */}
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between mb-10 gap-6">

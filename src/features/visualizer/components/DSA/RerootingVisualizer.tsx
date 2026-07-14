@@ -206,7 +206,7 @@ export default function RerootingVisualizer({ speed = 800 }: { speed?: number })
 
         <div className="relative h-[450px] md:h-[550px] bg-[var(--muted)]/30 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner w-full" ref={vizRef}>
             {/* Legend & Status */}
-            <div className="absolute top-6 left-6 md:top-8 md:left-8 flex flex-col gap-3 z-30 pointer-events-none">
+            <div className="absolute top-4 left-4 md:top-6 md:left-6 md:top-8 md:left-8 flex flex-col gap-3 z-30 pointer-events-none">
                 <motion.div key={currentStep.pass} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2 px-4 py-2 bg-[var(--card)]/60 border border-[var(--border)] rounded-full shadow-lg w-fit backdrop-blur-md">
                     <Layers size={14} className={currentStep.pass === "PASS1" ? "text-[var(--viz-cyan)]" : currentStep.pass === "PASS2" ? "text-[var(--viz-rose)]" : "text-[var(--viz-purple)]"} />
                     <span className="text-[10px] font-black font-mono uppercase tracking-[0.2em]" style={{ color: currentStep.pass === "PASS1" ? "var(--viz-cyan)" : currentStep.pass === "PASS2" ? "var(--viz-rose)" : "var(--viz-purple)" }}>{currentStep.step}</span>
@@ -327,8 +327,8 @@ export default function RerootingVisualizer({ speed = 800 }: { speed?: number })
             </AnimatePresence>
         </div>
 
-        <div className="mt-8 p-4 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2rem] flex flex-col gap-4 relative z-10 shadow-inner">
-            <div className="flex items-center justify-between px-2">
+        <div className="mt-8 p-4 md:p-3 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2rem] flex flex-col gap-4 relative z-10 shadow-inner">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-2 md:gap-3">
                     <Hash size={14} className="text-[var(--viz-purple)]" />        
                     <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} / {history.length}</span>

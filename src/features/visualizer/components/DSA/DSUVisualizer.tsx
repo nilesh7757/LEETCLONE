@@ -298,7 +298,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
       <div className="bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative">
         
         {/* Header / Controls */}
-        <div className="p-6 bg-muted/20 flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="p-3 md:p-6 bg-muted/20 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
                 <div className="p-3 bg-[var(--viz-lime)]/10 rounded-2xl text-[var(--viz-lime)]">
                     <Network size={28} />
@@ -333,11 +333,11 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         {/* --- DUAL VIEWPORT --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[350px] md:min-h-[500px] w-full overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
             
             {/* LEFT: GRAPH PLAYGROUND */}
             <div className="relative border-b lg:border-b-0 lg:border-r border-border bg-muted/5 p-4 md:p-8 flex flex-col items-center justify-center group/graph">
-                <div className="absolute top-6 left-6 flex items-center gap-2 pointer-events-none">
+                <div className="absolute top-4 left-4 md:top-6 md:left-6 flex items-center gap-2 pointer-events-none">
                     <div className="w-2 h-2 rounded-full bg-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Interaction Graph</span>
                 </div>
@@ -409,7 +409,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
 
             {/* RIGHT: FOREST STRUCTURE */}
             <div className="relative bg-muted/10 p-4 md:p-8 flex flex-col items-center justify-center">
-                <div className="absolute top-6 left-6 flex items-center gap-2 pointer-events-none">
+                <div className="absolute top-4 left-4 md:top-6 md:left-6 flex items-center gap-2 pointer-events-none">
                     <div className="w-2 h-2 rounded-full bg-[var(--viz-lime)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Internal Forest State</span>
                 </div>
@@ -519,7 +519,7 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
         {/* --- Log Footer --- */}
         <div className="border-t border-border bg-muted/10 p-4">
             <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-3">
                         <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider ${currentStep.phase === "UNION" ? "bg-[var(--viz-amber)] text-black" : currentStep.phase === "COMPRESS" ? "bg-[var(--viz-green)] text-black" : "bg-muted text-muted-foreground"}`}>
                             {currentStep.phase}

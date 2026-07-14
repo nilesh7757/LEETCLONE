@@ -209,7 +209,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Matrix View */}
-            <div className="lg:col-span-5 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
+            <div className="lg:col-span-5 relative p-3 md:p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
                 <div className="absolute top-4 left-6 z-20">
                     <AnimatePresence mode="wait">
                         <motion.div 
@@ -293,7 +293,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
             </div>
 
             {/* Topology View */}
-            <div className="lg:col-span-4 relative p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center justify-center min-h-[300px]">
+            <div className="lg:col-span-4 relative p-3 md:p-6 bg-muted/30 rounded-[2rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center min-h-[350px] md:min-h-[300px] w-full">
                 <div className="absolute top-4 left-6 flex items-center gap-2 text-muted-foreground/20">
                     <Network size={12}/>
                     <span className="text-[8px] font-black uppercase tracking-widest">Graph State</span>
@@ -362,7 +362,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
             {/* Sidebar Logic */}
             <div className="lg:col-span-3 flex flex-col gap-6">
                 {/* Logic Card */}
-                <div className="p-6 bg-muted/20  rounded-[2rem] flex flex-col gap-4">
+                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem] flex flex-col gap-4">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                         <Cpu size={14}/> Logic Core
                     </h3>
@@ -386,7 +386,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
                 </div>
 
                 {/* Log Stream */}
-                <div className="p-6 bg-muted/20  rounded-[2rem] flex-1 h-[200px] overflow-hidden">
+                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem] flex-1 h-[200px] overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-2">
                         <Activity size={14}/> Log
                     </h3>
@@ -410,8 +410,8 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
         </div>
 
         {/* Footer */}
-        <div className="mt-4 p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
-            <div className="flex items-center justify-between px-2">
+        <div className="mt-4 p-3 md:p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Hash size={14} className="text-[var(--viz-amber)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">

@@ -337,7 +337,7 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
           </div>
         </div>
 
-        <div className="relative min-h-[520px] bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-inner flex flex-col items-center justify-center cursor-crosshair">
+        <div className="relative min-h-[350px] md:min-h-[520px] w-full bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center cursor-crosshair">
             
             <div ref={containerRef} className="absolute inset-0 w-full h-full">
                 <AnimatePresence>
@@ -519,8 +519,8 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
             </div>
         </div>
 
-        <div className={`mt-8 p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
-            <div className="flex items-center justify-between px-2">
+        <div className={`mt-8 p-3 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
                 <div className="flex items-center gap-3">
                     <Activity size={14} className="text-[var(--viz-rose)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Synthesis Progress {currentIndex + 1} of {history.length}</span>
@@ -531,7 +531,7 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
                 </div>
             </div>
 
-            <div className="relative flex items-center group/slider">
+            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
                 <div className="absolute w-full h-1 bg-[var(--background)]/10 rounded-full" />
                 <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(88,196,221,0.4)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
                 <input 
@@ -547,10 +547,10 @@ export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) 
       </div>
 
       <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Optimal Node</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Priority Weight</span></div>
-         <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Path Synthesis</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Optimal Node</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Priority Weight</span></div>
+         <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Path Synthesis</span></div>
       </div>
     </div>
   );

@@ -173,7 +173,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
           {/* Logic Step Badge */}
           <AnimatePresence>
               {currentStep.step !== "BOOT" && (
-                  <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full z-30">
+                  <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-4 left-4 md:top-6 md:left-6 flex items-center gap-2 px-4 py-2 bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 rounded-full z-30">
                       <Zap size={12} className="text-[var(--viz-cyan)]" />
                       <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-[0.2em]">{currentStep.step}</span>
                   </motion.div>
@@ -247,7 +247,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
 
         {/* Sidebar: Resolution Log */}
         <div className="flex flex-col gap-6">
-            <div className="p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[350px] overflow-hidden">
+            <div className="p-3 md:p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[350px] overflow-hidden">
                 <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
                     <Activity size={14}/> Execution Flow
                 </h3>
@@ -268,7 +268,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
                 </div>
             </div>
 
-            <div className="p-6 bg-muted  rounded-[2rem]">
+            <div className="p-3 md:p-6 bg-muted  rounded-[2rem]">
                 <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
                     <Cpu size={14}/> State Metrics
                 </h3>
@@ -291,8 +291,8 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
       </div>
 
       {/* Scrubber UI */}
-      <div className="mt-8 p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
-          <div className="flex items-center justify-between px-2">
+      <div className="mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
               <div className="flex items-center gap-3">
                   <Hash size={14} className="text-[var(--viz-deep-purple)]" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
@@ -303,7 +303,7 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
               </div>
           </div>
 
-          <div className="relative flex items-center group/slider">
+          <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
               <div className="absolute w-full h-1 bg-background/10 rounded-full" />
               <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)44]" style={{ width: `${(currentIndex / Math.max(1, (history.length - 1))) * 100}%` }} />
               <input 
@@ -319,10 +319,10 @@ export default function NQueensVisualizer({ speed = 500 }: { speed?: number }) {
 
       {/* Legend */}
       <div className="mt-8 px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-deep-purple)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Safe Placement</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Conflict Detected</span></div>
-         <div className="flex items-center gap-3"><Sparkles size={14} className="text-muted-foreground/20" /><span className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Optimized Traversal</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-deep-purple)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Recursive Probe</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Safe Placement</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Conflict Detected</span></div>
+         <div className="flex items-center gap-3"><Sparkles size={14} className="text-muted-foreground/20" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Optimized Traversal</span></div>
       </div>
     </div>
   );
