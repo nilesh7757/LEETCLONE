@@ -43,7 +43,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Generate a placement-ready manifold (mix of pos/neg)
+  // Generate a placement-ready structure (mix of pos/neg)
   const generateArray = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
@@ -90,7 +90,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
     let s = 0;
     let bestStart = 0, bestEnd = 0;
 
-    record("Manifold initialized. Optimal subarray search initiated.", "INIT", -1, 0, 0, [0, -1], [0, -1]);
+    record("Structure initialized. Optimal subarray search initiated.", "INIT", -1, 0, 0, [0, -1], [0, -1]);
 
     for (let i = 0; i < initialData.length; i++) {
       const val = initialData[i];
@@ -107,14 +107,14 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
         bestStart = s;
         bestEnd = i;
         record(
-          `New global maximum localized: ${maxSoFar}. Updating optimal range boundaries.`, 
+          `New global maximum isolated: ${maxSoFar}. Updating optimal range boundaries.`, 
           "UPDATE_MAX", i, currentMax, maxSoFar, [s, i], [bestStart, bestEnd]
         );
       }
 
       if (currentMax < 0) {
         record(
-          `Local potential collapsed to ${currentMax}. Pruning non-viable manifold. Resetting search pivot.`, 
+          `Local potential collapsed to ${currentMax}. Pruning non-viable structure. Resetting search pivot.`, 
           "RESET", i, currentMax, maxSoFar, [s, i], [bestStart, bestEnd]
         );
         currentMax = 0;
@@ -145,7 +145,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
     maxSum: 0, 
     subarrayRange: [0, -1], 
     bestRange: [0, -1], 
-    explanation: "Waiting for manifold...", 
+    explanation: "Waiting for structure...", 
     stepType: "INIT",
     logs: [] 
   };
@@ -265,10 +265,10 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
         {/* Sidebar Metrics */}
         <div className="flex flex-col gap-4">
-            {/* State Invariants */}
+            {/* State Propertys */}
             <div className="p-5 bg-muted/20  rounded-[2rem] space-y-4 backdrop-blur-sm flex-1 flex flex-col justify-center">
                 <h3 className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                    <Cpu size={12}/> Invariants
+                    <Cpu size={12}/> Propertys
                 </h3>
                 <div className="space-y-3">
                     <div className="flex flex-col gap-1">
@@ -292,6 +292,13 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                 </div>
             </div>
         </div>
+      </div>
+
+      {/* Step Message (below canvas) */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-bold tracking-tight">
+          {currentStep.explanation}
+        </p>
       </div>
 
       {/* Control Interface */}

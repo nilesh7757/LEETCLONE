@@ -142,12 +142,27 @@ export default function SieveVisualizer({ speed = 400 }: { speed?: number }) {
 
         <div className="mt-4 p-3 md:p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Sieve Progress</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Step {currentIndex + 1} of {history.length || 1}</span>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
-                    <button onClick={() => setCurrentIndex(Math.min(history.length - 1, currentIndex + 1))} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
+                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
                 </div>
             </div>
+
+            {/* Timeline Slider */}
+            <div className="relative flex items-center group/slider w-full h-6">
+                <div className="absolute w-full h-1 bg-background/20 rounded-full" />
+                <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full" style={{ width: `${(currentIndex / Math.max(1, (history.length - 1))) * 100}%` }} />
+                <input 
+                    type="range" min="0" max={history.length - 1} value={currentIndex} 
+                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                    className="w-full h-6 opacity-0 cursor-pointer z-10"
+                />
+                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)] pointer-events-none transition-all"
+                    style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 3px)` }}
+                />
+            </div>
+
             <div className="text-center text-[11px] font-mono text-[var(--viz-amber)] bg-card/50 py-2 rounded-xl border border-border/50">
                 {currentStep.message}
             </div>

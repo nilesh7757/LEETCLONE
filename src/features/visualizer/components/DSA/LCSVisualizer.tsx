@@ -146,7 +146,7 @@ export default function LCSVisualizer({ speed = 800 }: { speed?: number }) {
                 </div>
                 <div>
                     <h2 className="text-xl font-bold tracking-tight">Longest Common Subsequence</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">DP Matrix Manifold</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">DP Matrix Structure</p>
                 </div>
             </div>
           </div>

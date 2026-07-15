@@ -92,7 +92,7 @@ export default function FenwickTreeVisualizer({ speed = 800 }: { speed?: number 
                 </div>
                 <div>
                     <h2 className="text-xl font-bold tracking-tight">Fenwick Tree (BIT)</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Binary Indexed Range Manifold</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Binary Indexed Range Structure</p>
                 </div>
             </div>
             <div className="flex items-center gap-3">

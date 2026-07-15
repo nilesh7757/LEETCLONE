@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 interface NQueensStep {
-  board: number[][]; // 0: empty, 1: safe, 2: probing, 3: conflict
+  board: number[][]; // 0: empty, 1: safe, 2: checking, 3: conflict
   col: number;
   message: string;
   step: "BOOT" | "PROBE" | "COMMIT" | "CONFLICT" | "BACKTRACK" | "COMPLETE";

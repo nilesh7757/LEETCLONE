@@ -149,7 +149,7 @@ export default function EditDistanceVisualizer({ speed = 800 }: { speed?: number
                 </div>
                 <div>
                     <h2 className="text-xl font-bold tracking-tight">Levenshtein Edit Distance</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Minimal Transformation Manifold</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Minimal Transformation Structure</p>
                 </div>
             </div>
           </div>

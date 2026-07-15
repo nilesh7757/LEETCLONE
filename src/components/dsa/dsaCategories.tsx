@@ -128,13 +128,13 @@ export const dsaCategories = [
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Extremum Search" icon={Search} color="var(--viz-deep-purple)">
-            <p>Selection Sort operates on the principle of <strong>In-Place Extremum Selection</strong>. It conceptually divides the manifold into a sorted and an unsorted sub-manifold.</p>
-            <p>In each iteration, the algorithm performs a linear scan to identify the absolute minimum element in the unsorted region and displaces it to the boundary of the sorted region.</p>
+            <p>Selection Sort operates on the principle of <strong>In-Place Extremum Selection</strong>. It conceptually divides the structure into a sorted and an unsorted subarray.</p>
+            <p>In each iteration, the algorithm performs a linear scan to identify the absolute minimum element in the unsorted region and moves it to the boundary of the sorted region.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N²)" space="O(1)" />
-            <DocSection title="Displacement Lemma" icon={Zap} color="var(--viz-rose)">
-              <p>Unlike Bubble Sort, Selection Sort performs at most <strong>$N-1$ swaps</strong>. This makes it more efficient in scenarios where memory write operations (displacement) are significantly more expensive than comparisons.</p>
+            <DocSection title="Swap Efficiency" icon={Zap} color="var(--viz-rose)">
+              <p>Unlike Bubble Sort, Selection Sort performs at most <strong>$N-1$ swaps</strong>. This makes it more efficient in scenarios where memory write operations (swaps) are significantly more expensive than comparisons.</p>
             </DocSection>
           </div>
         </div>
@@ -342,16 +342,16 @@ export const dsaCategories = [
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Memory Manifold" icon={Cpu}>
+          <DocSection title="Memory Layout" icon={Cpu}>
             <p>A Linked List represents data as a sequence of <strong>Discrete Memory Objects</strong>. Unlike arrays, nodes are not stored contiguously; they are linked via <strong>Heuristic Pointers</strong> (memory addresses).</p>
-            <p>This allows for constant-time $O(1)$ insertions and deletions at known locations, as we only need to re-map the address references rather than shifting the entire manifold.</p>
+            <p>This allows for constant-time $O(1)$ insertions and deletions at known locations, as we only need to re-map the address references rather than shifting the entire structure.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N) Search" space="O(N)" />
             <DocSection title="Pointer Anatomy" icon={Share2} color="var(--viz-amber)">
               <ul className="space-y-3 list-none">
                 <li className="flex gap-2"><span className="text-[var(--viz-cyan)] font-bold">● Value:</span> The payload residing at the address.</li>
-                <li className="flex gap-2"><span className="text-[var(--viz-amber)] font-bold">● Next:</span> A hex reference to the successor manifold.</li>
+                <li className="flex gap-2"><span className="text-[var(--viz-amber)] font-bold">● Next:</span> A hex reference to the successor structure.</li>
                 <li className="flex gap-2"><span className="text-[var(--viz-rose)] font-bold">● NULL:</span> The termination signal of the sequence.</li>
               </ul>
             </DocSection>
@@ -426,7 +426,7 @@ function traverse(head) {
     icon: <Network />,
     themeColor: "var(--viz-rose)",
     themeRGB: "var(--viz-rose-rgb)",
-    description: "Relational manifold search.",
+    description: "Relational structure search.",
     component: (speed: number) => <GraphVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -881,6 +881,12 @@ let q = []; q.push(10); let f = q.shift();`
   },
   {
     id: "QUICK_SORT",
+    codeImplementations: {
+    "C++": "int partition(vector<int>& arr, int low, int high) {\n    int pivot = arr[high]; // Lomuto Pivot\n    int i = (low - 1);     // Index of smaller element\n    for (int j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++; \n            swap(arr[i], arr[j]);\n        }\n    }\n    swap(arr[i + 1], arr[high]);\n    return (i + 1);\n}\n\nvoid quickSort(vector<int>& arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}",
+    "Python": "def partition(arr, low, high):\n    pivot = arr[high]\n    i = low - 1\n    for j in range(low, high):\n        if arr[j] < pivot:\n            i += 1\n            arr[i], arr[j] = arr[j], arr[i]\n    arr[i + 1], arr[high] = arr[high], arr[i + 1]\n    return i + 1\n\ndef quick_sort(arr, low, high):\n    if low < high:\n        pi = partition(arr, low, high)\n        quick_sort(arr, low, pi - 1)\n        quick_sort(arr, pi + 1, high)",
+    "Java": "int partition(int[] arr, int low, int high) {\n    int pivot = arr[high];\n    int i = (low - 1);\n    for (int j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            int temp = arr[i];\n            arr[i] = arr[j];\n            arr[j] = temp;\n        }\n    }\n    int temp = arr[i + 1];\n    arr[i + 1] = arr[high];\n    arr[high] = temp;\n    return i + 1;\n}\n\nvoid quickSort(int[] arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}",
+    "JavaScript": "function partition(arr, low, high) {\n    let pivot = arr[high];\n    let i = low - 1;\n    for (let j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            [arr[i], arr[j]] = [arr[j], arr[i]];\n        }\n    }\n    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];\n    return i + 1;\n}\n\nfunction quickSort(arr, low, high) {\n    if (low < high) {\n        let pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}"
+},
     title: "Quick Sort",
     icon: <Zap />,
     themeColor: "var(--viz-amber)",
@@ -930,6 +936,12 @@ let q = []; q.push(10); let f = q.shift();`
   },
   {
     id: "MERGE_SORT",
+    codeImplementations: {
+    "C++": "void merge(vector<int>& arr, int l, int m, int r) {\n    int n1 = m - l + 1;\n    int n2 = r - m;\n    vector<int> L(n1), R(n2);\n    for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n    for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n    int i = 0, j = 0, k = l;\n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) {\n            arr[k] = L[i]; i++;\n        } else {\n            arr[k] = R[j]; j++;\n        }\n        k++;\n    }\n    while (i < n1) { arr[k] = L[i]; i++; k++; }\n    while (j < n2) { arr[k] = R[j]; j++; k++; }\n}\n\nvoid mergeSort(vector<int>& arr, int l, int r) {\n    if (l < r) {\n        int m = l + (r - l) / 2;\n        mergeSort(arr, l, m);\n        mergeSort(arr, m + 1, r);\n        merge(arr, l, m, r);\n    }\n}",
+    "Python": "def merge(arr, l, m, r):\n    n1 = m - l + 1\n    n2 = r - m\n    L = arr[l : m + 1]\n    R = arr[m + 1 : r + 1]\n    i = j = 0\n    k = l\n    while i < n1 and j < n2:\n        if L[i] <= R[j]:\n            arr[k] = L[i]\n            i += 1\n        else:\n            arr[k] = R[j]\n            j += 1\n        k += 1\n    while i < n1:\n        arr[k] = L[i]\n        i += 1\n        k += 1\n    while j < n2:\n        arr[k] = R[j]\n        j += 1\n        k += 1\n\ndef merge_sort(arr, l, r):\n    if l < r:\n        m = (l + r) // 2\n        merge_sort(arr, l, m)\n        merge_sort(arr, m + 1, r)\n        merge(arr, l, m, r)",
+    "Java": "void merge(int[] arr, int l, int m, int r) {\n    int n1 = m - l + 1;\n    int n2 = r - m;\n    int[] L = new int[n1];\n    int[] R = new int[n2];\n    System.arraycopy(arr, l, L, 0, n1);\n    System.arraycopy(arr, m + 1, R, 0, n2);\n    int i = 0, j = 0, k = l;\n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) {\n            arr[k] = L[i]; i++;\n        } else {\n            arr[k] = R[j]; j++;\n        }\n        k++;\n    }\n    while (i < n1) { arr[k] = L[i]; i++; k++; }\n    while (j < n2) { arr[k] = R[j]; j++; k++; }\n}\n\nvoid mergeSort(int[] arr, int l, int r) {\n    if (l < r) {\n        int m = l + (r - l) / 2;\n        mergeSort(arr, l, m);\n        mergeSort(arr, m + 1, r);\n        merge(arr, l, m, r);\n    }\n}",
+    "JavaScript": "function merge(arr, l, m, r) {\n    let n1 = m - l + 1;\n    let n2 = r - m;\n    let L = arr.slice(l, m + 1);\n    let R = arr.slice(m + 1, r + 1);\n    let i = 0, j = 0, k = l;\n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) {\n            arr[k] = L[i]; i++;\n        } else {\n            arr[k] = R[j]; j++;\n        }\n        k++;\n    }\n    while (i < n1) { arr[k] = L[i]; i++; k++; }\n    while (j < n2) { arr[k] = R[j]; j++; k++; }\n}\n\nfunction mergeSort(arr, l, r) {\n    if (l < r) {\n        let m = Math.floor(l + (r - l) / 2);\n        mergeSort(arr, l, m);\n        mergeSort(arr, m + 1, r);\n        merge(arr, l, m, r);\n    }\n}"
+},
     title: "Merge Sort",
     icon: <Layers />,
     themeColor: "var(--viz-amber)",
@@ -940,13 +952,13 @@ let q = []; q.push(10); let f = q.shift();`
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Atomic Decomposition" icon={Microscope} color="var(--viz-deep-purple)">
-            <p>Merge Sort treats sorting as a process of <strong>Recursive Decomposition</strong>. The manifold is split into atomic units (single elements) which are inherently sorted. The true logic resides in the <strong>Conquer Phase</strong>.</p>
-            <p>By merging two sorted sub-manifolds, we maintain a stable order while re-assembling the full vector space.</p>
+            <p>Merge Sort treats sorting as a process of <strong>Recursive Decomposition</strong>. The structure is split into atomic units (single elements) which are inherently sorted. The true logic resides in the <strong>Conquer Phase</strong>.</p>
+            <p>By merging two sorted subarrays, we maintain a stable order while re-assembling the full vector space.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N log N)" space="O(N)" />
             <DocSection title="Merging Lemma" icon={GitMerge} color="var(--viz-amber)">
-              <p>During the merge, we compare the leading elements of two sub-manifolds. The smaller element is moved to the parent manifold, ensuring that each re-assembled level is perfectly ordered.</p>
+              <p>During the merge, we compare the leading elements of two subarrays. The smaller element is moved to the parent structure, ensuring that each re-assembled level is perfectly ordered.</p>
             </DocSection>
           </div>
         </div>
@@ -981,23 +993,29 @@ let q = []; q.push(10); let f = q.shift();`
   },
   {
     id: "BST",
+    codeImplementations: {
+    "C++": "struct TreeNode {\n    int val;\n    TreeNode* left;\n    TreeNode* right;\n    TreeNode(int x) : val(x), left(NULL), right(NULL) {}\n};\n\nTreeNode* search(TreeNode* root, int val) {\n    if (root == nullptr || root->val == val) return root;\n    if (val < root->val) return search(root->left, val);\n    return search(root->right, val);\n}\n\nTreeNode* insert(TreeNode* root, int val) {\n    if (!root) return new TreeNode(val);\n    if (val < root->val) root->left = insert(root->left, val);\n    else if (val > root->val) root->right = insert(root->right, val);\n    return root;\n}",
+    "Python": "class TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\ndef search(root, val):\n    if root is None or root.val == val:\n        return root\n    if val < root.val:\n        return search(root.left, val)\n    return search(root.right, val)\n\ndef insert(root, val):\n    if root is None:\n        return TreeNode(val)\n    if val < root.val:\n        root.left = insert(root.left, val)\n    elif val > root.val:\n        root.right = insert(root.right, val)\n    return root",
+    "Java": "class TreeNode {\n    int val;\n    TreeNode left, right;\n    TreeNode(int x) { val = x; }\n}\n\npublic TreeNode search(TreeNode root, int val) {\n    if (root == null || root.val == val) return root;\n    if (val < root.val) return search(root.left, val);\n    return search(root.right, val);\n}\n\npublic TreeNode insert(TreeNode root, int val) {\n    if (root == null) return new TreeNode(val);\n    if (val < root.val) root.left = insert(root.left, val);\n    else if (val > root.val) root.right = insert(root.right, val);\n    return root;\n}",
+    "JavaScript": "class TreeNode {\n    constructor(val) {\n        this.val = val;\n        this.left = null;\n        this.right = null;\n    }\n}\n\nfunction search(root, val) {\n    if (root === null || root.val === val) return root;\n    if (val < root.val) return search(root.left, val);\n    return search(root.right, val);\n}\n\nfunction insert(root, val) {\n    if (root === null) return new TreeNode(val);\n    if (val < root.val) root.left = insert(root.left, val);\n    else if (val > root.val) root.right = insert(root.right, val);\n    return root;\n}"
+},
     title: "Binary Search Tree",
     icon: <GitBranch />,
     themeColor: "var(--viz-lavender)",
     themeRGB: "var(--viz-lavender-rgb)",
-    description: "Hierarchical sorted manifold.",
+    description: "Hierarchical sorted tree.",
     component: (speed: number) => <BSTVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Hierarchical Logic" icon={Network}>
-            <p>A Binary Search Tree (BST) maps a 1D manifold into a 2D <strong>Hierarchical Structure</strong>. For every node, all descendants in the left sub-tree are smaller, and all descendants in the right sub-tree are larger.</p>
+            <p>A Binary Search Tree (BST) maps a 1D array into a 2D <strong>Hierarchical Structure</strong>. For every node, all descendants in the left sub-tree are smaller, and all descendants in the right sub-tree are larger.</p>
             <p>This spatial arrangement allows for search, insertion, and deletion operations to be performed in logarithmic time relative to the tree depth.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N)" space="O(N)" />
             <DocSection title="Geometric Balance" icon={Check} color="var(--viz-amber)">
-              <p>The effectiveness of a BST is directly proportional to its <strong>Structural Balance</strong>. A skewed tree degenerates into a linear manifold ($O(N)$), while a balanced tree maintains optimal $O(\\$log N)$ performance.</p>
+              <p>The effectiveness of a BST is directly proportional to its <strong>Structural Balance</strong>. A skewed tree degenerates into a linear structure ($O(N)$), while a balanced tree maintains optimal $O(\\$log N)$ performance.</p>
             </DocSection>
           </div>
         </div>
@@ -1040,17 +1058,23 @@ let q = []; q.push(10); let f = q.shift();`
   },
   {
     id: "TRIE",
+    codeImplementations: {
+    "C++": "struct TrieNode {\n    TrieNode* children[26] = {nullptr};\n    bool isEndOfWord = false;\n};\n\nclass Trie {\n    TrieNode* root = new TrieNode();\npublic:\n    void insert(string word) {\n        TrieNode* curr = root;\n        for (char c : word) {\n            int idx = c - 'a';\n            if (!curr->children[idx]) curr->children[idx] = new TrieNode();\n            curr = curr->children[idx];\n        }\n        curr->isEndOfWord = true;\n    }\n    \n    bool search(string word) {\n        TrieNode* curr = root;\n        for (char c : word) {\n            int idx = c - 'a';\n            if (!curr->children[idx]) return false;\n            curr = curr->children[idx];\n        }\n        return curr->isEndOfWord;\n    }\n};",
+    "Python": "class TrieNode:\n    def __init__(self):\n        self.children = {}\n        self.is_end_of_word = False\n\nclass Trie:\n    def __init__(self):\n        self.root = TrieNode()\n\n    def insert(self, word: str) -> None:\n        curr = self.root\n        for char in word:\n            if char not in curr.children:\n                curr.children[char] = TrieNode()\n            curr = curr.children[char]\n        curr.is_end_of_word = True\n\n    def search(self, word: str) -> bool:\n        curr = self.root\n        for char in word:\n            if char not in curr.children:\n                return False\n            curr = curr.children[char]\n        return curr.is_end_of_word",
+    "Java": "class TrieNode {\n    TrieNode[] children = new TrieNode[26];\n    boolean isEndOfWord = false;\n}\n\npublic class Trie {\n    private TrieNode root = new TrieNode();\n\n    public void insert(String word) {\n        TrieNode curr = root;\n        for (char c : word.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) curr.children[idx] = new TrieNode();\n            curr = curr.children[idx];\n        }\n        curr.isEndOfWord = true;\n    }\n\n    public boolean search(String word) {\n        TrieNode curr = root;\n        for (char c : word.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) return false;\n            curr = curr.children[idx];\n        }\n        return curr.isEndOfWord;\n    }\n}",
+    "JavaScript": "class TrieNode {\n    constructor() {\n        this.children = {};\n        this.isEndOfWord = false;\n    }\n}\n\nclass Trie {\n    constructor() {\n        this.root = new TrieNode();\n    }\n\n    insert(word) {\n        let curr = this.root;\n        for (let char of word) {\n            if (!curr.children[char]) {\n                curr.children[char] = new TrieNode();\n            }\n            curr = curr.children[char];\n        }\n        curr.isEndOfWord = true;\n    }\n\n    search(word) {\n        let curr = this.root;\n        for (let char of word) {\n            if (!curr.children[char]) return false;\n            curr = curr.children[char];\n        }\n        return curr.isEndOfWord;\n    }\n}"
+},
     title: "Trie (Prefix Tree)",
     icon: <BoxSelect />,
     themeColor: "var(--viz-lavender)",
     themeRGB: "var(--viz-lavender-rgb)",
-    description: "Optimized string retrieval manifold.",
+    description: "Optimized string retrieval structure.",
     component: (speed: number) => <TrieVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Prefix Compression" icon={Cpu} color="var(--viz-lavender)">
-            <p>A Trie (Prefix Tree) optimizes sequence storage by <strong>Sharing Common Prefixes</strong>. Instead of storing the full sequence, each node represents a single character manifold.</p>
+            <p>A Trie (Prefix Tree) optimizes sequence storage by <strong>Sharing Common Prefixes</strong>. Instead of storing the full sequence, each node represents a single character structure.</p>
             <p>This allows for ultra-fast $O(L)$ lookups (where $L$ is sequence length) and is the foundation for autocomplete and linguistic analysis systems.</p>
           </DocSection>
           <div className="space-y-8">
@@ -1091,17 +1115,23 @@ let q = []; q.push(10); let f = q.shift();`
   },
   {
     id: "HEAP",
+    codeImplementations: {
+    "C++": "class MaxHeap {\n    vector<int> heap;\n    void heapifyUp(int i) {\n        while (i > 0 && heap[(i-1)/2] < heap[i]) {\n            swap(heap[(i-1)/2], heap[i]);\n            i = (i-1)/2;\n        }\n    }\n    void heapifyDown(int i) {\n        int maxIdx = i, l = 2*i + 1, r = 2*i + 2;\n        if (l < heap.size() && heap[l] > heap[maxIdx]) maxIdx = l;\n        if (r < heap.size() && heap[r] > heap[maxIdx]) maxIdx = r;\n        if (i != maxIdx) {\n            swap(heap[i], heap[maxIdx]);\n            heapifyDown(maxIdx);\n        }\n    }\npublic:\n    void insert(int val) {\n        heap.push_back(val);\n        heapifyUp(heap.size() - 1);\n    }\n    int extractMax() {\n        if (heap.empty()) return -1;\n        int maxVal = heap[0];\n        heap[0] = heap.back(); heap.pop_back();\n        heapifyDown(0);\n        return maxVal;\n    }\n};",
+    "Python": "class MaxHeap:\n    def __init__(self):\n        self.heap = []\n    \n    def insert(self, val):\n        self.heap.append(val)\n        self._heapify_up(len(self.heap) - 1)\n        \n    def extract_max(self):\n        if not self.heap: return -1\n        max_val = self.heap[0]\n        if len(self.heap) > 1:\n            self.heap[0] = self.heap.pop()\n            self._heapify_down(0)\n        else:\n            self.heap.pop()\n        return max_val\n        \n    def _heapify_up(self, i):\n        while i > 0 and self.heap[(i-1)//2] < self.heap[i]:\n            self.heap[(i-1)//2], self.heap[i] = self.heap[i], self.heap[(i-1)//2]\n            i = (i-1)//2\n            \n    def _heapify_down(self, i):\n        max_idx = i\n        l, r = 2*i + 1, 2*i + 2\n        if l < len(self.heap) and self.heap[l] > self.heap[max_idx]: max_idx = l\n        if r < len(self.heap) and self.heap[r] > self.heap[max_idx]: max_idx = r\n        if i != max_idx:\n            self.heap[i], self.heap[max_idx] = self.heap[max_idx], self.heap[i]\n            self._heapify_down(max_idx)",
+    "Java": "import java.util.ArrayList;\n\nclass MaxHeap {\n    private ArrayList<Integer> heap = new ArrayList<>();\n    \n    public void insert(int val) {\n        heap.add(val);\n        heapifyUp(heap.size() - 1);\n    }\n    \n    public int extractMax() {\n        if (heap.isEmpty()) return -1;\n        int maxVal = heap.get(0);\n        int lastVal = heap.remove(heap.size() - 1);\n        if (!heap.isEmpty()) {\n            heap.set(0, lastVal);\n            heapifyDown(0);\n        }\n        return maxVal;\n    }\n    \n    private void heapifyUp(int i) {\n        while (i > 0 && heap.get((i-1)/2) < heap.get(i)) {\n            int temp = heap.get((i-1)/2);\n            heap.set((i-1)/2, heap.get(i));\n            heap.set(i, temp);\n            i = (i-1)/2;\n        }\n    }\n    \n    private void heapifyDown(int i) {\n        int maxIdx = i, l = 2*i + 1, r = 2*i + 2;\n        if (l < heap.size() && heap.get(l) > heap.get(maxIdx)) maxIdx = l;\n        if (r < heap.size() && heap.get(r) > heap.get(maxIdx)) maxIdx = r;\n        if (i != maxIdx) {\n            int temp = heap.get(i);\n            heap.set(i, heap.get(maxIdx));\n            heap.set(maxIdx, temp);\n            heapifyDown(maxIdx);\n        }\n    }\n}",
+    "JavaScript": "class MaxHeap {\n    constructor() {\n        this.heap = [];\n    }\n    insert(val) {\n        this.heap.push(val);\n        this.heapifyUp(this.heap.length - 1);\n    }\n    extractMax() {\n        if (this.heap.length === 0) return -1;\n        const maxVal = this.heap[0];\n        const lastVal = this.heap.pop();\n        if (this.heap.length > 0) {\n            this.heap[0] = lastVal;\n            this.heapifyDown(0);\n        }\n        return maxVal;\n    }\n    heapifyUp(i) {\n        while (i > 0 && this.heap[Math.floor((i-1)/2)] < this.heap[i]) {\n            const pIdx = Math.floor((i-1)/2);\n            [this.heap[pIdx], this.heap[i]] = [this.heap[i], this.heap[pIdx]];\n            i = pIdx;\n        }\n    }\n    heapifyDown(i) {\n        let maxIdx = i;\n        const l = 2 * i + 1, r = 2 * i + 2;\n        if (l < this.heap.length && this.heap[l] > this.heap[maxIdx]) maxIdx = l;\n        if (r < this.heap.length && this.heap[r] > this.heap[maxIdx]) maxIdx = r;\n        if (i !== maxIdx) {\n            [this.heap[i], this.heap[maxIdx]] = [this.heap[maxIdx], this.heap[i]];\n            this.heapifyDown(maxIdx);\n        }\n    }\n}"
+},
     title: "Binary Heap",
     icon: <Binary />,
     themeColor: "var(--viz-lavender)",
     themeRGB: "var(--viz-lavender-rgb)",
-    description: "Complete tree priority manifold.",
+    description: "Complete tree priority structure.",
     component: (speed: number) => <HeapVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Priority Ordering" icon={Target} color="var(--viz-amber)">
-            <p>A Min-Heap is a specialized complete tree that maintains the <strong>Heap Property</strong>: the value of each node is less than or equal to the values of its children. This ensures that the global minimum is always at the root manifold.</p>
+            <p>A Min-Heap is a specialized complete tree that maintains the <strong>Heap Property</strong>: the value of each node is less than or equal to the values of its children. This ensures that the global minimum is always at the root structure.</p>
             <p>It is the primary engine for <strong>Priority Queues</strong> and greedy algorithmic choices.</p>
           </DocSection>
           <div className="space-y-8">
@@ -1605,6 +1635,12 @@ public:
   },
   {
     id: "FIBONACCI",
+    codeImplementations: {
+    "C++": "int fib(int n) {\n    if (n <= 1) return n;\n    int prev2 = 0, prev1 = 1;\n    for (int i = 2; i <= n; i++) {\n        int curr = prev1 + prev2;\n        prev2 = prev1;\n        prev1 = curr;\n    }\n    return prev1;\n}",
+    "Python": "def fib(n):\n    if n <= 1: return n\n    prev2, prev1 = 0, 1\n    for i in range(2, n + 1):\n        curr = prev1 + prev2\n        prev2 = prev1\n        prev1 = curr\n    return prev1",
+    "Java": "public int fib(int n) {\n    if (n <= 1) return n;\n    int prev2 = 0, prev1 = 1;\n    for (int i = 2; i <= n; i++) {\n        int curr = prev1 + prev2;\n        prev2 = prev1;\n        prev1 = curr;\n    }\n    return prev1;\n}",
+    "JavaScript": "function fib(n) {\n    if (n <= 1) return n;\n    let prev2 = 0, prev1 = 1;\n    for (let i = 2; i <= n; i++) {\n        let curr = prev1 + prev2;\n        prev2 = prev1;\n        prev1 = curr;\n    }\n    return prev1;\n}"
+},
     title: "Fibonacci Sequence",
     icon: <InfinityIcon />,
     themeColor: "var(--viz-deep-purple)",
@@ -1648,6 +1684,12 @@ public:
   },
   {
     id: "KNAPSACK",
+    codeImplementations: {
+    "C++": "int knapsack(int W, vector<int>& wt, vector<int>& val, int n) {\n    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));\n    for (int i = 1; i <= n; i++) {\n        for (int w = 1; w <= W; w++) {\n            if (wt[i-1] <= w) {\n                dp[i][w] = max(val[i-1] + dp[i-1][w-wt[i-1]], dp[i-1][w]);\n            } else {\n                dp[i][w] = dp[i-1][w];\n            }\n        }\n    }\n    return dp[n][W];\n}",
+    "Python": "def knapsack(W, wt, val, n):\n    dp = [[0] * (W + 1) for _ in range(n + 1)]\n    for i in range(1, n + 1):\n        for w in range(1, W + 1):\n            if wt[i-1] <= w:\n                dp[i][w] = max(val[i-1] + dp[i-1][w-wt[i-1]], dp[i-1][w])\n            else:\n                dp[i][w] = dp[i-1][w]\n    return dp[n][W]",
+    "Java": "public int knapsack(int W, int[] wt, int[] val, int n) {\n    int[][] dp = new int[n + 1][W + 1];\n    for (int i = 1; i <= n; i++) {\n        for (int w = 1; w <= W; w++) {\n            if (wt[i-1] <= w) {\n                dp[i][w] = Math.max(val[i-1] + dp[i-1][w-wt[i-1]], dp[i-1][w]);\n            } else {\n                dp[i][w] = dp[i-1][w];\n            }\n        }\n    }\n    return dp[n][W];\n}",
+    "JavaScript": "function knapsack(W, wt, val, n) {\n    const dp = Array(n + 1).fill(0).map(() => Array(W + 1).fill(0));\n    for (let i = 1; i <= n; i++) {\n        for (let w = 1; w <= W; w++) {\n            if (wt[i-1] <= w) {\n                dp[i][w] = Math.max(val[i-1] + dp[i-1][w-wt[i-1]], dp[i-1][w]);\n            } else {\n                dp[i][w] = dp[i-1][w];\n            }\n        }\n    }\n    return dp[n][W];\n}"
+},
     title: "0/1 Knapsack",
     icon: <ShoppingBag />,
     themeColor: "var(--viz-deep-purple)",
@@ -1739,6 +1781,12 @@ public:
   },
   {
     id: "FLOYD_WARSHALL",
+    codeImplementations: {
+    "C++": "void floydWarshall(vector<vector<int>>& dist, int V) {\n    for (int k = 0; k < V; k++) {\n        for (int i = 0; i < V; i++) {\n            for (int j = 0; j < V; j++) {\n                if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX) {\n                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);\n                }\n            }\n        }\n    }\n}",
+    "Python": "def floyd_warshall(dist, V):\n    for k in range(V):\n        for i in range(V):\n            for j in range(V):\n                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])",
+    "Java": "public void floydWarshall(int[][] dist, int V) {\n    int INF = 99999;\n    for (int k = 0; k < V; k++) {\n        for (int i = 0; i < V; i++) {\n            for (int j = 0; j < V; j++) {\n                if (dist[i][k] != INF && dist[k][j] != INF) {\n                    dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);\n                }\n            }\n        }\n    }\n}",
+    "JavaScript": "function floydWarshall(dist, V) {\n    for (let k = 0; k < V; k++) {\n        for (let i = 0; i < V; i++) {\n            for (let j = 0; j < V; j++) {\n                dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);\n            }\n        }\n    }\n}"
+},
     title: "Floyd-Warshall",
     icon: <Route />,
     themeColor: "var(--viz-rose)",
@@ -1757,12 +1805,12 @@ public:
                             Operational Logic
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            The algorithm operates on a <strong>State-Space Transformation</strong>. It starts with direct edge weights and iteratively relaxes the entire manifold by considering every node as a mandatory &quot;waypoint&quot; (Intermediate Node $k$).
+                            The algorithm operates on a <strong>State-Space Transformation</strong>. It starts with direct edge weights and iteratively relaxes the entire structure by considering every node as a mandatory &quot;waypoint&quot; (Intermediate Node $k$).
                         </p>
                         <ul className="text-[10px] space-y-2 font-mono text-muted-foreground list-none">
                             <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">01.</span> Map direct connections</li>
                             <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">02.</span> Expand via node $k=0 … N$</li>
-                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">03.</span> Update global invariants</li>
+                            <li className="flex gap-2"><span className="text-[var(--viz-deep-purple)]">03.</span> Update global propertys</li>
                         </ul>
                     </div>
                     
@@ -1804,7 +1852,7 @@ public:
               <p className="font-mono text-[var(--viz-amber)] bg-white/5 p-3 rounded-lg border border-white/10 text-center">
                 $D[i][j] = min(D[i][j], D[i][k] + D[k][j])$
               </p>
-              <p className="mt-4">This <strong>Triangle Inequality</strong> check ensures that the manifold converges to the global minimum distance for all pairs.</p>
+              <p className="mt-4">This <strong>Triangle Inequality</strong> check ensures that the structure converges to the global minimum distance for all pairs.</p>
             </DocSection>
           </div>
         </div>
@@ -1854,6 +1902,12 @@ public:
   },
   {
     id: "SLIDING_WINDOW",
+    codeImplementations: {
+    "C++": "vector<int> maxSlidingWindow(vector<int>& nums, int k) {\n    vector<int> result;\n    deque<int> dq;\n    for (int i = 0; i < nums.size(); i++) {\n        if (!dq.empty() && dq.front() == i - k) dq.pop_front();\n        while (!dq.empty() && nums[dq.back()] < nums[i]) dq.pop_back();\n        dq.push_back(i);\n        if (i >= k - 1) result.push_back(nums[dq.front()]);\n    }\n    return result;\n}",
+    "Python": "from collections import deque\n\ndef max_sliding_window(nums, k):\n    result = []\n    dq = deque()\n    for i, num in enumerate(nums):\n        if dq and dq[0] == i - k:\n            dq.popleft()\n        while dq and nums[dq[-1]] < num:\n            dq.pop()\n        dq.append(i)\n        if i >= k - 1:\n            result.append(nums[dq[0]])\n    return result",
+    "Java": "import java.util.Deque;\nimport java.util.LinkedList;\n\npublic int[] maxSlidingWindow(int[] nums, int k) {\n    if (nums.length == 0) return new int[0];\n    int[] res = new int[nums.length - k + 1];\n    Deque<Integer> dq = new LinkedList<>();\n    for (int i = 0; i < nums.length; i++) {\n        if (!dq.isEmpty() && dq.peek() == i - k) dq.poll();\n        while (!dq.isEmpty() && nums[dq.peekLast()] < nums[i]) dq.pollLast();\n        dq.offer(i);\n        if (i >= k - 1) res[i - k + 1] = nums[dq.peek()];\n    }\n    return res;\n}",
+    "JavaScript": "function maxSlidingWindow(nums, k) {\n    const result = [];\n    const dq = [];\n    for (let i = 0; i < nums.length; i++) {\n        if (dq.length && dq[0] === i - k) dq.shift();\n        while (dq.length && nums[dq[dq.length - 1]] < nums[i]) dq.pop();\n        dq.push(i);\n        if (i >= k - 1) result.push(nums[dq[0]]);\n    }\n    return result;\n}"
+},
     title: "Sliding Window",
     icon: <BoxSelect />,
     themeColor: "var(--viz-cyan)",
@@ -1864,7 +1918,7 @@ public:
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="State Maintenance" icon={Layout}>
-            <p>The Sliding Window technique converts nested loop operations into a single linear scan. As the window glides over the data manifold, we update the state incrementally (add new element, remove old) rather than re-computing from scratch.</p>
+            <p>The Sliding Window technique converts nested loop operations into a single linear scan. As the window glides over the data structure, we update the state incrementally (add new element, remove old) rather than re-computing from scratch.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(1)" />
@@ -1902,6 +1956,12 @@ public:
   },
   {
     id: "TOPO_SORT",
+    codeImplementations: {
+    "C++": "vector<int> topoSort(int V, vector<int> adj[]) {\n    vector<int> inDegree(V, 0);\n    for (int i = 0; i < V; i++) {\n        for (int neighbor : adj[i]) inDegree[neighbor]++;\n    }\n    queue<int> q;\n    for (int i = 0; i < V; i++) {\n        if (inDegree[i] == 0) q.push(i);\n    }\n    vector<int> result;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        result.push_back(u);\n        for (int neighbor : adj[u]) {\n            if (--inDegree[neighbor] == 0) q.push(neighbor);\n        }\n    }\n    return result;\n}",
+    "Python": "from collections import deque\n\ndef topo_sort(V, adj):\n    in_degree = [0] * V\n    for u in range(V):\n        for v in adj[u]:\n            in_degree[v] += 1\n    q = deque([i for i in range(V) if in_degree[i] == 0])\n    result = []\n    while q:\n        u = q.popleft()\n        result.append(u)\n        for neighbor in adj[u]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                q.append(neighbor)\n    return result",
+    "Java": "public int[] topoSort(int V, List<List<Integer>> adj) {\n    int[] inDegree = new int[V];\n    for (int u = 0; u < V; u++) {\n        for (int v : adj.get(u)) inDegree[v]++;\n    }\n    Queue<Integer> q = new LinkedList<>();\n    for (int i = 0; i < V; i++) {\n        if (inDegree[i] == 0) q.add(i);\n    }\n    int[] result = new int[V];\n    int idx = 0;\n    while (!q.isEmpty()) {\n        int u = q.poll();\n        result[idx++] = u;\n        for (int neighbor : adj.get(u)) {\n            if (--inDegree[neighbor] == 0) q.add(neighbor);\n        }\n    }\n    return result;\n}",
+    "JavaScript": "function topoSort(V, adj) {\n    const inDegree = new Array(V).fill(0);\n    for (let u = 0; u < V; u++) {\n        for (let neighbor of adj[u]) inDegree[neighbor]++;\n    }\n    const q = [];\n    for (let i = 0; i < V; i++) {\n        if (inDegree[i] === 0) q.push(i);\n    }\n    const result = [];\n    while (q.length) {\n        const u = q.shift();\n        result.push(u);\n        for (let neighbor of adj[u]) {\n            inDegree[neighbor]--;\n            if (inDegree[neighbor] === 0) q.push(neighbor);\n        }\n    }\n    return result;\n}"
+},
     title: "Topological Sort",
     icon: <MoveHorizontal />,
     themeColor: "var(--viz-rose)",
@@ -1958,11 +2018,17 @@ public:
   },
   {
     id: "N_QUEENS",
+    codeImplementations: {
+    "C++": "bool isSafe(vector<string>& board, int row, int col, int n) {\n    for (int i = 0; i < col; i++) if (board[row][i] == 'Q') return false;\n    for (int i=row, j=col; i>=0 && j>=0; i--, j--) if (board[i][j] == 'Q') return false;\n    for (int i=row, j=col; i<n && j>=0; i++, j--) if (board[i][j] == 'Q') return false;\n    return true;\n}\nbool solveNQueens(vector<string>& board, int col, int n, vector<vector<string>>& ans) {\n    if (col >= n) { ans.push_back(board); return true; }\n    for (int i = 0; i < n; i++) {\n        if (isSafe(board, i, col, n)) {\n            board[i][col] = 'Q';\n            solveNQueens(board, col + 1, n, ans);\n            board[i][col] = '.'; // Backtrack\n        }\n    }\n    return false;\n}",
+    "Python": "def is_safe(board, row, col, n):\n    for i in range(col):\n        if board[row][i] == 'Q': return False\n    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):\n        if board[i][j] == 'Q': return False\n    for i, j in zip(range(row, n), range(col, -1, -1)):\n        if board[i][j] == 'Q': return False\n    return True\n\ndef solve_nqueens(board, col, n, ans):\n    if col >= n:\n        ans.append([\"\".join(r) for r in board])\n        return True\n    for i in range(n):\n        if is_safe(board, i, col, n):\n            board[i][col] = 'Q'\n            solve_nqueens(board, col + 1, n, ans)\n            board[i][col] = '.' # Backtrack\n    return False",
+    "Java": "boolean isSafe(char[][] board, int row, int col, int n) {\n    for (int i = 0; i < col; i++) if (board[row][i] == 'Q') return false;\n    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) if (board[i][j] == 'Q') return false;\n    for (int i = row, j = col; i < n && j >= 0; i++, j--) if (board[i][j] == 'Q') return false;\n    return true;\n}\n\nvoid solve(char[][] board, int col, int n, List<List<String>> ans) {\n    if (col >= n) {\n        List<String> list = new ArrayList<>();\n        for (char[] row : board) list.add(new String(row));\n        ans.add(list);\n        return;\n    }\n    for (int i = 0; i < n; i++) {\n        if (isSafe(board, i, col, n)) {\n            board[i][col] = 'Q';\n            solve(board, col + 1, n, ans);\n            board[i][col] = '.'; // Backtrack\n        }\n    }\n}",
+    "JavaScript": "function isSafe(board, row, col, n) {\n    for (let i = 0; i < col; i++) if (board[row][i] === 'Q') return false;\n    for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) if (board[i][j] === 'Q') return false;\n    for (let i = row, j = col; i < n && j >= 0; i++, j--) if (board[i][j] === 'Q') return false;\n    return true;\n}\n\nfunction solve(board, col, n, ans) {\n    if (col >= n) {\n        ans.push(board.map(row => row.join(\"\")));\n        return;\n    }\n    for (let i = 0; i < n; i++) {\n        if (isSafe(board, i, col, n)) {\n            board[i][col] = 'Q';\n            solve(board, col + 1, n, ans);\n            board[i][col] = '.'; // Backtrack\n        }\n    }\n}"
+},
     title: "N-Queens Protocol",
     icon: <Crown />,
     themeColor: "var(--viz-cyan)",
     themeRGB: "var(--viz-cyan-rgb)",
-    description: "Backtracking search manifold.",
+    description: "Backtracking search structure.",
     component: (speed: number) => <NQueensVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -1987,10 +2053,10 @@ public:
                     <div className="space-y-4">
                         <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
-                            Safety Invariants
+                            Safety Propertys
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            For every placement $(r, c)$, the algorithm verifies three invariants: the horizontal row, the upper diagonal, and the lower diagonal.
+                            For every placement $(r, c)$, the algorithm verifies three propertys: the horizontal row, the upper diagonal, and the lower diagonal.
                         </p>
                         <div className="p-3 bg-muted/30 rounded-xl border border-border font-mono text-[10px] text-[var(--viz-deep-purple)] text-center">
                             No shared Row | Diag1 | Diag2
@@ -2244,11 +2310,17 @@ function postOrder(root) {
   },
   {
     id: "KADANE",
+    codeImplementations: {
+    "C++": "int maxSubArray(vector<int>& nums) {\n    int maxSoFar = nums[0], currMax = nums[0];\n    for (size_t i = 1; i < nums.size(); i++) {\n        currMax = max(nums[i], currMax + nums[i]);\n        maxSoFar = max(maxSoFar, currMax);\n    }\n    return maxSoFar;\n}",
+    "Python": "def max_sub_array(nums):\n    max_so_far = curr_max = nums[0]\n    for i in range(1, len(nums)):\n        curr_max = max(nums[i], curr_max + nums[i])\n        max_so_far = max(max_so_far, curr_max)\n    return max_so_far",
+    "Java": "public int maxSubArray(int[] nums) {\n    int maxSoFar = nums[0], currMax = nums[0];\n    for (int i = 1; i < nums.length; i++) {\n        currMax = Math.max(nums[i], currMax + nums[i]);\n        maxSoFar = Math.max(maxSoFar, currMax);\n    }\n    return maxSoFar;\n}",
+    "JavaScript": "function maxSubArray(nums) {\n    let maxSoFar = nums[0];\n    let currMax = nums[0];\n    for (let i = 1; i < nums.length; i++) {\n        currMax = Math.max(nums[i], currMax + nums[i]);\n        maxSoFar = Math.max(maxSoFar, currMax);\n    }\n    return maxSoFar;\n}"
+},
     title: "Kadane's Lemma",
     icon: <TrendingUp />,
     themeColor: "var(--viz-deep-purple)",
     themeRGB: "var(--viz-deep-purple-rgb)",
-    description: "Maximum subarray sum manifold.",
+    description: "Maximum subarray sum structure.",
     component: (speed: number) => <KadaneVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -2273,7 +2345,7 @@ function postOrder(root) {
                     <div className="space-y-4">
                         <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
-                            The DP Invariant
+                            The DP Property
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             The state $dp[i]$ represents the maximum subarray sum ending at index $i$. The recurrence is: $dp[i] = max(A[i], A[i] + dp[i-1])$.
@@ -2292,7 +2364,7 @@ function postOrder(root) {
                             Kadane&apos;s algorithm reduces the combinatorial space from $O(N^2)$ contiguous subarrays to a single $O(N)$ pass, achieving optimal linear efficiency.
                         </p>
                         <div className="flex items-center gap-3 text-[10px] font-bold text-[var(--viz-amber)] uppercase tracking-widest bg-[var(--viz-amber)]/5 p-2 rounded-lg border border-[var(--viz-amber)]/20">
-                            <Activity size={12} /> Temporal: O(N)
+                            <Activity size={12} /> Step-by-step: O(N)
                         </div>
                     </div>
                 </div>
@@ -2302,12 +2374,12 @@ function postOrder(root) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="The Greedy Choice" icon={Target} color="var(--viz-amber)">
             <p>The core insight of Kadane&apos;s algorithm is that if a prefix has a negative sum, it can never be part of a maximum subarray starting at a later index.</p>
-            <p>By &quot;dropping&quot; the current sum when it falls below zero, we effectively prune the search space and maintain a linear time complexity manifold.</p>
+            <p>By &quot;dropping&quot; the current sum when it falls below zero, we effectively prune the search space and maintain a linear time complexity structure.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(1)" />
             <DocSection title="Convergence Lemma" icon={Zap} color="var(--viz-deep-purple)">
-              <p>Because we only make a single pass over the array and use two scalar variables, the algorithm is both temporally and spatially optimal for this manifold. It transforms a local decision into a global guarantee.</p>
+              <p>Because we only make a single pass over the array and use two scalar variables, the algorithm is both step-by-steply and spatially optimal for this structure. It transforms a local decision into a global guarantee.</p>
             </DocSection>
           </div>
         </div>
@@ -2315,7 +2387,7 @@ function postOrder(root) {
         <div>
             <div className="flex items-center gap-4 mb-8">
                 <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />Manifold Implementation</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />Structure Implementation</h3>
                 <div className="h-[1px] flex-1 bg-border" />
             </div>
             
@@ -2323,7 +2395,7 @@ function postOrder(root) {
                 <div className="space-y-6">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Standard Approach</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                        Iterate through the array, maintaining `curr` (local potential) and `best` (global optimum). If the potential collapses below zero, we restart from the next manifold cell.
+                        Iterate through the array, maintaining `curr` (local potential) and `best` (global optimum). If the potential collapses below zero, we restart from the next structure cell.
                     </p>
                     <CodeSnippet code={{ "C++": `long long maxSubarraySum(int arr[], int n) {\n    long long best = -1e18, curr = 0;\n\n    for (int i = 0; i < n; i++) {\n        curr += arr[i];\n\n        if (curr > best) \n            best = curr;\n\n        if (curr < 0) \n            curr = 0;\n    }\n    return best;\n}` }} />
                 </div>
@@ -2341,11 +2413,17 @@ function postOrder(root) {
   },
   {
     id: "LCS",
+    codeImplementations: {
+    "C++": "int lcs(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1]) dp[i][j] = 1 + dp[i-1][j-1];\n            else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}",
+    "Python": "def lcs(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = 1 + dp[i-1][j-1]\n            else:\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n    return dp[m][n]",
+    "Java": "public int lcs(String s1, String s2) {\n    int m = s1.length(), n = s2.length();\n    int[][] dp = new int[m + 1][n + 1];\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1.charAt(i-1) == s2.charAt(j-1)) dp[i][j] = 1 + dp[i-1][j-1];\n            else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}",
+    "JavaScript": "function lcs(s1, s2) {\n    const m = s1.length, n = s2.length;\n    const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            if (s1[i-1] === s2[j-1]) dp[i][j] = 1 + dp[i-1][j-1];\n            else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}"
+},
     title: "Longest Common Subsequence",
     icon: <Type />,
     themeColor: "var(--viz-cyan)",
     themeRGB: "var(--viz-cyan-rgb)",
-    description: "Multi-sequence alignment manifold.",
+    description: "Multi-sequence alignment structure.",
     component: (speed: number) => <LCSVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -2419,6 +2497,12 @@ function postOrder(root) {
   },
   {
     id: "LIS",
+    codeImplementations: {
+    "C++": "int lis(vector<int>& nums) {\n    int n = nums.size();\n    if (n == 0) return 0;\n    vector<int> dp(n, 1);\n    int maxLen = 1;\n    for (int i = 1; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            if (nums[j] < nums[i]) {\n                dp[i] = max(dp[i], dp[j] + 1);\n            }\n        }\n        maxLen = max(maxLen, dp[i]);\n    }\n    return maxLen;\n}",
+    "Python": "def lis(nums):\n    n = len(nums)\n    if n == 0: return 0\n    dp = [1] * n\n    for i in range(1, n):\n        for j in range(i):\n            if nums[j] < nums[i]:\n                dp[i] = max(dp[i], dp[j] + 1)\n    return max(dp)",
+    "Java": "public int lis(int[] nums) {\n    int n = nums.length;\n    if (n == 0) return 0;\n    int[] dp = new int[n];\n    Arrays.fill(dp, 1);\n    int maxLen = 1;\n    for (int i = 1; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            if (nums[j] < nums[i]) {\n                dp[i] = Math.max(dp[i], dp[j] + 1);\n            }\n        }\n        maxLen = Math.max(maxLen, dp[i]);\n    }\n    return maxLen;\n}",
+    "JavaScript": "function lis(nums) {\n    const n = nums.length;\n    if (n === 0) return 0;\n    const dp = new Array(n).fill(1);\n    let maxLen = 1;\n    for (let i = 1; i < n; i++) {\n        for (let j = 0; j < i; j++) {\n            if (nums[j] < nums[i]) {\n                dp[i] = Math.max(dp[i], dp[j] + 1);\n            }\n        }\n        maxLen = Math.max(maxLen, dp[i]);\n    }\n    return maxLen;\n}"
+},
     title: "Longest Increasing Subsequence",
     icon: <TrendingUp />,
     themeColor: "var(--viz-deep-purple)",
@@ -2491,11 +2575,17 @@ function postOrder(root) {
   },
   {
     id: "EDIT_DISTANCE",
+    codeImplementations: {
+    "C++": "int minDistance(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));\n    for (int i = 0; i <= m; i++) dp[i][0] = i;\n    for (int j = 0; j <= n; j++) dp[0][j] = j;\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1]) dp[i][j] = dp[i-1][j-1];\n            else dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});\n        }\n    }\n    return dp[m][n];\n}",
+    "Python": "def min_distance(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(m + 1): dp[i][0] = i\n    for j in range(n + 1): dp[0][j] = j\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = dp[i-1][j-1]\n            else:\n                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])\n    return dp[m][n]",
+    "Java": "public int minDistance(String s1, String s2) {\n    int m = s1.length(), n = s2.length();\n    int[][] dp = new int[m + 1][n + 1];\n    for (int i = 0; i <= m; i++) dp[i][0] = i;\n    for (int j = 0; j <= n; j++) dp[0][j] = j;\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1.charAt(i-1) == s2.charAt(j-1)) dp[i][j] = dp[i-1][j-1];\n            else dp[i][j] = 1 + Math.min(dp[i-1][j], Math.min(dp[i][j-1], dp[i-1][j-1]));\n        }\n    }\n    return dp[m][n];\n}",
+    "JavaScript": "function minDistance(s1, s2) {\n    const m = s1.length, n = s2.length;\n    const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));\n    for (let i = 0; i <= m; i++) dp[i][0] = i;\n    for (let j = 0; j <= n; j++) dp[0][j] = j;\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            if (s1[i-1] === s2[j-1]) dp[i][j] = dp[i-1][j-1];\n            else dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);\n        }\n    }\n    return dp[m][n];\n}"
+},
     title: "Edit Distance",
     icon: <Type />,
     themeColor: "var(--viz-cyan)",
     themeRGB: "var(--viz-cyan-rgb)",
-    description: "Levenshtein transformation manifold.",
+    description: "Levenshtein transformation structure.",
     component: (speed: number) => <EditDistanceVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
@@ -2527,7 +2617,7 @@ function postOrder(root) {
                     <div className="space-y-4">
                         <h5 className="text-[var(--viz-amber)] font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-amber)]" />
-                            Match Invariant
+                            Match Property
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
                             If characters match, no cost is added. We inherit the diagonal value directly: $dp[i][j] = dp[i-1][j-1]$.
@@ -2570,6 +2660,12 @@ function postOrder(root) {
   },
   {
     id: "SCC",
+    codeImplementations: {
+    "C++": "void dfs(int u, vector<vector<int>>& adj, stack<int>& st, vector<bool>& vis) {\n    vis[u] = true;\n    for (int v : adj[u]) if (!vis[v]) dfs(v, adj, st, vis);\n    st.push(u);\n}\nvoid dfsRev(int u, vector<vector<int>>& adjRev, vector<int>& component, vector<bool>& vis) {\n    vis[u] = true;\n    component.push_back(u);\n    for (int v : adjRev[u]) if (!vis[v]) dfsRev(v, adjRev, component, vis);\n}\nvector<vector<int>> getSCCs(int V, vector<vector<int>>& adj) {\n    stack<int> st;\n    vector<bool> vis(V, false);\n    for (int i = 0; i < V; i++) if (!vis[i]) dfs(i, adj, st, vis);\n    vector<vector<int>> adjRev(V);\n    for (int u = 0; u < V; u++) {\n        for (int v : adj[u]) adjRev[v].push_back(u);\n    }\n    fill(vis.begin(), vis.end(), false);\n    vector<vector<int>> sccs;\n    while (!st.empty()) {\n        int u = st.top(); st.pop();\n        if (!vis[u]) {\n            vector<int> component;\n            dfsRev(u, adjRev, component, vis);\n            sccs.push_back(component);\n        }\n    }\n    return sccs;\n}",
+    "Python": "def dfs(u, adj, st, vis):\n    vis[u] = True\n    for v in adj[u]:\n        if not vis[v]: dfs(v, adj, st, vis)\n    st.append(u)\n\ndef dfs_rev(u, adj_rev, component, vis):\n    vis[u] = True\n    component.append(u)\n    for v in adj_rev[u]:\n        if not vis[v]: dfs_rev(v, adj_rev, component, vis)\n\ndef get_sccs(V, adj):\n    st = []\n    vis = [False] * V\n    for i in range(V):\n        if not vis[i]: dfs(i, adj, st, vis)\n    adj_rev = [[] for _ in range(V)]\n    for u in range(V):\n        for v in adj[u]: adj_rev[v].append(u)\n    vis = [False] * V\n    sccs = []\n    while st:\n        u = st.pop()\n        if not vis[u]:\n            component = []\n            dfs_rev(u, adj_rev, component, vis)\n            sccs.append(component)\n    return sccs",
+    "Java": "void dfs(int u, List<List<Integer>> adj, Stack<Integer> st, boolean[] vis) {\n    vis[u] = true;\n    for (int v : adj.get(u)) if (!vis[v]) dfs(v, adj, st, vis);\n    st.push(u);\n}\nvoid dfsRev(int u, List<List<Integer>> adjRev, List<Integer> component, boolean[] vis) {\n    vis[u] = true;\n    component.add(u);\n    for (int v : adjRev.get(u)) if (!vis[v]) dfsRev(v, adjRev, component, vis);\n}\npublic List<List<Integer>> getSCCs(int V, List<List<Integer>> adj) {\n    Stack<Integer> st = new Stack<>();\n    boolean[] vis = new boolean[V];\n    for (int i = 0; i < V; i++) if (!vis[i]) dfs(i, adj, st, vis);\n    List<List<Integer>> adjRev = new ArrayList<>();\n    for (int i = 0; i < V; i++) adjRev.add(new ArrayList<>());\n    for (int u = 0; u < V; u++) {\n        for (int v : adj.get(u)) adjRev.get(v).add(u);\n    }\n    Arrays.fill(vis, false);\n    List<List<Integer>> sccs = new ArrayList<>();\n    while (!st.isEmpty()) {\n        int u = st.pop();\n        if (!vis[u]) {\n            List<Integer> component = new ArrayList<>();\n            dfsRev(u, adjRev, component, vis);\n            sccs.add(component);\n        }\n    }\n    return sccs;\n}",
+    "JavaScript": "function dfs(u, adj, st, vis) {\n    vis[u] = true;\n    for (let v of adj[u]) if (!vis[v]) dfs(v, adj, st, vis);\n    st.push(u);\n}\nfunction dfsRev(u, adjRev, component, vis) {\n    vis[u] = true;\n    component.push(u);\n    for (let v of adjRev[u]) if (!vis[v]) dfsRev(v, adjRev, component, vis);\n}\nfunction getSCCs(V, adj) {\n    const st = [];\n    const vis = new Array(V).fill(false);\n    for (let i = 0; i < V; i++) if (!vis[i]) dfs(i, adj, st, vis);\n    const adjRev = Array(V).fill(0).map(() => []);\n    for (let u = 0; u < V; u++) {\n        for (let v of adj[u]) adjRev[v].push(u);\n    }\n    vis.fill(false);\n    const sccs = [];\n    while (st.length) {\n        const u = st.pop();\n        if (!vis[u]) {\n            const component = [];\n            dfsRev(u, adjRev, component, vis);\n            sccs.push(component);\n        }\n    }\n    return sccs;\n}"
+},
     title: "Kosaraju's SCC",
     icon: <Share2 />,
     themeColor: "var(--viz-rose)",
@@ -2642,6 +2738,12 @@ function postOrder(root) {
   },
   {
     id: "LCA",
+    codeImplementations: {
+    "C++": "int depth[MAXN], up[MAXN][LOGN];\nvoid dfs(int u, int p) {\n    up[u][0] = p;\n    for (int i = 1; i < LOGN; i++) {\n        up[u][i] = up[up[u][i-1]][i-1];\n    }\n    for (int v : adj[u]) {\n        if (v != p) {\n            depth[v] = depth[u] + 1;\n            dfs(v, u);\n        }\n    }\n}\nint lca(int u, int v) {\n    if (depth[u] < depth[v]) swap(u, v);\n    for (int i = LOGN - 1; i >= 0; i--) {\n        if (depth[u] - (1 << i) >= depth[v]) u = up[u][i];\n    }\n    if (u == v) return u;\n    for (int i = LOGN - 1; i >= 0; i--) {\n        if (up[u][i] != up[v][i]) {\n            u = up[u][i]; v = up[v][i];\n        }\n    }\n    return up[u][0];\n}",
+    "Python": "def dfs(u, p):\n    up[u][0] = p\n    for i in range(1, LOGN):\n        up[u][i] = up[up[u][i-1]][i-1]\n    for v in adj[u]:\n        if v != p:\n            depth[v] = depth[u] + 1\n            dfs(v, u)\n\ndef lca(u, v):\n    if depth[u] < depth[v]:\n        u, v = v, u\n    for i in range(LOGN - 1, -1, -1):\n        if depth[u] - (1 << i) >= depth[v]:\n            u = up[u][i]\n    if u == v: return u\n    for i in range(LOGN - 1, -1, -1):\n        if up[u][i] != up[v][i]:\n            u = up[u][i]\n            v = up[v][i]\n    return up[u][0]",
+    "Java": "int[] depth;\nint[][] up;\nvoid dfs(int u, int p, List<List<Integer>> adj) {\n    up[u][0] = p;\n    for (int i = 1; i < LOGN; i++) {\n        up[u][i] = up[up[u][i - 1]][i - 1];\n    }\n    for (int v : adj.get(u)) {\n        if (v != p) {\n            depth[v] = depth[u] + 1;\n            dfs(v, u, adj);\n        }\n    }\n}\nint lca(int u, int v) {\n    if (depth[u] < depth[v]) { int t = u; u = v; v = t; }\n    for (int i = LOGN - 1; i >= 0; i--) {\n        if (depth[u] - (1 << i) >= depth[v]) u = up[u][i];\n    }\n    if (u == v) return u;\n    for (int i = LOGN - 1; i >= 0; i--) {\n        if (up[u][i] != up[v][i]) {\n            u = up[u][i];\n            v = up[v][i];\n        }\n    }\n    return up[u][0];\n}",
+    "JavaScript": "function dfs(u, p, adj, depth, up, LOGN) {\n    up[u][0] = p;\n    for (let i = 1; i < LOGN; i++) {\n        up[u][i] = up[up[u][i - 1]][i - 1];\n    }\n    for (let v of adj[u]) {\n        if (v !== p) {\n            depth[v] = depth[u] + 1;\n            dfs(v, u, adj, depth, up, LOGN);\n        }\n    }\n}\nfunction lca(u, v, depth, up, LOGN) {\n    if (depth[u] < depth[v]) { [u, v] = [v, u]; }\n    for (let i = LOGN - 1; i >= 0; i--) {\n        if (depth[u] - (1 << i) >= depth[v]) u = up[u][i];\n    }\n    if (u === v) return u;\n    for (let i = LOGN - 1; i >= 0; i--) {\n        if (up[u][i] !== up[v][i]) {\n            u = up[u][i]; v = up[v][i];\n        }\n    }\n    return up[u][0];\n}"
+},
     title: "Lowest Common Ancestor",
     icon: <GitBranch />,
     themeColor: "var(--viz-cyan)",
@@ -2758,6 +2860,12 @@ function postOrder(root) {
   },
   {
     id: "FENWICK",
+    codeImplementations: {
+    "C++": "class FenwickTree {\n    vector<int> BIT;\npublic:\n    FenwickTree(int n) : BIT(n + 1, 0) {}\n    void update(int i, int delta) {\n        for (; i < BIT.size(); i += i & -i) BIT[i] += delta;\n    }\n    int query(int i) {\n        int sum = 0;\n        for (; i > 0; i -= i & -i) sum += BIT[i];\n        return sum;\n    }\n};",
+    "Python": "class FenwickTree:\n    def __init__(self, n):\n        self.BIT = [0] * (n + 1)\n        \n    def update(self, i, delta):\n        while i < len(self.BIT):\n            self.BIT[i] += delta\n            i += i & -i\n            \n    def query(self, i):\n        total_sum = 0\n        while i > 0:\n            total_sum += self.BIT[i]\n            i -= i & -i\n        return total_sum",
+    "Java": "class FenwickTree {\n    private int[] BIT;\n    public FenwickTree(int n) { BIT = new int[n + 1]; }\n    public void update(int i, int delta) {\n        for (; i < BIT.length; i += i & -i) BIT[i] += delta;\n    }\n    public int query(int i) {\n        int sum = 0;\n        for (; i > 0; i -= i & -i) sum += BIT[i];\n        return sum;\n    }\n}",
+    "JavaScript": "class FenwickTree {\n    constructor(n) {\n        this.BIT = new Array(n + 1).fill(0);\n    }\n    update(i, delta) {\n        for (; i < this.BIT.length; i += i & -i) this.BIT[i] += delta;\n    }\n    query(i) {\n        let sum = 0;\n        for (; i > 0; i -= i & -i) sum += this.BIT[i];\n        return sum;\n    }\n}"
+},
     title: "Fenwick Tree (BIT)",
     icon: <LayoutGrid />,
     themeColor: "var(--viz-amber)",
@@ -2834,6 +2942,12 @@ function postOrder(root) {
   },
   {
     id: "TARJAN",
+    codeImplementations: {
+    "C++": "int timer = 0;\nvoid dfs(int u, vector<vector<int>>& adj, vector<int>& disc, vector<int>& low, stack<int>& st, vector<bool>& inStack, vector<vector<int>>& sccs) {\n    disc[u] = low[u] = ++timer;\n    st.push(u); inStack[u] = true;\n    for (int v : adj[u]) {\n        if (disc[v] == -1) {\n            dfs(v, adj, disc, low, st, inStack, sccs);\n            low[u] = min(low[u], low[v]);\n        } else if (inStack[v]) {\n            low[u] = min(low[u], disc[v]);\n        }\n    }\n    if (disc[u] == low[u]) {\n        vector<int> scc;\n        while (true) {\n            int v = st.top(); st.pop();\n            inStack[v] = false; scc.push_back(v);\n            if (u == v) break;\n        }\n        sccs.push_back(scc);\n    }\n}",
+    "Python": "def dfs(u, adj, disc, low, st, in_stack, sccs):\n    global timer\n    disc[u] = low[u] = timer\n    timer += 1\n    st.append(u)\n    in_stack[u] = True\n    for v in adj[u]:\n        if disc[v] == -1:\n            dfs(v, adj, disc, low, st, in_stack, sccs)\n            low[u] = min(low[u], low[v])\n        elif in_stack[v]:\n            low[u] = min(low[u], disc[v])\n    if disc[u] == low[u]:\n        scc = []\n        while True:\n            v = st.pop()\n            in_stack[v] = False\n            scc.append(v)\n            if u == v: break\n        sccs.append(scc)",
+    "Java": "int timer = 0;\nvoid dfs(int u, List<List<Integer>> adj, int[] disc, int[] low, Stack<Integer> st, boolean[] inStack, List<List<Integer>> sccs) {\n    disc[u] = low[u] = ++timer;\n    st.push(u); inStack[u] = true;\n    for (int v : adj.get(u)) {\n        if (disc[v] == -1) {\n            dfs(v, adj, disc, low, st, inStack, sccs);\n            low[u] = Math.min(low[u], low[v]);\n        } else if (inStack[v]) {\n            low[u] = Math.min(low[u], disc[v]);\n        }\n    }\n    if (disc[u] == low[u]) {\n        List<Integer> scc = new ArrayList<>();\n        while (true) {\n            int v = st.pop();\n            inStack[v] = false;\n            scc.add(v);\n            if (u == v) break;\n        }\n        sccs.add(scc);\n    }\n}",
+    "JavaScript": "let timer = 0;\nfunction dfs(u, adj, disc, low, st, inStack, sccs) {\n    disc[u] = low[u] = ++timer;\n    st.push(u); inStack[u] = true;\n    for (let v of adj[u]) {\n        if (disc[v] === -1) {\n            dfs(v, adj, disc, low, st, inStack, sccs);\n            low[u] = Math.min(low[u], low[v]);\n        } else if (inStack[v]) {\n            low[u] = Math.min(low[u], disc[v]);\n        }\n    }\n    if (disc[u] === low[u]) {\n        const scc = [];\n        while (true) {\n            const v = st.pop();\n            inStack[v] = false;\n            scc.push(v);\n            if (u === v) break;\n        }\n        sccs.push(scc);\n    }\n}"
+},
     title: "Tarjan's (Bridges/AP)",
     icon: <AlertTriangle />,
     themeColor: "var(--viz-rose)",
@@ -2851,7 +2965,7 @@ function postOrder(root) {
                             Discovery Time
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            We track the order in which nodes are visited (<code>tin</code>). This creates a temporal baseline for the graph traversal.
+                            We track the order in which nodes are visited (<code>tin</code>). This creates a step-by-step baseline for the graph traversal.
                         </p>
                     </div>
                     
@@ -3159,7 +3273,7 @@ function postOrder(root) {
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(log N * States)" space="O(log N * States)" />
-            <DocSection title="The Tight Invariant" icon={Zap} color="var(--viz-amber)">
+            <DocSection title="The Tight Property" icon={Zap} color="var(--viz-amber)">
               <p className="text-[10px] leading-relaxed">
                 If <code>tight</code> is true, we are restricted by the prefix of $N$. The next digit $d$ must be $\leq N[idx]$. If we pick $d {"<"} N[idx]$, <code>tight</code> becomes false for all subsequent positions, granting us &quot;free range&quot; $[0, 9]$.
               </p>

@@ -203,6 +203,13 @@ export default function SortingVisualizer({ speed = 600 }: { speed?: number }) {
                 })}
             </div>
         </div>
+
+        {/* Step Message (below canvas) */}
+        <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm mt-4">
+          <p className="text-xs text-[var(--viz-amber)] font-mono font-bold tracking-tight">
+            {currentStep.explanation}
+          </p>
+        </div>
                     
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl mt-4 relative z-10">
             <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-4">

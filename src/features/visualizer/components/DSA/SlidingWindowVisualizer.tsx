@@ -75,7 +75,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
 
     const addLog = (l: string) => logs = [l, ...logs];
 
-    addLog("Sequence manifold initialized.");
+    addLog("Sequence structure initialized.");
     record("Ready to resolve longest unique substring.", "BOOT");
 
     while (r < chars.length) {
@@ -86,23 +86,23 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
             set.add(char);
             r++;
             if (set.size > maxLen) maxLen = set.size;
-            addLog(`Bit '${char}' is unique. Expanding manifold.`);
+            addLog(`Bit '${char}' is unique. Expanding structure.`);
             record(`No collision detected. Incrementing boundary R to ${r}.`, "EXPAND");
         } else {
             addLog(`Collision detected: bit '${char}' already exists.`);
-            record(`Invariant violation! Bit '${char}' detected in current set.`, "CONFLICT", char);
+            record(`Property violation! Bit '${char}' detected in current set.`, "CONFLICT", char);
             
             while (set.has(char)) {
                 const leftChar = chars[l];
                 addLog(`Purging bit '${leftChar}' from left.`);
                 set.delete(leftChar);
                 l++;
-                record(`Purging manifold from left to resolve collision. L=${l}.`, "SHRINK", char);
+                record(`Purging structure from left to resolve collision. L=${l}.`, "SHRINK", char);
             }
             set.add(char);
             r++;
             addLog(`Collision resolved. Continuing expansion.`);
-            record(`Manifold stabilized. Boundary R moved to ${r}.`, "EXPAND");
+            record(`Structure stabilized. Boundary R moved to ${r}.`, "EXPAND");
         }
     }
 
@@ -153,7 +153,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
             </h2>
             <div className="flex items-center gap-3">
                <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Dynamic Manifold Interval Resolve</p>
+               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Dynamic Structure Interval Resolve</p>
             </div>
           </div>
 
@@ -197,7 +197,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                     )}
                 </AnimatePresence>
 
-                {/* Window Manifold Box */}
+                {/* Window Structure Box */}
                 {currentStep.end > currentStep.start && (
                     <motion.div 
                         className="absolute border-2 border-[var(--viz-cyan)]/20 bg-gradient-to-b from-[var(--viz-cyan)]/5 to-transparent rounded-[2rem] z-0"
@@ -268,11 +268,11 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
                 </div>
             </div>
 
-            {/* Sidebar: Set Manifold & Log */}
+            {/* Sidebar: Set Structure & Log */}
             <div className="flex flex-col gap-6">
                 <div className="p-3 md:p-6 bg-muted  rounded-[2rem] flex flex-col gap-4">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                        <Database size={14}/> Set Manifold
+                        <Database size={14}/> Set Structure
                     </h3>
                     <div className="flex flex-wrap gap-1 justify-center min-h-[350px] md:min-h-[40px] w-full overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
                         <AnimatePresence>
@@ -294,7 +294,7 @@ export default function SlidingWindowVisualizer({ speed = 800 }: { speed?: numbe
 
                 <div className="p-3 md:p-6 bg-muted  rounded-[2rem] flex-1 flex flex-col gap-4 overflow-hidden h-[240px]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                        <Activity size={14}/> Manifold Log
+                        <Activity size={14}/> Structure Log
                     </h3>
                     <div className="flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin">
                         <AnimatePresence>

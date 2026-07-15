@@ -49,18 +49,18 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
 
     const addLog = (l: string) => { logs = [l, ...logs]; };
 
-    addLog("Initializing DP tabulation manifold.");
+    addLog("Initializing DP tabulation structure.");
     record("Awaiting base case injection.", "BOOT", -1, []);
 
     // Base Cases
     dp[0] = 0;
     addLog("Base case injected: dp[0] = 0.");
-    record("Committing primary base case to manifold index 0.", "BASE_CASE", 0, []);
+    record("Committing primary base case to structure index 0.", "BASE_CASE", 0, []);
 
     if (n >= 1) {
         dp[1] = 1;
         addLog("Base case injected: dp[1] = 1.");
-        record("Committing secondary base case to manifold index 1.", "BASE_CASE", 1, []);
+        record("Committing secondary base case to structure index 1.", "BASE_CASE", 1, []);
     }
 
     for (let i = 2; i <= n; i++) {
@@ -68,7 +68,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
         record(`Evaluating recurrence for index ${i}.`, "SYNTHESIZE", i, [i-1, i-2]);
         dp[i] = (dp[i-1] as number) + (dp[i-2] as number);
         addLog(`Result resolved: ${dp[i-1]} + ${dp[i-2]} = ${dp[i]}.`);
-        record(`Manifold stabilized at index ${i}. State committed.`, "COMMIT", i, [i-1, i-2]);
+        record(`Structure stabilized at index ${i}. State committed.`, "COMMIT", i, [i-1, i-2]);
     }
 
     addLog("Global resolution complete.");
@@ -117,7 +117,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
           <div className="space-y-1">
             <h2 className="text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
-              Fibonacci <span className="text-muted-foreground/40">Manifold</span>
+              Fibonacci <span className="text-muted-foreground/40">Structure</span>
             </h2>
             <div className="flex items-center gap-3">
                <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
@@ -173,7 +173,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
                     </motion.div>
                 </AnimatePresence>
 
-                {/* DP Manifold Cells */}
+                {/* DP Structure Cells */}
                 <div className="flex flex-wrap justify-center gap-4 relative z-20">
                     {currentStep.dp.map((val, i) => {
                         const isA = i === currentStep.currentIndex;
@@ -233,7 +233,7 @@ export default function FibonacciVisualizer({ speed = 800 }: { speed?: number })
 
                 <div className="p-3 md:p-6 bg-muted  rounded-[2rem]">
                     <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
-                        <Cpu size={14}/> Invariant
+                        <Cpu size={14}/> Property
                     </h3>
                     <div className="p-3 bg-card  rounded-xl font-mono text-[9px] text-[var(--viz-deep-purple)] border-l-4 border-l-[var(--viz-deep-purple)] shadow-xl">
                         dp[i] = dp[i-1] + dp[i-2]

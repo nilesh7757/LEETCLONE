@@ -83,7 +83,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
 
     const addLog = (l: string) => { logs = [l, ...logs]; };
 
-    addLog("Dependency manifold initialized.");
+    addLog("Dependency structure initialized.");
     record("Calculating in-degrees for all nodes.", "BOOT", null, null, [], []);
 
     const q: number[] = [];
@@ -160,7 +160,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
             </h2>
             <div className="flex items-center gap-3">
                <div className="h-1 w-12 bg-[var(--viz-rose)] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Kahn&apos;s Manifold Synthesis</p>
+               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Kahn&apos;s Structure Synthesis</p>
             </div>
           </div>
 
@@ -348,7 +348,7 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
       {/* Legend */}
       <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Extraction</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Ready Manifold</span></div>
+         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Ready Structure</span></div>
          <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Resolved Dependency</span></div>
          <div className="flex items-center gap-3"><Network size={14} className="text-muted-foreground/20" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Linear Resolution</span></div>
       </div>

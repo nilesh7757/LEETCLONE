@@ -248,7 +248,7 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
         let changed = false;
         addLog(`--- Starting Iteration ${i} ---`);
         for (const { u, v, w } of edges) {
-            record(`Probing edge ${u} → ${v} (Weight: ${w}). Current distance[${v}] = ${dist[v] === INF ? "∞" : dist[v]}`, "PROBE", [u, v], i, "RELAX");
+            record(`Checking edge ${u} → ${v} (Weight: ${w}). Current distance[${v}] = ${dist[v] === INF ? "∞" : dist[v]}`, "PROBE", [u, v], i, "RELAX");
             
             if (dist[u] !== INF && dist[u] + w < dist[v]) {
                 dist[v] = dist[u] + w;

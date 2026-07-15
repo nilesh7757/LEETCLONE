@@ -163,7 +163,7 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
         <div className="flex items-center justify-between mb-12 relative z-10">
           <div className="space-y-1">
             <h2 className="text-2xl font-light tracking-tight text-[var(--viz-amber)]">
-              Selection Sort <span className="text-[var(--muted-foreground)]/40">Invariants</span>
+              Selection Sort <span className="text-[var(--muted-foreground)]/40">Propertys</span>
             </h2>
             <div className="h-1 w-12 bg-[var(--viz-amber)] rounded-full" />
           </div>
@@ -236,6 +236,13 @@ export default function SelectionSortVisualizer({ speed = 600 }: { speed?: numbe
                 );
               })}
           </div>
+        </div>
+
+        {/* Step Message (below canvas) */}
+        <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm mt-4">
+          <p className="text-xs text-[var(--viz-amber)] font-mono font-bold tracking-tight">
+            {currentStep.explanation}
+          </p>
         </div>
 
         {/* Playback Controls */}
