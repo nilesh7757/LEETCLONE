@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDownNarrowWide, Search, Database, Network, 
   Infinity as InfinityIcon, Sparkles, Cpu, ChevronDown, Share2, Gauge, Maximize2
@@ -10,6 +10,7 @@ import {
 import { dsaCategories } from "@/components/dsa/dsaCategories";
 import { DSACategory } from "@/components/dsa/DSASidebar";
 import { DSAMainContent } from "@/components/dsa/DSAMainContent";
+import DSACopilotPanel from "@/features/visualizer/components/DSA/DSACopilotPanel";
 import Link from "next/link";
 
 export default function DSAPage() {
@@ -18,6 +19,8 @@ export default function DSAPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+  const [isDesktopChatOpen, setIsDesktopChatOpen] = useState(true);
 
   const vizContainerRef = useRef<HTMLDivElement>(null);
 
@@ -155,6 +158,19 @@ export default function DSAPage() {
                   <Maximize2 size={14} className="text-[#3b82f6]" />
                </button>
 
+               {/* Copilot Toggle Button (desktop only) */}
+               <button
+                  onClick={() => setIsDesktopChatOpen(!isDesktopChatOpen)}
+                  className={`hidden lg:flex p-3 bg-[var(--card)] border rounded-2xl transition-all cursor-pointer items-center justify-center shadow-sm ${
+                     isDesktopChatOpen 
+                        ? "border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/5" 
+                        : "border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
+                  }`}
+                  title="Toggle AI Copilot"
+               >
+                  <Sparkles size={14} />
+               </button>
+
                {/* Algorithm Selector Dropdown */}
                <div className="relative">
                   <button 
@@ -208,16 +224,85 @@ export default function DSAPage() {
             </div>
          </div>
 
-         {/* Visualizer Stage Container */}
-         <div ref={vizContainerRef} className="w-full">
-            <DSAMainContent 
-               selectedCategory={selectedCategory} 
-               animationSpeed={animationSpeed} 
-               isFullscreen={isFullscreen}
-            />
-         </div>
+          {/* Visualizer Stage Container */}
+          <div ref={vizContainerRef} className="w-full flex flex-col lg:flex-row lg:gap-0 gap-6 items-stretch">
+             <div className="flex-1 min-w-0">
+                <DSAMainContent 
+                   selectedCategory={selectedCategory} 
+                   animationSpeed={animationSpeed} 
+                   isFullscreen={isFullscreen}
+                />
+             </div>
+             
+             {/* AI Copilot Side Panel (desktop only) */}
+             <AnimatePresence>
+                {isDesktopChatOpen && (
+                   <motion.div 
+                      initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+                      animate={{ width: 384, opacity: 1, marginLeft: 24 }}
+                      exit={{ width: 0, opacity: 0, marginLeft: 0 }}
+                      transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                      className="hidden lg:block shrink-0 overflow-hidden"
+                   >
+                      <div className="w-[360px] h-full">
+                         <DSACopilotPanel 
+                            algorithmId={selectedCategory.id}
+                            algorithmName={selectedCategory.title}
+                            onClose={() => setIsDesktopChatOpen(false)}
+                         />
+                      </div>
+                   </motion.div>
+                )}
+             </AnimatePresence>
+          </div>
 
-      </main>
+       </main>
+
+       {/* Mobile FAB */}
+       <div className="lg:hidden fixed bottom-6 right-6 z-40">
+          <button 
+             onClick={() => setIsMobileChatOpen(true)}
+             className="p-4 bg-[#3b82f6] hover:bg-[#3b82f6]/95 text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-[#3b82f6]/20"
+             title="Ask AI Copilot"
+          >
+             <Sparkles size={20} />
+          </button>
+       </div>
+
+       {/* Mobile bottom drawer */}
+       <AnimatePresence>
+          {isMobileChatOpen && (
+             <>
+                {/* Backdrop */}
+                <motion.div 
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 0.5 }}
+                   exit={{ opacity: 0 }}
+                   onClick={() => setIsMobileChatOpen(false)}
+                   className="fixed inset-0 bg-black/60 z-50 lg:hidden"
+                />
+                {/* Bottom Drawer */}
+                <motion.div
+                   initial={{ y: "100%" }}
+                   animate={{ y: 0 }}
+                   exit={{ y: "100%" }}
+                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                   className="fixed bottom-0 left-0 right-0 h-[60vh] bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
+                >
+                   {/* Drag Handle indicator */}
+                   <div className="w-12 h-1.5 bg-[var(--border)] rounded-full mx-auto my-3 shrink-0 cursor-pointer" onClick={() => setIsMobileChatOpen(false)} />
+                   <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4">
+                      <DSACopilotPanel 
+                         algorithmId={selectedCategory.id}
+                         algorithmName={selectedCategory.title}
+                         isMobile={true}
+                         onClose={() => setIsMobileChatOpen(false)}
+                      />
+                   </div>
+                </motion.div>
+             </>
+          )}
+       </AnimatePresence>
 
       <style jsx global>{`
          .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
