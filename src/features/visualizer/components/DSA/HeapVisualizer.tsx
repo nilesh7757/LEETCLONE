@@ -6,7 +6,7 @@ import {
   Play, RotateCcw, Pause, Hash, 
   ChevronLeft, ChevronRight, Zap, 
   ArrowUp, 
-  TrendingUp, Activity, Plus, Trash2, Database
+  TrendingUp, Activity, Plus, Trash2
 } from "lucide-react";
 
 // Professional Palette
@@ -101,42 +101,42 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
     const addLog = (l: string) => currentLogs = [l, ...currentLogs];
 
     if (type === 'INSERT' && val !== undefined) {
-      addLog(`Initializing insertion for value ${val}.`);
+      addLog(`Inserting ${val} into the heap.`);
       currentHeap.push(val);
-      record(`Allocated cell at index ${currentHeap.length - 1} for ${val}.`, "ALLOCATE", [currentHeap.length - 1]);
-      
+      record(`Added ${val} at index ${currentHeap.length - 1}. Now bubbling up.`, "INSERT", [currentHeap.length - 1]);
+
       let idx = currentHeap.length - 1;
       while (idx > 0) {
         const pIdx = Math.floor((idx - 1) / 2);
-        record(`Evaluating child ${currentHeap[idx]} against parent ${currentHeap[pIdx]}.`, "UP_HEAP", [idx, pIdx]);
+        record(`Comparing ${currentHeap[idx]} (child) with ${currentHeap[pIdx]} (parent).`, "COMPARE", [idx, pIdx]);
         if (currentHeap[idx] < currentHeap[pIdx]) {
-          addLog(`Violation: ${currentHeap[idx]} < ${currentHeap[pIdx]}. Swapping up.`);
-          record(`Heap violation detected. Initiating coordinate shift.`, "SWAP", [idx, pIdx], [idx, pIdx]);
+          addLog(`${currentHeap[idx]} < ${currentHeap[pIdx]} — swapping up.`);
+          record(`${currentHeap[idx]} < ${currentHeap[pIdx]}. Swapping.`, "SWAP", [idx, pIdx], [idx, pIdx]);
           [currentHeap[idx], currentHeap[pIdx]] = [currentHeap[pIdx], currentHeap[idx]];
           idx = pIdx;
-          record(`Manifold stabilized at index ${idx}.`, "SWAP_COMMIT", [idx]);
+          record(`Swapped. Now at index ${idx}. Continuing up.`, "MOVED", [idx]);
         } else {
-            addLog(`Stability achieved.`);
-            record(`Heap property satisfied. Terminal state reached.`, "STABLE", [idx, pIdx]);
-            break;
+          addLog(`${currentHeap[idx]} >= ${currentHeap[pIdx]} — heap property satisfied.`);
+          record(`${currentHeap[idx]} >= ${currentHeap[pIdx]}. Heap is valid. Done.`, "DONE", [idx, pIdx]);
+          break;
         }
       }
       setHeapData([...currentHeap]);
     } else if (type === 'EXTRACT') {
         if (currentHeap.length === 0) return;
         const min = currentHeap[0];
-        addLog(`Extracting root bit: ${min}.`);
-        record(`Purging root manifold. Catalyst value ${min} extracted.`, "EXTRACT", [0]);
-        
+        addLog(`Extracting minimum: ${min}.`);
+        record(`Removing root (minimum = ${min}). Moving last element to root.`, "EXTRACT", [0]);
+
         if (currentHeap.length === 1) {
             currentHeap.pop();
-            record(`Heap manifold empty. System stabilized.`, "COMPLETE");
+            record(`Heap is now empty.`, "DONE");
         } else {
             const last = currentHeap.pop()!;
             currentHeap[0] = last;
-            addLog(`Relocated tail bit ${last} to root.`);
-            record(`Replacing root bit with last element ${last}. Initiating sink protocol.`, "REPLACE", [0]);
-            
+            addLog(`Moved ${last} to root. Sinking down.`);
+            record(`Root is now ${last}. Sinking down to restore heap.`, "SINK", [0]);
+
             let idx = 0;
             while (true) {
                 let smallest = idx;
@@ -147,14 +147,14 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
                 if (right < currentHeap.length && currentHeap[right] < currentHeap[smallest]) smallest = right;
 
                 if (smallest !== idx) {
-                    addLog(`Sinking ${currentHeap[idx]} to index ${smallest}.`);
-                    record(`Violation detected. Sinking bit ${currentHeap[idx]} into child manifold ${smallest}.`, "DOWN_HEAP", [idx, smallest], [idx, smallest]);
+                    addLog(`${currentHeap[idx]} > ${currentHeap[smallest]} — swapping down.`);
+                    record(`${currentHeap[idx]} > child ${currentHeap[smallest]}. Swapping down.`, "SWAP", [idx, smallest], [idx, smallest]);
                     [currentHeap[idx], currentHeap[smallest]] = [currentHeap[smallest], currentHeap[idx]];
                     idx = smallest;
-                    record(`Coordinate shift complete. Continuing analysis.`, "SWAP_COMMIT", [idx]);
+                    record(`Swapped. Now at index ${idx}. Continuing down.`, "MOVED", [idx]);
                 } else {
-                    addLog(`Stability achieved.`);
-                    record(`Root hierarchy stabilized. Extract protocol complete.`, "STABLE", [idx]);
+                    addLog(`Heap property satisfied. Extract complete.`);
+                    record(`Heap is valid. Extract complete.`, "DONE", [idx]);
                     break;
                 }
             }
@@ -186,13 +186,13 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = history[currentIndex] || { 
+  const currentStep = history[currentIndex] || {
     heap: heapData,
-    message: "System idle. Awaiting bit insertion into the priority manifold.", 
-    step: "IDLE", 
-    highlightedIndices: [], 
+    message: "Enter a value and press Insert, or press Extract to remove the minimum.",
+    step: "IDLE",
+    highlightedIndices: [],
     swappingIndices: [],
-    logs: [] 
+    logs: []
   };
 
   const visualNodes = calculateLayout(currentStep.heap);
@@ -211,208 +211,192 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
-        {/* Grid Backdrop */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
-        
-        {/* Header UI */}
-        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-lavender)]">
-              Min-Heap <span className="text-muted-foreground/40">Resolution</span>
-            </h2>
-            <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[var(--viz-lavender)] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Priority Queue Manifold</p>
-            </div>
-          </div>
+    <div className="flex flex-col gap-4 select-none font-sans w-full">
 
-          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl  shadow-inner">
-            <div className="flex items-center gap-2 px-3 border-r border-border">
-                <input 
-                    type="number" value={inputValue} 
-                    onChange={e => setInputValue(e.target.value)}
-                    placeholder="Val"
-                    className="w-12 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-muted-foreground/20"
-                />
-            </div>
-            
-            <div className="flex gap-1">
-              <button onClick={() => recordOperation('INSERT', parseInt(inputValue))} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all" title="Insert"><Plus size={20}/></button>
-              <button onClick={() => recordOperation('EXTRACT')} className="p-2 hover:bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)] transition-all" title="Extract Min"><Trash2 size={20}/></button>
-              <div className="w-px h-6 bg-border mx-1" />
-              <button onClick={() => { setHeapData([]); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-red-500/10 rounded-xl text-muted-foreground/40 hover:text-red-500 transition-all"><RotateCcw size={20}/></button>
-            </div>
-          </div>
+      {/* ── Header + Controls ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Min-Heap Visualizer</h2>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Priority Queue — Insert &amp; Extract Min</p>
         </div>
-
-        {/* Visual Canvas */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div ref={containerRef} className="lg:col-span-3 relative min-h-[350px] md:min-h-[520px] w-full bg-muted/40 rounded-[2.5rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center">
-                
-                {/* Logic Step Badge */}
-                <AnimatePresence>
-                    {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-4 left-4 md:top-8 md:left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
-                            <Zap size={12} className="text-[var(--viz-lavender)]" />
-                            <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-[0.2em]">{currentStep.step}</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Explanation Box */}
-                <AnimatePresence mode="wait">
-                    <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-4 md:px-10 text-center z-30">
-                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[var(--viz-cyan)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-                    {visualNodes.map(node => {
-                        if (!node.parentId) return null;
-                        const parent = visualNodes.find(n => n.id === node.parentId);
-                        if (!parent) return null;
-                        const { x1, y1, x2, y2 } = getLineCoords(parent, node);
-                        return (
-                            <motion.line
-                                key={`link-${node.id}`}
-                                layout
-                                x1={x1} y1={y1} x2={x2} y2={y2}
-                                stroke="currentColor"
-                                className="text-muted-foreground/10"
-                                strokeWidth="2"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                            />
-                        );
-                    })}
-                </svg>
-
-                {/* Nodes */}
-                <div className="relative w-full h-full">
-                    {visualNodes.map(node => {
-                        const isH = currentStep.highlightedIndices.includes(node.index);
-                        const isS = currentStep.swappingIndices.includes(node.index);
-                        const isA = isH && !isS;
-
-                        return (
-                            <motion.div
-                                key={node.id}
-                                layout
-                                animate={{ 
-                                    x: node.x - 24, 
-                                    y: node.y - 24,
-                                    backgroundColor: isS ? MANIM_COLORS.red : isA ? MANIM_COLORS.blue : "var(--card)",
-                                    borderColor: isS ? MANIM_COLORS.red : isA ? MANIM_COLORS.blue : "var(--border)",
-                                    scale: isS || isA ? 1.2 : 1,
-                                    boxShadow: isS ? `0 0 30px ${MANIM_COLORS.red}44` : isA ? `0 0 20px ${MANIM_COLORS.blue}33` : "none"
-                                }}
-                                transition={{ type: "spring", stiffness: 150, damping: 25 }}
-                                className="absolute w-12 h-12 border-2 rounded-full z-20 flex items-center justify-center font-mono shadow-lg"
-                            >
-                                <span className={`text-sm font-black ${isS || isA ? "text-black" : "text-foreground"}`}>{node.value}</span>
-                                {isA && (
-                                    <motion.div layoutId="ptr" className="absolute -top-10 flex flex-col items-center">
-                                        <ArrowUp size={14} className="text-[var(--viz-lavender)]" />
-                                    </motion.div>
-                                )}
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Sidebar: Logic Flow */}
-            <div className="flex flex-col gap-6">
-                <div className="p-3 md:p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                        <Activity size={14}/> Bit Stream
-                    </h3>
-                    <div className="flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin">
-                        <AnimatePresence>
-                            {currentStep.logs.map((log, i) => (
-                                <motion.div
-                                    key={`log-${i}`}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
-                                >
-                                    <span className="text-[var(--viz-lavender)]">»</span>
-                                    {log}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                        {currentStep.logs.length === 0 && <span className="text-[9px] italic text-muted-foreground/20 text-center py-8">Bit stream empty...</span>}
-                    </div>
-                </div>
-
-                <div className="p-3 md:p-6 bg-muted  rounded-[2rem]">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
-                        <Database size={14}/> Array Manifold
-                    </h3>
-                    <div className="flex flex-wrap gap-1 justify-center">
-                        {currentStep.heap.map((val, i) => {
-                            const isH = currentStep.highlightedIndices.includes(i);
-                            return (
-                                <motion.div 
-                                    key={`array-${i}`}
-                                    animate={{ 
-                                        backgroundColor: isH ? MANIM_COLORS.blue : "var(--card)",
-                                        borderColor: isH ? MANIM_COLORS.blue : "var(--border)",
-                                        color: isH ? "black" : "var(--foreground)"
-                                    }}
-                                    className="w-8 h-8 rounded border flex flex-col items-center justify-center font-mono text-[9px] font-black"
-                                >
-                                    {val}
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* Scrubber UI */}
-        <div className="mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--viz-cyan)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => setIsPlaying(!isPlaying)} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all">
-                        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                    </button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40"><ChevronRight size={18} /></button>
-                </div>
-            </div>
-
-            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
-                <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full shadow-[0_0_10px_var(--viz-lavender)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
-                <input 
-                    type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
-                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                    className="w-full h-6 opacity-0 cursor-pointer z-10"
-                />
-                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_15px_var(--viz-cyan)] pointer-events-none transition-all"
-                    style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
-                />
-            </div>
+        <div className="flex items-center gap-2 bg-[var(--muted)] p-2 rounded-2xl shadow-inner flex-wrap">
+          <div className="flex items-center gap-2 px-3 border-r border-[var(--border)]">
+            <input
+              type="number" value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && recordOperation('INSERT', parseInt(inputValue))}
+              placeholder="Value"
+              className="w-14 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
+            />
+          </div>
+          <div className="flex gap-1">
+            <button onClick={() => recordOperation('INSERT', parseInt(inputValue))} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase"><Plus size={14}/> Insert</button>
+            <button onClick={() => recordOperation('EXTRACT')} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase"><Trash2 size={14}/> Extract Min</button>
+            <div className="w-px h-6 bg-[var(--border)] mx-1 self-center" />
+            <button onClick={() => { setHeapData([]); setHistory([]); setCurrentIndex(0); }} className="p-1.5 hover:bg-red-500/10 rounded-xl text-[var(--muted-foreground)]/40 hover:text-red-500 transition-all"><RotateCcw size={16}/></button>
+          </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Analysis</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Manifold Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Coordinate Shift</span></div>
-         <div className="flex items-center gap-3"><TrendingUp size={14} className="text-muted-foreground/20" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Priority Reduction</span></div>
+      {/* ── Heap info bar ── */}
+      <div className="flex items-center gap-6 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl text-[10px] font-mono">
+        <span className="text-[var(--muted-foreground)]/50">Size: <strong className="text-[var(--viz-lavender)]">{currentStep.heap.length}</strong></span>
+        <span className="text-[var(--muted-foreground)]/50">Min (root): <strong className="text-[var(--viz-cyan)]">{currentStep.heap.length > 0 ? currentStep.heap[0] : '—'}</strong></span>
+        <span className="text-[var(--muted-foreground)]/50">Step: <strong className="text-[var(--viz-green)]">{currentStep.step}</strong></span>
+      </div>
+
+      {/* ── Visual Canvas ── */}
+      <div ref={containerRef} className="relative w-full min-h-[350px] md:min-h-[520px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner">
+        {/* Grid backdrop */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+        {/* Empty state */}
+        {currentStep.heap.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="flex flex-col items-center gap-2 opacity-30">
+              <TrendingUp size={32} className="text-[var(--viz-lavender)]" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Heap is empty</span>
+              <span className="text-[9px] font-mono text-[var(--muted-foreground)]/60">Insert a value to begin</span>
+            </div>
+          </div>
+        )}
+
+        {/* Step badge */}
+        <AnimatePresence>
+          {currentStep.step !== "IDLE" && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
+              <Zap size={10} className="text-[var(--viz-lavender)]" />
+              <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-widest">{currentStep.step}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Edges */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+          {visualNodes.map(node => {
+            if (!node.parentId) return null;
+            const parent = visualNodes.find(n => n.id === node.parentId);
+            if (!parent) return null;
+            const { x1, y1, x2, y2 } = getLineCoords(parent, node);
+            return (
+              <motion.line key={`link-${node.id}`} layout
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke="currentColor" className="text-[var(--muted-foreground)]/15"
+                strokeWidth="2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
+            );
+          })}
+        </svg>
+
+        {/* Nodes */}
+        <div className="absolute inset-0 w-full h-full">
+          {visualNodes.map(node => {
+            const isH = currentStep.highlightedIndices.includes(node.index);
+            const isS = currentStep.swappingIndices.includes(node.index);
+            const isA = isH && !isS;
+            return (
+              <motion.div key={node.id} layout
+                animate={{
+                  x: node.x - 24, y: node.y - 24,
+                  backgroundColor: isS ? MANIM_COLORS.red : isA ? MANIM_COLORS.blue : "var(--card)",
+                  borderColor: isS ? MANIM_COLORS.red : isA ? MANIM_COLORS.blue : "var(--border)",
+                  scale: isS || isA ? 1.2 : 1,
+                  boxShadow: isS ? `0 0 30px ${MANIM_COLORS.red}44` : isA ? `0 0 20px ${MANIM_COLORS.blue}33` : "none"
+                }}
+                transition={{ type: "spring", stiffness: 150, damping: 25 }}
+                className="absolute w-12 h-12 border-2 rounded-full z-20 flex items-center justify-center font-mono shadow-lg"
+              >
+                <span className={`text-sm font-black ${isS || isA ? "text-black" : "text-[var(--foreground)]"}`}>{node.value}</span>
+                {isA && (
+                  <motion.div layoutId="ptr" className="absolute -top-8 flex flex-col items-center">
+                    <ArrowUp size={14} className="text-[var(--viz-lavender)]" />
+                  </motion.div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Step message (below canvas) ── */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-medium">{currentStep.message}</p>
+      </div>
+
+      {/* ── Step log (below canvas) ── */}
+      {currentStep.logs.length > 0 && (
+        <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+            <Activity size={10} /> Step Log
+          </span>
+          <div className="flex flex-row flex-wrap gap-x-6 gap-y-1">
+            {currentStep.logs.slice(0, 4).map((log, i) => (
+              <motion.p key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
+                <span className="text-[var(--viz-lavender)] mr-1">»</span>{log}
+              </motion.p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Array view (below canvas) ── */}
+      {currentStep.heap.length > 0 && (
+        <div className="w-full bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50">Heap Array (index 0 = root)</span>
+          <div className="flex flex-wrap gap-1.5">
+            {currentStep.heap.map((val, i) => {
+              const isH = currentStep.highlightedIndices.includes(i);
+              return (
+                <motion.div key={`array-${i}`}
+                  animate={{
+                    backgroundColor: isH ? MANIM_COLORS.blue : "var(--card)",
+                    borderColor: isH ? MANIM_COLORS.blue : "var(--border)",
+                    color: isH ? "black" : "var(--foreground)"
+                  }}
+                  className="w-8 h-8 rounded border flex items-center justify-center font-mono text-[9px] font-black"
+                >
+                  {val}
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Scrubber + nav ── */}
+      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Hash size={14} className="text-[var(--viz-lavender)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length || 1}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsPlaying(!isPlaying)} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all">
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex === 0}><ChevronLeft size={18} /></button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex >= (history.length || 1) - 1}><ChevronRight size={18} /></button>
+          </div>
+        </div>
+        <div className="relative flex items-center w-full">
+          <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
+          <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full transition-all"
+            style={{ width: `${(currentIndex / Math.max((history.length || 1) - 1, 1)) * 100}%` }} />
+          <input type="range" min="0" max={Math.max((history.length || 1) - 1, 0)} value={currentIndex}
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-6 opacity-0 cursor-pointer z-10" />
+          <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full pointer-events-none transition-all"
+            style={{ left: `calc(${(currentIndex / Math.max((history.length || 1) - 1, 1)) * 100}% - 3px)` }} />
+        </div>
+      </div>
+
+      {/* ── Legend ── */}
+      <div className="px-4 py-4 bg-[var(--muted)]/10 rounded-2xl border border-[var(--border)]/20 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Comparing</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Swapping</span></div>
+        <div className="flex items-center gap-2"><TrendingUp size={12} className="text-[var(--muted-foreground)]/20" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Min-Heap (parent ≤ children)</span></div>
       </div>
     </div>
   );

@@ -5,18 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Hash, 
   Search, ChevronLeft, ChevronRight, Zap, 
-  Plus, Type, Activity, Cpu
+  Plus, Type, Activity
 } from "lucide-react";
 
-// Professional Palette
-const MANIM_COLORS = { 
-  text: "var(--foreground)", 
-  background: "var(--card)",
+const COLORS = { 
   blue: "var(--viz-lavender)",
   green: "var(--viz-green)",
-  gold: "var(--viz-cyan)",
+  cyan: "var(--viz-cyan)",
   red: "var(--viz-rose)",
-  purple: "var(--viz-lavender)"
 };
 
 interface VisualNode {
@@ -43,11 +39,51 @@ class TrieNode {
   isEndOfWord: boolean = false;
   char: string;
   id: string;
-
   constructor(char: string) {
     this.char = char;
     this.id = `node-${Math.random().toString(36).substring(2, 9)}`;
   }
+}
+
+// ── Proper layout: assign x coords bottom-up, guarantee MIN_GAP between siblings ──
+const NODE_RADIUS = 24;
+const LEVEL_HEIGHT = 90;
+const MIN_GAP = 56; // minimum px between sibling node centres
+
+function computeLayout(root: TrieNode, containerWidth: number): VisualNode[] {
+  const nodes: VisualNode[] = [];
+
+  // Post-order: assign subtree width first, then centre parent over children
+  function measure(node: TrieNode): number {
+    const keys = Object.keys(node.children).sort();
+    if (keys.length === 0) return NODE_RADIUS * 2;
+    let total = 0;
+    keys.forEach((k, i) => {
+      total += measure(node.children[k]);
+      if (i < keys.length - 1) total += MIN_GAP;
+    });
+    return Math.max(total, NODE_RADIUS * 2);
+  }
+
+  function place(node: TrieNode, left: number, y: number, parentId: string | null) {
+    const width = measure(node);
+    const x = left + width / 2;
+    nodes.push({ id: node.id, char: node.char, x, y, parentId, isEndOfWord: node.isEndOfWord, status: 'idle' });
+
+    const keys = Object.keys(node.children).sort();
+    let cursor = left;
+    keys.forEach(k => {
+      const childW = measure(node.children[k]);
+      place(node.children[k], cursor, y + LEVEL_HEIGHT, node.id);
+      cursor += childW + MIN_GAP;
+    });
+  }
+
+  // Centre the root in container
+  const totalW = measure(root);
+  const startX = Math.max(0, (containerWidth - totalW) / 2);
+  place(root, startX, 60, null);
+  return nodes;
 }
 
 export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
@@ -56,12 +92,11 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
   const [history, setHistory] = useState<HistoryStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
 
-  // Coordinate Sync
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
@@ -76,114 +111,84 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     return () => observer.disconnect();
   }, []);
 
-  // --- Layout Algorithm ---
   const getLayout = useCallback((root: TrieNode) => {
-    const visualNodes: VisualNode[] = [];
-    const traverse = (node: TrieNode, x: number, y: number, offset: number, parentId: string | null) => {
-      visualNodes.push({ id: node.id, char: node.char, x, y, parentId, isEndOfWord: node.isEndOfWord, status: 'idle' });
-      const children = Object.keys(node.children).sort();
-      const count = children.length;
-      if (count === 0) return;
-      
-      // Calculate spacing based on offset, but clamp it to prevent extreme spread
-      const spacing = offset * 2 / Math.max(count - 1, 1);
-      
-      let startX = x - offset;
-      if (count === 1) startX = x;
-      
-      children.forEach((char, i) => {
-        const childX = count === 1 ? x : startX + i * spacing;
-        traverse(node.children[char], childX, y + 80, offset * 0.45, node.id);
-      });
-    };
-    traverse(root, dimensions.width / 2, 60, dimensions.width / 4, null);
-    return visualNodes;
+    return computeLayout(root, dimensions.width);
   }, [dimensions.width]);
 
-  // --- Core Logic ---
   const recordOperation = (type: 'INSERT' | 'SEARCH', rawWord: string) => {
     if (!rawWord) return;
-    const word = rawWord.toUpperCase().trim().slice(0, 10);
+    const word = rawWord.toUpperCase().trim().slice(0, 12);
     setIsPlaying(false);
     const steps: HistoryStep[] = [];
     let currentLogs: string[] = [];
-    
-    // Deep copy root for simulation/update
+
     const cloneTrie = (node: TrieNode): TrieNode => {
-        const newNode = new TrieNode(node.char);
-        newNode.id = node.id;
-        newNode.isEndOfWord = node.isEndOfWord;
-        Object.keys(node.children).forEach(key => {
-            newNode.children[key] = cloneTrie(node.children[key]);
-        });
-        return newNode;
+      const n = new TrieNode(node.char);
+      n.id = node.id;
+      n.isEndOfWord = node.isEndOfWord;
+      Object.keys(node.children).forEach(key => { n.children[key] = cloneTrie(node.children[key]); });
+      return n;
     };
     const root = cloneTrie(treeRoot);
 
-    // Reconstruction helper
     const record = (msg: string, step: string, hId: string | null, statusOverride?: Record<string, VisualNode['status']>) => {
       const layout = getLayout(root);
       const frameNodes = layout.map(n => ({
         ...n,
         status: statusOverride?.[n.id] || (n.id === hId ? 'active' : n.status)
       }));
-      steps.push({
-        nodes: frameNodes,
-        message: msg,
-        step: step,
-        highlightedId: hId,
-        logs: [...currentLogs],
-        activeWord: word
-      });
+      steps.push({ nodes: frameNodes, message: msg, step, highlightedId: hId, logs: [...currentLogs], activeWord: word });
     };
 
     const addLog = (l: string) => { currentLogs = [l, ...currentLogs]; };
 
     if (type === 'INSERT') {
-      addLog(`Initiating storage protocol for "${word}".`);
+      addLog(`Inserting word "${word}".`);
       let curr = root;
-      record(`Scanning root manifold for insertion of "${word}".`, "START", curr.id);
-      
+      record(`Starting insert of "${word}". At root.`, "START", curr.id);
+
       for (let i = 0; i < word.length; i++) {
         const char = word[i];
         if (!curr.children[char]) {
           curr.children[char] = new TrieNode(char);
-          addLog(`Allocated memory for bit '${char}'.`);
-          record(`Character '${char}' not found. Allocating new memory cell.`, "ALLOCATE", curr.children[char].id);
+          addLog(`'${char}' not found — created new node.`);
+          record(`'${char}' is new. Created node for it.`, "CREATE", curr.children[char].id);
         } else {
-          addLog(`Bit '${char}' located in current manifold.`);
-          record(`Prefix match: '${char}' already exists in the hierarchy.`, "MATCH", curr.children[char].id);
+          addLog(`'${char}' already exists — following it.`);
+          record(`'${char}' exists. Following existing path.`, "FOLLOW", curr.children[char].id);
         }
         curr = curr.children[char];
       }
       curr.isEndOfWord = true;
-      addLog(`Word "${word}" successfully committed.`);
-      record(`Terminal bit for "${word}" successfully committed.`, "TERMINAL", curr.id, { [curr.id]: 'success' });
+      addLog(`"${word}" fully inserted. Marked as complete word.`);
+      record(`"${word}" inserted. End-of-word marker set.`, "DONE", curr.id, { [curr.id]: 'success' });
       setTreeRoot(root);
     } else {
-        addLog(`Querying manifold for word "${word}".`);
-        let curr = root;
-        let found = true;
-        record(`Starting search protocol for "${word}".`, "QUERY_START", curr.id);
-        for (let i = 0; i < word.length; i++) {
-            const char = word[i];
-            if (!curr.children[char]) {
-                addLog(`Manifold mismatch at character '${char}'.`);
-                record(`Bit '${char}' is missing from the manifold. Search aborted.`, "MISS", curr.id, { [curr.id]: 'miss' });
-                found = false; break;
-            }
-            curr = curr.children[char];
-            record(`Bit match: '${char}' located. Ascending to next level.`, "SCAN", curr.id);
+      addLog(`Searching for "${word}".`);
+      let curr = root;
+      let found = true;
+      record(`Searching for "${word}". Starting at root.`, "START", curr.id);
+
+      for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        if (!curr.children[char]) {
+          addLog(`'${char}' not found — search failed.`);
+          record(`'${char}' is missing. "${word}" is not in the trie.`, "NOT_FOUND", curr.id, { [curr.id]: 'miss' });
+          found = false;
+          break;
         }
-        if (found) {
-            if (curr.isEndOfWord) {
-                addLog(`Word "${word}" resolved in memory.`);
-                record(`Success. Word "${word}" successfully resolved.`, "RESOLVED", curr.id, { [curr.id]: 'success' });
-            } else {
-                addLog(`Prefix matched, but no terminal bit for "${word}".`);
-                record(`Prefix match found, but terminal bit is absent.`, "PREFIX_ONLY", curr.id);
-            }
+        curr = curr.children[char];
+        record(`Found '${char}'. Moving deeper (${i + 1}/${word.length}).`, "MATCH", curr.id);
+      }
+      if (found) {
+        if (curr.isEndOfWord) {
+          addLog(`"${word}" found!`);
+          record(`"${word}" found in the trie.`, "FOUND", curr.id, { [curr.id]: 'success' });
+        } else {
+          addLog(`"${word}" is only a prefix, not a full word.`);
+          record(`"${word}" is a prefix but not a complete word.`, "PREFIX_ONLY", curr.id);
         }
+      }
     }
 
     setHistory(steps);
@@ -192,15 +197,11 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     setInputValue("");
   };
 
-  // Playback Control
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = setInterval(() => {
         setCurrentIndex((prev) => {
-          if (prev >= history.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
+          if (prev >= history.length - 1) { setIsPlaying(false); return prev; }
           return prev + 1;
         });
       }, speed);
@@ -213,278 +214,232 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
   const defaultNodes = useMemo(() => getLayout(treeRoot), [treeRoot, getLayout]);
 
   const currentStep = useMemo(() => {
-    return history[currentIndex] || { 
-      nodes: defaultNodes, 
-      message: "System idle. Input word to initialize memory flow.", 
-      step: "IDLE", 
-      highlightedId: null, 
+    return history[currentIndex] || {
+      nodes: defaultNodes,
+      message: "Enter a word and press Insert or Search.",
+      step: "IDLE",
+      highlightedId: null,
       logs: [],
       activeWord: ""
     };
   }, [history, currentIndex, defaultNodes]);
 
-  // --- Dynamic Fit-to-Screen Logic ---
+  // Auto-fit: pan/scale so the whole tree is always visible
   const viewTransform = useMemo(() => {
-    if (currentStep.nodes.length === 0) {
-        return { x: 0, y: 0, scale: 1 };
-    }
-
-    const PADDING = 80;
-    const NODE_RADIUS = 30; 
-    
+    if (currentStep.nodes.length === 0) return { x: 0, y: 0, scale: 1 };
+    const PAD = 60;
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-
-    currentStep.nodes.forEach(node => {
-        minX = Math.min(minX, node.x);
-        maxX = Math.max(maxX, node.x);
-        minY = Math.min(minY, node.y);
-        maxY = Math.max(maxY, node.y);
+    currentStep.nodes.forEach(n => {
+      minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+      minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
     });
-
-    minX -= NODE_RADIUS; maxX += NODE_RADIUS;
-    minY -= NODE_RADIUS; maxY += NODE_RADIUS;
-
-    const treeWidth = maxX - minX;
-    const treeHeight = maxY - minY;
-
-    const availWidth = dimensions.width - PADDING;
-    const availHeight = dimensions.height - PADDING;
-
-    let newScale = Math.min(availWidth / treeWidth, availHeight / treeHeight);
-    newScale = Math.min(Math.max(newScale, 0.1), 1.1);
-
-    const treeCenterX = minX + treeWidth / 2;
-    const treeCenterY = minY + treeHeight / 2;
-    
-    const containerCenterX = dimensions.width / 2;
-    const containerCenterY = dimensions.height / 2;
-
-    const newX = containerCenterX - (treeCenterX * newScale);
-    const newY = containerCenterY - (treeCenterY * newScale);
-    
-    return { x: newX, y: newY, scale: newScale };
-
+    minX -= NODE_RADIUS + PAD; maxX += NODE_RADIUS + PAD;
+    minY -= NODE_RADIUS + PAD; maxY += NODE_RADIUS + PAD;
+    const tw = maxX - minX, th = maxY - minY;
+    let scale = Math.min((dimensions.width - PAD) / tw, (dimensions.height - PAD) / th);
+    scale = Math.min(Math.max(scale, 0.1), 1.1);
+    return {
+      x: dimensions.width / 2 - (minX + tw / 2) * scale,
+      y: dimensions.height / 2 - (minY + th / 2) * scale,
+      scale
+    };
   }, [currentStep.nodes, dimensions]);
 
   const getLineCoords = (u: VisualNode, v: VisualNode) => {
-    const dx = v.x - u.x;
-    const dy = v.y - u.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const radius = 24;
-    return {
-        x1: u.x + (dx / dist) * radius,
-        y1: u.y + (dy / dist) * radius,
-        x2: v.x - (dx / dist) * radius,
-        y2: v.y - (dy / dist) * radius
-    };
+    const dx = v.x - u.x, dy = v.y - u.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const r = NODE_RADIUS;
+    return { x1: u.x + (dx / dist) * r, y1: u.y + (dy / dist) * r, x2: v.x - (dx / dist) * r, y2: v.y - (dy / dist) * r };
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-3xl shadow-2xl font-sans text-foreground relative overflow-hidden">
-        {/* Grid Backdrop */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
-        
-        {/* Header UI */}
-        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 relative z-10 gap-6">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-light tracking-tight text-[var(--viz-lavender)]">
-              Trie <span className="text-muted-foreground/40">Lemma Analyzer</span>
-            </h2>
-            <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[var(--viz-lavender)] rounded-full" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Prefix Memory Manifold</p>
-            </div>
-          </div>
+    <div className="flex flex-col gap-4 select-none font-sans w-full">
 
-          <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl  shadow-inner">
-            <div className="flex items-center gap-2 px-3 border-r border-border">
-                <input 
-                    type="text" value={inputValue} 
-                    onChange={e => setInputValue(e.target.value.toUpperCase())}
-                    placeholder="KEY"
-                    className="w-20 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-muted-foreground/20"
-                />
-            </div>
-            
-            <div className="flex gap-1">
-              <button onClick={() => recordOperation('INSERT', inputValue)} className="p-2 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all" title="Insert"><Plus size={20}/></button>
-              <button onClick={() => recordOperation('SEARCH', inputValue)} className="p-2 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)] transition-all" title="Search"><Search size={20}/></button>
-              <div className="w-px h-6 bg-border mx-1" />
-              <button onClick={() => { setTreeRoot(new TrieNode("*")); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-red-500/10 rounded-xl text-muted-foreground/40 hover:text-red-500 transition-all"><RotateCcw size={20}/></button>
-            </div>
-          </div>
+      {/* ── Header + Controls ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Trie Visualizer</h2>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Prefix Tree — Insert &amp; Search</p>
         </div>
 
-        {/* Visual Canvas */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div ref={containerRef} className="lg:col-span-3 relative min-h-[350px] md:min-h-[520px] w-full bg-muted/40 rounded-[2.5rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center">
-                
-                {/* Logic Step Badge */}
-                <AnimatePresence>
-                    {currentStep.step !== "IDLE" && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute top-4 left-4 md:top-8 md:left-10 flex items-center gap-2 px-4 py-2 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
-                            <Zap size={12} className="text-[var(--viz-lavender)]" />
-                            <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-[0.2em]">{currentStep.step}</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Explanation Box */}
-                <AnimatePresence mode="wait">
-                    <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute bottom-12 w-full max-w-[400px] px-4 md:px-10 text-center z-30">
-                        <div className="p-4 bg-card/80  rounded-2xl backdrop-blur-md shadow-2xl">
-                            <p className="text-[10px] text-[var(--viz-cyan)] font-mono italic uppercase tracking-tighter">{currentStep.message}</p>
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Scalable Container for Tree */}
-                <motion.div 
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                    animate={{ 
-                        x: viewTransform.x, 
-                        y: viewTransform.y, 
-                        scale: viewTransform.scale 
-                    }}
-                    transition={{ type: "spring", stiffness: 60, damping: 15 }}
-                    style={{ transformOrigin: "0px 0px" }}
-                >
-                    {/* SVG Layer */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
-                        {currentStep.nodes.map(node => {
-                            if (!node.parentId) return null;
-                            const parent = currentStep.nodes.find(n => n.id === node.parentId);
-                            if (!parent) return null;
-                            const { x1, y1, x2, y2 } = getLineCoords(parent, node);
-                            return (
-                                <motion.line
-                                    key={`link-${node.id}`}
-                                    x1={x1} y1={y1} x2={x2} y2={y2}
-                                    stroke="currentColor"
-                                    className="text-muted-foreground/10"
-                                    strokeWidth="2"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                />
-                            );
-                        })}
-                    </svg>
-
-                    {/* Nodes Layer */}
-                    <div className="absolute inset-0 w-full h-full pointer-events-auto">
-                        {currentStep.nodes.map(node => {
-                            const isA = node.status === 'active';
-                            const isS = node.status === 'success';
-                            const isM = node.status === 'miss';
-                            const isRoot = node.char === '*';
-
-                            return (
-                                <motion.div
-                                    key={node.id}
-                                    initial={{ x: node.x - 24, y: node.y - 24, scale: 0 }}
-                                    animate={{ 
-                                        x: node.x - 24, 
-                                        y: node.y - 24,
-                                        backgroundColor: isS ? MANIM_COLORS.green : isA ? MANIM_COLORS.blue : isM ? MANIM_COLORS.red : "var(--card)",
-                                        borderColor: isS ? MANIM_COLORS.green : isA ? MANIM_COLORS.blue : isM ? MANIM_COLORS.red : "var(--border)",
-                                        scale: isS || isA || isM ? 1.2 : 1,
-                                        boxShadow: isS ? `0 0 30px ${MANIM_COLORS.green}44` : isA ? `0 0 20px ${MANIM_COLORS.blue}33` : isM ? `0 0 20px ${MANIM_COLORS.red}33` : "none"
-                                    }}
-                                    transition={{ type: "spring", stiffness: 150, damping: 25 }}
-                                    className="absolute w-12 h-12 border-2 rounded-full z-20 flex items-center justify-center font-mono shadow-lg"
-                                >
-                                    <span className={`text-sm font-black ${isS || isA || isM ? "text-black" : "text-foreground"}`}>{isRoot ? "●" : node.char}</span>
-                                    {node.isEndOfWord && !isRoot && (
-                                        <div className="absolute -bottom-2 w-2 h-2 rounded-full bg-[var(--viz-green)] shadow-[0_0_10px_var(--viz-green)]" />
-                                    )}
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Sidebar: Memory Log */}
-            <div className="flex flex-col gap-6">
-                <div className="p-3 md:p-6 bg-muted  rounded-[2rem] flex flex-col gap-4 flex-1 h-[300px] overflow-hidden">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                        <Activity size={14}/> Bit Stream
-                    </h3>
-                    <div className="flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin">
-                        <AnimatePresence>
-                            {currentStep.logs.map((log, i) => (
-                                <motion.div
-                                    key={`log-${i}`}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="text-[9px] font-mono text-muted-foreground/60 flex gap-2 border-l-2 border-border pl-2 py-0.5"
-                                >
-                                    <span className="text-[var(--viz-lavender)]">»</span>
-                                    {log}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                        {currentStep.logs.length === 0 && <span className="text-[9px] italic text-muted-foreground/20 text-center py-8">Bit stream empty...</span>}
-                    </div>
-                </div>
-
-                <div className="p-3 md:p-6 bg-muted  rounded-[2rem]">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest mb-4 flex items-center gap-2">
-                        <Type size={14}/> Word Buffer
-                    </h3>
-                    <div className="flex gap-1 justify-center">
-                        {currentStep.activeWord.split('').map((char, i) => (
-                            <div key={i} className="w-6 h-8 bg-card  rounded flex items-center justify-center font-mono text-xs font-black text-[var(--viz-cyan)]">
-                                {char}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* Scrubber UI */}
-        <div className="mt-8 p-3 md:p-6 bg-muted  rounded-[2.5rem] flex flex-col gap-4 relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--viz-cyan)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Lemma Sequence {currentIndex + 1} of {history.length || 1}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => setIsPlaying(!isPlaying)} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all">
-                        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                    </button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40"><ChevronRight size={18} /></button>
-                </div>
-            </div>
-
-            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
-                <div className="absolute w-full h-1 bg-background/10 rounded-full" />
-                <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full shadow-[0_0_10px_var(--viz-lavender)44]" style={{ width: `${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}%` }} />
-                <input 
-                    type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
-                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                    className="w-full h-6 opacity-0 cursor-pointer z-10"
-                />
-                <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_15px_var(--viz-cyan)] pointer-events-none transition-all"
-                    style={{ left: `calc(${(currentIndex / ((history.length || 1) - 1 || 1)) * 100}% - 3px)` }}
-                />
-            </div>
+        <div className="flex items-center gap-2 bg-[var(--muted)] p-2 rounded-2xl shadow-inner flex-wrap">
+          <div className="flex items-center gap-2 px-3 border-r border-[var(--border)]">
+            <input
+              type="text" value={inputValue}
+              onChange={e => setInputValue(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === "Enter" && recordOperation('INSERT', inputValue)}
+              placeholder="WORD"
+              className="w-20 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
+            />
+          </div>
+          <div className="flex gap-1">
+            <button onClick={() => recordOperation('INSERT', inputValue)} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase" title="Insert"><Plus size={14}/> Insert</button>
+            <button onClick={() => recordOperation('SEARCH', inputValue)} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)] transition-all text-[10px] font-bold uppercase" title="Search"><Search size={14}/> Search</button>
+            <div className="w-px h-6 bg-[var(--border)] mx-1 self-center" />
+            <button onClick={() => { setTreeRoot(new TrieNode("*")); setHistory([]); setCurrentIndex(0); }} className="p-1.5 hover:bg-red-500/10 rounded-xl text-[var(--muted-foreground)]/40 hover:text-red-500 transition-all"><RotateCcw size={16}/></button>
+          </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="px-4 md:px-10 py-6 bg-muted/20  rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Resolution</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Active Probe</span></div>
-         <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Memory Miss</span></div>
-         <div className="flex items-center gap-3"><Cpu size={14} className="text-muted-foreground/20" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-muted-foreground/30 tracking-widest">Prefix Manifold</span></div>
+      {/* ── Active word display ── */}
+      {currentStep.activeWord && (
+        <div className="flex items-center gap-3 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl">
+          <Type size={12} className="text-[var(--muted-foreground)]/40" />
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Current Word</span>
+          <div className="flex gap-1">
+            {currentStep.activeWord.split('').map((char, i) => (
+              <div key={i} className="w-6 h-7 bg-[var(--muted)]/50 rounded flex items-center justify-center font-mono text-xs font-black text-[var(--viz-cyan)]">
+                {char}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Visual Canvas (no overflow, proper spacing) ── */}
+      <div
+        ref={containerRef}
+        className="relative w-full min-h-[350px] md:min-h-[520px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner"
+      >
+        {/* Subtle grid */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+        {/* Empty state */}
+        {currentStep.nodes.length <= 1 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="flex flex-col items-center gap-2 opacity-30">
+              <Type size={32} className="text-[var(--viz-lavender)]" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Trie is empty</span>
+              <span className="text-[9px] font-mono text-[var(--muted-foreground)]/60">Insert a word to begin</span>
+            </div>
+          </div>
+        )}
+
+        {/* Step badge */}
+        <AnimatePresence>
+          {currentStep.step !== "IDLE" && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
+              <Zap size={10} className="text-[var(--viz-lavender)]" />
+              <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-widest">{currentStep.step}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Auto-fit tree */}
+        <motion.div
+          className="absolute top-0 left-0 w-full h-full pointer-events-none"
+          animate={{ x: viewTransform.x, y: viewTransform.y, scale: viewTransform.scale }}
+          transition={{ type: "spring", stiffness: 60, damping: 15 }}
+          style={{ transformOrigin: "0px 0px" }}
+        >
+          {/* Edges */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+            {currentStep.nodes.map(node => {
+              if (!node.parentId) return null;
+              const parent = currentStep.nodes.find(n => n.id === node.parentId);
+              if (!parent) return null;
+              const { x1, y1, x2, y2 } = getLineCoords(parent, node);
+              return (
+                <motion.line key={`link-${node.id}`}
+                  x1={x1} y1={y1} x2={x2} y2={y2}
+                  stroke="currentColor" className="text-[var(--muted-foreground)]/15"
+                  strokeWidth="2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
+              );
+            })}
+          </svg>
+
+          {/* Nodes */}
+          <div className="absolute inset-0 w-full h-full pointer-events-auto">
+            {currentStep.nodes.map(node => {
+              const isA = node.status === 'active';
+              const isS = node.status === 'success';
+              const isM = node.status === 'miss';
+              const isRoot = node.char === '*';
+              return (
+                <motion.div key={node.id}
+                  initial={{ x: node.x - NODE_RADIUS, y: node.y - NODE_RADIUS, scale: 0 }}
+                  animate={{
+                    x: node.x - NODE_RADIUS, y: node.y - NODE_RADIUS,
+                    backgroundColor: isS ? COLORS.green : isA ? COLORS.blue : isM ? COLORS.red : "var(--card)",
+                    borderColor: isS ? COLORS.green : isA ? COLORS.blue : isM ? COLORS.red : "var(--border)",
+                    scale: isS || isA || isM ? 1.2 : 1,
+                    boxShadow: isS ? `0 0 30px ${COLORS.green}44` : isA ? `0 0 20px ${COLORS.blue}33` : isM ? `0 0 20px ${COLORS.red}33` : "none"
+                  }}
+                  transition={{ type: "spring", stiffness: 150, damping: 25 }}
+                  className="absolute border-2 rounded-full z-20 flex items-center justify-center font-mono shadow-lg"
+                  style={{ width: NODE_RADIUS * 2, height: NODE_RADIUS * 2 }}
+                >
+                  <span className={`text-sm font-black ${isS || isA || isM ? "text-black" : "text-[var(--foreground)]"}`}>
+                    {isRoot ? "●" : node.char}
+                  </span>
+                  {node.isEndOfWord && !isRoot && (
+                    <div className="absolute -bottom-1.5 w-2 h-2 rounded-full bg-[var(--viz-green)] shadow-[0_0_8px_var(--viz-green)]" />
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ── Step message (below canvas, not overlapping) ── */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-medium">{currentStep.message}</p>
+      </div>
+
+      {/* ── Step log (below canvas) ── */}
+      {currentStep.logs.length > 0 && (
+        <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+            <Activity size={10} /> Step Log
+          </span>
+          <div className="flex flex-row flex-wrap gap-x-6 gap-y-1">
+            {currentStep.logs.slice(0, 4).map((log, i) => (
+              <motion.p key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
+                <span className="text-[var(--viz-lavender)] mr-1">»</span>{log}
+              </motion.p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Scrubber + nav ── */}
+      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Hash size={14} className="text-[var(--viz-lavender)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length || 1}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsPlaying(!isPlaying)} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all">
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex === 0}><ChevronLeft size={18} /></button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex >= (history.length || 1) - 1}><ChevronRight size={18} /></button>
+          </div>
+        </div>
+        <div className="relative flex items-center w-full">
+          <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
+          <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full transition-all"
+            style={{ width: `${(currentIndex / Math.max((history.length || 1) - 1, 1)) * 100}%` }} />
+          <input type="range" min="0" max={Math.max((history.length || 1) - 1, 0)} value={currentIndex}
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-6 opacity-0 cursor-pointer z-10" />
+          <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full pointer-events-none transition-all"
+            style={{ left: `calc(${(currentIndex / Math.max((history.length || 1) - 1, 1)) * 100}% - 3px)` }} />
+        </div>
+      </div>
+
+      {/* ── Legend ── */}
+      <div className="px-4 py-4 bg-[var(--muted)]/10 rounded-2xl border border-[var(--border)]/20 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Found / Inserted</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Current Node</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Not Found</span></div>
+        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[var(--viz-green)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">End of Word</span></div>
       </div>
     </div>
   );
 }
-
-

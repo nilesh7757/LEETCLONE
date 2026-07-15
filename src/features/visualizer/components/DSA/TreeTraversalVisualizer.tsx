@@ -5,17 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Hash, 
   ChevronLeft, ChevronRight, ListTree,
-  Layers, Cpu
+  Layers, Cpu, Activity
 } from "lucide-react";
 
-// Professional Palette - High Fidelity
-const MANIM_COLORS = { 
+// Professional Palette
+const COLORS = { 
   blue: "var(--viz-lavender)",
   green: "var(--viz-green)",
-  gold: "var(--viz-cyan)",
+  cyan: "var(--viz-cyan)",
   red: "var(--viz-rose)",
-  purple: "var(--viz-lavender)",
-  cyan: "#4FD1C5"
+  purple: "var(--viz-lavender)"
 };
 
 interface VisualNode {
@@ -70,20 +69,17 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
-  // Responsive logic
   useEffect(() => {
     if (!containerRef.current) return;
-    const updateDims = () => {
-      if (containerRef.current) {
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
         setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight
+          width: entries[0].contentRect.width,
+          height: entries[0].contentRect.height
         });
       }
-    };
-    const observer = new ResizeObserver(updateDims);
+    });
     observer.observe(containerRef.current);
-    updateDims();
     return () => observer.disconnect();
   }, []);
 
@@ -93,14 +89,13 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       if (!node) return;
       visualNodes.push({ id: node.id, value: node.value, x, y, parentId, status: 'idle' });
       const nextOffset = offset * 0.5;
-      traverseNodes(node.left, x - offset, y + 85, nextOffset, node.id);
-      traverseNodes(node.right, x + offset, y + 85, nextOffset, node.id);
+      traverseNodes(node.left, x - offset, y + 80, nextOffset, node.id);
+      traverseNodes(node.right, x + offset, y + 80, nextOffset, node.id);
     };
-    traverseNodes(root, dimensions.width / 2, 60, dimensions.width / 4, null);
+    traverseNodes(root, dimensions.width / 2, 60, dimensions.width / 4.2, null);
     return visualNodes;
   }, [dimensions.width]);
 
-  // Algorithm Simulation
   const history = useMemo(() => {
     if (!treeRoot) return [];
     
@@ -142,30 +137,28 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       stack.push(node.value);
       
       if (mode === 'PRE') {
-        record(node, `PRE-ORDER: Root Priority. Node ${node.value} localized.`, "VISIT-ACTIVE", 'active', true);
+        record(node, `Pre-Order: Visit root node ${node.value} first.`, "VISIT", 'active', true);
       } else {
-        record(node, `Descending into Node ${node.value}...`, "DESCEND", 'visiting');
+        record(node, `Going down to left child of node ${node.value}.`, "DESCEND", 'visiting');
       }
 
       traverse(node.left);
 
       if (mode === 'IN') {
-        record(node, `IN-ORDER: Left branch resolved. Visiting Node ${node.value}.`, "VISIT-ACTIVE", 'active', true);
+        record(node, `In-Order: Left subtree resolved. Visit root node ${node.value}.`, "VISIT", 'active', true);
       } else if (mode === 'POST') {
-        record(node, `Left and Right exploration continues from Node ${node.value}.`, "RECURSE", 'visiting');
+        record(node, `Going down to right child of node ${node.value}.`, "DESCEND", 'visiting');
       }
 
       traverse(node.right);
 
       if (mode === 'POST') {
-        record(node, `POST-ORDER: Sub-manifolds resolved. Node ${node.value} mapped.`, "VISIT-ACTIVE", 'active', true);
+        record(node, `Post-Order: Both subtrees resolved. Visit root node ${node.value}.`, "VISIT", 'active', true);
       }
       
       stack.pop();
       if (stack.length > 0) {
-        // Find parent to return to
         const parentId = stack[stack.length-1];
-        
         const findTreeNode = (root: TreeNode | null, val: number): TreeNode | null => {
             if (!root) return null;
             if (root.value === val) return root;
@@ -173,7 +166,7 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
         };
         const actualParent = findTreeNode(treeRoot, parentId);
         if (actualParent) {
-            record(actualParent, `Ascending from Node ${node.value} to Node ${actualParent.value}.`, "ASCEND", 'visiting');
+            record(actualParent, `Backtracking up to parent node ${actualParent.value}.`, "ASCEND", 'visiting');
         }
       }
     };
@@ -183,12 +176,12 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
       nodes: baseNodes.map(n => ({ ...n, status: 'processed' })),
       traversedOrder: [...resultOrder],
       stack: [],
-      message: "Manifold Synthesis Complete.",
+      message: "Tree Traversal Complete.",
       stepType: "FINISHED",
       activeId: null,
       activeX: dimensions.width / 2,
       activeY: 60,
-      logs: ["Optimal Map Generated.", ...currentLogs].slice(0, 10)
+      logs: ["Traversal finished successfully.", ...currentLogs].slice(0, 10)
     });
 
     return steps;
@@ -208,302 +201,238 @@ export default function TreeTraversalVisualizer({ speed = 800 }: { speed?: numbe
 
   const currentStep = useMemo(() => {
     return history[currentIndex] || { 
-      nodes: [], traversedOrder: [], stack: [], message: "Preparing Manifold...", stepType: "IDLE", activeId: null, activeX: dimensions.width / 2, activeY: 80, logs: [] 
+      nodes: [], traversedOrder: [], stack: [], message: "Preparing traversal...", stepType: "IDLE", activeId: null, activeX: dimensions.width / 2, activeY: 80, logs: [] 
     };
   }, [history, currentIndex, dimensions.width]);
 
   return (
-    <div className="flex flex-col gap-4 select-none font-sans p-4 md:p-6 bg-background">
-      {/* Academy Header */}
-      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-6 relative z-10 gap-4">
+    <div className="flex flex-col gap-4 select-none font-sans w-full">
+      {/* Header + Mode Selector */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
         <div className="space-y-1">
-          <h2 className="text-2xl font-light tracking-tight text-[var(--viz-lavender)]">
-            Tree <span className="text-muted-foreground/40">Manifold Traversal</span>
-          </h2>
-          <div className="flex items-center gap-3">
-             <div className="h-1 w-12 bg-[var(--viz-lavender)] rounded-full shadow-[0_0_10px_var(--viz-lavender)]" />
-             <div className="flex bg-muted/50 p-1 rounded-lg  shadow-inner">
-                {(['PRE', 'IN', 'POST'] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => { setMode(t); setCurrentIndex(0); }}
-                    className={`px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === t ? "bg-[var(--viz-lavender)] text-black shadow-lg scale-105" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
-                  >
-                    {t === 'PRE' ? 'Pre' : t === 'IN' ? 'In' : 'Post'} Order
-                  </button>
-                ))}
-             </div>
-          </div>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Tree Traversal</h2>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Depth-First Search (DFS)</p>
         </div>
-
-        <div className="flex items-center gap-3 bg-muted/50 p-2 rounded-2xl  shadow-inner">
-          <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-3 bg-card hover:bg-[var(--foreground)]/5 rounded-xl  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
-            <RotateCcw size={20}/>
-          </button>
-          <div className="w-[1px] h-10 bg-border mx-1" />
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex bg-[var(--muted)] p-1 rounded-lg">
+            {(['PRE', 'IN', 'POST'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => { setMode(t); setCurrentIndex(0); setIsPlaying(false); }}
+                className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === t ? "bg-[var(--viz-lavender)] text-black" : "text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"}`}
+              >
+                {t === 'PRE' ? 'Pre-Order' : t === 'IN' ? 'In-Order' : 'Post-Order'}
+              </button>
+            ))}
+          </div>
           <button 
             onClick={() => {
               if (currentIndex >= history.length - 1) setCurrentIndex(0);
               setIsPlaying(!isPlaying);
-            }} 
-            className={`flex items-center gap-3 px-8 py-3 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${
-              isPlaying ? "bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/30" : "bg-[var(--viz-lavender)] text-black hover:shadow-[var(--viz-lavender)]/20"
-            }`}
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${isPlaying ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-[var(--viz-lavender)] text-black border-transparent hover:scale-105"}`}
           >
-            {isPlaying ? <><Pause size={18} fill="currentColor" /> HALT</> : <><Play size={18} fill="currentColor" /> EXECUTE</>}
+            {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
+            {isPlaying ? "Pause" : "Play"}
+          </button>
+          <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]">
+            <RotateCcw size={16}/>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Visual Engine - Main Canvas */}
-        <div ref={containerRef} className="lg:col-span-8 relative min-h-[350px] md:min-h-[450px] w-full bg-muted/10 rounded-[3rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex items-center justify-center p-10">
-          
-          {/* Manim Grid Backdrop */}
-          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
-               style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
+      {/* Traversal State Info Bar */}
+      <div className="flex items-center gap-6 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl text-[10px] font-mono">
+        <span className="text-[var(--muted-foreground)]/50">Current Traversal: <strong className="text-[var(--viz-lavender)]">{mode === 'PRE' ? 'Pre-Order' : mode === 'IN' ? 'In-Order' : 'Post-Order'}</strong></span>
+        <span className="text-[var(--muted-foreground)]/50">Step Type: <strong className="text-[var(--viz-cyan)]">{currentStep.stepType}</strong></span>
+      </div>
 
-          {/* Real-time Status */}
-          <div className="absolute top-4 left-4 md:top-8 md:left-10 flex flex-col gap-4 z-30">
-            <AnimatePresence>
-              {currentStep.stepType !== "IDLE" && (
-                <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="flex items-center gap-3 px-5 py-2.5 bg-card/80 backdrop-blur-xl  rounded-2xl shadow-xl">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)] animate-pulse shadow-[0_0_10px_var(--viz-lavender)]" />
-                  <span className="text-[10px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-[0.3em]">{currentStep.stepType}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+      {/* Visual Canvas (No Overflow) */}
+      <div ref={containerRef} className="relative w-full min-h-[350px] md:min-h-[420px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-4">
+        {/* Grid backdrop */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
+             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
-          {/* Narrative Prompt */}
-          <AnimatePresence mode="wait">
-              <motion.div key={currentIndex} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute bottom-10 w-full max-w-[500px] px-4 md:px-10 text-center z-30 pointer-events-none">
-                  <div className="p-5 bg-card/90  rounded-3xl backdrop-blur-md shadow-2xl">
-                      <p className="text-[11px] text-[var(--viz-cyan)] font-mono leading-relaxed italic uppercase tracking-tighter">{currentStep.message}</p>
-                  </div>
-              </motion.div>
-          </AnimatePresence>
+        {/* Real-time Status Badge */}
+        <AnimatePresence>
+          {currentStep.stepType !== "IDLE" && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} 
+              className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 rounded-full z-30">
+              <Cpu size={12} className="text-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
+              <span className="text-[9px] font-black font-mono text-[var(--viz-lavender)] uppercase tracking-widest">{currentStep.stepType}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Tree Structure Layer */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}>
-            {(currentStep.nodes || []).map(node => {
-              if (!node.parentId) return null;
-              const parent = currentStep.nodes.find(n => n.id === node.parentId);
-              if (!parent) return null;
-              
-              const isPathActive = (node.id === currentStep.activeId && node.status !== 'processed') || (parent.id === currentStep.activeId && node.status === 'visiting');
-              const isMapped = node.status === 'processed' || node.status === 'active';
-              
-              return (
-                <g key={`edge-group-${node.id}`}>
-                    <motion.line 
-                        initial={false}
-                        animate={{
-                            stroke: isMapped ? MANIM_COLORS.blue : isPathActive ? MANIM_COLORS.gold : "var(--border)",
-                            strokeWidth: isPathActive ? 4 : isMapped ? 2 : 1,
-                            opacity: isMapped ? 0.6 : isPathActive ? 1 : 0.3,
-                        }}
-                        x1={parent.x} y1={parent.y} x2={node.x} y2={node.y} 
-                        strokeDasharray={isMapped ? "0" : "6 4"}
-                        transition={{ duration: 0.4 }}
-                    />
-                    {isPathActive && (
-                        <motion.circle 
-                            r="4" fill={MANIM_COLORS.gold}
-                            animate={{
-                                cx: [parent.x, node.x],
-                                cy: [parent.y, node.y]
-                            }}
-                            transition={{ 
-                                duration: speed / 1000, 
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
-                            className="shadow-[0_0_15px_var(--viz-cyan)]"
-                        />
-                    )}
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* The Manifold Nodes */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {(currentStep.nodes || []).map((node) => {
-              const isActive = node.id === currentStep.activeId;
-              const isStackNode = (currentStep.stack || []).includes(node.value);
-              const isProcessed = node.status === 'processed' || node.status === 'active';
-
-              return (
-                <motion.div
-                  key={node.id}
+        {/* Tree Edges Layer */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+          {(currentStep.nodes || []).map(node => {
+            if (!node.parentId) return null;
+            const parent = currentStep.nodes.find(n => n.id === node.parentId);
+            if (!parent) return null;
+            
+            const isPathActive = (node.id === currentStep.activeId && node.status !== 'processed') || (parent.id === currentStep.activeId && node.status === 'visiting');
+            const isMapped = node.status === 'processed' || node.status === 'active';
+            
+            return (
+              <g key={`edge-group-${node.id}`}>
+                <motion.line 
                   initial={false}
                   animate={{
-                    x: node.x,
-                    y: node.y,
-                    scale: isActive ? 1.4 : isStackNode ? 1.15 : 1,
-                    backgroundColor: isActive ? MANIM_COLORS.gold : isStackNode ? MANIM_COLORS.purple + '33' : isProcessed ? MANIM_COLORS.blue + '11' : 'var(--card)',
-                    borderColor: isActive ? MANIM_COLORS.gold : isStackNode ? MANIM_COLORS.purple : isProcessed ? MANIM_COLORS.blue : "var(--border)",
-                    borderWidth: isActive || isStackNode || isProcessed ? 3 : 1,
-                    boxShadow: isActive ? `0 0 50px ${MANIM_COLORS.gold}88` : isStackNode ? `0 0 30px ${MANIM_COLORS.purple}44` : 'none',
-                    color: isActive ? "#000" : "var(--foreground)"
+                    stroke: isMapped ? COLORS.blue : isPathActive ? COLORS.cyan : "var(--border)",
+                    strokeWidth: isPathActive ? 3 : isMapped ? 2 : 1.5,
+                    opacity: isMapped ? 0.6 : isPathActive ? 1 : 0.3,
                   }}
-                  style={{ position: 'absolute', left: 0, top: 0, translateX: '-50%', translateY: '-50%' }}
-                  className="w-16 h-16 rounded-full border flex items-center justify-center transition-all duration-700 z-10"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
-                  <span className="text-lg font-black font-mono relative z-10">{node.value}</span>
-                </motion.div>
-              );
-            })}
+                  x1={parent.x} y1={parent.y} x2={node.x} y2={node.y} 
+                  strokeDasharray={isMapped ? "0" : "5 3"}
+                  transition={{ duration: 0.4 }}
+                />
+              </g>
+            );
+          })}
+        </svg>
 
-            {/* The Active Traveler - Glowing Orb */}
-            <motion.div 
-                animate={{ x: currentStep.activeX || dimensions.width / 2, y: currentStep.activeY || 80 }}
-                transition={{ type: "spring", stiffness: 80, damping: 15 }}
-                className="absolute w-20 h-20 rounded-full border-2 border-dashed border-[var(--viz-cyan)]/40 shadow-[0_0_60px_var(--viz-cyan)33] pointer-events-none z-20 flex items-center justify-center"
+        {/* Tree Nodes Layer */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {(currentStep.nodes || []).map((node) => {
+            const isActive = node.id === currentStep.activeId;
+            const isStackNode = (currentStep.stack || []).includes(node.value);
+            const isProcessed = node.status === 'processed' || node.status === 'active';
+
+            return (
+              <motion.div
+                key={node.id}
+                initial={false}
+                animate={{
+                  x: node.x,
+                  y: node.y,
+                  scale: isActive ? 1.25 : isStackNode ? 1.1 : 1,
+                  backgroundColor: isActive ? COLORS.cyan : isStackNode ? COLORS.purple + '22' : isProcessed ? COLORS.blue + '11' : 'var(--card)',
+                  borderColor: isActive ? COLORS.cyan : isStackNode ? COLORS.purple : isProcessed ? COLORS.blue : "var(--border)",
+                  borderWidth: isActive || isStackNode || isProcessed ? 2.5 : 1.5,
+                  boxShadow: isActive ? `0 0 30px ${COLORS.cyan}66` : isStackNode ? `0 0 15px ${COLORS.purple}22` : 'none',
+                  color: isActive ? "#000" : "var(--foreground)"
+                }}
                 style={{ position: 'absolute', left: 0, top: 0, translateX: '-50%', translateY: '-50%' }}
-            >
-                <div className="w-3 h-3 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_20px_var(--viz-cyan)] animate-pulse" />
-                <div className="absolute inset-0 border-2 border-[var(--border)] rounded-full animate-spin-slow" />
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Sidebar Intelligence */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-            {/* Recursion Stack - Depth Visualization */}
-            <div className="p-4 md:p-8 bg-card border border-[var(--border)] rounded-[3rem] space-y-6 backdrop-blur-3xl h-[260px] flex flex-col shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-5">
-                    <Layers size={80} className="text-[var(--viz-lavender)]" />
-                </div>
-                <h3 className="text-[11px] font-black uppercase text-muted-foreground/40 tracking-[0.3em] flex items-center gap-3 relative z-10">
-                    <div className="w-1.5 h-4 bg-[var(--viz-lavender)] rounded-full" />
-                    Recursion Stack
-                </h3>
-                <div className="flex-1 flex flex-col-reverse gap-3 overflow-y-auto pr-2 scrollbar-hide relative z-10">
-                    <AnimatePresence mode="popLayout">
-                        {(currentStep.stack || []).map((val, idx) => (
-                            <motion.div
-                                key={`stack-${val}-${idx}`}
-                                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[var(--viz-lavender)]/20 to-[var(--viz-lavender)]/5 border border-[var(--viz-lavender)]/30 flex items-center justify-between px-5 shadow-lg"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-2 h-2 rounded-full bg-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
-                                    <span className="text-sm font-black font-mono text-[var(--viz-lavender)]">Node {val}</span>
-                                </div>
-                                <span className="text-[9px] font-bold text-[var(--viz-lavender)]/40 font-mono tracking-tighter">depth_{idx}</span>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                    {(!currentStep.stack || currentStep.stack.length === 0) && (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center opacity-10">
-                            <Cpu size={32} className="mb-3" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em]">Stack Empty</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Sequence Resolution */}
-            <div className="p-4 md:p-8 bg-card border border-[var(--border)] rounded-[3rem] space-y-6 backdrop-blur-3xl flex-1 flex flex-col shadow-2xl overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-6 opacity-5">
-                    <ListTree size={100} className="text-[var(--viz-lavender)]" />
-                </div>
-                <h3 className="text-[11px] font-black uppercase text-muted-foreground/40 tracking-[0.3em] flex items-center gap-3 relative z-10">
-                    <div className="w-1.5 h-4 bg-[var(--viz-lavender)] rounded-full" />
-                    Mapped Sequence
-                </h3>
-                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 relative z-10">
-                    <div className="flex flex-wrap gap-3 content-start">
-                        <AnimatePresence mode="popLayout">
-                            {(currentStep.traversedOrder || []).map((val, idx) => (
-                            <motion.div 
-                                key={`${val}-${idx}`}
-                                initial={{ scale: 0, opacity: 0, rotate: -15, y: 10 }}
-                                animate={{ scale: 1, opacity: 1, rotate: 0, y: 0 }}
-                                className="w-12 h-12 rounded-[1rem] bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/30 flex items-center justify-center text-sm font-black text-[var(--viz-lavender)] shadow-[0_10px_20px_rgba(0,0,0,0.2)] relative overflow-hidden group hover:scale-110 transition-transform"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-30" />
-                                {val}
-                            </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                </div>
-                <div className="pt-6 border-t border-[var(--border)] relative z-10">
-                  <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-[var(--card)] rounded-2xl border border-[var(--border)] text-center shadow-sm">
-                        <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Complexity</div>
-                        <div className="text-sm font-black text-[var(--viz-green)] font-mono shadow-text">O(N)</div>
-                      </div>
-                      <div className="p-3 bg-[var(--card)] rounded-2xl border border-[var(--border)] text-center shadow-sm">
-                        <div className="text-[8px] font-black text-muted-foreground/30 uppercase mb-1.5 tracking-widest">Depth</div>
-                        <div className="text-sm font-black text-[var(--viz-cyan)] font-mono shadow-text">O(H)</div>
-                      </div>
-                  </div>
-                </div>
-            </div>
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 z-10 font-mono shadow-md border"
+              >
+                <span className="text-sm font-black relative z-10">{node.value}</span>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Controller Interface */}
-      <div className="mt-6 p-4 md:p-8 bg-card/30 border border-[var(--border)] rounded-[3.5rem] flex flex-col gap-8 relative z-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--viz-lavender)]/30 to-transparent" />
-          <div className="flex items-center justify-between px-6">
-              <div className="flex items-center gap-4">
-                  <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl border border-[var(--viz-cyan)]/20 shadow-lg shadow-[var(--viz-cyan)]/5">
-                    <Hash size={18} className="text-[var(--viz-cyan)]" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/50">Sequence State</span>
-                    <span className="text-xs font-mono text-[var(--viz-cyan)] font-bold">Frame {currentIndex + 1} <span className="mx-2 opacity-20">/</span> {history.length || 1}</span>
-                  </div>
-              </div>
-              <div className="flex items-center gap-3">
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-2xl text-muted-foreground transition-all active:scale-90 shadow-xl"><ChevronLeft size={24} /></button>
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-3 bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 border border-[var(--border)] rounded-2xl text-muted-foreground transition-all active:scale-90 shadow-xl"><ChevronRight size={24} /></button>
-              </div>
-          </div>
-
-          <div className="relative flex items-center group/slider px-6">
-              <div className="absolute left-6 right-6 h-1.5 bg-[var(--muted)] rounded-full shadow-inner" />
-              <div className="absolute left-6 h-1.5 bg-gradient-to-r from-[var(--viz-lavender)] via-[var(--viz-lavender)] to-[var(--viz-green)] rounded-full shadow-[0_0_20px_var(--viz-lavender)66]" style={{ width: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 48px)` }} />
-              <input 
-                  type="range" min="0" max={Math.max(0, history.length - 1)} value={currentIndex} 
-                  onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                  className="w-full h-10 opacity-0 cursor-pointer z-10"
-              />
-              <div className="absolute w-3 h-7 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_30px_var(--viz-cyan)] border-2 border-white/40 pointer-events-none transition-all duration-300"
-                  style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 6px)` }}
-              />
-          </div>
+      {/* ── Step Message (below canvas) ── */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-medium">{currentStep.message}</p>
       </div>
 
-      {/* Professional Legend */}
-      <div className="mt-2 px-12 py-6 bg-muted/5 /20 rounded-[3rem] flex flex-wrap items-center justify-center gap-x-16 gap-y-4 opacity-60 hover:opacity-100 transition-opacity">
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-[var(--viz-cyan)] shadow-[0_0_10px_var(--viz-cyan)]" />
-            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Active LENS</span>
-         </div>
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-md bg-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
-            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">In Recursion Stack</span>
-         </div>
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-[var(--viz-lavender)] shadow-[0_0_10px_var(--viz-lavender)]" />
-            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Mapped (Sequence)</span>
-         </div>
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full border-2 border-dashed border-muted-foreground/30" />
-            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Unexplored Manifold</span>
-         </div>
+      {/* ── Step log (below canvas) ── */}
+      {currentStep.logs && currentStep.logs.length > 0 && (
+        <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+            <Activity size={10} /> Step Log
+          </span>
+          <div className="flex flex-row flex-wrap gap-x-6 gap-y-1">
+            {currentStep.logs.slice(0, 4).map((log, i) => (
+              <motion.p key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
+                <span className="text-[var(--viz-lavender)] mr-1">»</span>{log}
+              </motion.p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Recursion Stack + Output Traversed Order (below canvas) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        {/* Stack */}
+        <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-3 min-h-[140px] relative overflow-hidden">
+          <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
+            <Layers size={12} className="text-[var(--viz-lavender)]" />
+            Recursion Call Stack
+          </h3>
+          <div className="flex flex-row flex-wrap gap-2 pr-2 scrollbar-none content-start">
+            <AnimatePresence mode="popLayout">
+              {(currentStep.stack || []).map((val, idx) => (
+                <motion.div
+                  key={`stack-${val}-${idx}`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="rounded-lg bg-[var(--viz-lavender)]/15 border border-[var(--viz-lavender)]/20 flex items-center gap-2 px-2.5 py-1 text-[10px] font-bold font-mono text-[var(--viz-lavender)]"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--viz-lavender)]" />
+                  Node {val}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {(!currentStep.stack || currentStep.stack.length === 0) && (
+              <span className="text-[9px] italic text-[var(--muted-foreground)]/30 py-4">Stack empty</span>
+            )}
+          </div>
+        </div>
+
+        {/* Traversal Output */}
+        <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-3 min-h-[140px] relative overflow-hidden">
+          <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
+            <ListTree size={12} className="text-[var(--viz-lavender)]" />
+            Traversal Output Order
+          </h3>
+          <div className="flex flex-wrap gap-2 content-start">
+            <AnimatePresence mode="popLayout">
+              {(currentStep.traversedOrder || []).map((val, idx) => (
+                <motion.div 
+                  key={`${val}-${idx}`}
+                  initial={{ scale: 0, opacity: 0, y: 5 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  className="w-8 h-8 rounded-lg bg-[var(--viz-lavender)]/10 border border-[var(--viz-lavender)]/20 flex items-center justify-center text-xs font-black text-[var(--viz-lavender)] font-mono"
+                >
+                  {val}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {(!currentStep.traversedOrder || currentStep.traversedOrder.length === 0) && (
+              <span className="text-[9px] italic text-[var(--muted-foreground)]/30 py-4">No output yet</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Scrubber + Nav */}
+      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Hash size={14} className="text-[var(--viz-lavender)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsPlaying(!isPlaying)} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all">
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex === 0}><ChevronLeft size={18} /></button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex >= (history.length || 1) - 1}><ChevronRight size={18} /></button>
+          </div>
+        </div>
+        <div className="relative flex items-center w-full">
+          <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
+          <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full transition-all"
+            style={{ width: `${(currentIndex / Math.max((history.length || 1) - 1, 1)) * 100}%` }} />
+          <input type="range" min="0" max={Math.max((history.length || 1) - 1, 0)} value={currentIndex}
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-6 opacity-0 cursor-pointer z-10" />
+          <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full pointer-events-none transition-all"
+            style={{ left: `calc(${(currentIndex / Math.max((history.length || 1) - 1, 1)) * 100}% - 3px)` }} />
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="px-4 py-4 bg-[var(--muted)]/10 rounded-2xl border border-[var(--border)]/20 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Node</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-lavender)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">In Recursion Stack / Visiting</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full border-2 border-dashed border-[var(--muted-foreground)]/30" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Unvisited</span></div>
       </div>
     </div>
   );
 }
-
-

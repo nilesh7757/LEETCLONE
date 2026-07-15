@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, 
-  TrendingUp, Activity, MapPin, Cpu, RefreshCw,
-  Plus, Trash2, Edit3, Move, Check, Terminal
+  Play, RotateCcw, Pause, Hash, 
+  ChevronLeft, ChevronRight, Activity, MapPin, 
+  Plus, RefreshCw, Layers
 } from "lucide-react";
 
 type Node = { id: number; x: number; y: number };
@@ -20,10 +20,12 @@ interface BFSDFSStep {
   logs: string[];
 }
 
-export default function GraphVisualizer({ speed = 800, isFullscreen = false }: { speed?: number, isFullscreen?: boolean }) {  
+export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {  
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [isMobile, setIsMobile] = useState(false);
+  
+  // Virtual Coordinate Space: 800x500
+  const V_WIDTH = 800;
+  const V_HEIGHT = 500;
 
   const [nodes, setNodes] = useState<Node[]>([]);
   const [matrix, setMatrix] = useState<number[][]>([]);
@@ -31,76 +33,67 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [mode, setMode] = useState<"BFS" | "DFS">("BFS");
-  const [isEditing, setIsEditing] = useState(false);
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        const { width, height } = entries[0].contentRect;
-        requestAnimationFrame(() => {
-            setDimensions({ width, height });
-            setIsMobile(width < 768);
-        });
+  // Dragging state
+  const [draggingNode, setDraggingNode] = useState<number | null>(null);
+  const startDragPos = useRef({ pointerX: 0, pointerY: 0, nodeX: 0, nodeY: 0 });
+
+  // Initialize nodes to default state
+  const initializeDefaultGraph = React.useCallback(() => {
+    const numNodes = 6;
+    const centerX = V_WIDTH / 2;
+    const centerY = V_HEIGHT / 2;
+    const radius = 150;
+
+    const initialNodes: Node[] = [];
+    for (let i = 0; i < numNodes; i++) {
+      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
+      initialNodes.push({
+        id: i,
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle),
+      });
+    }
+
+    const initialMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
+    for (let i = 0; i < numNodes; i++) {
+      for (let j = i + 1; j < numNodes; j++) {
+        if (Math.random() < 0.3) {
+          initialMatrix[i][j] = 1;
+          initialMatrix[j][i] = 1;
+        }
       }
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    }
+    for (let i = 0; i < numNodes - 1; i++) {
+      initialMatrix[i][i+1] = 1;
+      initialMatrix[i+1][i] = 1;
+    }
+
+    setNodes(initialNodes);
+    setMatrix(initialMatrix);
+    setIsPlaying(false);
+    setCurrentIndex(0);
   }, []);
 
-  // Initialize nodes
   useEffect(() => {
-    if (dimensions.width > 0 && nodes.length === 0) {
-        const numNodes = dimensions.width < 768 ? 5 : 6;
-        const centerX = dimensions.width / 2;
-        const centerY = dimensions.height / 2;
-        const radius = Math.min(dimensions.width, dimensions.height) / (isMobile ? 4 : 3.5);
-
-        const initialNodes: Node[] = [];
-        for (let i = 0; i < numNodes; i++) {
-            const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
-            initialNodes.push({
-                id: i,
-                x: centerX + radius * Math.cos(angle),
-                y: centerY + radius * Math.sin(angle),
-            });
-        }
-
-        const initialMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
-        for (let i = 0; i < numNodes; i++) {
-            for (let j = i + 1; j < numNodes; j++) {
-                if (Math.random() < 0.3) {
-                    initialMatrix[i][j] = 1;
-                    initialMatrix[j][i] = 1;
-                }
-            }
-        }
-        for (let i = 0; i < numNodes - 1; i++) {
-            initialMatrix[i][i+1] = 1;
-            initialMatrix[i+1][i] = 1;
-        }
-
-        requestAnimationFrame(() => {
-            setNodes(initialNodes);
-            setMatrix(initialMatrix);
-        });
+    if (nodes.length === 0) {
+      initializeDefaultGraph();
     }
-  }, [dimensions, nodes.length, isMobile]);
+  }, [nodes.length, initializeDefaultGraph]);
 
   const resetSimulation = React.useCallback(() => {
     setIsPlaying(false);
     setCurrentIndex(0);
   }, []);
 
-  const generateGraph = React.useCallback(() => {
+  const generateRandomGraph = React.useCallback(() => {
     resetSimulation();
-    const numNodes = isMobile ? 5 : 6;
-    const { width, height } = dimensions;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) / (isMobile ? 4 : 3.5);
+    const numNodes = 6;
+    const centerX = V_WIDTH / 2;
+    const centerY = V_HEIGHT / 2;
+    const radius = 150;
 
     const newNodes: Node[] = [];
     for (let i = 0; i < numNodes; i++) {
@@ -127,16 +120,15 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
         newMatrix[i+1][i] = 1;
     }
     setMatrix(newMatrix);
-  }, [dimensions, resetSimulation, isMobile]);
+  }, [resetSimulation]);
 
   const addNode = React.useCallback(() => {
-    if (nodes.length >= (isMobile ? 8 : 12)) return;
+    if (nodes.length >= 10) return;
     const newId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
-    const { width, height } = dimensions;
     const newNode = {
       id: newId,
-      x: width / 2 + (Math.random() - 0.5) * 100,
-      y: height / 2 + (Math.random() - 0.5) * 100
+      x: V_WIDTH / 2 + (Math.random() - 0.5) * 150,
+      y: V_HEIGHT / 2 + (Math.random() - 0.5) * 150
     };
     
     setNodes(prev => [...prev, newNode]);
@@ -151,16 +143,9 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
         return newMat;
     });
     resetSimulation();
-  }, [nodes, dimensions, resetSimulation, isMobile]);
-
-  const clearGraph = React.useCallback(() => {
-    setNodes([]);
-    setMatrix([]);
-    resetSimulation();
-  }, [resetSimulation]);
+  }, [nodes, resetSimulation]);
 
   const handleNodeClick = React.useCallback((id: number) => {
-    if (!isEditing) return;
     if (selectedNode === null) {
       setSelectedNode(id);
     } else if (selectedNode === id) {
@@ -176,11 +161,49 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
       setSelectedNode(null);
       resetSimulation();
     }
-  }, [isEditing, selectedNode, resetSimulation]);
+  }, [selectedNode, resetSimulation]);
 
-  const updateNodePosition = React.useCallback((id: number, info: { delta: { x: number, y: number } }) => {
-    setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
-  }, []);
+  const handlePointerDown = (e: React.PointerEvent, node: Node) => {
+    e.preventDefault();
+    setDraggingNode(node.id);
+    startDragPos.current = {
+      pointerX: e.clientX,
+      pointerY: e.clientY,
+      nodeX: node.x,
+      nodeY: node.y
+    };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (draggingNode === null) return;
+    if (!containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    
+    const dx = (e.clientX - startDragPos.current.pointerX) * (V_WIDTH / rect.width);
+    const dy = (e.clientY - startDragPos.current.pointerY) * (V_HEIGHT / rect.height);
+    
+    const newX = startDragPos.current.nodeX + dx;
+    const newY = startDragPos.current.nodeY + dy;
+
+    setNodes(prev => prev.map(n => n.id === draggingNode ? {
+      ...n,
+      x: Math.min(Math.max(newX, 30), V_WIDTH - 30),
+      y: Math.min(Math.max(newY, 30), V_HEIGHT - 30)
+    } : n));
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (draggingNode !== null) {
+      const id = draggingNode;
+      setDraggingNode(null);
+
+      const dist = Math.hypot(e.clientX - startDragPos.current.pointerX, e.clientY - startDragPos.current.pointerY);
+      if (dist < 5) {
+        handleNodeClick(id);
+      }
+    }
+  };
 
   const history = useMemo(() => {
     if (nodes.length === 0) return [];
@@ -197,8 +220,8 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
         queueStack: [...qs],
         activeEdge,
         message: msg,
-        step,
-        logs: [...currentLogs]
+        logs: [...currentLogs],
+        step
       });
     };
 
@@ -209,47 +232,47 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
     if (mode === "BFS") {
         const queue: number[] = [startNode];
         visited.add(startNode);
-        addLog(`BFS Booted. Enqueued source node ${startNode}.`);
-        record(`Initializing BFS traversal from Node ${startNode}.`, "INIT", startNode, queue);
+        addLog(`BFS: Added source node ${startNode} to queue.`);
+        record(`Initializing BFS traversal starting from Node ${startNode}.`, "INIT", startNode, queue);
 
         while (queue.length > 0) {
             const u = queue.shift()!;
-            record(`Dequeuing Node ${u} for expansion.`, "EXPAND", u, queue);
+            record(`Removing Node ${u} from queue and exploring neighbors.`, "EXPAND", u, queue);
 
             for (let v = 0; v < maxId; v++) {
                 if (matrix[u]?.[v] === 1 && !visited.has(v)) {
-                    record(`Found unvisited neighbor ${v} of ${u}.`, "PROBE", u, queue, [u, v]);
+                    record(`Checking neighbor Node ${v} of Node ${u}.`, "PROBE", u, queue, [u, v]);
                     visited.add(v);
                     queue.push(v);
-                    addLog(`Enqueued Node ${v}.`);
-                    record(`Marking Node ${v} as discovered.`, "DISCOVER", v, queue, [u, v]);
+                    addLog(`Added Node ${v} to queue.`);
+                    record(`Marking Node ${v} as visited and adding to queue.`, "VISIT", v, queue, [u, v]);
                 }
             }
         }
     } else {
         const stack: number[] = [startNode];
-        addLog(`DFS Booted. Pushed source node ${startNode} onto stack.`);
-        record(`Initializing DFS traversal from Node ${startNode}.`, "INIT", startNode, stack);
+        addLog(`DFS: Pushed source node ${startNode} onto stack.`);
+        record(`Initializing DFS traversal starting from Node ${startNode}.`, "INIT", startNode, stack);
 
         while (stack.length > 0) {
             const u = stack.pop()!;
             
             if (!visited.has(u)) {
                 visited.add(u);
-                record(`Popped Node ${u} from stack and marking visited.`, "VISIT", u, stack);
+                record(`Popping Node ${u} from stack and visiting it.`, "VISIT", u, stack);
                 addLog(`Visited Node ${u}.`);
 
                 for (let v = maxId - 1; v >= 0; v--) {
                     if (matrix[u]?.[v] === 1 && !visited.has(v)) {
                         stack.push(v);
-                        record(`Pushed neighbor ${v} onto stack.`, "PUSH", u, stack, [u, v]);
+                        record(`Pushing neighbor Node ${v} onto stack.`, "PUSH", u, stack, [u, v]);
                     }
                 }
             }
         }
     }
 
-    record("Traversal complete. Entire manifold mapped.", "COMPLETE", null, []);
+    record("Traversal complete.", "DONE", null, []);
     return steps;
   }, [nodes, matrix, mode]);
 
@@ -281,239 +304,235 @@ export default function GraphVisualizer({ speed = 800, isFullscreen = false }: {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className={`p-4 md:p-8 bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl font-sans text-[var(--foreground)] relative overflow-hidden flex-1 flex flex-col ${isFullscreen ? "border-none shadow-none rounded-none bg-transparent" : ""}`}>
-        {!isFullscreen && (
-           <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-                style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
-        )}
-        
-        <div className={`flex flex-col xl:flex-row items-start xl:items-center justify-between mb-8 relative z-40 gap-6 ${isFullscreen ? "bg-[var(--card)]/60 p-4 rounded-2xl backdrop-blur-xl border border-[var(--border)] shadow-2xl" : ""}`}>
-          <div className="space-y-1">
-            <h2 className="text-xl md:text-2xl font-light tracking-tight text-[var(--viz-cyan)]">
-              {mode} <span className="text-[var(--muted-foreground)]/40">Traversal Explorer</span>
-            </h2>
-            <div className="flex items-center gap-3">
-               <div className="h-1 w-12 bg-[var(--viz-cyan)] rounded-full" />
-               <div className="flex bg-muted p-1 rounded-lg ">
-                  <button onClick={() => { setMode("BFS"); resetSimulation(); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "BFS" ? "bg-[var(--viz-cyan)] text-black" : "text-muted-foreground/40"}`}>BFS (Queue)</button>
-                  <button onClick={() => { setMode("DFS"); resetSimulation(); }} className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all ${mode === "DFS" ? "bg-[var(--viz-cyan)] text-black" : "text-muted-foreground/40"}`}>DFS (Stack)</button>
-               </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 md:gap-3">
-             {isEditing && (
-                 <>
-                    <button onClick={addNode} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[10px] md:text-xs font-bold text-[var(--muted-foreground)]">
-                        <Plus size={14}/> Node
-                    </button>
-                    <button onClick={clearGraph} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[10px] md:text-xs font-bold text-[var(--muted-foreground)]">
-                        <Trash2 size={14}/> Clear
-                    </button>
-                     <div className="w-[1px] h-6 bg-[var(--border)] mx-1" />
-                 </>
-             )}
-
-             <button 
-                onClick={() => { setIsEditing(!isEditing); setIsPlaying(false); setSelectedNode(null); }} 
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all text-xs font-bold ${isEditing ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)] shadow-lg" : "bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]"}`}
-             >
-                {isEditing ? <><Check size={14} /> Done</> : <><Edit3 size={14} /> Edit</>}
-             </button>
-
-             {!isEditing && (
-                <>
-                    <button onClick={generateGraph} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]" title="Randomize"><RefreshCw size={18}/></button>
-                    <button onClick={resetSimulation} className="p-3 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]" title="Reset"><RotateCcw size={18}/></button>
-                    
-                    {!isPlaying ? (
-                        <button onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--viz-cyan)] text-black rounded-xl font-bold text-xs hover:scale-105 transition-all shadow-lg">
-                            <Play size={16} fill="currentColor"/> START
-                        </button>
-                    ) : (
-                        <button onClick={() => setIsPlaying(false)} className="flex items-center gap-2 px-6 py-3 bg-[var(--muted)] text-[var(--foreground)] border border-[var(--border)] rounded-xl font-bold text-xs hover:bg-[var(--accent)] transition-all">
-                            <Pause size={16} fill="currentColor"/> PAUSE
-                        </button>
-                    )}
-                </>
-             )}
-          </div>
+    <div className="flex flex-col gap-4 select-none font-sans w-full">
+      {/* Header + Mode Selector */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Graph Traversal</h2>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">BFS &amp; DFS Traversal</p>
         </div>
-
-        <div className={`relative flex-1 min-h-[350px] md:min-h-[400px] w-full bg-[var(--muted)]/40 rounded-[2.5rem] border border-[var(--border)] overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center cursor-crosshair ${isFullscreen ? "bg-transparent border-white/5" : ""}`}>
-            
-            <div ref={containerRef} className="absolute inset-0 w-full h-full">
-                <AnimatePresence>
-                    {isEditing && (
-                        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-6 left-0 right-0 flex justify-center pointer-events-none z-30">
-                            <div className="px-4 py-2 bg-[var(--popover)] text-[var(--popover-foreground)] backdrop-blur-md rounded-full border border-[var(--border)] shadow-2xl flex items-center gap-3">
-                                <Move size={12} className="text-[var(--viz-amber)]" />
-                                <span className="text-[10px] font-bold tracking-wide">
-                                    {selectedNode !== null ? `Link ${selectedNode} to ...` : "Drag nodes • Click for Bidirectional Edge"}
-                                </span>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* OVERLAY BOXES: Queue and Log */}
-                <div className={`absolute z-30 flex flex-col gap-3 md:gap-4 pointer-events-none transition-all duration-700 ${
-                    isFullscreen 
-                        ? "bottom-8 right-8 flex-row-reverse items-end" 
-                        : "top-4 right-4 md:top-6 md:right-6"
-                }`}>
-                    <div className={`bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-3 md:p-4 rounded-2xl shadow-sm transition-all ${isFullscreen ? "w-64" : "max-w-[160px] md:max-w-[220px]"}`}>
-                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-2 md:mb-3">
-                             <TrendingUp size={isMobile ? 10 : 12} /> {mode === "BFS" ? "Queue" : "Stack"}
-                        </span>
-                        <div className="flex flex-wrap gap-1 md:gap-1.5 min-h-[24px] md:min-h-[32px] items-center">
-                             <AnimatePresence>
-                                 {currentStep.queueStack.map((val, idx) => (
-                                     <motion.div 
-                                         key={`${val}-${idx}`}
-                                         initial={{ scale: 0, opacity: 0 }}
-                                         animate={{ scale: 1, opacity: 1 }}
-                                         exit={{ scale: 0, opacity: 0 }}
-                                         className="w-7 h-7 rounded bg-[var(--viz-cyan)] text-black flex items-center justify-center font-mono text-[10px] font-black shadow-sm"
-                                     >
-                                         {val}
-                                     </motion.div>
-                                 ))}
-                                 {currentStep.queueStack.length === 0 && <span className="text-[9px] text-[var(--muted-foreground)] italic">Empty</span>}
-                             </AnimatePresence>
-                        </div>
-                    </div>
-
-                    <div className={`hidden md:flex bg-[var(--card)]/90 backdrop-blur border border-[var(--border)] p-4 rounded-2xl shadow-sm overflow-hidden flex-col transition-all ${
-                        isFullscreen ? "h-32 w-80" : "h-[160px]"
-                    }`}>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-2">
-                             <Activity size={12} /> Log
-                        </span>
-                        <div className="flex flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-thin flex-1">
-                             <AnimatePresence mode="popLayout">
-                                 {currentStep.logs.map((log, i) => (
-                                     <motion.div 
-                                         key={`log-${i}`}
-                                         initial={{ opacity: 0, x: -10 }}
-                                         animate={{ opacity: 1, x: 0 }}
-                                         className="text-[9px] font-mono text-[var(--muted-foreground)]/70 leading-tight"
-                                     >
-                                         <span className="text-[var(--viz-cyan)] mr-1">›</span>{log}
-                                     </motion.div>
-                                 ))}
-                             </AnimatePresence>
-                        </div>
-                    </div>
-                </div>
-
-                <AnimatePresence mode="wait">
-                    {!isEditing && (
-                        <motion.div key={currentIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className={`absolute left-0 right-0 flex justify-center z-30 pointer-events-none transition-all ${isFullscreen ? "bottom-32" : "bottom-12"}`}>
-                            <div className="px-6 py-3 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl backdrop-blur-md shadow-2xl max-w-[400px] text-center">
-                                <p className="text-xs text-[var(--viz-amber)] font-mono font-medium">{currentStep.message}</p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-                    {matrix.map((row, i) => 
-                        row.map((val, j) => {
-                            if (val === 0 || i > j) return null;
-                            const u = nodes.find(n => n.id === i);
-                            const v = nodes.find(n => n.id === j);
-                            if (!u || !v) return null;
-                            
-                            const isActive = (currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j) ||
-                                           (currentStep.activeEdge?.[0] === j && currentStep.activeEdge?.[1] === i);
-                            const isVisited = currentStep.visited.has(i) && currentStep.visited.has(j);
-
-                            return (
-                                <motion.line
-                                    key={`edge-${i}-${j}`}
-                                    x1={u.x} y1={u.y} x2={v.x} y2={v.y}
-                                    stroke="currentColor"
-                                    className={`${isActive ? "text-[var(--viz-cyan)]" : isVisited ? "text-[var(--viz-green)]/40" : "text-[var(--muted-foreground)]/10"}`}
-                                    strokeWidth={isActive ? 3 : 1.5}
-                                    animate={{ opacity: 1 }}
-                                />
-                            );
-                        })
-                    )}
-                </svg>
-
-                <div className="relative w-full h-full z-20">
-                    {nodes.map(node => {
-                        const isVisited = currentStep.visited.has(node.id);
-                        const isA = currentStep.activeNode === node.id;
-                        const isSource = node.id === (nodes[0]?.id ?? 0);
-                        const isSelected = selectedNode === node.id;
-
-                        return (
-                            <motion.div
-                                key={node.id}
-                                drag={isEditing}
-                                dragMomentum={false}
-                                onDrag={(_, info) => updateNodePosition(node.id, info)}
-                                onClick={() => handleNodeClick(node.id)}
-                                animate={{ 
-                                    x: node.x - 24, 
-                                    y: node.y - 24,
-                                    backgroundColor: isSelected ? "var(--viz-amber)" : isA ? "var(--viz-cyan)" : isVisited ? "rgba(var(--viz-green-rgb), 0.1)" : "var(--card)",
-                                    borderColor: isSelected ? "var(--viz-amber)" : isA ? "var(--viz-cyan)" : isVisited ? "var(--viz-green)" : "var(--border)",
-                                    scale: isA || isSelected ? 1.15 : 1,
-                                    boxShadow: isA ? `0 0 30px rgba(var(--viz-cyan-rgb), 0.2)` : "none"
-                                }}
-                                className={`absolute w-10 h-10 md:w-12 md:h-12 border-2 rounded-full flex flex-col items-center justify-center font-mono shadow-xl transition-colors ${isEditing ? "cursor-grab active:cursor-grabbing" : ""}`}
-                            >
-                                <span className={`text-[10px] md:text-xs font-black ${isA || isSelected ? "text-black" : 'text-[var(--foreground)]'}`}>{node.id}</span>
-                                {isSource && !isEditing && <div className="absolute -top-6"><MapPin size={14} className="text-[var(--viz-rose)]" /></div>}
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-
-        <div className={`mt-8 p-4 md:p-3 md:p-6 bg-[var(--muted)] border border-[var(--border)] rounded-[2.5rem] flex flex-col gap-4 relative z-10 transition-opacity ${isEditing ? "opacity-30 pointer-events-none" : "opacity-100"} ${isFullscreen ? "bg-[#111]/40" : ""}`}>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <div className="flex items-center gap-3">
-                    <Activity size={14} className="text-[var(--viz-rose)]" />
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Lemma Execution {currentIndex + 1} of {history.length}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all"><ChevronRight size={18} /></button>
-                </div>
-            </div>
-
-            <div className="relative flex items-center group/slider w-full md:w-auto flex-1">
-                <div className="absolute w-full h-1 bg-[var(--background)]/10 rounded-full" />
-                <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(88,196,221,0.4)]" style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} />
-                <input 
-                    type="range" min="0" max={history.length - 1} value={currentIndex} 
-                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                    className="w-full h-6 opacity-0 cursor-pointer z-10"
-                />
-                <div className="absolute w-1.5 h-4 bg-[var(--foreground)] rounded-full shadow-[0_0_15px_rgba(255,255,255,0.3)] pointer-events-none transition-all"
-                    style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 3px)` }}
-                />
-            </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex bg-[var(--muted)] p-1 rounded-lg">
+            <button onClick={() => { setMode("BFS"); resetSimulation(); }} className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === "BFS" ? "bg-[var(--viz-lavender)] text-black" : "text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"}`}>BFS (Queue)</button>
+            <button onClick={() => { setMode("DFS"); resetSimulation(); }} className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === "DFS" ? "bg-[var(--viz-lavender)] text-black" : "text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"}`}>DFS (Stack)</button>
+          </div>
+          <button onClick={addNode} className="flex items-center gap-1 px-3 py-1.5 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--muted-foreground)]"><Plus size={14}/> Add Node</button>
+          <button onClick={generateRandomGraph} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]" title="Randomize Graph"><RefreshCw size={16}/></button>
+          <button 
+            onClick={() => {
+              if (currentIndex >= history.length - 1) setCurrentIndex(0);
+              setIsPlaying(!isPlaying);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${isPlaying ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-[var(--viz-lavender)] text-black border-transparent hover:scale-105"}`}
+          >
+            {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
+            {isPlaying ? "Pause" : "Play"}
+          </button>
+          <button onClick={initializeDefaultGraph} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]" title="Reset Graph to Default"><RotateCcw size={16}/></button>
         </div>
       </div>
 
-      {!isFullscreen && (
-         <div className="px-4 md:px-10 py-6 bg-[var(--muted)]/20 border border-[var(--border)] rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Expand</span></div>
-            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Visited Node</span></div>
-            <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Next Coordinate</span></div>
-            <div className="flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-cyan)]" /><span className="text-[8px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Topology Engine</span></div>
-         </div>
+      {/* Traversal State Info Bar */}
+      <div className="flex items-center gap-6 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl text-[10px] font-mono">
+        <span className="text-[var(--muted-foreground)]/50">Current Algorithm: <strong className="text-[var(--viz-lavender)]">{mode === 'BFS' ? 'Breadth-First Search' : 'Depth-First Search'}</strong></span>
+        <span className="text-[var(--muted-foreground)]/50">Active Phase: <strong className="text-[var(--viz-cyan)]">{currentStep.step}</strong></span>
+      </div>
+
+      {/* Visual Canvas (Autofits perfectly & never overflows) */}
+      <div ref={containerRef} className="relative w-full h-[360px] md:h-[450px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-0">
+        {/* Subtle grid backdrop */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
+             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+        {/* Real-time Status Badge / Help message */}
+        <div className="absolute top-4 left-4 flex justify-center z-30 pointer-events-none">
+          <div className="px-3 py-1.5 bg-[var(--popover)]/60 text-[var(--popover-foreground)] rounded-full border border-[var(--border)]/10 shadow-sm flex items-center gap-2">
+            <span className="text-[9px] font-bold text-[var(--muted-foreground)]/80">
+              {selectedNode !== null ? `Select target node to connect with node ${selectedNode}` : "Drag nodes to move • Click node, then click another to connect"}
+            </span>
+          </div>
+        </div>
+
+        {/* Scalable Vector SVG Canvas */}
+        <svg 
+          viewBox={`0 0 ${V_WIDTH} ${V_HEIGHT}`} 
+          className="w-full h-full select-none touch-none z-10 overflow-visible"
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+        >
+          {/* Edges */}
+          {matrix.map((row, i) => 
+            row.map((val, j) => {
+              if (val === 0 || i > j) return null;
+              const u = nodes.find(n => n.id === i);
+              const v = nodes.find(n => n.id === j);
+              if (!u || !v) return null;
+              
+              const isActive = (currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j) ||
+                             (currentStep.activeEdge?.[0] === j && currentStep.activeEdge?.[1] === i);
+              const isVisited = currentStep.visited.has(i) && currentStep.visited.has(j);
+
+              return (
+                <motion.line
+                  key={`edge-${i}-${j}`}
+                  x1={u.x} y1={u.y} x2={v.x} y2={v.y}
+                  stroke="currentColor"
+                  className={`${isActive ? "text-[var(--viz-cyan)]" : isVisited ? "text-[var(--viz-green)]/40" : "text-[var(--muted-foreground)]/35"}`}
+                  strokeWidth={isActive ? 4 : 2}
+                  animate={{ opacity: 1 }}
+                />
+              );
+            })
+          )}
+
+          {/* Nodes */}
+          {nodes.map(node => {
+            const isVisited = currentStep.visited.has(node.id);
+            const isA = currentStep.activeNode === node.id;
+            const isSource = node.id === (nodes[0]?.id ?? 0);
+            const isSelected = selectedNode === node.id;
+
+            let nodeColor = "var(--card)";
+            let borderColor = "var(--border)";
+            let textColor = "var(--foreground)";
+
+            if (isSelected) {
+              nodeColor = "var(--viz-amber)";
+              borderColor = "var(--viz-amber)";
+              textColor = "#000";
+            } else if (isA) {
+              nodeColor = "var(--viz-cyan)";
+              borderColor = "var(--viz-cyan)";
+              textColor = "#000";
+            } else if (isVisited) {
+              nodeColor = "rgba(var(--viz-green-rgb), 0.1)";
+              borderColor = "var(--viz-green)";
+            }
+
+            return (
+              <g key={`node-group-${node.id}`} className="cursor-pointer" onPointerDown={(e) => handlePointerDown(e, node)}>
+                {/* Node Shape */}
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="20"
+                  fill={nodeColor}
+                  stroke={borderColor}
+                  strokeWidth="2.5"
+                  className="transition-colors duration-200"
+                />
+
+                {/* Node ID */}
+                <text
+                  x={node.x}
+                  y={node.y}
+                  dy="4"
+                  textAnchor="middle"
+                  fill={textColor}
+                  className="font-mono font-black text-sm select-none pointer-events-none"
+                >
+                  {node.id}
+                </text>
+
+                {/* Source Node Marker Pin */}
+                {isSource && (
+                  <path
+                    d={`M ${node.x - 6} ${node.y - 34} c -5 0 -9 4 -9 9 c 0 7 9 17 9 17 s 9 -10 9 -17 c 0 -5 -4 -9 -9 -9 z`}
+                    fill="var(--viz-rose)"
+                    className="pointer-events-none"
+                  />
+                )}
+
+                {/* Outer Glow / Drag Area (Drawn on top of solid shapes) */}
+                <motion.circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="26"
+                  fill="rgba(0,0,0,0)"
+                  pointerEvents="all"
+                  animate={{ scale: isA || isSelected ? 1.15 : 1 }}
+                />
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* ── Step Message (below canvas) ── */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-medium">{currentStep.message}</p>
+      </div>
+
+      {/* ── Step Log (below canvas) ── */}
+      {currentStep.logs && currentStep.logs.length > 0 && (
+        <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+            <Activity size={10} /> Step Log
+          </span>
+          <div className="flex flex-row flex-wrap gap-x-6 gap-y-1">
+            {currentStep.logs.slice(0, 4).map((log, i) => (
+              <motion.p key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
+                <span className="text-[var(--viz-lavender)] mr-1">»</span>{log}
+              </motion.p>
+            ))}
+          </div>
+        </div>
       )}
+
+      {/* ── Queue / Stack State (below canvas) ── */}
+      <div className="w-full bg-[var(--muted)]/25 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
+        <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
+          <Layers size={10} /> {mode === "BFS" ? "Queue State (FIFO)" : "Stack State (LIFO)"}
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {currentStep.queueStack.map((val, idx) => (
+            <motion.div 
+              key={`${val}-${idx}`}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-8 h-8 rounded bg-[var(--viz-cyan)] text-black flex items-center justify-center font-mono text-[10px] font-black shadow-sm"
+            >
+              {val}
+            </motion.div>
+          ))}
+          {currentStep.queueStack.length === 0 && (
+            <span className="text-[9px] italic text-[var(--muted-foreground)]/30 py-2">Empty</span>
+          )}
+        </div>
+      </div>
+
+      {/* Scrubber + Nav */}
+      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Hash size={14} className="text-[var(--viz-lavender)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex === 0}><ChevronLeft size={18} /></button>
+            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex >= history.length - 1}><ChevronRight size={18} /></button>
+          </div>
+        </div>
+        <div className="relative flex items-center w-full">
+          <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
+          <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full transition-all"
+            style={{ width: `${(currentIndex / Math.max((history.length - 1), 1)) * 100}%` }} />
+          <input type="range" min="0" max={Math.max((history.length - 1), 0)} value={currentIndex}
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-6 opacity-0 cursor-pointer z-10" />
+          <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full pointer-events-none transition-all"
+            style={{ left: `calc(${(currentIndex / Math.max((history.length - 1), 1)) * 100}% - 3px)` }} />
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="px-4 py-4 bg-[var(--muted)]/10 rounded-2xl border border-[var(--border)]/20 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Node</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)] animate-pulse" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Visited Node</span></div>
+        <div className="flex items-center gap-2"><MapPin size={12} className="text-[var(--viz-rose)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Source Node</span></div>
+        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full border-2 border-[var(--border)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Unvisited Node</span></div>
+      </div>
     </div>
   );
 }
-
-

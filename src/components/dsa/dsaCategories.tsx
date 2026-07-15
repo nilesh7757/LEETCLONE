@@ -1153,44 +1153,158 @@ let q = []; q.push(10); let f = q.shift();`
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Interval Decomposition" icon={Layers}>
-            <p>Segment Trees provide a way to perform <strong>Range Queries</strong> and <strong>Point Updates</strong> on a manifold in logarithmic time. Each node in the tree represents a specific sub-interval $[L, R]$ of the base array.</p>
-            <p>The root represents the total interval, and leaves represent atomic indices.</p>
+          <DocSection title="How it Works" icon={Layers}>
+            <p>A Segment Tree lets you answer <strong>Range Queries</strong> (sum, min, max) and perform <strong>Point Updates</strong> in <strong>O(log N)</strong> time.</p>
+            <p>Each node covers an interval [L, R]. The root covers the full array. Leaves hold individual values.</p>
           </DocSection>
           <div className="space-y-8">
-            <ComplexityCard time="O(log N) Query" space="O(4N)" />
-            <DocSection title="Contribution Lemma" icon={Zap} color="var(--viz-deep-purple)">
-              <p>During a query, if a node&apos;s interval is fully contained within the query range, it returns its pre-computed value immediately. Otherwise, it delegates to its children, combining their partial results.</p>
+            <ComplexityCard time="O(log N) Query/Update" space="O(4N)" />
+            <DocSection title="Query Logic" icon={Zap} color="var(--viz-deep-purple)">
+              <p>If a node&apos;s range is <strong>fully inside</strong> the query, return its value. If <strong>fully outside</strong>, return identity. Otherwise, recurse into both children and merge.</p>
             </DocSection>
           </div>
         </div>
-
-        {/* Tutorial Section */}
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Build (Recursive)</h4>
-                    <CodeSnippet code={{ "C++": `void build(int node, int start, int end) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(2*node, start, mid);\n        build(2*node+1, mid+1, end);\n        tree[node] = tree[2*node] + tree[2*node+1];\n    }
-}` }} />
-                </div>
-                
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Range Query</h4>
-                    <CodeSnippet code={{ "C++": `int query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) return 0;\n    if (l <= start && end <= r) return tree[node];\n    \n    int mid = (start + end) / 2;\n    return query(2*node, start, mid, l, r) + 
-           query(2*node+1, mid+1, end, l, r);
-}` }} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `const int MAXN = 1e5 + 5;
+int arr[MAXN], tree[4 * MAXN];
+
+void build(int node, int start, int end) {
+    if (start == end) {
+        tree[node] = arr[start];
+    } else {
+        int mid = (start + end) / 2;
+        build(2*node, start, mid);
+        build(2*node+1, mid+1, end);
+        tree[node] = tree[2*node] + tree[2*node+1];
+    }
+}
+
+int query(int node, int start, int end, int l, int r) {
+    if (r < start || end < l) return 0;
+    if (l <= start && end <= r) return tree[node];
+    int mid = (start + end) / 2;
+    return query(2*node, start, mid, l, r)
+         + query(2*node+1, mid+1, end, l, r);
+}
+
+void update(int node, int start, int end, int idx, int val) {
+    if (start == end) {
+        arr[idx] = val;
+        tree[node] = val;
+    } else {
+        int mid = (start + end) / 2;
+        if (idx <= mid) update(2*node, start, mid, idx, val);
+        else update(2*node+1, mid+1, end, idx, val);
+        tree[node] = tree[2*node] + tree[2*node+1];
+    }
+}`,
+      "Python": `class SegmentTree:
+    def __init__(self, arr):
+        self.n = len(arr)
+        self.tree = [0] * (4 * self.n)
+        self.build(arr, 1, 0, self.n - 1)
+
+    def build(self, arr, node, start, end):
+        if start == end:
+            self.tree[node] = arr[start]
+        else:
+            mid = (start + end) // 2
+            self.build(arr, 2*node, start, mid)
+            self.build(arr, 2*node+1, mid+1, end)
+            self.tree[node] = self.tree[2*node] + self.tree[2*node+1]
+
+    def query(self, node, start, end, l, r):
+        if r < start or end < l:
+            return 0
+        if l <= start and end <= r:
+            return self.tree[node]
+        mid = (start + end) // 2
+        return (self.query(2*node, start, mid, l, r) +
+                self.query(2*node+1, mid+1, end, l, r))
+
+    def update(self, node, start, end, idx, val):
+        if start == end:
+            self.tree[node] = val
+        else:
+            mid = (start + end) // 2
+            if idx <= mid:
+                self.update(2*node, start, mid, idx, val)
+            else:
+                self.update(2*node+1, mid+1, end, idx, val)
+            self.tree[node] = self.tree[2*node] + self.tree[2*node+1]`,
+      "Java": `class SegmentTree {
+    int[] tree;
+    int n;
+
+    SegmentTree(int[] arr) {
+        n = arr.length;
+        tree = new int[4 * n];
+        build(arr, 1, 0, n - 1);
+    }
+
+    void build(int[] arr, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = arr[start];
+        } else {
+            int mid = (start + end) / 2;
+            build(arr, 2*node, start, mid);
+            build(arr, 2*node+1, mid+1, end);
+            tree[node] = tree[2*node] + tree[2*node+1];
+        }
+    }
+
+    int query(int node, int start, int end, int l, int r) {
+        if (r < start || end < l) return 0;
+        if (l <= start && end <= r) return tree[node];
+        int mid = (start + end) / 2;
+        return query(2*node, start, mid, l, r)
+             + query(2*node+1, mid+1, end, l, r);
+    }
+
+    void update(int node, int start, int end, int idx, int val) {
+        if (start == end) {
+            tree[node] = val;
+        } else {
+            int mid = (start + end) / 2;
+            if (idx <= mid) update(2*node, start, mid, idx, val);
+            else update(2*node+1, mid+1, end, idx, val);
+            tree[node] = tree[2*node] + tree[2*node+1];
+        }
+    }
+}`,
+      "JavaScript": `class SegmentTree {
+    constructor(arr) {
+        this.n = arr.length;
+        this.tree = new Array(4 * this.n).fill(0);
+        this.build(arr, 1, 0, this.n - 1);
+    }
+    build(arr, node, start, end) {
+        if (start === end) { this.tree[node] = arr[start]; return; }
+        const mid = Math.floor((start + end) / 2);
+        this.build(arr, 2*node, start, mid);
+        this.build(arr, 2*node+1, mid+1, end);
+        this.tree[node] = this.tree[2*node] + this.tree[2*node+1];
+    }
+    query(node, start, end, l, r) {
+        if (r < start || end < l) return 0;
+        if (l <= start && end <= r) return this.tree[node];
+        const mid = Math.floor((start + end) / 2);
+        return this.query(2*node, start, mid, l, r)
+             + this.query(2*node+1, mid+1, end, l, r);
+    }
+    update(node, start, end, idx, val) {
+        if (start === end) { this.tree[node] = val; return; }
+        const mid = Math.floor((start + end) / 2);
+        if (idx <= mid) this.update(2*node, start, mid, idx, val);
+        else this.update(2*node+1, mid+1, end, idx, val);
+        this.tree[node] = this.tree[2*node] + this.tree[2*node+1];
+    }
+}`
+    }
   },
+
   {
     id: "KMP",
     title: "KMP Algorithm",
@@ -1368,48 +1482,126 @@ function kmpSearch(text, pattern) {
       <div className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DocSection title="Union-Find Structure" icon={Network}>
-            <p>DSU is a data structure that tracks a set of elements partitioned into a number of disjoint (non-overlapping) subsets. It provides near-constant time operations to add new sets, merge existing sets, and determine whether elements are in the same set.</p>
+            <p>DSU is a data structure that tracks a set of elements partitioned into non-overlapping subsets. It provides near-constant time operations to merge sets and check if elements are in the same set.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(α(N))" space="O(N)" />
             <DocSection title="Path Compression" icon={Zap} color="var(--viz-amber)">
-              <p>By making every node on the path point directly to the root during a `find` operation, we flatten the tree structure, ensuring subsequent operations are extremely fast.</p>
+              <p>By making every node on the path point directly to the root during a find operation, we flatten the tree structure, ensuring subsequent operations are extremely fast.</p>
             </DocSection>
           </div>
         </div>
-        
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Cpu size={14} className="text-[var(--viz-deep-purple)]" />Implementation Guide</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> Find with Compression</h4>
-                    <CodeSnippet code={{ "C++": `int find(int i) {\n    if (parent[i] == i)
-        return i;
-    return parent[i] = find(parent[i]);
-}` }} />
-                </div>
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Union by Rank</h4>
-                    <CodeSnippet code={{ "C++": `void unite(int i, int j) {\n    int root_i = find(i);
-    int root_j = find(j);
-    if (root_i != root_j) {
-        if (rank[root_i] < rank[root_j])
-            swap(root_i, root_j);
-        parent[root_j] = root_i;
-        if (rank[root_i] == rank[root_j])
-            rank[root_i]++;
-    }
-}` }} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `class DSU {
+    vector<int> parent, rank;
+public:
+    DSU(int n) {
+        parent.resize(n);
+        iota(parent.begin(), parent.end(), 0);
+        rank.assign(n, 0);
+    }
+
+    int find(int i) {
+        if (parent[i] == i)
+            return i;
+        return parent[i] = find(parent[i]); // Path compression
+    }
+
+    void unite(int i, int j) {
+        int root_i = find(i);
+        int root_j = find(j);
+        if (root_i != root_j) {
+            if (rank[root_i] < rank[root_j])
+                swap(root_i, root_j);
+            parent[root_j] = root_i;
+            if (rank[root_i] == rank[root_j])
+                rank[root_i]++;
+        }
+    }
+};`,
+      "Python": `class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+
+    def find(self, i):
+        if self.parent[i] == i:
+            return i
+        self.parent[i] = self.find(self.parent[i]) # Path compression
+        return self.parent[i]
+
+    def union(self, i, j):
+        root_i = self.find(i)
+        root_j = self.find(j)
+        if root_i != root_j:
+            if self.rank[root_i] < self.rank[root_j]:
+                root_i, root_j = root_j, root_i
+            self.parent[root_j] = root_i
+            if self.rank[root_i] == self.rank[root_j]:
+                self.rank[root_i] += 1`,
+      "Java": `class DSU {
+    int[] parent;
+    int[] rank;
+
+    DSU(int n) {
+        parent = new int[n];
+        for (int i = 0; i < n; i++) parent[i] = i;
+        rank = new int[n];
+    }
+
+    int find(int i) {
+        if (parent[i] == i)
+            return i;
+        return parent[i] = find(parent[i]);
+    }
+
+    void union(int i, int j) {
+        int rootI = find(i);
+        int rootJ = find(j);
+        if (rootI != rootJ) {
+            if (rank[rootI] < rank[rootJ]) {
+                int temp = rootI;
+                rootI = rootJ;
+                rootJ = temp;
+            }
+            parent[rootJ] = rootI;
+            if (rank[rootI] == rank[rootJ])
+                rank[rootI]++;
+        }
+    }
+}`,
+      "JavaScript": `class DSU {
+    constructor(n) {
+        this.parent = Array.from({ length: n }, (_, i) => i);
+        this.rank = new Array(n).fill(0);
+    }
+
+    find(i) {
+        if (this.parent[i] === i) {
+            return i;
+        }
+        return this.parent[i] = this.find(this.parent[i]);
+    }
+
+    union(i, j) {
+        let rootI = this.find(i);
+        let rootJ = this.find(j);
+        if (rootI !== rootJ) {
+            if (this.rank[rootI] < this.rank[rootJ]) {
+                let temp = rootI;
+                rootI = rootJ;
+                rootJ = temp;
+            }
+            this.parent[rootJ] = rootI;
+            if (this.rank[rootI] === this.rank[rootJ]) {
+                this.rank[rootI]++;
+            }
+        }
+    }
+}`
+    }
   },
   {
     id: "FIBONACCI",
@@ -1869,44 +2061,44 @@ function kmpSearch(text, pattern) {
     detailedDocs: (
       <div className="space-y-12">
         <div className="grid grid-cols-1 gap-8">
-            <DocSection title="Algorithmic Blueprint" icon={Layers} color="var(--viz-cyan)">
+            <DocSection title="Traversal Orders" icon={Layers} color="var(--viz-cyan)">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-4">
                         <h5 className="text-[var(--viz-cyan)] font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" />
-                            Pre-Order (Root-L-R)
+                            Pre-Order (Root → Left → Right)
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            Process the current node before its sub-manifolds. Ideal for <strong>Topology Duplication</strong> or serializing a tree structure for storage.
+                            Process the root node before visiting its left and right subtrees. Commonly used to copy or duplicate a tree.
                         </p>
                         <div className="p-3 bg-[var(--viz-cyan)]/5 rounded-xl border border-[var(--viz-cyan)]/20 font-mono text-[10px] text-[var(--viz-cyan)] text-center">
-                            Process → Left → Right
+                            Visit Root → Left Subtree → Right Subtree
                         </div>
                     </div>
                     
                     <div className="space-y-4">
                         <h5 className="text-[var(--viz-deep-purple)] font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" />
-                            In-Order (L-Root-R)
+                            In-Order (Left → Root → Right)
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            Process nodes in non-decreasing order for <strong>BST Manifolds</strong>. Essential for validating BST properties and range queries.
+                            Visit the left subtree, process the root node, and then visit the right subtree. In a Binary Search Tree (BST), this traversal visits nodes in sorted order.
                         </p>
                         <div className="p-3 bg-[var(--viz-deep-purple)]/5 rounded-xl border border-[var(--viz-deep-purple)]/20 font-mono text-[10px] text-[var(--viz-deep-purple)] text-center">
-                            Left → Process → Right
+                            Left Subtree → Visit Root → Right Subtree
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <h5 className="text-[var(--viz-rose)] font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" />
-                            Post-Order (L-R-Root)
+                            Post-Order (Left → Right → Root)
                         </h5>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            Process sub-manifolds before the parent. Required for <strong>Space Deallocation</strong> (bottom-up deletion) and expression evaluation.
+                            Visit the left and right subtrees before processing the root node. Used for tree deletion (deallocating child nodes first) or post-order evaluation.
                         </p>
                         <div className="p-3 bg-[var(--viz-rose)]/5 rounded-xl border border-[var(--viz-rose)]/20 font-mono text-[10px] text-[var(--viz-rose)] text-center">
-                            Left → Right → Process
+                            Left Subtree → Right Subtree → Visit Root
                         </div>
                     </div>
                 </div>
@@ -1914,42 +2106,141 @@ function kmpSearch(text, pattern) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <DocSection title="Recursive Lemma" icon={Zap} color="var(--viz-deep-purple)">
-            <p>Every traversal is a specific mapping of a 2D hierarchical manifold into a 1D sequence. The <strong>Recursive Depth</strong> ensures that the entire state space is explored by following the pointer hierarchy.</p>
-            <p>While DFS variations (Pre/In/Post) follow the stack-based depth plunge, <strong>BFS (Level-Order)</strong> explores the manifold layered by their geodesic distance from the root.</p>
+          <DocSection title="Depth-First Search (DFS)" icon={Zap} color="var(--viz-deep-purple)">
+            <p>Tree traversal orders (Pre, In, Post) are variations of Depth-First Search. They use a stack (either the system call stack or an explicit stack) to explore as deep as possible before backtracking.</p>
           </DocSection>
           <div className="space-y-8">
             <ComplexityCard time="O(N)" space="O(H)" />
-            <DocSection title="The Visit Standard" icon={Activity} color="var(--viz-amber)">
-              <p>In all 3 traversals, every node is visited exactly once. The complexity remains $O(N)$ regardless of the order. The spatial bound $O(H)$ fluctuates based on tree balance ($log N$ to $N$).</p>
+            <DocSection title="Complexity Analysis" icon={Activity} color="var(--viz-amber)">
+              <p>Every node is visited exactly once, yielding an <strong>O(N)</strong> time complexity. The space complexity is <strong>O(H)</strong> where H is the height of the tree, representing the maximum call stack depth.</p>
             </DocSection>
           </div>
         </div>
-
-        <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div className="h-[1px] flex-1 bg-border" />
-                <h3 className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={14} className="text-[var(--viz-deep-purple)]" />Implementation Matrix</h3>
-                <div className="h-[1px] flex-1 bg-border" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-cyan)]" /> Pre-Order</h4>
-                    <CodeSnippet code={{ "C++": `void preOrder(Node* root) {\n    if (!root) return;\n    cout << root->val << " ";\n    preOrder(root->left);\n    preOrder(root->right);\n}` }} />
-                </div>
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-deep-purple)]" /> In-Order</h4>
-                    <CodeSnippet code={{ "C++": `void inOrder(Node* root) {\n    if (!root) return;\n    inOrder(root->left);\n    cout << root->val << " ";\n    inOrder(root->right);\n}` }} />
-                </div>
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[var(--viz-rose)]" /> Post-Order</h4>
-                    <CodeSnippet code={{ "C++": `void postOrder(Node* root) {\n    if (!root) return;\n    postOrder(root->left);\n    postOrder(root->right);\n    cout << root->val << " ";\n}` }} />
-                </div>
-            </div>
-        </div>
       </div>
-    )
+    ),
+    codeImplementations: {
+      "C++": `struct Node {
+    int val;
+    Node* left;
+    Node* right;
+    Node(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+// Pre-Order Traversal (Root -> Left -> Right)
+void preOrder(Node* root) {
+    if (!root) return;
+    cout << root->val << " ";
+    preOrder(root->left);
+    preOrder(root->right);
+}
+
+// In-Order Traversal (Left -> Root -> Right)
+void inOrder(Node* root) {
+    if (!root) return;
+    inOrder(root->left);
+    cout << root->val << " ";
+    inOrder(root->right);
+}
+
+// Post-Order Traversal (Left -> Right -> Root)
+void postOrder(Node* root) {
+    if (!root) return;
+    postOrder(root->left);
+    postOrder(root->right);
+    cout << root->val << " ";
+}`,
+      "Python": `class Node:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+# Pre-Order Traversal (Root -> Left -> Right)
+def preOrder(root):
+    if not root:
+        return
+    print(root.val, end=" ")
+    preOrder(root.left)
+    preOrder(root.right)
+
+# In-Order Traversal (Left -> Root -> Right)
+def inOrder(root):
+    if not root:
+        return
+    inOrder(root.left)
+    print(root.val, end=" ")
+    inOrder(root.right)
+
+# Post-Order Traversal (Left -> Right -> Root)
+def postOrder(root):
+    if not root:
+        return
+    postOrder(root.left)
+    postOrder(root.right)
+    print(root.val, end=" ")`,
+      "Java": `class Node {
+    int val;
+    Node left, right;
+    Node(int x) { val = x; }
+}
+
+class TreeTraversal {
+    // Pre-Order Traversal
+    void preOrder(Node root) {
+        if (root == null) return;
+        System.out.print(root.val + " ");
+        preOrder(root.left);
+        preOrder(root.right);
+    }
+
+    // In-Order Traversal
+    void inOrder(Node root) {
+        if (root == null) return;
+        inOrder(root.left);
+        System.out.print(root.val + " ");
+        inOrder(root.right);
+    }
+
+    // Post-Order Traversal
+    void postOrder(Node root) {
+        if (root == null) return;
+        postOrder(root.left);
+        postOrder(root.right);
+        System.out.print(root.val + " ");
+    }
+}`,
+      "JavaScript": `class Node {
+    constructor(val = 0, left = null, right = null) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+// Pre-Order Traversal
+function preOrder(root) {
+    if (!root) return;
+    console.log(root.val);
+    preOrder(root.left);
+    preOrder(root.right);
+}
+
+// In-Order Traversal
+function inOrder(root) {
+    if (!root) return;
+    inOrder(root.left);
+    console.log(root.val);
+    inOrder(root.right);
+}
+
+// Post-Order Traversal
+function postOrder(root) {
+    if (!root) return;
+    postOrder(root.left);
+    postOrder(root.right);
+    console.log(root.val);
+}`
+    }
   },
   {
     id: "KADANE",
