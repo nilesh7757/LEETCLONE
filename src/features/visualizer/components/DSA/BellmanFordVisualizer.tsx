@@ -80,7 +80,10 @@ export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number 
 
   useEffect(() => {
     if (nodes.length === 0) {
-      initializeDefaultGraph();
+      const t = setTimeout(() => {
+        initializeDefaultGraph();
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [nodes.length, initializeDefaultGraph]);
 
