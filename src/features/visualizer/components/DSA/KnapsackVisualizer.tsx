@@ -3,23 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, Zap, 
-  ShoppingBag, Database, Trophy, Gem, Crown, Smartphone, Laptop, Cpu, Plus
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, Zap, 
+  ShoppingBag, Database, Trophy, Gem, Crown, Smartphone, Laptop, Cpu, Plus, Activity, Hash
 } from "lucide-react";
-
-/**
- * --- Configuration ---
- */
-const MANIM_COLORS = { 
-  text: "var(--foreground)", 
-  background: "var(--card)",
-  blue: "var(--viz-cyan)",
-  green: "var(--viz-deep-purple)",
-  gold: "var(--viz-amber)",
-  red: "var(--viz-rose)",
-  purple: "var(--viz-purple)",
-  muted: "rgba(255,255,255,0.1)"
-};
 
 const ITEMS = [
   { id: 1, name: "Gem", w: 1, v: 10, icon: Gem, color: "#EC4899" },
@@ -28,6 +14,7 @@ const ITEMS = [
   { id: 4, name: "Laptop", w: 4, v: 60, icon: Laptop, color: "#A855F7" },
 ];
 const CAPACITY = 6;
+const INF = 99;
 
 interface DPStep {
   dp: number[][];
@@ -70,14 +57,14 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
 
     const addLog = (l: string) => { logs = [l, ...logs]; };
 
-    addLog("Initializing DP Tensor (Capacity 0-6kg).");
+    addLog("Initializing DP Table (Capacity 0-6kg).");
     record("Initializing DP table. Row 0 represents 0 items.", "INIT", 0, 0, 0, "NONE", []);
 
     for (let i = 1; i <= n; i++) {
       const item = ITEMS[i - 1];
       for (let w = 0; w <= W; w++) {
         addLog(`Evaluating Item ${i} (${item.name}) @ Capacity ${w}kg.`);
-        record(`Checking if '${item.name}' (Weight: ${item.w}) fits in ${w}kg capacity...`, "EVALUATE", i, w, 1, "NONE", []);
+        record(`Checking if '${item.name}' (Weight: ${item.w}kg) fits in ${w}kg capacity...`, "EVALUATE", i, w, 1, "NONE", []);
 
         const excludeVal = dp[i - 1][w];
         
@@ -96,8 +83,8 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
           }
         } else {
           dp[i][w] = excludeVal;
-          addLog(`Item too heavy (${item.w} > ${w}). Skipping.`);
-          record(`Item weight ${item.w}kg exceeds current capacity ${w}kg. Cannot include.`, "WEIGHT_OVERFLOW", i, w, 2, "EXCLUDE", [[i-1, w]]);
+          addLog(`Item too heavy (${item.w}kg > ${w}kg). Skipping.`);
+          record(`Item weight ${item.w}kg exceeds capacity ${w}kg. Cannot include.`, "WEIGHT_OVERFLOW", i, w, 2, "EXCLUDE", [[i-1, w]]);
         }
       }
     }
@@ -139,267 +126,331 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans select-none">
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+    <div className="flex flex-col gap-6 w-full">
+      {/* Header Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (currentIndex >= history.length - 1) setCurrentIndex(0);
+              setIsPlaying(!isPlaying);
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-cyan)] hover:bg-[var(--viz-cyan)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            {isPlaying ? (
+              <>
+                <Pause size={14} fill="currentColor" />
+                <span>Pause</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="currentColor" />
+                <span>Play</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              setIsPlaying(false);
+              setCurrentIndex(0);
+            }}
+            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
+            title="Reset Simulation"
+          >
+            <RotateCcw size={14} />
+          </button>
+        </div>
+
+        {/* Method Badge */}
+        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
+          0/1 Knapsack DP
+        </div>
+      </div>
+
+      {/* Visual Stage */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)]">
-                    <Database size={24} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">0/1 Knapsack</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Dynamic Programming Tensor</p>
-                </div>
-            </div>
-          </div>
+        {/* DP Table Card */}
+        <div className="col-span-1 lg:col-span-8 order-1 lg:order-1 relative p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm flex flex-col items-center">
+          <div className="relative z-10 w-full overflow-x-auto pb-2 custom-scrollbar">
+            <div className="min-w-fit flex flex-col items-start mx-auto p-2">
+              {/* Column Headers (Capacity) */}
+              <div className="flex mb-2">
+                <div className="w-24" /> 
+                {Array.from({ length: CAPACITY + 1 }).map((_, c) => (
+                  <div key={`col-${c}`} className={`w-10 h-8 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-colors ${currentStep.weight === c ? "text-[var(--viz-amber)]" : "text-[var(--muted-foreground)]/30"}`}>
+                    {c}kg
+                  </div>
+                ))}
+              </div>
 
-          <div className="flex items-center gap-3">
-             <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
-             <button 
-                onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[var(--viz-cyan)] text-black hover:scale-105"}`}
-             >
-                {isPlaying ? <><Pause size={16} fill="currentColor"/> PAUSE</> : <><Play size={16} fill="currentColor"/> RUN</>}
-             </button>
-          </div>
-        </div>
+              {/* Rows */}
+              {currentStep.dp.map((row, r) => (
+                <div key={`row-${r}`} className="flex mb-1">
+                  {/* Row Header (Items) */}
+                  <div className={`w-24 h-10 flex items-center justify-start gap-1.5 font-mono text-[9px] font-bold uppercase tracking-tight transition-colors px-2 border-r border-[var(--border)]/40 ${currentStep.itemIdx === r ? "text-[var(--viz-cyan)] bg-[var(--viz-cyan)]/5" : "text-[var(--muted-foreground)]/40"}`}>
+                    {r === 0 ? "Empty (0)" : (
+                      <div className="flex flex-col leading-none">
+                        <span className="truncate max-w-[80px]">{ITEMS[r-1].name}</span>
+                        <span className="text-[7.5px] opacity-60 mt-0.5">{ITEMS[r-1].w}k|${ITEMS[r-1].v}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Cells */}
+                  {row.map((val, c) => {
+                    const isCurrent = r === currentStep.itemIdx && c === currentStep.weight;
+                    const depIndex = currentStep.dependencies.findIndex(([dr, dc]) => dr === r && dc === c);
+                    const isExcludeDep = depIndex === 0;
+                    const isIncludeDep = depIndex === 1;
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 relative p-3 md:p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
-                <div className="absolute top-4 left-4 md:top-6 md:left-6 z-20">
-                    <AnimatePresence mode="wait">
-                        <motion.div 
-                            key={currentStep.step}
-                            initial={{ opacity: 0, y: -10 }} 
-                            animate={{ opacity: 1, y: 0 }} 
-                            exit={{ opacity: 0, y: -10 }} 
-                            className="flex items-center gap-2 px-3 py-1.5 bg-card/80  backdrop-blur-md rounded-full shadow-sm"
+                    let cellBg = "transparent";
+                    let cellBorder = "var(--border)";
+                    let valColor = "text-[var(--muted-foreground)]/80";
+
+                    if (isCurrent) {
+                      cellBg = "rgba(var(--viz-cyan-rgb), 0.15)";
+                      cellBorder = "var(--viz-cyan)";
+                      valColor = "text-[var(--viz-cyan)] font-black";
+                    } else if (isExcludeDep) {
+                      cellBg = "rgba(var(--viz-rose-rgb), 0.15)";
+                      cellBorder = "var(--viz-rose)";
+                      valColor = "text-[var(--viz-rose)] font-black";
+                    } else if (isIncludeDep) {
+                      cellBg = "rgba(var(--viz-green-rgb), 0.15)";
+                      cellBorder = "var(--viz-green)";
+                      valColor = "text-[var(--viz-green)] font-black";
+                    }
+
+                    return (
+                      <div key={`${r}-${c}`} className="w-10 h-10 flex items-center justify-center relative">
+                        <motion.div
+                          initial={false}
+                          animate={{ 
+                            scale: isCurrent ? 1.1 : 1,
+                            backgroundColor: cellBg,
+                            borderColor: cellBorder,
+                            opacity: (r > currentStep.itemIdx || (r === currentStep.itemIdx && c > currentStep.weight)) ? 0.35 : 1
+                          }}
+                          className="w-9 h-9 border rounded-lg flex items-center justify-center text-xs font-mono font-bold shadow-sm z-10 transition-colors duration-200"
                         >
-                            <Zap size={12} className="text-[var(--viz-cyan)]" fill="var(--viz-cyan)" />
-                            <span className="text-[9px] font-black font-mono text-[var(--viz-cyan)] uppercase tracking-widest">{currentStep.step}</span>
+                          <span className={valColor}>{val}</span>
                         </motion.div>
-                    </AnimatePresence>
-                </div>
-
-                <div className="relative z-10 w-full overflow-x-auto pb-2 custom-scrollbar">
-                    <div className="min-w-fit flex flex-col items-start mx-auto">
-                        <div className="flex mb-2">
-                            <div className="w-20" /> 
-                            {Array.from({ length: CAPACITY + 1 }).map((_, c) => (
-                                <div key={`col-${c}`} className={`w-12 h-8 flex items-center justify-center font-mono text-[9px] font-black uppercase tracking-tight transition-colors ${currentStep.weight === c ? "text-[var(--viz-amber)]" : "text-muted-foreground/30"}`}>
-                                    {c}kg
-                                </div>
-                            ))}
-                        </div>
-
-                        {currentStep.dp.map((row, r) => (
-                            <div key={`row-${r}`} className="flex mb-1">
-                                <div className={`w-32 h-10 flex items-center justify-start gap-2 font-mono text-[9px] font-bold uppercase tracking-tight transition-colors px-2 border-r border-border/50 ${currentStep.itemIdx === r ? "text-[var(--viz-cyan)] bg-[var(--viz-cyan)]/5" : "text-muted-foreground/30"}`}>
-                                    {r === 0 ? "INIT (0, $0)" : (
-                                        <div className="flex flex-col leading-none">
-                                            <span>{ITEMS[r-1].name}</span>
-                                            <span className="text-[8px] opacity-50 mt-0.5">{ITEMS[r-1].w}kg | ${ITEMS[r-1].v}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                {row.map((val, c) => {
-                                    const isCurrent = r === currentStep.itemIdx && c === currentStep.weight;
-                                    const depIndex = currentStep.dependencies.findIndex(([dr, dc]) => dr === r && dc === c);
-                                    const isExcludeDep = depIndex === 0;
-                                    const isIncludeDep = depIndex === 1;
-                                    
-                                    return (
-                                        <div key={`${r}-${c}`} className="w-12 h-10 flex items-center justify-center relative">
-                                            <motion.div
-                                                initial={false}
-                                                animate={{ 
-                                                    scale: isCurrent ? 1.15 : (isExcludeDep || isIncludeDep) ? 1.1 : 1,
-                                                    backgroundColor: isCurrent ? `${MANIM_COLORS.blue}20` : 
-                                                                     isExcludeDep ? `${MANIM_COLORS.red}15` : 
-                                                                     isIncludeDep ? `${MANIM_COLORS.green}15` : "transparent",
-                                                    borderColor: isCurrent ? MANIM_COLORS.blue : 
-                                                                 isExcludeDep ? MANIM_COLORS.red : 
-                                                                 isIncludeDep ? MANIM_COLORS.green : "var(--border)",
-                                                    opacity: (r > currentStep.itemIdx || (r === currentStep.itemIdx && c > currentStep.weight)) ? 0.3 : 1
-                                                }}
-                                                className="w-10 h-10 border rounded-lg flex items-center justify-center text-xs font-mono font-bold shadow-sm z-10"
-                                            >
-                                                <span className={isCurrent ? "text-[var(--viz-cyan)]" : isExcludeDep ? "text-[var(--viz-rose)]" : isIncludeDep ? "text-[var(--viz-deep-purple)]" : "text-muted-foreground"}>{val}</span>
-                                            </motion.div>
-                                            
-                                            {isCurrent && currentStep.decision !== 'NONE' && (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, scale: 0 }}
-                                                    animate={{ opacity: 1, scale: 1.5 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className="absolute -top-4 text-[8px] font-black text-[var(--viz-amber)] z-20"
-                                                >
-                                                    {currentStep.decision === 'INCLUDE' ? 'INC' : 'EXC'}
-                                                </motion.div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-[500px]">
-                    <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "EXCLUDE" ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)]/40 shadow-[0_0_15px_var(--viz-rose)22]" : "bg-card/50 border-border opacity-40"}`}>
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-[9px] font-black uppercase text-[var(--viz-rose)] tracking-widest flex items-center gap-2">
-                                <RotateCcw size={10} /> Exclude
-                            </span>
-                            {currentStep.decision === "EXCLUDE" && <Trophy size={12} className="text-[var(--viz-rose)]" />}
-                        </div>
-                        <div className="text-[10px] font-mono text-muted-foreground space-y-1">
-                            <p className="opacity-50">Inherit Previous State</p>
-                            <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
-                                <span>DP[{currentStep.itemIdx-1}][{currentStep.weight}]</span>
-                                <span className="text-[var(--viz-rose)] font-bold text-sm">
-                                    {currentStep.itemIdx > 0 ? currentStep.dp[currentStep.itemIdx-1][currentStep.weight] : 0}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "INCLUDE" ? "bg-[var(--viz-deep-purple)]/10 border-[var(--viz-deep-purple)]/40 shadow-[0_0_15px_var(--viz-deep-purple)22]" : "bg-card/50 border-border opacity-40"}`}>
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-[9px] font-black uppercase text-[var(--viz-deep-purple)] tracking-widest flex items-center gap-2">
-                                <Plus size={10} /> Include
-                            </span>
-                            {currentStep.decision === "INCLUDE" && <Trophy size={12} className="text-[var(--viz-deep-purple)]" />}
-                        </div>
-                        <div className="text-[10px] font-mono text-muted-foreground space-y-1">
-                            <p className="opacity-50">Item Value + Rem. Cap.</p>
-                            <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
-                                <span className="truncate max-w-[80px]">
-                                    {currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].v : 0} + DP[{currentStep.itemIdx-1}][{Math.max(0, currentStep.weight - (currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].w : 0))}]
-                                </span>
-                                <span className="text-[var(--viz-deep-purple)] font-bold text-sm">
-                                    {currentStep.itemIdx > 0 && ITEMS[currentStep.itemIdx-1].w <= currentStep.weight 
-                                        ? ITEMS[currentStep.itemIdx-1].v + currentStep.dp[currentStep.itemIdx-1][currentStep.weight - ITEMS[currentStep.itemIdx-1].w] 
-                                        : "N/A"}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="lg:col-span-4 flex flex-col gap-6">
-                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem]">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
-                        <ShoppingBag size={14}/> Active Item
-                    </h3>
-                    <AnimatePresence mode="wait">
-                        {currentStep.itemIdx > 0 ? (
-                            <motion.div 
-                                key={currentStep.itemIdx} 
-                                initial={{ opacity: 0, x: 10 }} 
-                                animate={{ opacity: 1, x: 0 }} 
-                                exit={{ opacity: 0, x: -10 }} 
-                                className="flex items-center gap-4 p-4 bg-card rounded-2xl  shadow-md"
-                            >
-                                <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center">
-                                    {React.createElement(ITEMS[currentStep.itemIdx - 1].icon, { size: 24, style: { color: ITEMS[currentStep.itemIdx - 1].color } })}
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="text-xs font-black uppercase tracking-tight">{ITEMS[currentStep.itemIdx - 1].name}</h4>
-                                    <div className="flex gap-3 mt-1.5">
-                                        <span className="text-[9px] font-mono bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] px-1.5 py-0.5 rounded">
-                                            {ITEMS[currentStep.itemIdx-1].w}kg
-                                        </span>
-                                        <span className="text-[9px] font-mono bg-[var(--viz-deep-purple)]/10 text-[var(--viz-deep-purple)] px-1.5 py-0.5 rounded">
-                                            ${ITEMS[currentStep.itemIdx-1].v}
-                                        </span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ) : (
-                            <div className="h-20 flex items-center justify-center text-[10px] italic text-muted-foreground/30">
-                                Initialization...
-                            </div>
+                        
+                        {isCurrent && currentStep.decision !== 'NONE' && (
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1.3 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute -top-3.5 text-[7px] font-black text-[var(--viz-amber)] z-20 bg-[var(--card)] px-1 rounded border border-[var(--border)]/35"
+                          >
+                            {currentStep.decision === 'INCLUDE' ? 'INC' : 'EXC'}
+                          </motion.div>
                         )}
-                    </AnimatePresence>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem] flex-1 min-h-[350px] md:min-h-[200px] w-full overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-4">
-                        <Cpu size={14}/> Logic Flow
-                    </h3>
-                    <div className="space-y-2 font-mono text-[9px]">
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 1 ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)] text-[var(--viz-cyan)]" : "border-transparent text-muted-foreground/40"}`}>
-                            1. Check weight: Item.w &le; Capacity?
-                        </div>
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 2 ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-transparent text-muted-foreground/40"}`}>
-                            2. Overflow: Keep previous max
-                        </div>
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[var(--viz-deep-purple)]/10 border-[var(--viz-deep-purple)] text-[var(--viz-deep-purple)]" : "border-transparent text-muted-foreground/40"}`}>
-                            3. Fit: Max(Include, Exclude)
-                        </div>
-                    </div>
-                </div>
+              ))}
             </div>
-        </div>
+          </div>
 
-        <div className="mt-4 p-3 md:p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--viz-amber)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
-                        Step {currentIndex + 1} / {history.length}
-                    </span>
+          {/* Decisions Comparison Details */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[500px]">
+            <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "EXCLUDE" ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)]/40" : "bg-[var(--muted)]/5 border-[var(--border)]/30 opacity-40"}`}>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[9px] font-black uppercase text-[var(--viz-rose)] tracking-widest flex items-center gap-1.5">
+                  Exclude Value
+                </span>
+                {currentStep.decision === "EXCLUDE" && <Trophy size={12} className="text-[var(--viz-rose)]" />}
+              </div>
+              <div className="text-[10px] font-mono text-[var(--muted-foreground)]/80 space-y-1">
+                <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
+                  <span>DP[{currentStep.itemIdx-1}][{currentStep.weight}]</span>
+                  <span className="text-[var(--viz-rose)] font-bold text-xs">
+                    {currentStep.itemIdx > 0 ? currentStep.dp[currentStep.itemIdx-1][currentStep.weight] : 0}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
-                </div>
-            </div>
-
-            <div className="relative flex items-center group/slider h-4">
-                <div className="absolute w-full h-1 bg-background/20 rounded-full" />
-                <motion.div 
-                    className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_var(--viz-cyan)44]" 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }}
-                />
-                <input 
-                    type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
-                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                    className="w-full h-6 opacity-0 cursor-pointer z-10"
-                />
+              </div>
             </div>
             
-            <div className="flex justify-center">
-                <AnimatePresence mode="wait">
-                    <motion.div 
-                        key={currentIndex} 
-                        initial={{ opacity: 0, y: 5 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        className="px-4 py-2 rounded-lg bg-card /50 text-[10px] font-mono text-[var(--viz-amber)] text-center max-w-2xl"
-                    >
-                        {currentStep.message}
-                    </motion.div>
-                </AnimatePresence>
+            <div className={`p-3 rounded-xl border transition-all ${currentStep.decision === "INCLUDE" ? "bg-[var(--viz-green)]/10 border-[var(--viz-green)]/40" : "bg-[var(--muted)]/5 border-[var(--border)]/30 opacity-40"}`}>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[9px] font-black uppercase text-[var(--viz-green)] tracking-widest flex items-center gap-1.5">
+                  Include Value
+                </span>
+                {currentStep.decision === "INCLUDE" && <Trophy size={12} className="text-[var(--viz-green)]" />}
+              </div>
+              <div className="text-[10px] font-mono text-[var(--muted-foreground)]/80 space-y-1">
+                <div className="flex items-center justify-between bg-[var(--card)] border border-[var(--border)] shadow-sm p-1.5 rounded">
+                  <span className="truncate max-w-[130px]">
+                    Val + DP[{currentStep.itemIdx-1}][{Math.max(0, currentStep.weight - (currentStep.itemIdx > 0 ? ITEMS[currentStep.itemIdx-1].w : 0))}]
+                  </span>
+                  <span className="text-[var(--viz-green)] font-bold text-xs">
+                    {currentStep.itemIdx > 0 && ITEMS[currentStep.itemIdx-1].w <= currentStep.weight 
+                      ? ITEMS[currentStep.itemIdx-1].v + currentStep.dp[currentStep.itemIdx-1][currentStep.weight - ITEMS[currentStep.itemIdx-1].w] 
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
 
-        <div className="px-4 md:px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-cyan)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Current Cell</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-amber)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Dependency</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-deep-purple)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Include</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Exclude</span></div>
+        {/* Sidebar Cards */}
+        <div className="col-span-1 lg:col-span-4 flex flex-col gap-6 order-2 lg:order-2">
+          {/* Active Item Card */}
+          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2 mb-3">
+              <ShoppingBag size={14} className="text-[var(--viz-cyan)]" /> Active Item
+            </h3>
+            <AnimatePresence mode="wait">
+              {currentStep.itemIdx > 0 ? (
+                <motion.div 
+                  key={currentStep.itemIdx} 
+                  initial={{ opacity: 0, x: 10 }} 
+                  animate={{ opacity: 1, x: 0 }} 
+                  exit={{ opacity: 0, x: -10 }} 
+                  className="flex items-center gap-4 p-3 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl shadow-sm"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[var(--card)] flex items-center justify-center border border-[var(--border)]/40 shadow-inner">
+                    {React.createElement(ITEMS[currentStep.itemIdx - 1].icon, { size: 20, style: { color: ITEMS[currentStep.itemIdx - 1].color } })}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-black uppercase tracking-tight">{ITEMS[currentStep.itemIdx - 1].name}</h4>
+                    <div className="flex gap-3 mt-1">
+                      <span className="text-[9px] font-mono bg-[var(--viz-cyan)]/10 text-[var(--viz-cyan)] px-1.5 py-0.5 rounded">
+                        {ITEMS[currentStep.itemIdx-1].w}kg
+                      </span>
+                      <span className="text-[9px] font-mono bg-[var(--viz-green)]/10 text-[var(--viz-green)] px-1.5 py-0.5 rounded">
+                        ${ITEMS[currentStep.itemIdx-1].v}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="h-16 flex items-center justify-center text-[10px] italic text-[var(--muted-foreground)]/30 border border-dashed border-[var(--border)] rounded-xl">
+                  Initialization...
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Logic Flow Card */}
+          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm flex flex-col gap-3">
+            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
+              <Cpu size={14} className="text-[var(--viz-cyan)]" /> Logic Core
+            </h3>
+            <div className="space-y-1.5 font-mono text-[9px]">
+              <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 1 ? "bg-[var(--viz-cyan)]/10 border-[var(--viz-cyan)] text-[var(--viz-cyan)]" : "border-transparent text-[var(--muted-foreground)]/40"}`}>
+                1. Check weight: Item.w &le; Capacity?
+              </div>
+              <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 2 ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-transparent text-[var(--muted-foreground)]/40"}`}>
+                2. Overflow: Keep previous max
+              </div>
+              <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[var(--viz-green)]/10 border-[var(--viz-green)] text-[var(--viz-green)]" : "border-transparent text-[var(--muted-foreground)]/40"}`}>
+                3. Fit: Max(Include, Exclude)
+              </div>
+            </div>
+          </div>
+
+          {/* Log Stream Card */}
+          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex-col h-[180px] flex shadow-sm">
+            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2 mb-3">
+              <Activity size={14} className="text-[var(--viz-cyan)]" /> Log Stream
+            </h3>
+            <div className="flex flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar flex-1 text-xs font-mono">
+              <AnimatePresence mode="popLayout">
+                {currentStep.logs.map((log, i) => (
+                  <motion.div
+                    key={`log-${currentIndex}-${i}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[11px] text-[var(--muted-foreground)]/80 leading-relaxed pl-2 border-l-2 border-[var(--border)] flex gap-1.5"
+                  >
+                    <span className="text-[var(--viz-cyan)] font-black">»</span>
+                    {log}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              {currentStep.logs.length === 0 && (
+                <span className="text-[9px] italic text-[var(--muted-foreground)]/30 text-center py-8">Idle...</span>
+              )}
+            </div>
+          </div>
         </div>
 
+      </div>
+
+      {/* Message Box */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-bold tracking-tight">
+          {currentStep.message}
+        </p>
+      </div>
+
+      {/* Control Timeline */}
+      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-[var(--viz-cyan)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+              Step {currentIndex + 1} of {history.length}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative flex items-center group/slider w-full h-6">
+          <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
+          <div 
+            className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.4)]" 
+            style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+          />
+          <input 
+            type="range" 
+            min="0" 
+            max={history.length - 1} 
+            value={currentIndex} 
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          <div 
+            className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+            style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+          />
+        </div>
+      </div>
+
+      {/* Legend Block */}
+      <div className="px-4 py-4 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Current Cell</span>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Include Path</span>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Exclude Path</span>
+        </div>
       </div>
     </div>
   );
 }
-
-
