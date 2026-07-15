@@ -337,11 +337,6 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
           <button onClick={generateRandomGraph} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" title="Randomize Graph"><RefreshCw size={14}/></button>
           <button onClick={initializeDefaultGraph} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" title="Reset Graph to Default"><RotateCcw size={14}/></button>
         </div>
-
-        {/* Method Badge */}
-        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
-          Graph Traversal (BFS/DFS)
-        </div>
       </div>
 
       {/* Traversal State Info Bar */}

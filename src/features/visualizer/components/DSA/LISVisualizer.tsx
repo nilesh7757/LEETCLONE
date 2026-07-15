@@ -143,28 +143,16 @@ export default function LISVisualizer({ speed = 800 }: { speed?: number }) {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
         
-        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-[var(--viz-cyan)]/10 rounded-xl text-[var(--viz-cyan)]">
-                    <TrendingUp size={24} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">Longest Increasing Subsequence</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Linear Programming Engine</p>
-                </div>
-            </div>
-          </div>
-
+        <div className="relative z-10 flex flex-wrap items-center justify-between mb-8 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm gap-4">
           <div className="flex items-center gap-3">
-             <button onClick={generateNewArray} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
-             <button 
-                onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[var(--viz-cyan)] text-black hover:scale-105"}`}
-             >
-                {isPlaying ? <><Pause size={16} fill="currentColor"/> PAUSE</> : <><Play size={16} fill="currentColor"/> RUN</>}
-             </button>
+             <button onClick={generateNewArray} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"><RotateCcw size={14}/></button>
           </div>
+          <button 
+             onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 
+             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md ${isPlaying ? "bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)]" : "bg-[var(--viz-cyan)] text-black hover:scale-105"}`}
+          >
+             {isPlaying ? <><Pause size={14} fill="currentColor"/> Pause</> : <><Play size={14} fill="currentColor"/> Run</>}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

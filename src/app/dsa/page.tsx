@@ -15,7 +15,6 @@ import Link from "next/link";
 export default function DSAPage() {
   const [selectedCategory, setSelectedCategory] = useState<DSACategory>(dsaCategories[0] as DSACategory);
   const [animationSpeed, setAnimationSpeed] = useState(800);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -32,6 +31,16 @@ export default function DSAPage() {
     { label: "3×", value: 267 },
   ];
   const currentSpeedLabel = speedOptions.find(s => s.value === animationSpeed)?.label ?? "1×";
+
+  const cycleSpeed = () => {
+    setAnimationSpeed(prev => {
+      if (prev === 800) return 533;   // 1x -> 1.5x
+      if (prev === 533) return 400;   // 1.5x -> 2x
+      if (prev === 400) return 267;   // 2x -> 3x
+      if (prev === 267) return 1600;  // 3x -> 0.5x
+      return 800;                     // 0.5x -> 1x
+    });
+  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
@@ -128,40 +137,14 @@ export default function DSAPage() {
             {/* Header Actions/Controls */}
             <div className="flex items-center gap-2 self-start md:self-center shrink-0">
                {/* Speed selector */}
-               <div className="relative">
-                  <button
-                     onClick={() => setShowSpeedMenu(v => !v)}
-                     className="flex items-center gap-1 px-2.5 py-2 md:px-3.5 md:py-3 bg-[var(--card)] hover:bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl md:rounded-2xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-[10px] font-black uppercase tracking-wider shadow-sm cursor-pointer"
-                     title="Playback Speed"
-                  >
-                     <Gauge size={12} className="text-[#3b82f6]" />
-                     <span className="hidden sm:inline">{currentSpeedLabel}</span>
-                     <ChevronDown size={10} />
-                  </button>
-                  {showSpeedMenu && (
-                     <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowSpeedMenu(false)} />
-                        <motion.div
-                           initial={{ opacity: 0, y: -6 }}
-                           animate={{ opacity: 1, y: 0 }}
-                           className="absolute right-0 mt-2 w-28 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl py-1.5 z-50"
-                        >
-                           {speedOptions.map(opt => (
-                              <button
-                                 key={opt.value}
-                                 onClick={() => { setAnimationSpeed(opt.value); setShowSpeedMenu(false); }}
-                                 className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all hover:bg-[var(--foreground)]/5 ${
-                                    animationSpeed === opt.value ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
-                                 }`}
-                              >
-                                 {animationSpeed === opt.value && <span className="text-[var(--viz-green)] mr-1">✓</span>}
-                                 {opt.label}
-                              </button>
-                           ))}
-                        </motion.div>
-                     </>
-                  )}
-               </div>
+               <button
+                  onClick={cycleSpeed}
+                  className="flex items-center gap-1.5 px-3 py-2 md:px-3.5 md:py-3 bg-[var(--card)] hover:bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl md:rounded-2xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-[10px] font-black uppercase tracking-wider shadow-sm cursor-pointer"
+                  title={`Speed: ${currentSpeedLabel}. Click to cycle.`}
+               >
+                  <Gauge size={12} className="text-[#3b82f6]" />
+                  <span>{currentSpeedLabel}</span>
+               </button>
 
                {/* Fullscreen Button */}
                <button

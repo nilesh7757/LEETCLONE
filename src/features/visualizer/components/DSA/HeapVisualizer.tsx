@@ -229,11 +229,6 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
           <button onClick={() => recordOperation('EXTRACT')} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-rose)]/10 hover:bg-[var(--viz-rose)]/20 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Extract Min"><Trash2 size={12}/> Extract Min</button>
           <button onClick={() => { setHeapData([]); setHistory([]); setCurrentIndex(0); }} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-red-500 transition-all cursor-pointer"><RotateCcw size={14}/></button>
         </div>
-
-        {/* Method Badge */}
-        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
-          Min-Heap Priority Queue
-        </div>
       </div>
 
 

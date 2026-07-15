@@ -141,11 +141,6 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
             <span className="font-bold text-[var(--viz-cyan)]">{target}</span>
           </div>
         </div>
-
-        {/* Method Badge */}
-        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
-          Binary Search Algorithm
-        </div>
       </div>
 
       {/* Visual Canvas (Horizontal Array) */}

@@ -171,18 +171,8 @@ export default function KMPVisualizer({ speed = 800 }: { speed?: number }) {
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
-         <div className="relative z-10 p-3 md:p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-                <div className="p-3 bg-[var(--viz-cyan)]/10 rounded-2xl text-[var(--viz-cyan)]">
-                    <Search size={24} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">KMP Search</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Knuth-Morris-Pratt Algorithm</p>
-                </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl  shadow-sm">
+         <div className="relative z-10 p-3 md:p-6 bg-muted/20 flex flex-col xl:flex-row items-center justify-start gap-6 border-b border-[var(--border)]/45">
+            <div className="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl  shadow-sm w-full md:w-auto">
                 <div className="flex items-center gap-2 px-3 border-r border-border">
                     <span className="text-[9px] font-black text-muted-foreground/50">TEXT</span>
                     <input 

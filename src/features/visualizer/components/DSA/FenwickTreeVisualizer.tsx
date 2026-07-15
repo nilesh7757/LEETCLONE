@@ -85,22 +85,13 @@ export default function FenwickTreeVisualizer({ speed = 800 }: { speed?: number 
   return (
     <div className="flex flex-col gap-6 font-sans select-none">
       <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar relative flex flex-col min-h-[350px] md:min-h-[550px] w-full">
-        <div className="relative z-10 flex items-center justify-between mb-8">
+        <div className="relative z-10 flex flex-wrap items-center justify-between mb-8 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm gap-4">
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-[var(--viz-amber)]/10 rounded-xl text-[var(--viz-amber)]">
-                    <LayoutGrid size={24} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">Fenwick Tree (BIT)</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Binary Indexed Range Structure</p>
-                </div>
+                <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" title="Reset"><RotateCcw size={14}/></button>
             </div>
-            <div className="flex items-center gap-3">
-                <button onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
-                <button onClick={() => setIsPlaying(!isPlaying)} className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${isPlaying ? "bg-muted text-foreground" : "bg-[var(--viz-amber)] text-black hover:scale-105"}`}>
-                    {isPlaying ? "PAUSE" : "RUN"}
-                </button>
-            </div>
+            <button onClick={() => setIsPlaying(!isPlaying)} className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md ${isPlaying ? "bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)]" : "bg-[var(--viz-amber)] text-black hover:scale-105"}`}>
+                {isPlaying ? "Pause" : "Run"}
+            </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">

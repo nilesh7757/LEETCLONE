@@ -160,11 +160,6 @@ export default function KnapsackVisualizer({ speed = 800 }: { speed?: number }) 
             <RotateCcw size={14} />
           </button>
         </div>
-
-        {/* Method Badge */}
-        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
-          0/1 Knapsack DP
-        </div>
       </div>
 
       {/* Visual Stage */}
