@@ -4,17 +4,8 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, RotateCcw, Pause, Hash, 
-  ChevronRight, ChevronLeft, Cpu, Zap, TrendingUp
+  ChevronRight, ChevronLeft, Cpu, Zap, TrendingUp, Activity
 } from "lucide-react";
-
-// Consistency with other visualizers in the Academy of Algorithms
-const MANIM_COLORS = { 
-  blue: "var(--viz-cyan)",
-  green: "var(--viz-deep-purple)",
-  gold: "var(--viz-deep-purple)",
-  red: "var(--viz-rose)",
-  purple: "var(--viz-purple)"
-};
 
 const ARRAY_SIZE = 12;
 
@@ -43,14 +34,12 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Generate a placement-ready structure (mix of pos/neg)
   const generateArray = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
     const arr = Array.from({ length: ARRAY_SIZE }, () => 
-      Math.floor(Math.random() * 30) - 12 // Range: -12 to 17
+      Math.floor(Math.random() * 30) - 12
     );
-    // Ensure variety to showcase the lemma
     if (!arr.some(n => n < 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = -15;
     if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = 10;
     setInitialData(arr);
@@ -90,15 +79,14 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
     let s = 0;
     let bestStart = 0, bestEnd = 0;
 
-    record("Structure initialized. Optimal subarray search initiated.", "INIT", -1, 0, 0, [0, -1], [0, -1]);
+    record("Optimal subarray search initiated.", "INIT", -1, 0, 0, [0, -1], [0, -1]);
 
     for (let i = 0; i < initialData.length; i++) {
       const val = initialData[i];
       currentMax += val;
       
-      // Step: Processing element
       record(
-        `Processing index ${i} (${val > 0 ? '+' : ''}${val}). Local potential now ${currentMax}.`, 
+        `Processing index ${i} (${val > 0 ? '+' : ''}${val}). Local potential sum is now ${currentMax}.`, 
         "ADD", i, currentMax, maxSoFar === -Infinity ? 0 : maxSoFar, [s, i], [bestStart, bestEnd]
       );
 
@@ -107,14 +95,14 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
         bestStart = s;
         bestEnd = i;
         record(
-          `New global maximum isolated: ${maxSoFar}. Updating optimal range boundaries.`, 
+          `New global maximum found: ${maxSoFar}. Updating optimal range boundaries [${bestStart}, ${bestEnd}].`, 
           "UPDATE_MAX", i, currentMax, maxSoFar, [s, i], [bestStart, bestEnd]
         );
       }
 
       if (currentMax < 0) {
         record(
-          `Local potential collapsed to ${currentMax}. Pruning non-viable structure. Resetting search pivot.`, 
+          `Local potential collapsed to ${currentMax} (< 0). Resetting starting index to ${i + 1}.`, 
           "RESET", i, currentMax, maxSoFar, [s, i], [bestStart, bestEnd]
         );
         currentMax = 0;
@@ -122,7 +110,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
       }
     }
 
-    record("Search space exhausted. Global optimum stabilized.", "COMPLETE", initialData.length - 1, 0, maxSoFar, [bestStart, bestEnd], [bestStart, bestEnd]);
+    record("Search completed. Optimal subarray boundaries finalized.", "COMPLETE", initialData.length - 1, 0, maxSoFar, [bestStart, bestEnd], [bestStart, bestEnd]);
     return steps;
   }, [initialData]);
 
@@ -151,191 +139,249 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 select-none font-sans p-4 md:p-6">
-      {/* Header UI */}
-      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-6 relative z-10 gap-4">
-        <div className="space-y-1">
-          <h2 className="text-xl font-light tracking-tight text-[var(--viz-cyan)]">
-            Kadane&apos;s <span className="text-muted-foreground/40">Subarray Lemma</span>
-          </h2>
-          <div className="flex items-center gap-3">
-             <div className="h-1 w-8 bg-[var(--viz-cyan)] rounded-full" />
-             <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-muted-foreground/30">Linear Optimization Engine</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-xl  shadow-inner">
-          <button onClick={generateArray} className="p-2 bg-card hover:bg-[var(--foreground)]/5 rounded-lg  transition-all text-muted-foreground hover:text-foreground shadow-sm active:scale-95">
-            <RotateCcw size={16}/>
-          </button>
-          <div className="w-[1px] h-6 bg-border mx-1" />
-          <button 
+    <div className="flex flex-col gap-6 w-full">
+      {/* Header Controls Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2">
+          <button
             onClick={() => {
               if (currentIndex >= history.length - 1) setCurrentIndex(0);
               setIsPlaying(!isPlaying);
-            }} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
-              isPlaying ? "bg-[var(--viz-rose)]/20 text-[var(--viz-rose)] border border-[var(--viz-rose)]/30" : "bg-[var(--viz-cyan)] text-black"
-            }`}
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-cyan)] hover:bg-[var(--viz-cyan)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
           >
-            {isPlaying ? <><Pause size={14} fill="currentColor" /> HALT</> : <><Play size={14} fill="currentColor" /> EXECUTE</>}
+            {isPlaying ? (
+              <>
+                <Pause size={14} fill="currentColor" />
+                <span>Pause</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="currentColor" />
+                <span>Play</span>
+              </>
+            )}
           </button>
+
+          <button
+            onClick={generateArray}
+            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
+            title="Randomize Array"
+          >
+            <RotateCcw size={14} />
+          </button>
+        </div>
+
+        {/* Method Badge */}
+        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
+          Kadane&apos;s Subarray Algorithm
         </div>
       </div>
 
+      {/* Grid Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Main Visualization Area */}
-        <div className="lg:col-span-3 relative w-full h-[50vh] md:h-[60vh] min-h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-x-auto overflow-y-hidden no-scrollbar flex items-center justify-center px-4 md:px-8 shadow-inner">
-          
-          {/* Sum Potential Indicator */}
-          <div className="absolute top-6 right-6 flex flex-col items-end gap-1 pointer-events-none">
-            <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/40">Potential Sum</span>
-            <div className="flex items-center gap-2">
-              <span className={`text-xl font-black font-mono ${currentStep.currentSum < 0 ? 'text-[var(--viz-rose)]' : 'text-[var(--viz-cyan)]'}`}>
-                {currentStep.currentSum}
-              </span>
-              <div className="w-1 h-8 bg-border/30 rounded-full overflow-hidden flex flex-col justify-end">
-                <motion.div 
-                  animate={{ height: `${Math.min(100, Math.max(0, (currentStep.currentSum / 50) * 100))}%` }}
-                  className="w-full bg-[var(--viz-cyan)] shadow-[0_0_10px_var(--viz-cyan)]"
-                />
-              </div>
-            </div>
-          </div>
+        {/* Main Canvas */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
+          <div className="relative w-full h-[200px] md:h-[240px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-4">
+            {/* Grid backdrop */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+              style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
-          {/* Array Visualization */}
-          <div className="relative flex items-center justify-center gap-2 w-full">
-              {currentStep.array.map((val, idx) => {
+            {/* Array Wrapper */}
+            <div className="w-full overflow-x-auto pb-2 custom-scrollbar flex justify-start md:justify-center relative z-20">
+              <div className="flex gap-2 p-4 min-w-max items-center mt-4">
+                {currentStep.array.map((val, idx) => {
                   const isInCurrentRange = idx >= currentStep.subarrayRange[0] && idx <= currentStep.subarrayRange[1];
                   const isInBestRange = idx >= currentStep.bestRange[0] && idx <= currentStep.bestRange[1];
                   const isCurrentPointer = idx === currentStep.currentIndex;
 
+                  let nodeBg = "var(--card)";
+                  let nodeBorder = "var(--border)";
+                  let valColor = "text-[var(--foreground)]";
+                  let shadowColor = "none";
+
+                  if (isCurrentPointer) {
+                    nodeBg = "rgba(var(--viz-amber-rgb), 0.15)";
+                    nodeBorder = "var(--viz-amber)";
+                    valColor = "text-[var(--viz-amber)] font-black";
+                    shadowColor = "0 0 20px rgba(var(--viz-gold-rgb), 0.2)";
+                  } else if (isInBestRange) {
+                    nodeBg = "rgba(var(--viz-green-rgb), 0.15)";
+                    nodeBorder = "var(--viz-green)";
+                    valColor = "text-[var(--viz-green)] font-bold";
+                  } else if (isInCurrentRange) {
+                    nodeBg = "rgba(var(--viz-cyan-rgb), 0.08)";
+                    nodeBorder = "rgba(var(--viz-cyan-rgb), 0.4)";
+                  }
+
                   return (
-                      <div key={idx} className="relative flex flex-col items-center">
-                        {/* Top Pointer */}
-                        <div className="h-8 flex items-end mb-1">
-                          <AnimatePresence>
-                            {isCurrentPointer && (
-                              <motion.div 
-                                initial={{ opacity: 0, y: -5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -5 }}
-                                className="flex flex-col items-center"
-                              >
-                                <TrendingUp size={14} className="text-[var(--viz-deep-purple)]" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                    <div key={idx} className="flex flex-col items-center gap-1.5 relative">
+                      <span className="text-[8px] font-mono font-bold text-[var(--muted-foreground)]/30">idx {idx}</span>
+                      <motion.div
+                        layout
+                        initial={false}
+                        animate={{
+                          scale: isCurrentPointer ? 1.12 : 1,
+                          backgroundColor: nodeBg,
+                          borderColor: nodeBorder,
+                          boxShadow: shadowColor,
+                        }}
+                        transition={{ type: "spring", stiffness: 150, damping: 25 }}
+                        className="w-10 h-14 border rounded-xl flex items-center justify-center font-mono text-xs font-bold relative transition-colors duration-200"
+                      >
+                        <span className={valColor}>{val}</span>
 
-                        <motion.div
-                          layout
-                          initial={false}
-                          animate={{
-                            scale: isCurrentPointer ? 1.1 : 1,
-                            backgroundColor: isCurrentPointer ? MANIM_COLORS.gold : isInCurrentRange ? MANIM_COLORS.blue + "22" : "var(--card)",
-                            borderColor: isInBestRange ? MANIM_COLORS.green : isCurrentPointer ? MANIM_COLORS.gold : "var(--border)",
-                            borderWidth: isInBestRange ? 2 : 1,
-                            boxShadow: isCurrentPointer ? `0 0 20px ${MANIM_COLORS.gold}33` : "none"
-                          }}
-                          className="relative w-10 h-14 rounded-xl border flex flex-col items-center justify-center transition-all duration-500"
-                        >
-                            <span className={`text-xs font-black font-mono ${val < 0 ? "text-[var(--viz-rose)]" : isCurrentPointer ? "text-black" : "text-foreground"}`}>{val}</span>
-                            <span className="absolute -bottom-5 text-[7px] font-mono font-bold text-muted-foreground/30 uppercase">{idx}</span>
-                            
-                            {/* Range Indicator */}
-                            {isInCurrentRange && (
-                                <motion.div layoutId="range-box" className="absolute -inset-1.5 border border-dashed border-[var(--viz-cyan)]/40 rounded-lg pointer-events-none" />
-                            )}
-                        </motion.div>
+                        {/* Subarray overlay box */}
+                        {isInCurrentRange && (
+                          <motion.div layoutId="range-box" className="absolute -inset-1 border border-dashed border-[var(--viz-cyan)]/40 rounded-lg pointer-events-none" />
+                        )}
+                      </motion.div>
 
-                        {/* Best Marker */}
-                        <div className="h-4 mt-6">
-                          <AnimatePresence>
-                            {isInBestRange && (
-                              <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} className="w-1 h-1 rounded-full bg-[var(--viz-deep-purple)] shadow-[0_0_10px_var(--viz-deep-purple)]" />
-                            )}
-                          </AnimatePresence>
-                        </div>
+                      {/* Pointer marker */}
+                      <div className="h-4 flex items-center justify-center mt-1">
+                        <AnimatePresence>
+                          {isCurrentPointer && (
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0 }}
+                            >
+                              <TrendingUp size={12} className="text-[var(--viz-amber)]" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
+                    </div>
                   );
-              })}
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Sidebar Metrics */}
+        {/* Sidebar Cards */}
         <div className="flex flex-col gap-4">
-            {/* State Propertys */}
-            <div className="p-5 bg-muted/20  rounded-[2rem] space-y-4 backdrop-blur-sm flex-1 flex flex-col justify-center">
-                <h3 className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                    <Cpu size={12}/> Propertys
-                </h3>
-                <div className="space-y-3">
-                    <div className="flex flex-col gap-1">
-                        <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter text-muted-foreground/50">
-                          <span>Local Max</span>
-                          <span className="text-[var(--viz-cyan)]">DP[i]</span>
-                        </div>
-                        <div className="px-2 py-1.5 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-sm font-mono text-base font-bold text-[var(--viz-cyan)] text-right">
-                          {currentStep.currentSum}
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter text-muted-foreground/50">
-                          <span>Global Max</span>
-                          <span className="text-[var(--viz-deep-purple)]">Result</span>
-                        </div>
-                        <div className="px-2 py-1.5 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-sm font-mono text-base font-bold text-[var(--viz-deep-purple)] text-right">
-                          {currentStep.maxSum}
-                        </div>
-                    </div>
+          {/* Metrics Card */}
+          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col justify-center gap-3.5 shadow-sm">
+            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
+              <Cpu size={12}/> DP Metrics
+            </h3>
+            <div className="space-y-3 font-mono">
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between items-center text-[8px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-wider">
+                  <span>Current Sum</span>
+                  <span className="text-[var(--viz-cyan)]">DP[i]</span>
                 </div>
+                <div className="px-3 py-1.5 bg-[var(--muted)]/10 border border-[var(--border)] rounded-lg text-sm font-bold text-[var(--viz-cyan)] text-right">
+                  {currentStep.currentSum}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between items-center text-[8px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-wider">
+                  <span>Max So Far</span>
+                  <span className="text-[var(--viz-green)]">Result</span>
+                </div>
+                <div className="px-3 py-1.5 bg-[var(--muted)]/10 border border-[var(--border)] rounded-lg text-sm font-bold text-[var(--viz-green)] text-right">
+                  {currentStep.maxSum}
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Log Stream Card */}
+          {currentStep.logs.length > 0 && (
+            <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col h-[130px] shadow-sm">
+              <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2 mb-2.5">
+                <Activity size={14} className="text-[var(--viz-cyan)]" /> Simulation Log
+              </h3>
+              <div className="flex flex-col gap-1.5 overflow-y-auto pr-1 custom-scrollbar flex-1 text-xs font-mono">
+                <AnimatePresence mode="popLayout">
+                  {currentStep.logs.slice(0, 3).map((log, i) => (
+                    <motion.div
+                      key={`log-${currentIndex}-${i}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-[10px] text-[var(--muted-foreground)]/80 leading-relaxed pl-2 border-l-2 border-[var(--border)] flex gap-1.5"
+                    >
+                      <span className="text-[var(--viz-cyan)] font-black">»</span>
+                      {log}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Step Message (below canvas) */}
+      {/* Message Box */}
       <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
         <p className="text-xs text-[var(--viz-cyan)] font-mono font-bold tracking-tight">
           {currentStep.explanation}
         </p>
       </div>
 
-      {/* Control Interface */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl mt-4 relative z-10">
-          <div className="flex items-center justify-between w-full md:w-auto gap-4">
-              <div className="flex items-center gap-2">
-                  <Hash size={12} className="text-[var(--viz-deep-purple)]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/45">Step {currentIndex + 1} / {history.length || 1}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all"><ChevronLeft size={18} /></button>
-                  <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg text-muted-foreground transition-all"><ChevronRight size={18} /></button>
-              </div>
+      {/* Control Timeline Scrubber */}
+      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-[var(--viz-cyan)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+              Step {currentIndex + 1} of {history.length}
+            </span>
           </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
 
-          <div className="relative flex items-center group/slider w-full md:w-auto flex-1 h-6">
-              <div className="absolute w-full h-1 bg-background/20 rounded-full" />
-              <div className="absolute h-1 bg-[var(--viz-cyan)] rounded-full" style={{ width: `${(currentIndex / Math.max(1, (history.length - 1))) * 100}%` }} />
-              <input 
-                  type="range" min="0" max={history.length - 1} value={currentIndex} 
-                  onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                  className="w-full h-6 opacity-0 cursor-pointer z-10"
-              />
-              <div className="absolute w-1.5 h-4 bg-[var(--viz-deep-purple)] rounded-full shadow-[0_0_10px_var(--viz-deep-purple)] pointer-events-none transition-all"
-                  style={{ left: `calc(${(currentIndex / Math.max(1, (history.length - 1))) * 100}% - 3px)` }}
-              />
-          </div>
+        <div className="relative flex items-center group/slider w-full h-6">
+          <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
+          <div 
+            className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.4)]" 
+            style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+          />
+          <input 
+            type="range" 
+            min="0" 
+            max={history.length - 1} 
+            value={currentIndex} 
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          <div 
+            className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+            style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+          />
+        </div>
       </div>
 
-      {/* Legend */}
-      <div className="mt-2 px-8 py-4 bg-muted/5 /20 rounded-[2rem] flex flex-wrap items-center justify-center gap-x-10 gap-y-3 opacity-50 hover:opacity-100 transition-opacity">
-         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-deep-purple)]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Probe</span></div>
-         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-cyan)]/30 border border-[var(--viz-cyan)]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Chain</span></div>
-         <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full border border-[var(--viz-deep-purple)]" /><span className="text-[8px] font-bold uppercase text-muted-foreground/50 tracking-widest">Optimum</span></div>
+      {/* Legend Block */}
+      <div className="px-4 py-4 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Active Probe</span>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Current Chain</span>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Max Subarray</span>
+        </div>
       </div>
     </div>
   );
 }
-
-
