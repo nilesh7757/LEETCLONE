@@ -142,8 +142,14 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
   }, [list]);
 
   const search = React.useCallback(() => {
-    const val = parseInt(inputValue);
-    if (isNaN(val)) return;
+    let val = parseInt(inputValue);
+    if (isNaN(val)) {
+      if (list.length > 0) {
+        val = list[Math.floor(Math.random() * list.length)].value;
+      } else {
+        val = Math.floor(Math.random() * 99);
+      }
+    }
     const steps: ListStep[] = [];
     const currentNodes = [...list];
     let found = false;
@@ -229,8 +235,8 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
               type="number" 
               value={inputValue} 
               onChange={e => setInputValue(e.target.value)}
-              placeholder="VAL"
-              className="w-10 bg-transparent font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none text-center placeholder:text-muted-foreground/30"
+              placeholder="Random"
+              className="w-14 bg-transparent font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none text-center placeholder:text-muted-foreground/30"
             />
           </div>
 

@@ -210,6 +210,12 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
     };
   };
 
+  const handleInsert = () => {
+    const val = inputValue.trim() !== "" ? parseInt(inputValue) : Math.floor(Math.random() * 89) + 10;
+    recordOperation('INSERT', val);
+    setInputValue("");
+  };
+
   return (
     <div className="flex flex-col gap-4 select-none font-sans w-full">
 
@@ -220,12 +226,12 @@ export default function HeapVisualizer({ speed = 800 }: { speed?: number }) {
             <input
               type="number" value={inputValue}
               onChange={e => setInputValue(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && recordOperation('INSERT', parseInt(inputValue))}
-              placeholder="VAL"
-              className="w-10 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
+              onKeyDown={e => e.key === "Enter" && handleInsert()}
+              placeholder="Random"
+              className="w-14 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
             />
           </div>
-          <button onClick={() => recordOperation('INSERT', parseInt(inputValue))} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Insert"><Plus size={12}/> Insert</button>
+          <button onClick={handleInsert} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Insert"><Plus size={12}/> Insert</button>
           <button onClick={() => recordOperation('EXTRACT')} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-rose)]/10 hover:bg-[var(--viz-rose)]/20 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Extract Min"><Trash2 size={12}/> Extract Min</button>
           <button onClick={() => { setHeapData([]); setHistory([]); setCurrentIndex(0); }} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-red-500 transition-all cursor-pointer"><RotateCcw size={14}/></button>
         </div>

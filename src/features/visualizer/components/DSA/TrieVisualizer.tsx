@@ -252,32 +252,59 @@ export default function TrieVisualizer({ speed = 800 }: { speed?: number }) {
     return { x1: u.x + (dx / dist) * r, y1: u.y + (dy / dist) * r, x2: v.x - (dx / dist) * r, y2: v.y - (dy / dist) * r };
   };
 
+  const getAllWords = (node: TrieNode, prefix: string, accumulator: string[]) => {
+    if (node.isEndOfWord) {
+      accumulator.push(prefix);
+    }
+    Object.keys(node.children).forEach(char => {
+      getAllWords(node.children[char], prefix + char, accumulator);
+    });
+  };
+
+  const handleInsert = () => {
+    let word = inputValue.trim();
+    if (!word) {
+      const RANDOM_WORDS = ["TRIE", "NODE", "TREE", "HEAP", "STACK", "QUEUE", "LINK", "GRAPH", "SORT", "CODE", "PATH", "HASH", "ROOT", "LEAF", "DATA", "EDGE", "NULL", "TRUE", "FAST", "BYTE"];
+      word = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
+    }
+    recordOperation('INSERT', word);
+    setInputValue("");
+  };
+
+  const handleSearch = () => {
+    let word = inputValue.trim();
+    if (!word) {
+      const wordsInTrie: string[] = [];
+      getAllWords(treeRoot, "", wordsInTrie);
+      if (wordsInTrie.length > 0) {
+        word = wordsInTrie[Math.floor(Math.random() * wordsInTrie.length)];
+      } else {
+        const RANDOM_WORDS = ["TRIE", "NODE", "TREE", "HEAP", "STACK", "QUEUE", "LINK", "GRAPH", "SORT", "CODE", "PATH", "HASH", "ROOT", "LEAF", "DATA", "EDGE", "NULL", "TRUE", "FAST", "BYTE"];
+        word = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
+      }
+    }
+    recordOperation('SEARCH', word);
+    setInputValue("");
+  };
+
   return (
     <div className="flex flex-col gap-4 select-none font-sans w-full">
 
-      {/* ── Header + Controls ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Trie Visualizer</h2>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Prefix Tree — Insert &amp; Search</p>
-        </div>
-
-        <div className="flex items-center gap-2 bg-[var(--muted)] p-2 rounded-2xl shadow-inner flex-wrap">
-          <div className="flex items-center gap-2 px-3 border-r border-[var(--border)]">
+      {/* ── Controls Bar ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl">
             <input
               type="text" value={inputValue}
               onChange={e => setInputValue(e.target.value.toUpperCase())}
-              onKeyDown={e => e.key === "Enter" && recordOperation('INSERT', inputValue)}
-              placeholder="WORD"
-              className="w-20 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
+              onKeyDown={e => e.key === "Enter" && handleInsert()}
+              placeholder="Random"
+              className="w-14 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
             />
           </div>
-          <div className="flex gap-1">
-            <button onClick={() => recordOperation('INSERT', inputValue)} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase" title="Insert"><Plus size={14}/> Insert</button>
-            <button onClick={() => recordOperation('SEARCH', inputValue)} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)] transition-all text-[10px] font-bold uppercase" title="Search"><Search size={14}/> Search</button>
-            <div className="w-px h-6 bg-[var(--border)] mx-1 self-center" />
-            <button onClick={() => { setTreeRoot(new TrieNode("*")); setHistory([]); setCurrentIndex(0); }} className="p-1.5 hover:bg-red-500/10 rounded-xl text-[var(--muted-foreground)]/40 hover:text-red-500 transition-all"><RotateCcw size={16}/></button>
-          </div>
+          <button onClick={handleInsert} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Insert"><Plus size={12}/> Insert</button>
+          <button onClick={handleSearch} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-lavender)]/10 hover:bg-[var(--viz-lavender)]/20 rounded-xl text-[var(--viz-lavender)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Search"><Search size={12}/> Search</button>
+          <button onClick={() => { setTreeRoot(new TrieNode("*")); setHistory([]); setCurrentIndex(0); }} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-red-500 transition-all cursor-pointer"><RotateCcw size={14}/></button>
         </div>
       </div>
 
