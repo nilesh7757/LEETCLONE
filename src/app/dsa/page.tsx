@@ -110,29 +110,8 @@ export default function DSAPage() {
          }}
       />
 
-      {/* HEADER NAVBAR */}
-      <header className="border-b border-[var(--border)]/60 bg-[var(--background)]/85 backdrop-blur-md sticky top-0 z-40 px-4 md:px-10 py-4 flex items-center justify-between">
-         <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group">
-               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3b82f6] to-[#8b5cf6] flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <span className="font-black text-sm text-white font-mono">LQ</span>
-               </div>
-               <span className="text-base font-black tracking-tight bg-gradient-to-r from-white to-[var(--muted-foreground)] bg-clip-text text-transparent">LogiQuest</span>
-            </Link>
-         </div>
-
-         <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
-               Dashboard
-            </Link>
-            <button className="p-2 hover:bg-[var(--foreground)]/5 border border-[var(--border)]/60 rounded-xl transition-all cursor-pointer">
-               <Share2 size={16} />
-            </button>
-         </div>
-      </header>
-
       {/* MAIN CONTAINER */}
-      <main className="flex-1 w-full px-2 md:px-8 py-4 md:py-6 z-10 flex flex-col gap-4 md:gap-6">
+      <main className="flex-1 w-full px-2 md:px-8 py-2 md:py-6 z-10 flex flex-col gap-3 md:gap-6">
          
          {/* Title & Selector Block */}
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]/60">

@@ -23,11 +23,12 @@ interface KadaneStep {
 
 export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
   const [initialData, setInitialData] = useState<number[]>(() => {
-    const arr = Array.from({ length: ARRAY_SIZE }, () => 
+    const size = typeof window !== 'undefined' && window.innerWidth < 768 ? 7 : ARRAY_SIZE;
+    const arr = Array.from({ length: size }, () => 
       Math.floor(Math.random() * 30) - 12
     );
-    if (!arr.some(n => n < 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = -15;
-    if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = 10;
+    if (!arr.some(n => n < 0)) arr[Math.floor(Math.random() * size)] = -15;
+    if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * size)] = 10;
     return arr;
   });
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -37,11 +38,12 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
   const generateArray = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
-    const arr = Array.from({ length: ARRAY_SIZE }, () => 
+    const size = typeof window !== 'undefined' && window.innerWidth < 768 ? 7 : ARRAY_SIZE;
+    const arr = Array.from({ length: size }, () => 
       Math.floor(Math.random() * 30) - 12
     );
-    if (!arr.some(n => n < 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = -15;
-    if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * ARRAY_SIZE)] = 10;
+    if (!arr.some(n => n < 0)) arr[Math.floor(Math.random() * size)] = -15;
+    if (!arr.some(n => n > 0)) arr[Math.floor(Math.random() * size)] = 10;
     setInitialData(arr);
   };
 
@@ -139,7 +141,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-4 w-full">
       {/* Header Controls Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
         <div className="flex items-center gap-2">
@@ -174,18 +176,29 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
 
         {/* Method Badge */}
         <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
-          Kadane&apos;s Subarray Algorithm
+          Kadane&apos;s Algorithm
         </div>
       </div>
 
       {/* Grid Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Main Canvas */}
         <div className="lg:col-span-3 flex flex-col gap-4">
-          <div className="relative w-full h-[200px] md:h-[240px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-4">
+          <div className="relative w-full h-[150px] md:h-[200px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-4">
             {/* Grid backdrop */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
               style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+            {/* Floating stats inside Canvas */}
+            <div className="absolute top-3 left-4 flex flex-col gap-0.5 z-30 font-mono">
+              <span className="text-[var(--muted-foreground)]/50 uppercase tracking-widest text-[7px] font-bold">Current Sum</span>
+              <span className="text-sm font-black text-[var(--viz-cyan)]">{currentStep.currentSum}</span>
+            </div>
+
+            <div className="absolute top-3 right-4 flex flex-col gap-0.5 z-30 font-mono items-end">
+              <span className="text-[var(--muted-foreground)]/50 uppercase tracking-widest text-[7px] font-bold">Max Sum</span>
+              <span className="text-sm font-black text-[var(--viz-green)]">{currentStep.maxSum}</span>
+            </div>
 
             {/* Array Wrapper */}
             <div className="w-full overflow-x-auto pb-2 custom-scrollbar flex justify-start md:justify-center relative z-20">
@@ -227,7 +240,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
                           boxShadow: shadowColor,
                         }}
                         transition={{ type: "spring", stiffness: 150, damping: 25 }}
-                        className="w-10 h-14 border rounded-xl flex items-center justify-center font-mono text-xs font-bold relative transition-colors duration-200"
+                        className="w-9 h-11 border rounded-xl flex items-center justify-center font-mono text-xs font-bold relative transition-colors duration-200"
                       >
                         <span className={valColor}>{val}</span>
 
@@ -259,8 +272,8 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
           </div>
         </div>
 
-        {/* Sidebar Cards */}
-        <div className="flex flex-col gap-4">
+        {/* Sidebar Cards (Hidden on mobile for single-screen view) */}
+        <div className="hidden lg:flex flex-col gap-4">
           {/* Metrics Card */}
           <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col justify-center gap-3.5 shadow-sm">
             <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
@@ -315,15 +328,15 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
       </div>
 
       {/* Message Box */}
-      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
+      <div className="w-full px-4 py-2 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
         <p className="text-xs text-[var(--viz-cyan)] font-mono font-bold tracking-tight">
           {currentStep.explanation}
         </p>
       </div>
 
       {/* Control Timeline Scrubber */}
-      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
+      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-3 shadow-sm">
+        <div className="flex items-center justify-between gap-4 px-1">
           <div className="flex items-center gap-2">
             <Activity size={14} className="text-[var(--viz-cyan)]" />
             <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
@@ -346,7 +359,7 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
           </div>
         </div>
 
-        <div className="relative flex items-center group/slider w-full h-6">
+        <div className="relative flex items-center group/slider w-full h-4">
           <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
           <div 
             className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.4)]" 
@@ -368,18 +381,18 @@ export default function KadaneVisualizer({ speed = 800 }: { speed?: number }) {
       </div>
 
       {/* Legend Block */}
-      <div className="px-4 py-4 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Active Probe</span>
+      <div className="px-4 py-2 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[var(--viz-amber)]" />
+          <span className="text-[8px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Active Probe</span>
         </div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Current Chain</span>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[var(--viz-cyan)]" />
+          <span className="text-[8px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Current Chain</span>
         </div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Max Subarray</span>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[var(--viz-green)]" />
+          <span className="text-[8px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Max Subarray</span>
         </div>
       </div>
     </div>

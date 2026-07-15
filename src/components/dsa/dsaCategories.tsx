@@ -2316,11 +2316,11 @@ function postOrder(root) {
     "Java": "public int maxSubArray(int[] nums) {\n    int maxSoFar = nums[0], currMax = nums[0];\n    for (int i = 1; i < nums.length; i++) {\n        currMax = Math.max(nums[i], currMax + nums[i]);\n        maxSoFar = Math.max(maxSoFar, currMax);\n    }\n    return maxSoFar;\n}",
     "JavaScript": "function maxSubArray(nums) {\n    let maxSoFar = nums[0];\n    let currMax = nums[0];\n    for (let i = 1; i < nums.length; i++) {\n        currMax = Math.max(nums[i], currMax + nums[i]);\n        maxSoFar = Math.max(maxSoFar, currMax);\n    }\n    return maxSoFar;\n}"
 },
-    title: "Kadane's Lemma",
+    title: "Kadane's Algorithm",
     icon: <TrendingUp />,
     themeColor: "var(--viz-deep-purple)",
     themeRGB: "var(--viz-deep-purple-rgb)",
-    description: "Maximum subarray sum structure.",
+    description: "Finds the maximum subarray sum in O(N) time.",
     component: (speed: number) => <KadaneVisualizer speed={speed} />,
     detailedDocs: (
       <div className="space-y-12">
