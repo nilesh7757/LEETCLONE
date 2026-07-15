@@ -110,7 +110,7 @@ export default function ContestManageClient({ contestId }: { contestId: string }
       // Verification: Only creator or admin
       if (authStatus === "authenticated" && session?.user?.id !== data.contest.creatorId && session?.user?.role !== "ADMIN") {
           toast.error("Unauthorized access");
-          router.push(`/arena/${contestId}`);
+          router.push(`/contest/${contestId}`);
       }
     } catch (err) {
       toast.error("Failed to load contest data");
@@ -308,11 +308,11 @@ export default function ContestManageClient({ contestId }: { contestId: string }
       {/* 1. MANAGEMENT HEADER */}
       <header className="h-16 border-b border-[var(--border)] bg-[var(--background)] flex items-center justify-between px-8 sticky top-0 z-50">
          <div className="flex items-center gap-8">
-            <Link href={`/arena/${contestId}`} className="group flex items-center gap-3 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
+            <Link href={`/contest/${contestId}`} className="group flex items-center gap-3 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
                <div className="p-2 bg-[var(--foreground)]/5 rounded-lg group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)] transition-all">
                   <ArrowLeft size={16} />
                </div>
-               <span className="text-[10px] font-bold uppercase tracking-widest">Back to Arena</span>
+               <span className="text-[10px] font-bold uppercase tracking-widest">Back to Contest</span>
             </Link>
             <div className="h-4 w-px border-[var(--border)]" />
             <div className="flex flex-col">

@@ -233,7 +233,7 @@ export default function ContestClient({ contest, isRegistered: initialIsRegister
           {/* CONTROL CENTER LINK FOR CREATOR */}
           {isCreator && (
              <Link 
-                href={`/arena/${contest.id}/manage`}
+                href={`/contest/${contest.id}/manage`}
                 className="flex items-center gap-3 px-6 py-3 bg-[var(--primary)]/10 border border-[var(--primary)]/20 rounded-2xl text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-all group"
              >
                 <Settings size={18} className="group-hover:rotate-90 transition-transform duration-500" />

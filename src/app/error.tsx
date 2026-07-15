@@ -98,7 +98,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
         {/* Quick links */}
         <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
           <Link href="/problems" className="hover:text-[#8F44F0] transition-colors">Problems</Link>
-          <Link href="/arena" className="hover:text-[#8F44F0] transition-colors">Arena</Link>
+          <Link href="/contest" className="hover:text-[#8F44F0] transition-colors">Contests</Link>
           <Link href="/dsa" className="hover:text-[#8F44F0] transition-colors">Visualizer</Link>
           <Link href="/leaderboard" className="hover:text-[#8F44F0] transition-colors">Leaderboard</Link>
         </div>

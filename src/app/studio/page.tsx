@@ -134,7 +134,7 @@ export default function StudioDashboard() {
                     <Plus size={16} /> New Problem
                  </button>
               ) : (
-                 <Link href="/arena/launchpad" className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
+                 <Link href="/contest/launchpad" className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#3b82f6] hover:text-[var(--foreground)] transition-all shadow-xl active:scale-95">
                     <Plus size={16} /> New Contest
                  </Link>
               )}
@@ -172,7 +172,7 @@ export default function StudioDashboard() {
             ) : (
                <motion.div key="contests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredContests.length === 0 ? (
-                     <EmptyState icon={<Trophy size={40} />} title="No Contests Found" description="Organize contests for your community or friends." href="/arena/launchpad" actionLabel="Create First Contest" />
+                     <EmptyState icon={<Trophy size={40} />} title="No Contests Found" description="Organize contests for your community or friends." href="/contest/launchpad" actionLabel="Create First Contest" />
                   ) : (
                      filteredContests.map((c, i) => <ContestCard key={c.id} contest={c} index={i} />)
                   )}

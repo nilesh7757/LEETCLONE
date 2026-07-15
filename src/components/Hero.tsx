@@ -95,10 +95,10 @@ export default function Hero() {
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
-                href="/arena"
+                href="/contest"
                 className="w-full sm:w-auto px-8 py-4 bg-[var(--input)] text-[var(--foreground)] font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--accent)] transition-all flex items-center justify-center gap-3 backdrop-blur-md active:scale-95 text-sm tracking-wider font-semibold"
               >
-                Enter Arena 
+                Enter Contests 
                 <Trophy className="w-4 h-4 text-[#eab308]" />
               </Link>
             </div>
@@ -480,7 +480,7 @@ function Footer() {
           <h4 className="text-[10px] text-[#71717a] font-black uppercase tracking-[0.2em] mb-4">Platform</h4>
           <ul className="space-y-2 text-xs text-[var(--muted-foreground)] font-bold">
             <li><Link href="/problems" className="hover:text-[var(--foreground)] transition-colors">Problems</Link></li>
-            <li><Link href="/arena" className="hover:text-[var(--foreground)] transition-colors">Multiplayer Arena</Link></li>
+            <li><Link href="/contest" className="hover:text-[var(--foreground)] transition-colors">Multiplayer Contests</Link></li>
             <li><Link href="/profile" className="hover:text-[var(--foreground)] transition-colors">Performance Dashboard</Link></li>
             <li><Link href="/study-plans" className="hover:text-[var(--foreground)] transition-colors">Study Blocks</Link></li>
           </ul>

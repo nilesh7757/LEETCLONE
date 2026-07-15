@@ -88,7 +88,7 @@ export default function ArenaLaunchpad() {
         problemIds: [],
       });
       toast.success("Contest created successfully");
-      router.push(`/arena/${data.contest.id}/manage`);
+      router.push(`/contest/${data.contest.id}/manage`);
     } catch (err: unknown) {
       let errorMessage = "Creation failed";
       if (axios.isAxiosError(err)) {
@@ -108,7 +108,7 @@ export default function ArenaLaunchpad() {
       {/* HEADER */}
       <header className="h-16 border-b border-[var(--border)] bg-[var(--background)] flex items-center justify-between px-8 sticky top-0 z-50">
          <div className="flex items-center gap-6">
-            <Link href="/arena" className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
+            <Link href="/contest" className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
                <ArrowLeft size={18} />
             </Link>
             <div className="flex items-center gap-3">

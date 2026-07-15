@@ -96,7 +96,7 @@ export default function Sidebar({ isCollapsed = false, toggleCollapse }: Sidebar
     { label: "CS Core", href: "/cs-core", icon: BrainCircuit, color: "var(--viz-gold)" },
     { label: "Academy", href: "/resources", icon: GraduationCap, color: "var(--viz-blue)" },
     { label: "Interview", href: "/interview", icon: MonitorPlay, color: "var(--viz-red)" },
-    { label: "Arena", href: "/arena", icon: Rocket, color: "var(--viz-gold)" },
+    { label: "Contests", href: "/contest", icon: Rocket, color: "var(--viz-gold)" },
     { label: "Siege", href: "/siege", icon: Shield, color: "var(--viz-blue)" },
     { label: "Arcade", href: "/arcade", icon: Gamepad2, color: "var(--viz-blue)" },
     { label: "Visualize", href: "/dsa", icon: PenTool, color: "var(--viz-blue)" },

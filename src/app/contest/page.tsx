@@ -97,7 +97,7 @@ export default function ArenaDashboard() {
 
             <div className="space-y-2">
                <h1 className="text-7xl font-bold tracking-tighter text-[var(--foreground)] leading-none">
-                 The <span className={`italic transition-colors duration-500 ${activeHub === 'ELITE' ? "text-[var(--viz-gold)]" : "text-[var(--primary)]"}`}>Arena</span>
+                 The <span className={`italic transition-colors duration-500 ${activeHub === 'ELITE' ? "text-[var(--viz-gold)]" : "text-[var(--primary)]"}`}>Contests</span>
                </h1>
                <p className="text-xl text-[var(--muted-foreground)] max-w-2xl font-light leading-relaxed">
                   {activeHub === 'ELITE' 
@@ -176,7 +176,7 @@ function ArenaCard({ arena, index, accentColor }: { arena: Arena; index: number;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }} layout>
-      <Link href={`/arena/${arena.id}`} className="group block h-full">
+      <Link href={`/contest/${arena.id}`} className="group block h-full">
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 flex flex-col h-full transition-all duration-500 hover:bg-[var(--foreground)]/[0.03] overflow-hidden shadow-2xl relative">
           <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: `linear-gradient(to right, transparent, ${statusConfig.color}4D, transparent)` }} />
           
