@@ -123,8 +123,6 @@ export const DSAMainContent = ({ selectedCategory, isStudio }: DSAMainContentPro
 
   const tabs = [
     { id: "viz", label: "Visualizer", icon: Activity },
-    { id: "code", label: "Code", icon: Code2 },
-    { id: "docs", label: "Resources", icon: Info },
   ] as const;
 
   const VisualizationStage = (
@@ -143,7 +141,7 @@ export const DSAMainContent = ({ selectedCategory, isStudio }: DSAMainContentPro
       {!isFullscreen && (
          <div className="flex items-center justify-between border-b border-[var(--border)] pb-6 px-2 md:px-0">
             <div className="flex gap-2">
-               {tabs.map((tab) => (
+               {tabs.length > 1 && tabs.map((tab) => (
                   <button
                      key={tab.id}
                      onClick={() => setActiveTab(tab.id)}

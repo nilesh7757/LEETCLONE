@@ -3,28 +3,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, Zap, 
-  Activity, Grid, Network, Cpu, RefreshCw
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, Zap, 
+  Activity, Network, Cpu, RefreshCw
 } from "lucide-react";
 
-/**
- * --- Configuration ---
- * Visual constants and color palette.
- */
-const MANIM_COLORS = { 
-  text: "var(--foreground)", 
-  background: "var(--card)",
-  blue: "var(--viz-rose)",
-  green: "var(--viz-green)",
-  gold: "var(--viz-amber)",
-  red: "var(--viz-rose)",
-  purple: "var(--viz-purple)",
-  muted: "rgba(255,255,255,0.1)"
-};
-
 const INF = 99;
-
-// --- Types ---
 
 interface FWStep {
   matrix: number[][];
@@ -38,19 +21,13 @@ interface FWStep {
   logs: string[];
 }
 
-/**
- * Floyd-Warshall Visualizer Component
- * 
- * Visualizes the All-Pairs Shortest Path algorithm.
- * Demonstrates the transitive closure property by iteratively allowing intermediate nodes.
- */
 export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: number }) {
   const [numNodes, setNumNodes] = useState(4);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
-  const MAX_NODES = 8; // Safety limit for visualization
+  const MAX_NODES = 8;
 
   const handleResize = () => {
     setNumNodes(prev => {
@@ -62,12 +39,10 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     setIsPlaying(false);
   };
 
-  // --- Graph Generation ---
   const initialGraph = useMemo(() => {
     const mat = Array.from({ length: numNodes }, (_, r) => 
         Array.from({ length: numNodes }, (_, c) => {
             if (r === c) return 0;
-            // Deterministic but "random-looking" weights
             const seed = (r * 7 + c * 13 + numNodes * 3) % 100; 
             if (seed > 65) return INF; 
             return (seed % 9) + 1;
@@ -77,7 +52,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
   }, [numNodes]);
 
   const nodePositions = useMemo(() => {
-    const radius = 100;
+    const radius = 90;
     const centerX = 150;
     const centerY = 150;
     return Array.from({ length: numNodes }, (_, i) => {
@@ -86,10 +61,23 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     });
   }, [numNodes]);
 
-  // --- Algorithm Logic (Pre-computation) ---
+  const getEdgeData = (uIdx: number, vIdx: number) => {
+    const u = nodePositions[uIdx];
+    const v = nodePositions[vIdx];
+    if (!u || !v) return null;
+    const dx = v.x - u.x, dy = v.y - u.y, d = Math.sqrt(dx*dx + dy*dy);
+    if (d === 0) return null;
+    const ux = dx/d, uy = dy/d;
+    const hasOpposite = initialGraph[vIdx]?.[uIdx] !== undefined && initialGraph[vIdx][uIdx] !== INF;
+    const curve = hasOpposite ? 15 : 0;
+    const cpX = (u.x + v.x)/2 - uy * curve;
+    const cpY = (u.y + v.y)/2 + ux * curve;
+    const path = `M ${u.x + ux*16} ${u.y + uy*16} Q ${cpX} ${cpY} ${v.x - ux*20} ${v.y - uy*20}`;
+    return { path, cpX, cpY, ux, uy };
+  };
+
   const history = useMemo(() => {
     const steps: FWStep[] = [];
-    // Deep copy initial graph
     const dist = initialGraph.map(row => [...row]);
     const n = numNodes;
     let logs: string[] = [];
@@ -108,7 +96,7 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
 
     const addLog = (l: string) => { logs = [l, ...logs]; };
 
-    addLog(`Initializing Adjacency Tensor (${n}x${n}).`);
+    addLog(`Initializing Adjacency Matrix (${n}x${n}).`);
     record("Initializing Distance Matrix. D[i][j] = Direct Edge Weight.", "INIT", -1, null, null, -1, "NONE");
 
     for (let k = 0; k < n; k++) {
@@ -117,15 +105,13 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
 
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
-          if (i === j) continue; // Distance to self is always 0
+          if (i === j) continue;
 
           const d_ik = dist[i][k];
           const d_kj = dist[k][j];
           const d_ij = dist[i][j];
 
-          // Check connectivity first
           if (d_ik === INF || d_kj === INF) {
-             // Path via k doesn't exist, no comparison needed
              continue; 
           }
 
@@ -148,7 +134,6 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
     return steps;
   }, [initialGraph, numNodes]);
 
-  // --- Playback Engine ---
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = setInterval(() => {
@@ -171,298 +156,431 @@ export default function FloydWarshallVisualizer({ speed = 800 }: { speed?: numbe
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans select-none">
-      
-      {/* --- Main Dashboard --- */}
-      <div className="p-4 md:p-8 bg-[var(--card)] rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col">
-        {/* Background Grid */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+    <div className="flex flex-col gap-6 w-full">
+      {/* Header Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (currentIndex >= history.length - 1) setCurrentIndex(0);
+              setIsPlaying(!isPlaying);
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-rose)] hover:bg-[var(--viz-rose)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            {isPlaying ? (
+              <>
+                <Pause size={14} fill="currentColor" />
+                <span>Pause</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="currentColor" />
+                <span>Play</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              setIsPlaying(false);
+              setCurrentIndex(0);
+            }}
+            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
+            title="Reset Floyd-Warshall Simulation"
+          >
+            <RotateCcw size={14} />
+          </button>
+
+          <button
+            onClick={handleResize}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-xs font-bold cursor-pointer"
+            title="Change Graph Size"
+          >
+            <RefreshCw size={14} />
+            <span>Resize ({numNodes} Nodes)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Visual Stage */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Header UI */}
-        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between mb-12 gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)]">
-                    <Grid size={24} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">Floyd-Warshall</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">All-Pairs Shortest Path Tensor</p>
-                </div>
-            </div>
+        {/* Topology View (Graph State) */}
+        <div className="relative w-full h-[320px] md:h-[350px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-0 order-1 lg:order-2 lg:col-span-4">
+          <div className="absolute top-4 left-4 flex items-center gap-2 text-[var(--muted-foreground)]/40 z-20 pointer-events-none">
+            <Network size={14} />
+            <span className="text-[9px] font-black uppercase tracking-widest">Graph State</span>
           </div>
+          
+          <div className="relative w-full aspect-square max-w-[280px] h-auto flex items-center justify-center">
+            <svg 
+              viewBox="0 0 300 300" 
+              className="w-full h-full select-none touch-none z-10 overflow-visible"
+            >
+              <defs>
+                <marker id="arrowhead-fw" markerWidth="10" markerHeight="7" refX="19" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                </marker>
+              </defs>
+              
+              {/* Draw Edges */}
+              {initialGraph.map((row, u) => row.map((w, v) => {
+                if (u === v || w === INF) return null;
+                const edgeInfo = getEdgeData(u, v);
+                if (!edgeInfo) return null;
+                const { path } = edgeInfo;
 
-          <div className="flex items-center gap-3">
-             <button onClick={handleResize} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all" title="Change Graph Size"><RefreshCw size={18}/></button>
-             <button onClick={() => { setIsPlaying(false); setCurrentIndex(0); }} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-all"><RotateCcw size={18}/></button>
-             <button 
-                onClick={() => { if (currentIndex >= history.length - 1) setCurrentIndex(0); setIsPlaying(!isPlaying); }} 
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${isPlaying ? "bg-muted text-foreground" : "bg-[var(--viz-rose)] text-black hover:scale-105"}`}
-             >
-                {isPlaying ? <><Pause size={16} fill="currentColor"/> PAUSE</> : <><Play size={16} fill="currentColor"/> RUN</>}
-             </button>
-          </div>
-        </div>
+                const isViaPath1 = u === currentStep.i && v === currentStep.k; 
+                const isViaPath2 = u === currentStep.k && v === currentStep.j; 
+                const isDirectPath = u === currentStep.i && v === currentStep.j; 
 
-        {/* Visual Canvas */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            {/* Matrix View */}
-            <div className="lg:col-span-5 relative p-3 md:p-6 bg-muted/30 rounded-[2rem]  overflow-hidden shadow-inner flex flex-col items-center">
-                <div className="absolute top-4 left-6 z-20">
-                    <AnimatePresence mode="wait">
-                        <motion.div 
-                            key={currentStep.step}
-                            initial={{ opacity: 0, y: -10 }} 
-                            animate={{ opacity: 1, y: 0 }} 
-                            exit={{ opacity: 0, y: -10 }} 
-                            className="flex items-center gap-2 px-3 py-1.5 bg-card/80  backdrop-blur-md rounded-full shadow-sm"
-                        >
-                            <Zap size={12} className="text-[var(--viz-rose)]" fill="var(--viz-rose)" />
-                            <span className="text-[9px] font-black font-mono text-[var(--viz-rose)] uppercase tracking-widest">{currentStep.step}</span>
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
+                const isActive = isViaPath1 || isViaPath2 || isDirectPath;
+                
+                let strokeColor = "text-[var(--muted-foreground)]/20";
+                let strokeWidth = 1.5;
+                if (isDirectPath) {
+                  strokeColor = "text-[var(--viz-rose)]";
+                  strokeWidth = 3;
+                } else if (isViaPath1) {
+                  strokeColor = "text-[var(--viz-cyan)]";
+                  strokeWidth = 2.5;
+                } else if (isViaPath2) {
+                  strokeColor = "text-[var(--viz-amber)]";
+                  strokeWidth = 2.5;
+                }
 
-                <div className="relative z-10 w-full overflow-x-auto pb-4 custom-scrollbar mt-8">
-                    <div className="min-w-fit flex flex-col items-center">
-                        {/* Col Headers */}
-                        <div className="flex">
-                            <div className="w-10 h-10" />
-                            {Array.from({ length: numNodes }).map((_, c) => (
-                                <div key={`col-${c}`} className={`w-12 h-10 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.j === c ? "text-[var(--viz-rose)] scale-125" : "text-muted-foreground/30"}`}>
-                                    {c}
-                                </div>
-                            ))}
-                        </div>
-                        {/* Matrix */}
-                        {currentStep.matrix.map((row, r) => (
-                            <div key={`row-${r}`} className="flex mb-1">
-                                {/* Row Header */}
-                                <div className={`w-10 h-12 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.i === r ? "text-[var(--viz-rose)] scale-125" : "text-muted-foreground/30"}`}>
-                                    {r}
-                                </div>
-                                {row.map((val, c) => {
-                                    const isTarget = r === currentStep.i && c === currentStep.j;
-                                    const isVia1 = r === currentStep.i && c === currentStep.k;
-                                    const isVia2 = r === currentStep.k && c === currentStep.j;
-                                    const isPivot = r === currentStep.k && c === currentStep.k; // The diagonal pivot [k][k]
+                return (
+                  <g key={`edge-path-${u}-${v}`}>
+                    <motion.path
+                      d={path}
+                      fill="none"
+                      stroke="currentColor"
+                      className={strokeColor}
+                      strokeWidth={strokeWidth}
+                      markerEnd="url(#arrowhead-fw)"
+                      animate={{ opacity: 1 }}
+                    />
+                    {isDirectPath && (
+                      <motion.circle r="3.5" fill="var(--viz-rose)">
+                        <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
+                      </motion.circle>
+                    )}
+                    {isViaPath1 && (
+                      <motion.circle r="3.5" fill="var(--viz-cyan)">
+                        <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
+                      </motion.circle>
+                    )}
+                    {isViaPath2 && (
+                      <motion.circle r="3.5" fill="var(--viz-amber)">
+                        <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
+                      </motion.circle>
+                    )}
+                  </g>
+                );
+              }))}
 
-                                    return (
-                                        <div key={`${r}-${c}`} className="w-12 h-12 flex items-center justify-center relative">
-                                            <motion.div
-                                                initial={false}
-                                                animate={{ 
-                                                    scale: isTarget ? 1.15 : (isVia1 || isVia2) ? 1.1 : 1,
-                                                    backgroundColor: isTarget ? `${MANIM_COLORS.red}20` : 
-                                                                     (isVia1 || isVia2) ? `${MANIM_COLORS.blue}15` : 
-                                                                     isPivot ? `${MANIM_COLORS.gold}10` : "transparent",
-                                                    borderColor: isTarget ? MANIM_COLORS.red : 
-                                                                 (isVia1 || isVia2) ? MANIM_COLORS.blue : 
-                                                                 isPivot ? MANIM_COLORS.gold : "var(--border)",
-                                                    opacity: val === INF ? 0.3 : 1
-                                                }}
-                                                className="w-10 h-10 border rounded-lg flex items-center justify-center text-xs font-mono font-bold shadow-sm"
-                                            >
-                                                <span className={isTarget ? "text-[var(--viz-rose)]" : (isVia1 || isVia2) ? "text-[var(--viz-rose)]" : isPivot ? "text-[var(--viz-amber)]" : "text-muted-foreground"}>{val === INF ? "∞" : val}</span>
-                                            </motion.div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+              {/* Edge Weights */}
+              {initialGraph.map((row, u) => row.map((weight, v) => {
+                if (u === v || weight === INF) return null;
+                const edgeInfo = getEdgeData(u, v);
+                if (!edgeInfo) return null;
+                const { cpX, cpY } = edgeInfo;
 
-                {/* Variable Monitor */}
-                <div className="mt-4 grid grid-cols-3 gap-2 w-full max-w-[300px]">
-                    <div className="p-2 bg-card/50  rounded-lg flex flex-col items-center">
-                        <span className="text-[7px] font-black text-muted-foreground/40 uppercase">Via (k)</span>
-                        <span className="text-xs font-black text-[var(--viz-amber)]">{currentStep.k !== -1 ? currentStep.k : "-"}</span>
-                    </div>
-                    <div className="p-2 bg-card/50  rounded-lg flex flex-col items-center">
-                        <span className="text-[7px] font-black text-muted-foreground/40 uppercase">From (i)</span>
-                        <span className="text-xs font-black text-[var(--viz-rose)]">{currentStep.i !== null ? currentStep.i : "-"}</span>
-                    </div>
-                    <div className="p-2 bg-card/50  rounded-lg flex flex-col items-center">
-                        <span className="text-[7px] font-black text-muted-foreground/40 uppercase">To (j)</span>
-                        <span className="text-xs font-black text-[var(--viz-rose)]">{currentStep.j !== null ? currentStep.j : "-"}</span>
-                    </div>
-                </div>
-            </div>
+                const isViaPath1 = u === currentStep.i && v === currentStep.k;
+                const isViaPath2 = u === currentStep.k && v === currentStep.j;
+                const isDirectPath = u === currentStep.i && v === currentStep.j;
+                const isActive = isViaPath1 || isViaPath2 || isDirectPath;
 
-            {/* Topology View */}
-            <div className="lg:col-span-4 relative p-3 md:p-6 bg-muted/30 rounded-[2rem]  overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar shadow-inner flex flex-col items-center justify-center min-h-[350px] md:min-h-[300px] w-full">
-                <div className="absolute top-4 left-6 flex items-center gap-2 text-muted-foreground/20">
-                    <Network size={12}/>
-                    <span className="text-[8px] font-black uppercase tracking-widest">Graph State</span>
-                </div>
-
-                <div className="relative w-[280px] h-[280px]">
-                    <svg className="w-full h-full pointer-events-none overflow-visible">
-                        <defs>
-                            <marker id="arrow" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-                                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" className="text-muted-foreground/20"/>
-                            </marker>
-                        </defs>
-                        {/* Draw Edges */}
-                        {initialGraph.map((row, u) => row.map((w, v) => {
-                            if (u === v || w === INF) return null;
-                            const start = nodePositions[u];
-                            const end = nodePositions[v];
-                            
-                            // Highlight Paths
-                            const isViaPath1 = u === currentStep.i && v === currentStep.k; // i -> k
-                            const isViaPath2 = u === currentStep.k && v === currentStep.j; // k -> j
-                            const isDirectPath = u === currentStep.i && v === currentStep.j; // i -> j
-
-                            const isActive = isViaPath1 || isViaPath2 || isDirectPath;
-                            const color = isDirectPath ? MANIM_COLORS.red : (isViaPath1 || isViaPath2) ? MANIM_COLORS.blue : "currentColor";
-
-                            return (
-                                <motion.line
-                                    key={`edge-${u}-${v}`}
-                                    x1={start.x} y1={start.y} x2={end.x} y2={end.y}
-                                    stroke={color}
-                                    className={`${isActive ? "" : "text-muted-foreground/10"}`}
-                                    strokeWidth={isActive ? 3 : 1}
-                                    markerEnd={isActive ? "" : "url(#arrow)"} // Simplify for now
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                />
-                            );
-                        }))}
-                    </svg>
-                    
-                    {/* Draw Nodes */}
-                    {nodePositions.map((pos, idx) => {
-                        const isK = idx === currentStep.k;
-                        const isI = idx === currentStep.i;
-                        const isJ = idx === currentStep.j;
-                        return (
-                            <motion.div
-                                key={idx}
-                                animate={{ 
-                                    scale: isK || isI || isJ ? 1.2 : 1,
-                                    backgroundColor: isK ? MANIM_COLORS.gold : isI ? MANIM_COLORS.blue : isJ ? MANIM_COLORS.red : "var(--card)",
-                                    borderColor: isK ? MANIM_COLORS.gold : isI ? MANIM_COLORS.blue : isJ ? MANIM_COLORS.red : "var(--border)",
-                                    zIndex: isK ? 30 : (isI || isJ) ? 25 : 20
-                                }}
-                                className="absolute w-10 h-10 -ml-5 -mt-5 border-2 rounded-full flex items-center justify-center font-mono text-xs font-black shadow-lg"
-                                style={{ left: pos.x, top: pos.y }}
-                            >
-                                <span className={isK || isI || isJ ? "text-black" : "text-foreground"}>{idx}</span>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Sidebar Logic */}
-            <div className="lg:col-span-3 flex flex-col gap-6">
-                {/* Logic Card */}
-                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem] flex flex-col gap-4">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2">
-                        <Cpu size={14}/> Logic Core
-                    </h3>
-                    <div className="space-y-3 font-mono text-[9px]">
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[var(--viz-rose)]/10 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-transparent text-muted-foreground/40"}`}>
-                            CHECK: Dist[i][k] + Dist[k][j] &lt; Dist[i][j]
-                        </div>
-                        {currentStep.i !== null && currentStep.k !== -1 && currentStep.j !== null && (
-                            <div className="pl-2 border-l-2 border-border/50 text-[10px] text-muted-foreground">
-                                <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.i][currentStep.k] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.k]}</span>
-                                {" + "}
-                                <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.k][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.k][currentStep.j]}</span>
-                                {" vs "}
-                                <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.i][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.j]}</span>
-                            </div>
-                        )}
-                        <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 4 ? "bg-[var(--viz-green)]/10 border-[var(--viz-green)] text-[var(--viz-green)]" : "border-transparent text-muted-foreground/40"}`}>
-                            UPDATE: Dist[i][j] = New Path
-                        </div>
-                    </div>
-                </div>
-
-                {/* Log Stream */}
-                <div className="p-3 md:p-6 bg-muted/20  rounded-[2rem] flex-1 h-[200px] overflow-hidden">
-                    <h3 className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-2 mb-2">
-                        <Activity size={14}/> Log
-                    </h3>
-                    <div className="flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin h-full">
-                        <AnimatePresence mode="popLayout">
-                            {currentStep.logs.slice(0, 8).map((log, i) => (
-                                <motion.div
-                                    key={`log-${currentIndex}-${i}`}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="text-[9px] font-mono text-muted-foreground/70 flex gap-2 border-l-2 border-border pl-2 py-0.5"
-                                >
-                                    <span className="text-[var(--viz-rose)]">»</span>
-                                    {log}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-4 p-3 md:p-6 bg-muted/30  rounded-[2.5rem] flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <div className="flex items-center gap-3">
-                    <Hash size={14} className="text-[var(--viz-amber)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
-                        Frame {currentIndex + 1} / {history.length}
-                    </span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
-                    <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min((history.length || 1) - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
-                </div>
-            </div>
-
-            {/* Scrubber */}
-            <div className="relative flex items-center group/slider h-4">
-                <div className="absolute w-full h-1 bg-background/20 rounded-full" />
-                <motion.div 
-                    className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_var(--viz-rose)44]" 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }}
-                />
-                <input 
-                    type="range" min="0" max={(history.length || 1) - 1} value={currentIndex} 
-                    onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                    className="w-full h-6 opacity-0 cursor-pointer z-10"
-                />
-            </div>
-            
-            <div className="flex justify-center">
-                <AnimatePresence mode="wait">
-                    <motion.div 
-                        key={currentIndex} 
-                        initial={{ opacity: 0, y: 5 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        className="px-4 py-2 rounded-lg bg-card /50 text-[10px] font-mono text-[var(--viz-amber)] text-center max-w-2xl"
+                return (
+                  <g key={`edge-weight-${u}-${v}`}>
+                    <circle 
+                      cx={cpX} 
+                      cy={cpY} 
+                      r="8" 
+                      fill="var(--viz-amber)" 
+                      stroke="var(--background)" 
+                      strokeWidth={isActive ? 1.5 : 0}
+                      className="shadow-sm"
+                    />
+                    <text 
+                      x={cpX} 
+                      y={cpY} 
+                      dy="2.5" 
+                      textAnchor="middle" 
+                      fontSize="8" 
+                      fontWeight="900" 
+                      className="font-mono fill-black pointer-events-none select-none"
                     >
-                        {currentStep.message}
-                    </motion.div>
-                </AnimatePresence>
+                      {weight}
+                    </text>
+                  </g>
+                );
+              }))}
+
+              {/* Draw Nodes */}
+              {nodePositions.map((pos, idx) => {
+                const isK = idx === currentStep.k;
+                const isI = idx === currentStep.i;
+                const isJ = idx === currentStep.j;
+
+                let nodeColor = "var(--card)";
+                let borderColor = "var(--border)";
+
+                if (isK) {
+                  nodeColor = "rgba(var(--viz-amber-rgb), 0.15)";
+                  borderColor = "var(--viz-amber)";
+                } else if (isI) {
+                  nodeColor = "rgba(var(--viz-cyan-rgb), 0.15)";
+                  borderColor = "var(--viz-cyan)";
+                } else if (isJ) {
+                  nodeColor = "rgba(var(--viz-rose-rgb), 0.15)";
+                  borderColor = "var(--viz-rose)";
+                }
+
+                return (
+                  <g key={`node-group-${idx}`} className="select-none pointer-events-none">
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r="16"
+                      fill={nodeColor}
+                      stroke={borderColor}
+                      strokeWidth="2.5"
+                      className="transition-colors duration-200"
+                    />
+                    <text
+                      x={pos.x}
+                      y={pos.y}
+                      dy="3"
+                      textAnchor="middle"
+                      fontSize="9"
+                      fontWeight="bold"
+                      className="font-mono select-none pointer-events-none fill-[var(--foreground)]"
+                    >
+                      {idx}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </div>
+
+        {/* Matrix View */}
+        <div className="col-span-1 lg:col-span-5 order-2 lg:order-1 relative p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm flex flex-col items-center">
+          <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={currentStep.step}
+                initial={{ opacity: 0, y: -10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0, y: -10 }} 
+                className="flex items-center gap-2 px-2.5 py-1 bg-[var(--popover)]/60 text-[var(--popover-foreground)] rounded-full border border-[var(--border)]/10 shadow-sm"
+              >
+                <Zap size={11} className="text-[var(--viz-rose)]" fill="var(--viz-rose)" />
+                <span className="text-[9px] font-black font-mono text-[var(--viz-rose)] uppercase tracking-widest">{currentStep.step}</span>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="relative z-10 w-full overflow-x-auto pb-2 custom-scrollbar mt-10">
+            <div className="min-w-fit flex flex-col items-center">
+              {/* Col Headers */}
+              <div className="flex">
+                <div className="w-8 h-8" />
+                {Array.from({ length: numNodes }).map((_, c) => (
+                  <div key={`col-${c}`} className={`w-10 h-8 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.j === c ? "text-[var(--viz-rose)] scale-125" : "text-[var(--muted-foreground)]/40"}`}>
+                    {c}
+                  </div>
+                ))}
+              </div>
+              {/* Matrix */}
+              {currentStep.matrix.map((row, r) => (
+                <div key={`row-${r}`} className="flex mb-1">
+                  {/* Row Header */}
+                  <div className={`w-8 h-10 flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-tight transition-all ${currentStep.i === r ? "text-[var(--viz-rose)] scale-125" : "text-[var(--muted-foreground)]/40"}`}>
+                    {r}
+                  </div>
+                  {row.map((val, c) => {
+                    const isTarget = r === currentStep.i && c === currentStep.j;
+                    const isVia1 = r === currentStep.i && c === currentStep.k;
+                    const isVia2 = r === currentStep.k && c === currentStep.j;
+                    const isPivot = r === currentStep.k && c === currentStep.k;
+
+                    let cellBg = "transparent";
+                    let cellBorder = "var(--border)";
+                    let valColor = "text-[var(--muted-foreground)]";
+
+                    if (isTarget) {
+                      cellBg = "rgba(var(--viz-rose-rgb), 0.15)";
+                      cellBorder = "var(--viz-rose)";
+                      valColor = "text-[var(--viz-rose)] font-black";
+                    } else if (isVia1 || isVia2) {
+                      cellBg = "rgba(var(--viz-cyan-rgb), 0.1)";
+                      cellBorder = "var(--viz-cyan)";
+                      valColor = "text-[var(--viz-cyan)] font-bold";
+                    } else if (isPivot) {
+                      cellBg = "rgba(var(--viz-amber-rgb), 0.1)";
+                      cellBorder = "var(--viz-amber)";
+                      valColor = "text-[var(--viz-amber)] font-bold";
+                    }
+
+                    return (
+                      <div key={`${r}-${c}`} className="w-10 h-10 flex items-center justify-center relative">
+                        <motion.div
+                          initial={false}
+                          animate={{ 
+                            scale: isTarget ? 1.1 : 1,
+                            backgroundColor: cellBg,
+                            borderColor: cellBorder,
+                            opacity: val === INF ? 0.35 : 1
+                          }}
+                          className="w-9 h-9 border rounded-lg flex items-center justify-center text-xs font-mono font-bold shadow-sm transition-colors duration-200"
+                        >
+                          <span className={valColor}>{val === INF ? "∞" : val}</span>
+                        </motion.div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
+          </div>
+
+          {/* Variable Monitor */}
+          <div className="mt-4 grid grid-cols-3 gap-2 w-full max-w-[280px]">
+            <div className="p-2 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl flex flex-col items-center">
+              <span className="text-[8px] font-black text-[var(--muted-foreground)]/60 uppercase">Via (k)</span>
+              <span className="text-xs font-black text-[var(--viz-amber)]">{currentStep.k !== -1 ? currentStep.k : "-"}</span>
+            </div>
+            <div className="p-2 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl flex flex-col items-center">
+              <span className="text-[8px] font-black text-[var(--muted-foreground)]/60 uppercase">From (i)</span>
+              <span className="text-xs font-black text-[var(--viz-cyan)]">{currentStep.i !== null ? currentStep.i : "-"}</span>
+            </div>
+            <div className="p-2 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl flex flex-col items-center">
+              <span className="text-[8px] font-black text-[var(--muted-foreground)]/60 uppercase">To (j)</span>
+              <span className="text-xs font-black text-[var(--viz-rose)]">{currentStep.j !== null ? currentStep.j : "-"}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Legend */}
-        <div className="px-4 md:px-10 py-6 bg-muted/10 /50 rounded-[2.5rem] flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70 hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Via Path (i→k, k→j)</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-rose)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Target (i→j)</span></div>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded bg-[var(--viz-amber)]" /><span className="text-[9px] font-bold uppercase tracking-wider">Intermediate (k)</span></div>
+        {/* Sidebar Logic */}
+        <div className="col-span-1 lg:col-span-3 order-3 lg:order-3 flex flex-col gap-6">
+          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
+            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
+              <Cpu size={14} className="text-[var(--viz-cyan)]" /> Logic Core
+            </h3>
+            <div className="space-y-3 font-mono text-[9px]">
+              <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 3 ? "bg-[var(--viz-rose)]/15 border-[var(--viz-rose)] text-[var(--viz-rose)]" : "border-transparent text-[var(--muted-foreground)]/40"}`}>
+                CHECK: Dist[i][k] + Dist[k][j] &lt; Dist[i][j]
+              </div>
+              {currentStep.i !== null && currentStep.k !== -1 && currentStep.j !== null && (
+                <div className="pl-2 border-l-2 border-[var(--border)] text-[10px] text-[var(--muted-foreground)]/80">
+                  <span className="text-[var(--viz-cyan)]">{currentStep.matrix[currentStep.i][currentStep.k] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.k]}</span>
+                  {" + "}
+                  <span className="text-[var(--viz-cyan)]">{currentStep.matrix[currentStep.k][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.k][currentStep.j]}</span>
+                  {" vs "}
+                  <span className="text-[var(--viz-rose)]">{currentStep.matrix[currentStep.i][currentStep.j] === INF ? '∞' : currentStep.matrix[currentStep.i][currentStep.j]}</span>
+                </div>
+              )}
+              <div className={`p-2 rounded-lg border transition-all ${currentStep.activeLine === 4 ? "bg-[var(--viz-green)]/15 border-[var(--viz-green)] text-[var(--viz-green)]" : "border-transparent text-[var(--muted-foreground)]/40"}`}>
+                UPDATE: Dist[i][j] = New Path
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex-col h-[200px] flex shadow-sm">
+            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2 mb-3">
+              <Activity size={14} className="text-[var(--viz-cyan)]" /> Log Stream
+            </h3>
+            <div className="flex flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar flex-1 text-xs font-mono">
+              <AnimatePresence mode="popLayout">
+                {currentStep.logs.map((log, i) => (
+                  <motion.div
+                    key={`log-${currentIndex}-${i}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[11px] text-[var(--muted-foreground)]/80 leading-relaxed pl-2 border-l-2 border-[var(--border)] flex gap-1.5"
+                  >
+                    <span className="text-[var(--viz-rose)] font-black">»</span>
+                    {log}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
 
+      </div>
+
+      {/* Step Message */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
+        <p className="text-xs text-[var(--viz-rose)] font-mono font-bold tracking-tight">
+          {currentStep.message}
+        </p>
+      </div>
+
+      {/* Control Timeline */}
+      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-[var(--viz-rose)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+              Step {currentIndex + 1} of {history.length}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative flex items-center group/slider w-full h-6">
+          <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
+          <div 
+            className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(244,63,94,0.4)]" 
+            style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+          />
+          <input 
+            type="range" 
+            min="0" 
+            max={history.length - 1} 
+            value={currentIndex} 
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          <div 
+            className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+            style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+          />
+        </div>
+      </div>
+
+      {/* Legend Block */}
+      <div className="px-4 py-4 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Source (i)</span>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Destination (j)</span>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" />
+          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Intermediate (k)</span>
+        </div>
       </div>
     </div>
   );
 }
-
-
