@@ -4,19 +4,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   RotateCcw, ChevronLeft, ChevronRight, Zap, 
-  ArrowRight, Plus, Trash2, Search, Hash
+  ArrowRight, Plus, Trash2, Search, Hash, Activity
 } from "lucide-react";
-
-// --- Configuration ---
-const GAP_SIZE = 60; // Space for the arrow
 
 // Manim-inspired Palette
 const COLORS = { 
-  blue: "var(--viz-lime)",
+  blue: "var(--viz-cyan)",
   green: "var(--viz-green)",
   gold: "var(--viz-amber)",
   red: "var(--viz-rose)",
-  purple: "var(--viz-lime)",
+  purple: "var(--viz-purple)",
   muted: "rgba(255,255,255,0.1)"
 };
 
@@ -68,7 +65,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
   const pushBack = React.useCallback(() => {
     const val = parseInt(inputValue) || Math.floor(Math.random() * 99);
     const steps: ListStep[] = [];
-    const currentNodes = [...list]; // Snapshot of current state
+    const currentNodes = [...list]; 
     const newNode = { id: `n-${Date.now()}`, value: val };
 
     // 1. Traversal
@@ -78,7 +75,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             activeId: currentNodes[i].id,
             highlightIds: currentNodes.slice(0, i+1).map(n => n.id),
             phase: "TRAVERSE",
-            message: `Traversing to end... visiting node ${i + 1} of ${currentNodes.length}`
+            message: `Traversing list... visiting node ${i + 1} of ${currentNodes.length}`
         });
     }
 
@@ -89,7 +86,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
         activeId: newNode.id,
         highlightIds: [],
         phase: "INSERT",
-        message: `New node [${val}] created and appended to the end.`
+        message: `New node [${val}] created and appended to the tail pointer.`
     });
 
     // 3. Idle
@@ -109,7 +106,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     const steps: ListStep[] = [];
     const currentNodes = [...list];
 
-    // 1. Traversal to second last
+    // 1. Traversal to end
     for (let i = 0; i < currentNodes.length; i++) {
         steps.push({
             nodes: currentNodes,
@@ -125,11 +122,11 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     const newNodes = currentNodes.slice(0, -1);
     
     steps.push({
-        nodes: currentNodes, // Keep node visible but marked
+        nodes: currentNodes, 
         activeId: target.id,
         highlightIds: [target.id],
         phase: "DELETE",
-        message: `Removing node [${target.value}] from the end. Updating previous node's pointer to NULL.`
+        message: `Removing tail node [${target.value}]. Updating previous node's pointer to NULL.`
     });
 
     // 3. Final State
@@ -158,7 +155,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             activeId: currentNodes[i].id,
             highlightIds: currentNodes.slice(0, i).map(n => n.id),
             phase: isMatch ? "FOUND" : "TRAVERSE",
-            message: isMatch ? `Found! Value ${val} is at index ${i}.` : `Node [${currentNodes[i].value}] does not match. Moving next.`
+            message: isMatch ? `Found! Value ${val} matches at index ${i}.` : `Node [${currentNodes[i].value}] does not match. Moving to next.`
         });
         if (isMatch) {
             found = true;
@@ -180,7 +177,7 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
             activeId: null,
             highlightIds: [],
             phase: "IDLE",
-            message: "Search Complete."
+            message: "Search complete."
         });
     }
 
@@ -222,158 +219,182 @@ export default function LinkedListVisualizer({ speed = 800 }: { speed?: number }
     COLORS.blue;
 
   return (
-    <div className="flex flex-col gap-6 select-none font-sans w-full">
-      
-      {/* Action Controls Toolbar - Clean and elegant */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-         <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-wider">Linked List Operations</span>
-         </div>
-         <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-3 px-3 py-1.5 bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl">
-               <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-wider">Data</span>
-               <input 
-                  type="number" value={inputValue} 
-                  onChange={e => setInputValue(e.target.value)}
-                  placeholder="VAL"
-                  className="w-12 bg-transparent font-mono text-xs font-bold text-[var(--viz-amber)] focus:outline-none text-center placeholder:text-muted-foreground/30"
-               />
-            </div>
-            <button onClick={pushBack} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Push Back">
-               <Plus size={14} /> Add
-            </button>
-            <button onClick={popBack} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-rose)]/10 hover:bg-[var(--viz-rose)]/20 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Pop Back">
-               <Trash2 size={14} /> Delete
-            </button>
-            <button onClick={search} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-lime)]/10 hover:bg-[var(--viz-lime)]/20 rounded-xl text-[var(--viz-lime)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Search">
-               <Search size={14} /> Find
-            </button>
-            <div className="w-[1px] h-6 bg-[var(--border)] mx-1" />
-            <button onClick={() => { setList([]); setHistory([]); setCurrentIndex(0); }} className="p-2 hover:bg-[var(--accent)] rounded-xl text-[var(--muted-foreground)] transition-all cursor-pointer" title="Reset">
-               <RotateCcw size={14} />
-            </button>
-         </div>
+    <div className="flex flex-col gap-6 w-full">
+      {/* Header Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl font-mono text-[10px]">
+            <span className="text-[9px] font-black text-[var(--muted-foreground)]/60 uppercase">Data</span>
+            <input 
+              type="number" 
+              value={inputValue} 
+              onChange={e => setInputValue(e.target.value)}
+              placeholder="VAL"
+              className="w-10 bg-transparent font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none text-center placeholder:text-muted-foreground/30"
+            />
+          </div>
+
+          <button onClick={pushBack} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Push Back">
+            <Plus size={12} /> Add
+          </button>
+          <button onClick={popBack} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-rose)]/10 hover:bg-[var(--viz-rose)]/20 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Pop Back">
+            <Trash2 size={12} /> Delete
+          </button>
+          <button onClick={search} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-cyan)]/10 hover:bg-[var(--viz-cyan)]/20 rounded-xl text-[var(--viz-cyan)] transition-all text-[10px] font-bold uppercase tracking-wider cursor-pointer" title="Search">
+            <Search size={12} /> Find
+          </button>
+
+          <button 
+            onClick={() => { setList([]); setHistory([{ nodes: [], activeId: null, highlightIds: [], phase: "IDLE", message: "List cleared." }]); setCurrentIndex(0); }} 
+            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
+            title="Clear List"
+          >
+            <RotateCcw size={14} />
+          </button>
+        </div>
+
+        {/* Method Badge */}
+        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
+          Linked List Structure
+        </div>
       </div>
 
-      {/* The Visual Stage Canvas — no horizontal overflow */}
-      <div className="relative w-full min-h-[300px] md:min-h-[420px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden flex flex-col items-center justify-center px-4 md:px-8 py-10 shadow-inner">
+      {/* Visual Canvas (Horizontal List) */}
+      <div className="relative w-full h-[180px] md:h-[220px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-4">
+        {/* Phase Badge */}
+        <div className="absolute top-4 left-4 z-20">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-[var(--card)]/80 backdrop-blur-md shadow-sm" style={{ borderColor: `${activeColor}40` }}>
+            <Zap size={10} fill={activeColor} className="text-transparent" />
+            <span className="text-[9px] font-black uppercase tracking-widest font-mono animate-pulse" style={{ color: activeColor }}>{currentStep.phase}</span>
+          </div>
+        </div>
 
-         {/* Phase Badge */}
-         <div className="absolute top-4 left-4 z-20">
-             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-[var(--card)]/80 backdrop-blur-md shadow-sm" style={{ borderColor: `${activeColor}40` }}>
-                 <Zap size={10} fill={activeColor} className="text-transparent" />
-                 <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: activeColor }}>{currentStep.phase}</span>
-             </div>
-         </div>
+        {/* Empty state */}
+        {currentStep.nodes.length === 0 && (
+          <div className="flex flex-col items-center gap-3 opacity-40">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Empty List</span>
+            <span className="text-[9px] font-mono text-[var(--muted-foreground)]/60">Add a node to get started</span>
+          </div>
+        )}
 
-         {/* Empty state */}
-         {currentStep.nodes.length === 0 && (
-             <div className="flex flex-col items-center gap-3 opacity-40">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Empty List</span>
-                 <span className="text-[9px] font-mono text-[var(--muted-foreground)]/60">Add a node to get started</span>
-             </div>
-         )}
+        {/* Node Row — horizontally scrollable */}
+        <div className="w-full overflow-x-auto pb-4 custom-scrollbar flex justify-start md:justify-center relative z-20">
+          <div className="flex items-center gap-x-0 p-4 min-w-max mt-4">
+            <AnimatePresence mode="popLayout">
+              {currentStep.nodes.map((node, i) => {
+                const isActive = node.id === currentStep.activeId;
+                const isVisited = currentStep.highlightIds.includes(node.id);
 
-         {/* Node Row — fully responsive, wraps on small screens */}
-         <div className="flex items-center justify-center flex-wrap gap-y-8 gap-x-0 max-w-full w-full">
-             <AnimatePresence mode="popLayout">
-                 {currentStep.nodes.map((node) => {
-                     const isActive = node.id === currentStep.activeId;
-                     const isVisited = currentStep.highlightIds.includes(node.id);
+                let nodeBg = "var(--card)";
+                let nodeBorder = "var(--border)";
+                let shadowColor = "none";
 
-                     return (
-                         <React.Fragment key={node.id}>
-                             {/* Node box */}
-                             <motion.div
-                                 layout
-                                 initial={{ scale: 0, opacity: 0 }}
-                                 animate={{
-                                     scale: isActive ? 1.15 : 1,
-                                     opacity: currentStep.phase === "DELETE" && isActive ? 0.4 : 1,
-                                     borderColor: isActive ? activeColor : isVisited ? COLORS.gold : "var(--border)",
-                                     backgroundColor: isActive ? `${activeColor}20` : isVisited ? `${COLORS.gold}10` : "var(--card)",
-                                     boxShadow: isActive ? `0 0 25px ${activeColor}44` : "none"
-                                 }}
-                                 exit={{ scale: 0, opacity: 0, y: 20 }}
-                                 transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                                 className="relative w-14 h-14 md:w-16 md:h-16 border-2 rounded-2xl flex flex-col items-center justify-center bg-[var(--card)] z-10 flex-shrink-0"
-                             >
-                                 <span className={`text-sm font-bold font-mono ${isActive ? "text-white" : "text-[var(--muted-foreground)]"}`}>{node.value}</span>
-                             </motion.div>
+                if (isActive) {
+                  nodeBg = `rgba(${activeColor === COLORS.green ? "var(--viz-green-rgb)" : activeColor === COLORS.red ? "var(--viz-red-rgb)" : activeColor === COLORS.gold ? "var(--viz-gold-rgb)" : "var(--viz-cyan-rgb)"}, 0.15)`;
+                  nodeBorder = activeColor;
+                  shadowColor = `0 0 25px ${activeColor}`;
+                } else if (isVisited) {
+                  nodeBg = "rgba(var(--viz-gold-rgb), 0.1)";
+                  nodeBorder = "var(--viz-amber)";
+                }
 
-                             {/* Arrow */}
-                             <motion.div
-                                 layout
-                                 className="flex items-center justify-center w-8 md:w-12 text-[var(--muted-foreground)]/20 flex-shrink-0"
-                                 initial={{ opacity: 0 }}
-                                 animate={{ opacity: 1 }}
-                                 exit={{ opacity: 0 }}
-                             >
-                                 <ArrowRight size={18} strokeWidth={2.5} />
-                             </motion.div>
-                         </React.Fragment>
-                     );
-                 })}
-             </AnimatePresence>
+                return (
+                  <React.Fragment key={node.id}>
+                    {/* Node box */}
+                    <motion.div
+                      layout
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{
+                        scale: isActive ? 1.12 : 1,
+                        opacity: currentStep.phase === "DELETE" && isActive ? 0.4 : 1,
+                        borderColor: nodeBorder,
+                        backgroundColor: nodeBg,
+                        boxShadow: shadowColor
+                      }}
+                      exit={{ scale: 0, opacity: 0, y: 20 }}
+                      transition={{ type: "spring", stiffness: 150, damping: 20 }}
+                      className="relative w-12 h-12 border-2 rounded-xl flex items-center justify-center bg-[var(--card)] z-10 flex-shrink-0 transition-colors duration-200"
+                    >
+                      <span className={`text-sm font-bold font-mono ${isActive ? "text-white font-black" : "text-[var(--foreground)]"}`}>{node.value}</span>
+                    </motion.div>
 
-             {/* NULL terminator */}
-             {currentStep.nodes.length > 0 && (
-                 <motion.div layout className="w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 border-dashed border-[var(--muted-foreground)]/20 flex items-center justify-center flex-shrink-0">
-                     <span className="text-[7px] md:text-[8px] font-black text-[var(--muted-foreground)]/30">NULL</span>
-                 </motion.div>
-             )}
-         </div>
+                    {/* Arrow */}
+                    <motion.div
+                      layout
+                      className="flex items-center justify-center w-8 md:w-10 text-[var(--muted-foreground)]/20 flex-shrink-0"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <ArrowRight size={16} strokeWidth={2.5} className="text-[var(--border)]" />
+                    </motion.div>
+                  </React.Fragment>
+                );
+              })}
+            </AnimatePresence>
+
+            {/* NULL terminator */}
+            {currentStep.nodes.length > 0 && (
+              <motion.div layout className="w-10 h-10 rounded-xl border-2 border-dashed border-[var(--muted-foreground)]/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-[8px] font-black text-[var(--muted-foreground)]/30 font-mono">NULL</span>
+              </motion.div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Step message */}
-      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
-          <p className="text-xs text-[var(--viz-lime)] font-mono font-medium">{currentStep.message}</p>
+      {/* Message Box */}
+      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
+        <p className="text-xs text-[var(--viz-cyan)] font-mono font-bold tracking-tight">
+          {currentStep.message}
+        </p>
       </div>
 
-      {/* Playback Controls + Scrubber */}
-      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-         <div className="flex items-center justify-between">
-             <div className="flex items-center gap-2">
-                 <Hash size={14} className="text-[var(--viz-lime)]" />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
-             </div>
-             <div className="flex items-center gap-2">
-                 <button
-                     onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }}
-                     className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"
-                     disabled={currentIndex === 0}
-                 >
-                     <ChevronLeft size={18} />
-                 </button>
-                 <button
-                     onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }}
-                     className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/60 transition-all cursor-pointer"
-                     disabled={currentIndex === history.length - 1}
-                 >
-                     <ChevronRight size={18} />
-                 </button>
-             </div>
-         </div>
+      {/* Control Timeline */}
+      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-[var(--viz-cyan)]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+              Step {currentIndex + 1} of {history.length}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} 
+              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
 
-         {/* Scrubber */}
-         <div className="relative flex items-center w-full">
-             <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
-             <div
-                 className="absolute h-1 rounded-full transition-all"
-                 style={{ width: `${(currentIndex / Math.max(history.length - 1, 1)) * 100}%`, backgroundColor: "var(--viz-lime)" }}
-             />
-             <input
-                 type="range" min="0" max={Math.max(history.length - 1, 0)} value={currentIndex}
-                 onChange={e => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-                 className="w-full h-6 opacity-0 cursor-pointer z-10"
-             />
-             <div
-                 className="absolute w-1.5 h-4 rounded-full pointer-events-none transition-all"
-                 style={{ left: `calc(${(currentIndex / Math.max(history.length - 1, 1)) * 100}% - 3px)`, backgroundColor: "var(--viz-lime)" }}
-             />
-         </div>
+        <div className="relative flex items-center group/slider w-full h-6">
+          <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
+          <div 
+            className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.4)]" 
+            style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+          />
+          <input 
+            type="range" 
+            min="0" 
+            max={history.length - 1} 
+            value={currentIndex} 
+            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+            className="w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          <div 
+            className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+            style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+          />
+        </div>
       </div>
-
     </div>
   );
 }

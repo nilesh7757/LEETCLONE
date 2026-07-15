@@ -257,31 +257,29 @@ export default function BSTVisualizer({ speed = 800 }: { speed?: number }) {
     <div className="flex flex-col gap-4 select-none font-sans w-full">
 
       {/* ── Header + Controls ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Binary Search Tree</h2>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Insert · Search · Delete</p>
-        </div>
-
-        <div className="flex items-center gap-2 bg-[var(--muted)] p-2 rounded-2xl shadow-inner flex-wrap">
-          <div className="flex items-center gap-2 px-3 border-r border-[var(--border)]">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl">
             <input
               type="number" value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={e => e.key === "Enter" && recordOperation('INSERT', parseInt(inputValue))}
-              placeholder="Value"
-              className="w-14 bg-transparent text-center font-mono text-sm font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
+              placeholder="VAL"
+              className="w-10 bg-transparent text-center font-mono text-xs font-bold text-[var(--viz-cyan)] focus:outline-none placeholder:text-[var(--muted-foreground)]/20"
             />
           </div>
-          <div className="flex gap-1">
-            <button onClick={() => recordOperation('INSERT', parseInt(inputValue))} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-green)]/10 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase" title="Insert"><Plus size={14}/> Insert</button>
-            <button onClick={() => recordOperation('SEARCH', parseInt(inputValue))} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-lavender)]/10 rounded-xl text-[var(--viz-lavender)] transition-all text-[10px] font-bold uppercase" title="Search"><Search size={14}/> Search</button>
-            <button onClick={() => recordOperation('DELETE', parseInt(inputValue))} className="flex items-center gap-1 px-2 py-1.5 hover:bg-[var(--viz-rose)]/10 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase" title="Delete"><Trash2 size={14}/> Delete</button>
-            <div className="w-px h-6 bg-[var(--border)] mx-1 self-center" />
-            <button onClick={() => { setTreeRoot(null); setHistory([]); setCurrentIndex(0); }} className="p-1.5 hover:bg-red-500/10 rounded-xl text-[var(--muted-foreground)]/40 hover:text-red-500 transition-all"><RotateCcw size={16}/></button>
-          </div>
+          <button onClick={() => recordOperation('INSERT', parseInt(inputValue))} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-green)]/10 hover:bg-[var(--viz-green)]/20 rounded-xl text-[var(--viz-green)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Insert"><Plus size={12}/> Insert</button>
+          <button onClick={() => recordOperation('SEARCH', parseInt(inputValue))} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-lime)]/10 hover:bg-[var(--viz-lime)]/20 rounded-xl text-[var(--viz-lime)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Search"><Search size={12}/> Search</button>
+          <button onClick={() => recordOperation('DELETE', parseInt(inputValue))} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--viz-rose)]/10 hover:bg-[var(--viz-rose)]/20 rounded-xl text-[var(--viz-rose)] transition-all text-[10px] font-bold uppercase cursor-pointer" title="Delete"><Trash2 size={12}/> Delete</button>
+          <button onClick={() => { setTreeRoot(null); setHistory([]); setCurrentIndex(0); }} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-red-500 transition-all cursor-pointer"><RotateCcw size={14}/></button>
+        </div>
+
+        {/* Method Badge */}
+        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
+          Binary Search Tree (BST)
         </div>
       </div>
+
 
       {/* ── Tree info bar ── */}
       <div className="flex items-center gap-6 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl text-[10px] font-mono">

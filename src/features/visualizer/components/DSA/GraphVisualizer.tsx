@@ -306,29 +306,38 @@ export default function GraphVisualizer({ speed = 800 }: { speed?: number }) {
   return (
     <div className="flex flex-col gap-4 select-none font-sans w-full">
       {/* Header + Mode Selector */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Graph Traversal</h2>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">BFS &amp; DFS Traversal</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex bg-[var(--muted)] p-1 rounded-lg">
-            <button onClick={() => { setMode("BFS"); resetSimulation(); }} className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === "BFS" ? "bg-[var(--viz-lavender)] text-black" : "text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"}`}>BFS (Queue)</button>
-            <button onClick={() => { setMode("DFS"); resetSimulation(); }} className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${mode === "DFS" ? "bg-[var(--viz-lavender)] text-black" : "text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"}`}>DFS (Stack)</button>
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex bg-[var(--muted)]/20 p-1.5 rounded-xl border border-[var(--border)]/40">
+            <button onClick={() => { setMode("BFS"); resetSimulation(); }} className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer ${mode === "BFS" ? "bg-[var(--viz-cyan)] text-black font-black" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}>BFS</button>
+            <button onClick={() => { setMode("DFS"); resetSimulation(); }} className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer ${mode === "DFS" ? "bg-[var(--viz-cyan)] text-black font-black" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"}`}>DFS</button>
           </div>
-          <button onClick={addNode} className="flex items-center gap-1 px-3 py-1.5 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--muted-foreground)]"><Plus size={14}/> Add Node</button>
-          <button onClick={generateRandomGraph} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]" title="Randomize Graph"><RefreshCw size={16}/></button>
-          <button 
-            onClick={() => {
-              if (currentIndex >= history.length - 1) setCurrentIndex(0);
-              setIsPlaying(!isPlaying);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${isPlaying ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-[var(--viz-lavender)] text-black border-transparent hover:scale-105"}`}
-          >
-            {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
-            {isPlaying ? "Pause" : "Play"}
+          
+          <button onClick={() => {
+            if (currentIndex >= history.length - 1) setCurrentIndex(0);
+            setIsPlaying(!isPlaying);
+          }} className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-cyan)] hover:bg-[var(--viz-cyan)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer">
+            {isPlaying ? (
+              <>
+                <Pause size={14} fill="currentColor" />
+                <span>Pause</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="currentColor" />
+                <span>Play</span>
+              </>
+            )}
           </button>
-          <button onClick={initializeDefaultGraph} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]" title="Reset Graph to Default"><RotateCcw size={16}/></button>
+
+          <button onClick={addNode} className="flex items-center gap-1.5 px-3 py-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[10px] font-bold uppercase cursor-pointer" title="Add Node"><Plus size={12}/> Node</button>
+          <button onClick={generateRandomGraph} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" title="Randomize Graph"><RefreshCw size={14}/></button>
+          <button onClick={initializeDefaultGraph} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" title="Reset Graph to Default"><RotateCcw size={14}/></button>
+        </div>
+
+        {/* Method Badge */}
+        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
+          Graph Traversal (BFS/DFS)
         </div>
       </div>
 

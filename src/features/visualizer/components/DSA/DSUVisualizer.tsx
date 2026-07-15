@@ -354,27 +354,38 @@ export default function DSUVisualizer({ speed = 800 }: { speed?: number }) {
     <div className="flex flex-col gap-4 select-none font-sans w-full">
 
       {/* ── Header + Controls ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Disjoint Set Union</h2>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Union-Find with Path Compression</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2">
           <button 
             onClick={() => {
               if (currentIndex >= history.length - 1) setCurrentIndex(0);
               setIsPlaying(!isPlaying);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${isPlaying ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-[var(--viz-lavender)] text-black border-transparent hover:scale-105"}`}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-cyan)] hover:bg-[var(--viz-cyan)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
           >
-            {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
-            {isPlaying ? "Pause" : "Play"}
+            {isPlaying ? (
+              <>
+                <Pause size={14} fill="currentColor" />
+                <span>Pause</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="currentColor" />
+                <span>Play</span>
+              </>
+            )}
           </button>
-          <button onClick={reset} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-red-500" title="Reset">
-            <RotateCcw size={16} />
+          <button onClick={reset} className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-red-500 transition-all cursor-pointer" title="Reset">
+            <RotateCcw size={14} />
           </button>
         </div>
+
+        {/* Method Badge */}
+        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
+          Disjoint Set Union (DSU)
+        </div>
       </div>
+
 
       {/* ── Info Bar ── */}
       <div className="flex items-center gap-6 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl text-[10px] font-mono">
