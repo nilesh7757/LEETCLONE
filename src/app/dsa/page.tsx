@@ -228,6 +228,12 @@ export default function DSAPage() {
             background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
                               linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
          }
+         div:fullscreen {
+            background-color: var(--background) !important;
+            padding: 1.5rem !important;
+            overflow-y: auto !important;
+            max-height: 100vh !important;
+         }
       `}</style>
     </div>
   );

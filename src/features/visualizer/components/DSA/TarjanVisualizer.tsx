@@ -212,8 +212,29 @@ export default function TarjanVisualizer({ speed = 800 }: { speed?: number }) {
         </div>
 
         <div className="mt-4 p-3 md:p-6 bg-muted/30 rounded-[2.5rem] flex flex-col gap-4">
+            <div className="flex items-center gap-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-[1.5rem] shadow-sm select-none w-full">
+              <span className="font-mono text-[9px] font-black uppercase text-[var(--muted-foreground)] tracking-widest min-w-[50px]">Step {currentIndex + 1}/{history.length}</span>
+              <div className="flex-1 h-1 bg-[var(--border)] rounded-full relative flex items-center group/slider">
+                <div 
+                  className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(244,63,94,0.4)]" 
+                  style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+                />
+                <input 
+                  type="range" 
+                  min="0" 
+                  max={history.length - 1} 
+                  value={currentIndex} 
+                  onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                  className="w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div 
+                  className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+                  style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+                />
+              </div>
+            </div>
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 px-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Trace Stage {currentIndex + 1}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Trace Stage {currentIndex + 1} / {history.length}</span>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronLeft size={18} /></button>
                     <button onClick={() => setCurrentIndex(Math.min(history.length - 1, currentIndex + 1))} className="p-1.5 hover:bg-background/10 rounded-lg text-muted-foreground/40 transition-all"><ChevronRight size={18} /></button>
