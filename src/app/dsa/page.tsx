@@ -114,24 +114,24 @@ export default function DSAPage() {
       <main className="flex-1 w-full px-2 md:px-8 py-2 md:py-6 z-10 flex flex-col gap-3 md:gap-6">
          
          {/* Title & Selector Block */}
-         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]/60">
-            <div className="space-y-1">
-               <div className="flex items-center gap-3">
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 pb-2 md:pb-4 border-b border-[var(--border)]/60">
+            <div className="space-y-0.5 md:space-y-1">
+               <div className="hidden md:flex items-center gap-3">
                   <span className="text-[9px] font-black uppercase tracking-widest text-[#3b82f6] px-2 py-0.5 bg-[#3b82f6]/10 border border-[#3b82f6]/20 rounded-md">
                      {categoryToGroup[selectedCategory.id]?.toUpperCase() || "ALGORITHM"}
                   </span>
                </div>
-               <h1 className="text-2xl md:text-3xl font-black tracking-tight">{selectedCategory.title}</h1>
-               <p className="text-xs text-[var(--muted-foreground)] max-w-xl">{selectedCategory.description}</p>
+               <h1 className="text-lg md:text-3xl font-black tracking-tight">{selectedCategory.title}</h1>
+               <p className="hidden sm:block text-xs text-[var(--muted-foreground)] max-w-xl">{selectedCategory.description}</p>
             </div>
 
             {/* Header Actions/Controls */}
-            <div className="flex items-center gap-2.5 self-start md:self-center shrink-0">
+            <div className="flex items-center gap-2 self-start md:self-center shrink-0">
                {/* Speed selector */}
                <div className="relative">
                   <button
                      onClick={() => setShowSpeedMenu(v => !v)}
-                     className="flex items-center gap-1.5 px-3.5 py-3 bg-[var(--card)] hover:bg-[var(--foreground)]/5 border border-[var(--border)] rounded-2xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-[10px] font-black uppercase tracking-wider shadow-sm cursor-pointer"
+                     className="flex items-center gap-1 px-2.5 py-2 md:px-3.5 md:py-3 bg-[var(--card)] hover:bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl md:rounded-2xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-[10px] font-black uppercase tracking-wider shadow-sm cursor-pointer"
                      title="Playback Speed"
                   >
                      <Gauge size={12} className="text-[#3b82f6]" />
@@ -166,7 +166,7 @@ export default function DSAPage() {
                {/* Fullscreen Button */}
                <button
                   onClick={toggleFullscreen}
-                  className="p-3 bg-[var(--card)] hover:bg-[var(--foreground)]/5 border border-[var(--border)] rounded-2xl text-[var(--foreground)] transition-all cursor-pointer flex items-center justify-center shadow-sm"
+                  className="p-2 md:p-3 bg-[var(--card)] hover:bg-[var(--foreground)]/5 border border-[var(--border)] rounded-xl md:rounded-2xl text-[var(--foreground)] transition-all cursor-pointer flex items-center justify-center shadow-sm"
                   title="Fullscreen"
                >
                   <Maximize2 size={14} className="text-[#3b82f6]" />
@@ -176,12 +176,12 @@ export default function DSAPage() {
                <div className="relative">
                   <button 
                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                     className="flex items-center gap-3 px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm hover:border-[#3b82f6]/50 transition-all font-bold text-xs cursor-pointer"
+                     className="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl md:rounded-2xl shadow-sm hover:border-[#3b82f6]/50 transition-all font-bold text-xs cursor-pointer"
                   >
-                     <div className="w-5 h-5 rounded-lg flex items-center justify-center text-white shrink-0" style={{ backgroundColor: themeColor }}>
+                     <div className="w-4 h-4 rounded-lg flex items-center justify-center text-white shrink-0" style={{ backgroundColor: themeColor }}>
                         {React.isValidElement(selectedCategory.icon) && React.cloneElement(selectedCategory.icon as React.ReactElement<{ size: number }>, { size: 10 })}
                      </div>
-                     <span className="text-[var(--foreground)] font-black uppercase tracking-widest text-[10px]">{selectedCategory.title}</span>
+                     <span className="text-[var(--foreground)] font-black uppercase tracking-widest text-[9px] md:text-[10px]">{selectedCategory.title}</span>
                      <ChevronDown size={14} className={`text-[var(--muted-foreground)] transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isDropdownOpen && (
