@@ -202,10 +202,10 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isFullscreen 
   const [activeTab, setActiveTab] = useState<"viz" | "docs" | "code" | "practice">("viz");
 
   const tabs = [
-    { id: "viz", label: "Visualizer", icon: Activity },
-    { id: "docs", label: "Resources", icon: BookOpen },
-    { id: "code", label: "Code", icon: Code2 },
-    { id: "practice", label: "Practice", icon: Trophy },
+    { id: "viz", label: "Visualizer", shortLabel: "Viz", icon: Activity },
+    { id: "docs", label: "Resources", shortLabel: "Docs", icon: BookOpen },
+    { id: "code", label: "Code", shortLabel: "Code", icon: Code2 },
+    { id: "practice", label: "Practice", shortLabel: "Solve", icon: Trophy },
   ] as const;
 
   const VisualizationStage = (
@@ -221,19 +221,20 @@ export const DSAMainContent = ({ selectedCategory, animationSpeed, isFullscreen 
   return (
     <div className="w-full flex flex-col gap-4">
       {/* Tabs Selector Row */}
-      <div className="flex gap-2 border-b border-[var(--border)]/40 pb-3">
+      <div className="flex gap-1 md:gap-2 border-b border-[var(--border)]/40 pb-3">
          {tabs.map((tab) => (
             <button
                key={tab.id}
                onClick={() => setActiveTab(tab.id)}
-               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+               className={`flex items-center gap-1 md:gap-2 px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
                   activeTab === tab.id 
                      ? "text-[var(--foreground)] bg-[var(--foreground)]/5 border border-[var(--border)]" 
                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                }`}
             >
-               <tab.icon size={12} className={activeTab === tab.id ? "text-[#3b82f6]" : "inherit"} />
-               <span>{tab.label}</span>
+               <tab.icon size={11} className={activeTab === tab.id ? "text-[#3b82f6]" : "inherit"} />
+               <span className="hidden sm:inline">{tab.label}</span>
+               <span className="inline sm:hidden">{tab.shortLabel}</span>
             </button>
          ))}
       </div>
