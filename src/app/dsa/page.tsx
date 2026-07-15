@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { 
   ArrowDownNarrowWide, Search, Database, Network, 
   Infinity as InfinityIcon, Sparkles, Cpu, ChevronDown, Share2, Gauge, Maximize2
@@ -21,7 +21,10 @@ export default function DSAPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   const [isDesktopChatOpen, setIsDesktopChatOpen] = useState(true);
+  const [drawerState, setDrawerState] = useState<"short" | "expanded">("short");
+  const [isHandleDragging, setIsHandleDragging] = useState(false);
 
+  const dragControls = useDragControls();
   const vizContainerRef = useRef<HTMLDivElement>(null);
 
   const themeColor = selectedCategory.themeColor || "#3b82f6";
@@ -260,13 +263,13 @@ export default function DSAPage() {
 
        {/* Mobile FAB */}
        <div className="lg:hidden fixed bottom-6 right-6 z-40">
-          <button 
-             onClick={() => setIsMobileChatOpen(true)}
-             className="p-4 bg-[#3b82f6] hover:bg-[#3b82f6]/95 text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-[#3b82f6]/20"
-             title="Ask AI Copilot"
-          >
-             <Sparkles size={20} />
-          </button>
+           <button 
+              onClick={() => { setDrawerState("short"); setIsMobileChatOpen(true); }}
+              className="p-4 bg-[#3b82f6] hover:bg-[#3b82f6]/95 text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-[#3b82f6]/20"
+              title="Ask AI Copilot"
+           >
+              <Sparkles size={20} />
+           </button>
        </div>
 
        {/* Mobile bottom drawer */}
@@ -281,27 +284,70 @@ export default function DSAPage() {
                    onClick={() => setIsMobileChatOpen(false)}
                    className="fixed inset-0 bg-black/60 z-50 lg:hidden"
                 />
-                {/* Bottom Drawer */}
-                <motion.div
-                   initial={{ y: "100%" }}
-                   animate={{ y: 0 }}
-                   exit={{ y: "100%" }}
-                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                   className="fixed bottom-0 left-0 right-0 h-[55vh] bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
-                >
-                   {/* Drag Handle indicator */}
-                   <div className="w-12 h-1.5 bg-[var(--border)] rounded-full mx-auto my-3 shrink-0 cursor-pointer" onClick={() => setIsMobileChatOpen(false)} />
-                   <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4">
-                      <DSACopilotPanel 
-                         algorithmId={selectedCategory.id}
-                         algorithmName={selectedCategory.title}
-                         isMobile={true}
-                         onClose={() => setIsMobileChatOpen(false)}
-                      />
-                   </div>
-                </motion.div>
-             </>
-          )}
+                 {/* Bottom Drawer */}
+                 <motion.div
+                    drag="y"
+                    dragControls={dragControls}
+                    dragListener={false}
+                    dragElastic={0.15}
+                    onDragEnd={(event, info) => {
+                       const offsetY = info.offset.y;
+                       const velocityY = info.velocity.y;
+
+                       if (drawerState === "short") {
+                          if (offsetY < -60 || velocityY < -150) {
+                             setDrawerState("expanded");
+                          } else if (offsetY > 100 || velocityY > 150) {
+                             setIsMobileChatOpen(false);
+                          }
+                       } else if (drawerState === "expanded") {
+                          if (offsetY > 200 || velocityY > 200) {
+                             setIsMobileChatOpen(false);
+                          } else if (offsetY > 60 || velocityY > 100) {
+                             setDrawerState("short");
+                          }
+                       }
+                    }}
+                    variants={{
+                       hidden: { y: "100%" },
+                       short: { y: "40vh" },
+                       expanded: { y: "0vh" }
+                    }}
+                    initial="hidden"
+                    animate={drawerState}
+                    exit="hidden"
+                    transition={{ type: "spring", damping: 26, stiffness: 220 }}
+                    className="fixed bottom-0 left-0 right-0 h-[90vh] bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
+                 >
+                    {/* Drag Handle indicator wrapper */}
+                    <div 
+                       onPointerDown={(e) => { setIsHandleDragging(true); dragControls.start(e); }}
+                       onPointerUp={() => setIsHandleDragging(false)}
+                       onPointerCancel={() => setIsHandleDragging(false)}
+                       className="w-full py-4 flex flex-col items-center cursor-grab active:cursor-grabbing shrink-0 select-none transition-colors"
+                       title="Drag to resize or dismiss"
+                    >
+                       <div 
+                          className="w-12 h-1.5 rounded-full transition-all duration-200"
+                          style={{
+                             background: isHandleDragging ? "#3b82f6" : "var(--border)",
+                             boxShadow: isHandleDragging ? "0 0 12px 3px rgba(59,130,246,0.6)" : "none",
+                             transform: isHandleDragging ? "scaleX(1.2)" : "scaleX(1)"
+                          }}
+                       />
+                    </div>
+                    
+                    <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4">
+                       <DSACopilotPanel 
+                          algorithmId={selectedCategory.id}
+                          algorithmName={selectedCategory.title}
+                          isMobile={true}
+                          onClose={() => setIsMobileChatOpen(false)}
+                       />
+                    </div>
+                 </motion.div>
+              </>
+           )}
        </AnimatePresence>
 
       <style jsx global>{`
