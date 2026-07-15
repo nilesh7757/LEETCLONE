@@ -160,15 +160,7 @@ export default function DSACopilotPanel({ algorithmId, algorithmName, isMobile =
               <Trash2 size={13} />
             </button>
           )}
-          {isMobile && onClose && (
-            <button 
-              onClick={onClose}
-              className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-muted-foreground transition-all cursor-pointer"
-              title="Close Copilot"
-            >
-              <X size={14} />
-            </button>
-          )}
+
         </div>
       </div>
 

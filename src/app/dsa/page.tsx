@@ -287,7 +287,7 @@ export default function DSAPage() {
                    animate={{ y: 0 }}
                    exit={{ y: "100%" }}
                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                   className="fixed bottom-0 left-0 right-0 h-[60vh] bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
+                   className="fixed bottom-0 left-0 right-0 h-[55vh] bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
                 >
                    {/* Drag Handle indicator */}
                    <div className="w-12 h-1.5 bg-[var(--border)] rounded-full mx-auto my-3 shrink-0 cursor-pointer" onClick={() => setIsMobileChatOpen(false)} />
