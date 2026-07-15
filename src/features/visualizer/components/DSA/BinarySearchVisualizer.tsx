@@ -19,7 +19,7 @@ interface SearchStep {
 
 export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number }) {
   const [data] = useState<number[]>(() => {
-    return Array.from({ length: 15 }, () => Math.floor(Math.random() * 90) + 10).sort((a, b) => a - b);
+    return Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 10).sort((a, b) => a - b);
   });
   const [target, setTarget] = useState<number>(() => data[Math.floor(Math.random() * data.length)]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -150,8 +150,8 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
           <span className="text-[9px] font-black uppercase tracking-widest">Sorted Array</span>
         </div>
 
-        <div className="w-full overflow-x-auto pb-4 custom-scrollbar flex justify-start md:justify-center relative z-20">
-          <div className="flex gap-3 p-4 min-w-max items-center mt-4">
+        <div className="w-full overflow-x-auto pb-4 custom-scrollbar flex justify-center md:justify-center relative z-20">
+          <div className="flex gap-1 md:gap-3 p-4 min-w-max items-center mt-4">
             {data.map((val, idx) => {
               const isMid    = idx === currentStep.mid;
               const isFound  = isMid && currentStep.found;
@@ -159,25 +159,25 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
 
               let nodeBg = "transparent";
               let nodeBorder = "var(--border)";
-              let valColor = "text-[var(--muted-foreground)]/30";
+              let valColor = "text-[10px] md:text-sm text-[var(--muted-foreground)]/30";
 
               if (isFound) {
                 nodeBg = "rgba(var(--viz-green-rgb), 0.15)";
                 nodeBorder = "var(--viz-green)";
-                valColor = "text-[var(--viz-green)] font-black";
+                valColor = "text-[10px] md:text-sm text-[var(--viz-green)] font-black";
               } else if (isMid) {
                 nodeBg = "rgba(var(--viz-cyan-rgb), 0.15)";
                 nodeBorder = "var(--viz-cyan)";
-                valColor = "text-[var(--viz-cyan)] font-black";
+                valColor = "text-[10px] md:text-sm text-[var(--viz-cyan)] font-black";
               } else if (isActive) {
                 nodeBg = "var(--card)";
                 nodeBorder = "rgba(var(--viz-cyan-rgb), 0.35)";
-                valColor = "text-[var(--foreground)] font-bold";
+                valColor = "text-[10px] md:text-sm text-[var(--foreground)] font-bold";
               }
 
               return (
                 <div key={idx} className="flex flex-col items-center gap-2 relative">
-                  <span className="text-[8px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest">idx {idx}</span>
+                  <span className="text-[6px] md:text-[8px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest">idx {idx}</span>
                   <motion.div
                     initial={false}
                     animate={{
@@ -187,13 +187,13 @@ export default function BinarySearchVisualizer({ speed = 800 }: { speed?: number
                       borderColor: nodeBorder,
                     }}
                     transition={{ type: "spring", stiffness: 150, damping: 25 }}
-                    className="w-11 h-11 border-2 rounded-xl flex items-center justify-center font-mono text-sm font-bold shadow-sm relative transition-colors duration-200"
+                    className="w-7 h-7 md:w-11 md:h-11 border-2 rounded-xl flex items-center justify-center font-mono text-sm font-bold shadow-sm relative transition-colors duration-200"
                   >
                     <span className={valColor}>{val}</span>
                     {isMid && (
-                      <motion.div layoutId="ptr" className="absolute -bottom-8 flex flex-col items-center">
-                        <ArrowUp size={12} className="text-[var(--viz-cyan)]" />
-                        <span className="text-[7px] font-black text-[var(--viz-cyan)] uppercase tracking-tighter">Mid</span>
+                      <motion.div layoutId="ptr" className="absolute -bottom-6 md:-bottom-8 flex flex-col items-center">
+                        <ArrowUp className="w-2.5 h-2.5 md:w-3 md:h-3 text-[var(--viz-cyan)]" />
+                        <span className="text-[5px] md:text-[7px] font-black text-[var(--viz-cyan)] uppercase tracking-tighter">Mid</span>
                       </motion.div>
                     )}
                   </motion.div>
