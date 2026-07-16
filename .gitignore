@@ -44,6 +44,7 @@ next-env.d.ts
 
 # prisma
 /src/generated/prisma
+/prisma/placement-seed.ts
 
 # obsidian
 .obsidian/
