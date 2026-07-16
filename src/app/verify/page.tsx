@@ -6,6 +6,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, Mail, RefreshCw } from "lucide-react";
 import LoginWall from "@/features/auth/components/Login/Wall";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 function VerifyContent() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -29,7 +30,7 @@ function VerifyContent() {
 
   if (!email) {
     return (
-      <div className="text-center text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-6 py-4">
+      <div className="text-center text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl px-6 py-4">
         Invalid link. Email missing.
       </div>
     );
@@ -105,7 +106,7 @@ function VerifyContent() {
   };
 
   return (
-    <div className="w-full max-w-[420px] bg-[#111111] border border-white/10 rounded-xl shadow-2xl p-6 sm:p-8">
+    <div className="w-full max-w-[420px] bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl p-6 sm:p-8">
       {/* Icon */}
       <div className="flex justify-center mb-5">
         <div className="w-14 h-14 rounded-2xl bg-[#8F44F0]/10 border border-[#8F44F0]/20 flex items-center justify-center">
@@ -113,13 +114,13 @@ function VerifyContent() {
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-white text-center mb-1">Check your inbox</h2>
-      <p className="text-sm text-neutral-400 text-center mb-1">
+      <h2 className="text-2xl font-bold text-[var(--foreground)] text-center mb-1">Check your inbox</h2>
+      <p className="text-sm text-[var(--muted-foreground)] text-center mb-1">
         We sent a 6-digit code to
       </p>
       <div className="flex items-center justify-center gap-1.5 mb-6">
         <Mail className="w-3.5 h-3.5 text-[#8F44F0]" />
-        <span className="text-sm font-semibold text-white">{email}</span>
+        <span className="text-sm font-semibold text-[var(--foreground)]">{email}</span>
       </div>
 
       <form onSubmit={handleVerify} className="flex flex-col gap-6">
@@ -135,8 +136,8 @@ function VerifyContent() {
               value={digit}
               onChange={e => handleChange(i, e.target.value)}
               onKeyDown={e => handleKeyDown(i, e)}
-              className={`w-11 h-12 text-center text-xl font-bold rounded-lg border transition-all outline-none bg-white/5 text-white
-                ${digit ? "border-[#8F44F0]/60 bg-[#8F44F0]/10" : "border-white/10 focus:border-[#8F44F0]/50 focus:bg-white/8"}
+              className={`w-11 h-12 text-center text-xl font-bold rounded-lg border transition-all outline-none bg-[var(--background)] text-[var(--foreground)]
+                ${digit ? "border-[#8F44F0]/60 bg-[#8F44F0]/10" : "border-[var(--border)] focus:border-[#8F44F0]/50 focus:bg-[var(--foreground)]/5"}
               `}
             />
           ))}
@@ -153,11 +154,11 @@ function VerifyContent() {
 
       {/* Resend */}
       <div className="mt-5 flex flex-col items-center gap-1">
-        <p className="text-xs text-neutral-500">Didn&apos;t receive the code?</p>
+        <p className="text-xs text-[var(--muted-foreground)]">Didn&apos;t receive the code?</p>
         <button
           onClick={handleResend}
           disabled={resending || countdown > 0}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[#8F44F0] hover:text-[#a55ff5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 text-xs font-semibold text-[#8F44F0] hover:text-[#a55ff5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           {resending ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -173,20 +174,23 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <div className="min-h-screen w-full flex bg-[#080808] overflow-hidden">
-      {/* Left Side - Wall Animation (Hidden on mobile) */}
-      <div className="hidden lg:flex fixed left-0 top-0 w-1/2 h-screen bg-[#080808] border-r border-white/5 z-0">
-        <LoginWall />
+    <div className="min-h-screen w-full flex items-center justify-center bg-[var(--background)] overflow-hidden relative p-4 sm:p-8">
+      {/* Full-screen Background Animation Wall */}
+      <LoginWall />
+
+      {/* Floating Theme Toggle Top Bar */}
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
       </div>
 
-      {/* Right side */}
-      <div className="w-full lg:w-1/2 lg:ml-[50%] min-h-screen bg-gradient-to-r from-[#080808] to-[#131313] flex flex-col items-center justify-center p-4 sm:p-8 relative z-10">
+      {/* Centered Verify Container */}
+      <div className="w-full max-w-[420px] flex flex-col items-center justify-center relative z-10">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
-          <h1 className="text-3xl font-bold tracking-tighter text-white mb-2">
+          <h1 className="text-3xl font-bold tracking-tighter text-[var(--foreground)] mb-2">
             <span className="text-[#8F44F0]">Logi</span>Quest
           </h1>
-          <p className="text-neutral-400 text-sm">Verify your email to continue.</p>
+          <p className="text-[var(--muted-foreground)] text-sm">Verify your email to continue.</p>
         </div>
 
         <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-[#8F44F0]" />}>

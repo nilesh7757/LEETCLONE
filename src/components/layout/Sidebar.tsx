@@ -20,10 +20,11 @@ import {
   BrainCircuit,
   PanelLeftClose,
   PanelLeftOpen,
-  Info
+  Info,
+  LogOut
 } from "lucide-react";
 import Logo from "../ui/Logo";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import UserSearch from "../ui/UserSearch";
 
 // Helper for conditional classes
@@ -201,27 +202,45 @@ export default function Sidebar({ isCollapsed = false, toggleCollapse }: Sidebar
         )}
         
         {status === "authenticated" && session.user ? (
-          <div className="flex items-center justify-start rounded-xl hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer group relative p-1">
-             <Link href="/profile" className="flex items-center min-w-0 w-full">
-                {session.user.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={session.user.image} alt="" className="w-9 h-9 rounded-full bg-[var(--foreground)]/10 object-cover shrink-0" />
-                ) : (
-                    <UserCircle className="w-9 h-9 text-[var(--foreground)]/50 shrink-0" />
-                )}
-                <div className={classNames(
-                  "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden flex flex-col justify-center",
-                  isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
-                )}>
-                  <p className="text-sm font-medium text-[var(--foreground)] truncate">
-                      {session.user.name || "User"}
-                  </p>
-                  <p className="text-xs text-[var(--foreground)]/50 truncate">
-                      View Profile
-                  </p>
-                </div>
-             </Link>
-          </div>
+          <>
+            <div className="flex items-center justify-start rounded-xl hover:bg-[var(--foreground)]/5 transition-colors cursor-pointer group relative p-1">
+               <Link href="/profile" className="flex items-center min-w-0 w-full">
+                  {session.user.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={session.user.image} alt="" className="w-9 h-9 rounded-full bg-[var(--foreground)]/10 object-cover shrink-0" />
+                  ) : (
+                      <UserCircle className="w-9 h-9 text-[var(--foreground)]/50 shrink-0" />
+                  )}
+                  <div className={classNames(
+                    "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden flex flex-col justify-center",
+                    isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+                  )}>
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                        {session.user.name || "User"}
+                    </p>
+                    <p className="text-xs text-[var(--foreground)]/50 truncate">
+                        View Profile
+                    </p>
+                  </div>
+               </Link>
+            </div>
+            <button 
+               onClick={() => signOut({ callbackUrl: "/login" })}
+               className={classNames(
+                 "flex items-center rounded-xl text-red-500 hover:bg-red-500/10 transition-all duration-300 py-2.5 w-full cursor-pointer mt-1",
+                 isCollapsed ? "px-[22px]" : "px-4"
+               )}
+               title="Log Out"
+            >
+               <LogOut className="w-5 h-5 shrink-0 text-red-500" />
+               <span className={classNames(
+                 "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden text-sm font-medium ml-3",
+                 isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100"
+               )}>
+                 Log Out
+               </span>
+            </button>
+          </>
         ) : (
            <div className="space-y-2">
                <Link 

@@ -18,42 +18,32 @@ const items = [
   { id: 12, title: "N-Queens", difficulty: "Hard", color: "bg-red-500" },
 ];
 
-const Column = ({ offset = 0, speed = 20 }) => {
+const Column = ({ speed = 25, reverse = false }) => {
   return (
-    <div className="relative w-1/3 h-[150%] -top-[25%] overflow-hidden">
+    <div className="relative w-1/3 h-[180%] -top-[40%] overflow-hidden">
         <motion.div
-            initial={{ y: 0 }}
-            animate={{ y: offset % 2 === 0 ? "-50%" : "0%" }}
+            initial={{ y: reverse ? "-50%" : "0%" }}
+            animate={{ y: reverse ? "0%" : "-50%" }}
             transition={{
                 duration: speed,
                 ease: "linear",
                 repeat: Infinity,
                 repeatType: "loop",
-                // For the reverse direction effect, we actually just animate from different start points
-                // but Framer Motion loop is simplest if we just scroll continuously.
-                // To do "up and down" scrolling like the reference, we can toggle direction.
-                // For now, let's just make them all scroll up but at different speeds/offsets.
             }}
-            style={{ 
-                y: offset % 2 === 0 ? 0 : "-50%",
-            }}
-            // Overriding animate for continuous scroll
-            // We need a continuous loop. 
-            // The simplest way to achieve the "infinite scroll" look is to duplicate items.
             className="flex flex-col gap-4 w-full"
         >
             {[...items, ...items, ...items].map((item, i) => (
                 <div 
                     key={i} 
-                    className="w-full aspect-[2/3] rounded-lg overflow-hidden shadow-lg bg-neutral-900 border border-neutral-800 flex flex-col items-center justify-center p-4 relative group"
+                    className="w-full aspect-[2/3] rounded-xl overflow-hidden shadow-lg bg-[var(--card)] border border-[var(--border)]/60 flex flex-col items-center justify-center p-4 relative group transition-all"
                 >
                     <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${item.color}`} />
-                    <div className="text-4xl font-mono font-bold text-neutral-700 group-hover:text-neutral-500 transition-colors">
+                    <div className="text-3xl font-mono font-bold text-[var(--muted-foreground)]/20 group-hover:text-[var(--primary)]/40 transition-colors select-none">
                         {`</>`}
                     </div>
-                    <div className="mt-4 text-center">
-                        <h3 className="text-neutral-300 font-medium text-sm">{item.title}</h3>
-                        <p className={`text-xs mt-1 ${item.color.replace('bg-', 'text-')}`}>{item.difficulty}</p>
+                    <div className="mt-3 text-center w-full">
+                        <h3 className="text-[var(--foreground)]/80 font-semibold text-xs truncate w-full px-1">{item.title}</h3>
+                        <p className={`text-[10px] mt-0.5 font-bold ${item.color.replace('bg-', 'text-')}`}>{item.difficulty}</p>
                     </div>
                 </div>
             ))}
@@ -64,15 +54,18 @@ const Column = ({ offset = 0, speed = 20 }) => {
 
 export default function LoginWall() {
   return (
-    <div className="w-full h-full flex justify-center items-center relative overflow-hidden bg-[#080808]">
-        {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-64 z-10 pointer-events-none bg-gradient-to-t from-[#080808] via-[#080808]/80 to-transparent" />
-        <div className="absolute top-0 left-0 right-0 h-32 z-10 pointer-events-none bg-gradient-to-b from-[#080808] via-[#080808]/80 to-transparent" />
+    <div className="absolute inset-0 w-full h-full flex justify-center items-center overflow-hidden bg-[var(--background)] z-0">
+        {/* Soft backdrop blur and vignette overlay */}
+        <div className="absolute inset-0 z-10 pointer-events-none bg-[var(--background)]/50 backdrop-blur-[1.5px]" />
+        
+        {/* Gradient overlays to fade out edges */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none bg-gradient-to-t from-[var(--background)] via-[var(--background)]/40 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-48 z-10 pointer-events-none bg-gradient-to-b from-[var(--background)] via-[var(--background)]/40 to-transparent" />
 
-        <div className="w-[120%] h-full flex space-x-6 rotate-12 scale-110 opacity-50 blur-[1px]">
-            <Column offset={0} speed={40} />
-            <Column offset={1} speed={55} />
-            <Column offset={2} speed={45} />
+        <div className="w-[110%] h-full flex space-x-6 rotate-0 scale-100 opacity-25 select-none pointer-events-none">
+            <Column speed={45} reverse={false} />
+            <Column speed={60} reverse={true} />
+            <Column speed={50} reverse={false} />
         </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import LoginWall from "@/features/auth/components/Login/Wall";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -97,18 +98,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-[var(--background)] overflow-hidden">
-      {/* Left Side - Wall Animation (Hidden on mobile) */}
-      <div className="hidden lg:flex fixed left-0 top-0 w-1/2 h-screen bg-[var(--background)] border-r border-[var(--border)] z-0">
-        <LoginWall />
+    <div className="min-h-screen w-full flex items-center justify-center bg-[var(--background)] overflow-hidden relative p-4 sm:p-8">
+      {/* Full-screen Background Animation Wall */}
+      <LoginWall />
+
+      {/* Floating Theme Toggle Top Bar */}
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 lg:ml-[50%] min-h-screen bg-gradient-to-r from-[var(--background)] to-[var(--card)] flex flex-col items-center justify-center p-4 sm:p-8 relative z-10">
+      {/* Centered Login Container */}
+      <div className="w-full max-w-[420px] flex flex-col items-center justify-center relative z-10">
         
         {/* Logo Area */}
         <div className="mb-8 flex flex-col items-center">
-            {/* Replace with actual logo if available, utilizing text for now */}
             <h1 className="text-3xl font-bold tracking-tighter text-[var(--foreground)] mb-2">
               <span className="text-[#8F44F0]">Logi</span>Quest
             </h1>
