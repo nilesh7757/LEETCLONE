@@ -24,6 +24,20 @@ export default function DSAPage() {
   const [drawerState, setDrawerState] = useState<"short" | "expanded">("short");
   const [isHandleDragging, setIsHandleDragging] = useState(false);
 
+  const [vh, setVh] = useState(800);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setVh(window.innerHeight);
+      const handleResize = () => setVh(window.innerHeight);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  const constraints = drawerState === "expanded"
+    ? { top: 0, bottom: 9999 }
+    : { top: -vh, bottom: 9999 };
+
   const dragControls = useDragControls();
   const vizContainerRef = useRef<HTMLDivElement>(null);
 
@@ -290,6 +304,7 @@ export default function DSAPage() {
                     dragControls={dragControls}
                     dragListener={false}
                     dragElastic={0.15}
+                    dragConstraints={constraints}
                     onDragEnd={(event, info) => {
                        const offsetY = info.offset.y;
                        const velocityY = info.velocity.y;
@@ -310,22 +325,25 @@ export default function DSAPage() {
                     }}
                     variants={{
                        hidden: { y: "100%" },
-                       short: { y: "40vh" },
-                       expanded: { y: "0vh" }
+                       short: { y: 0, height: "45dvh" },
+                       expanded: { y: 0, height: "calc(100dvh - 4rem)" }
                     }}
                     initial="hidden"
                     animate={drawerState}
                     exit="hidden"
                     transition={{ type: "spring", damping: 26, stiffness: 220 }}
-                    className="fixed bottom-0 left-0 right-0 h-[90vh] bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
+                    className="fixed bottom-0 left-0 right-0 bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col"
                  >
                     {/* Drag Handle indicator wrapper */}
-                    <div 
+                    <motion.div 
                        onPointerDown={(e) => { setIsHandleDragging(true); dragControls.start(e); }}
                        onPointerUp={() => setIsHandleDragging(false)}
                        onPointerCancel={() => setIsHandleDragging(false)}
+                       onTap={() => {
+                          setDrawerState(prev => prev === "short" ? "expanded" : "short");
+                       }}
                        className="w-full py-4 flex flex-col items-center cursor-grab active:cursor-grabbing shrink-0 select-none transition-colors"
-                       title="Drag to resize or dismiss"
+                       title="Drag to resize or tap to toggle"
                     >
                        <div 
                           className="w-12 h-1.5 rounded-full transition-all duration-200"
@@ -335,7 +353,7 @@ export default function DSAPage() {
                              transform: isHandleDragging ? "scaleX(1.2)" : "scaleX(1)"
                           }}
                        />
-                    </div>
+                    </motion.div>
                     
                     <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4">
                        <DSACopilotPanel 
@@ -343,8 +361,12 @@ export default function DSAPage() {
                           algorithmName={selectedCategory.title}
                           isMobile={true}
                           onClose={() => setIsMobileChatOpen(false)}
+                          onFocus={() => setDrawerState("expanded")}
                        />
                     </div>
+                    
+                    {/* Seamless bottom background extension for dragging */}
+                    <div className="absolute top-full left-0 right-0 h-screen bg-[var(--card)] pointer-events-none" />
                  </motion.div>
               </>
            )}

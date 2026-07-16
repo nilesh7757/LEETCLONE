@@ -15,6 +15,7 @@ interface DSACopilotPanelProps {
   algorithmName: string;
   isMobile?: boolean;
   onClose?: () => void;
+  onFocus?: () => void;
 }
 
 const MarkdownRenderer = ({ content }: { content: string }) => {
@@ -36,7 +37,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
   );
 };
 
-export default function DSACopilotPanel({ algorithmId, algorithmName, isMobile = false, onClose }: DSACopilotPanelProps) {
+export default function DSACopilotPanel({ algorithmId, algorithmName, isMobile = false, onClose, onFocus }: DSACopilotPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -181,7 +182,10 @@ export default function DSACopilotPanel({ algorithmId, algorithmName, isMobile =
                 return (
                   <button 
                     key={idx}
-                    onClick={() => handleSendMessage(s.text)}
+                    onClick={() => {
+                      onFocus?.();
+                      handleSendMessage(s.text);
+                    }}
                     className="w-full text-left p-2.5 bg-[var(--muted)]/20 hover:bg-[var(--muted)]/40 border border-[var(--border)]/45 rounded-xl transition-all flex items-center gap-2 text-[10px] cursor-pointer"
                   >
                     <Icon size={12} className="text-[#3b82f6]" />
@@ -241,6 +245,7 @@ export default function DSACopilotPanel({ algorithmId, algorithmName, isMobile =
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onFocus={onFocus}
             placeholder={`Ask about ${algorithmName}...`}
             disabled={isLoading}
             className="flex-1 bg-[var(--muted)]/15 border border-[var(--border)]/75 focus:border-[#3b82f6]/50 rounded-xl px-3 py-2 text-[10px] md:text-xs font-bold text-[var(--foreground)] placeholder:text-muted-foreground/30 focus:outline-none disabled:opacity-50"
