@@ -1,73 +1,198 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useRef, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck, Mail, RefreshCw } from "lucide-react";
+import LoginWall from "@/features/auth/components/Login/Wall";
 
 function VerifyContent() {
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
 
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
+
   if (!email) {
-      return <div className="text-center text-red-500">Invalid link. Email missing.</div>;
+    return (
+      <div className="text-center text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-6 py-4">
+        Invalid link. Email missing.
+      </div>
+    );
   }
+
+  const otpString = otp.join("");
+
+  const handleChange = (index: number, value: string) => {
+    if (!/^\d?$/.test(value)) return;
+    const next = [...otp];
+    next[index] = value;
+    setOtp(next);
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === "ArrowLeft" && index > 0) inputRefs.current[index - 1]?.focus();
+    if (e.key === "ArrowRight" && index < 5) inputRefs.current[index + 1]?.focus();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const next = [...otp];
+    for (let i = 0; i < pasted.length; i++) next[i] = pasted[i];
+    setOtp(next);
+    const focusIdx = Math.min(pasted.length, 5);
+    inputRefs.current[focusIdx]?.focus();
+  };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (otpString.length < 6) return;
     setLoading(true);
     try {
-        await axios.post("/api/verify", { email, otp });
-        toast.success("Verified successfully!");
-        router.push("/login?verified=true");
+      await axios.post("/api/verify", { email, otp: otpString });
+      toast.success("Email verified! Welcome to LogiQuest 🎉");
+      router.push("/login?verified=true");
     } catch (error) {
-        if (axios.isAxiosError(error)) {
-            toast.error(error.response?.data?.error || "Verification failed");
-        } else {
-            toast.error("Verification failed");
-        }
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Verification failed");
+      } else {
+        toast.error("Verification failed");
+      }
     } finally {
-        setLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (countdown > 0) return;
+    setResending(true);
+    try {
+      await axios.post("/api/resend-otp", { email });
+      toast.success("New OTP sent to your email!");
+      setOtp(["", "", "", "", "", ""]);
+      setCountdown(60);
+      inputRefs.current[0]?.focus();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to resend OTP");
+      } else {
+        toast.error("Failed to resend OTP");
+      }
+    } finally {
+      setResending(false);
     }
   };
 
   return (
-      <div className="w-full max-w-md p-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl">
-        <h1 className="text-2xl font-bold text-center mb-2 text-[var(--foreground)]">Verify Email</h1>
-        <p className="text-center text-sm text-[var(--foreground)]/60 mb-6">
-            Enter the OTP sent to <strong>{email}</strong>
-        </p>
-        <form onSubmit={handleVerify} className="space-y-4">
-            <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6-digit OTP"
-                className="w-full px-4 py-3 text-center text-2xl tracking-widest rounded-lg border border-[var(--card-border)] bg-[var(--background)]/50 focus:border-[var(--accent-gradient-to)] text-[var(--foreground)] outline-none"
-                maxLength={6}
-            />
-            <button
-                type="submit"
-                disabled={loading || otp.length < 6}
-                className="w-full py-3 bg-[var(--foreground)] text-[var(--background)] rounded-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Verify"}
-            </button>
-        </form>
+    <div className="w-full max-w-[420px] bg-[#111111] border border-white/10 rounded-xl shadow-2xl p-6 sm:p-8">
+      {/* Icon */}
+      <div className="flex justify-center mb-5">
+        <div className="w-14 h-14 rounded-2xl bg-[#8F44F0]/10 border border-[#8F44F0]/20 flex items-center justify-center">
+          <ShieldCheck className="w-7 h-7 text-[#8F44F0]" />
+        </div>
       </div>
+
+      <h2 className="text-2xl font-bold text-white text-center mb-1">Check your inbox</h2>
+      <p className="text-sm text-neutral-400 text-center mb-1">
+        We sent a 6-digit code to
+      </p>
+      <div className="flex items-center justify-center gap-1.5 mb-6">
+        <Mail className="w-3.5 h-3.5 text-[#8F44F0]" />
+        <span className="text-sm font-semibold text-white">{email}</span>
+      </div>
+
+      <form onSubmit={handleVerify} className="flex flex-col gap-6">
+        {/* OTP Boxes */}
+        <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+          {otp.map((digit, i) => (
+            <input
+              key={i}
+              ref={el => { inputRefs.current[i] = el; }}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={e => handleChange(i, e.target.value)}
+              onKeyDown={e => handleKeyDown(i, e)}
+              className={`w-11 h-12 text-center text-xl font-bold rounded-lg border transition-all outline-none bg-white/5 text-white
+                ${digit ? "border-[#8F44F0]/60 bg-[#8F44F0]/10" : "border-white/10 focus:border-[#8F44F0]/50 focus:bg-white/8"}
+              `}
+            />
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading || otpString.length < 6}
+          className="w-full h-11 bg-[#8F44F0] hover:bg-[#7c35d8] text-white font-semibold rounded-full text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Email"}
+        </button>
+      </form>
+
+      {/* Resend */}
+      <div className="mt-5 flex flex-col items-center gap-1">
+        <p className="text-xs text-neutral-500">Didn&apos;t receive the code?</p>
+        <button
+          onClick={handleResend}
+          disabled={resending || countdown > 0}
+          className="flex items-center gap-1.5 text-xs font-semibold text-[#8F44F0] hover:text-[#a55ff5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {resending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
+          {countdown > 0 ? `Resend in ${countdown}s` : "Resend Code"}
+        </button>
+      </div>
+    </div>
   );
 }
 
 export default function VerifyPage() {
-    return (
-        <main className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
-            <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin" />}>
-                <VerifyContent />
-            </Suspense>
-        </main>
-    )
+  return (
+    <div className="min-h-screen w-full flex bg-[#080808] overflow-hidden">
+      {/* Left Side - Wall Animation (Hidden on mobile) */}
+      <div className="hidden lg:flex fixed left-0 top-0 w-1/2 h-screen bg-[#080808] border-r border-white/5 z-0">
+        <LoginWall />
+      </div>
+
+      {/* Right side */}
+      <div className="w-full lg:w-1/2 lg:ml-[50%] min-h-screen bg-gradient-to-r from-[#080808] to-[#131313] flex flex-col items-center justify-center p-4 sm:p-8 relative z-10">
+        {/* Logo */}
+        <div className="mb-8 flex flex-col items-center">
+          <h1 className="text-3xl font-bold tracking-tighter text-white mb-2">
+            <span className="text-[#8F44F0]">Logi</span>Quest
+          </h1>
+          <p className="text-neutral-400 text-sm">Verify your email to continue.</p>
+        </div>
+
+        <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-[#8F44F0]" />}>
+          <VerifyContent />
+        </Suspense>
+      </div>
+    </div>
+  );
 }

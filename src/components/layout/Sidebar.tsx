@@ -108,7 +108,7 @@ export default function Sidebar({ isCollapsed = false, toggleCollapse }: Sidebar
 
   return (
     <aside className={classNames(
-      "h-screen bg-[var(--background)] flex flex-col fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out border-r border-[var(--border)]",
+      "h-screen bg-[var(--background)] flex flex-col fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out border-r border-[var(--border)] overflow-hidden",
       isCollapsed ? "w-20" : "w-64"
     )}>
       
@@ -138,9 +138,9 @@ export default function Sidebar({ isCollapsed = false, toggleCollapse }: Sidebar
         </div>
       </div>
 
-      {/* Main Navigation */}
+      {/* Main Navigation — scrollable */}
       <div className={classNames(
-        "flex-1 overflow-y-auto space-y-1 mt-2 transition-all duration-300", 
+        "flex-1 min-h-0 overflow-y-auto space-y-1 mt-2 transition-all duration-300 pb-2", 
         isCollapsed ? "px-2" : "px-4"
       )}>
         
