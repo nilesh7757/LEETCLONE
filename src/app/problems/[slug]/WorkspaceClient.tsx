@@ -224,54 +224,59 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                     ))}
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[var(--card)]">
-                    <div className="p-8 max-w-4xl mx-auto">
-                    {activeTab === 'description' && (
-                      <ProblemDescription 
-                        description={problem.description} 
-                        examples={examples} 
-                        difficulty={problem.difficulty}
-                        category={problem.category}
-                        timeLimit={problem.timeLimit}
-                        memoryLimit={problem.memoryLimit}
-                        companies={problem.companies}
-                        companyTags={problem.companyTags}
-                      />
-                    )}
-                    {activeTab === 'database' && (
-                      <DatabaseSchemaViewer 
-                        problemId={problem.id}
-                        initialSchema={problem.initialSchema}
-                        initialData={problem.initialData}
-                      />
-                    )}
-                    {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
-                    {activeTab === 'submissions' && (
-                        <div className="space-y-3">
-                            {submissions.map((sub, i) => (
-                                <div 
-                                key={i} 
-                                onClick={() => setSelectedSubmission(sub)}
-                                className="flex items-center justify-between p-5 rounded-2xl border border-[var(--border)] bg-[var(--foreground)]/[0.02] hover:bg-[var(--foreground)]/[0.05] transition-all cursor-pointer group"
-                                >
-                                <div className="flex items-center gap-4">
-                                    <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
-                                        {sub.status === 'Accepted' ? <CheckCircle size={20} /> : <XCircle size={20} />}
-                                    </div>
-                                    <div>
-                                        <div className="text-[14px] font-bold tracking-tight">{sub.status}</div>
-                                        <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-0.5">{new Date(sub.createdAt).toLocaleDateString()}</div>
-                                    </div>
-                                </div>
-                                <div className="text-right font-mono text-[12px] font-bold text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">{sub.runtime}ms</div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
-                    {activeTab === 'ai' && <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />}
+                {activeTab === 'ai' ? (
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                        <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />
                     </div>
-                </div>
+                ) : (
+                    <div className="flex-1 overflow-y-auto custom-scrollbar bg-[var(--card)]">
+                        <div className="p-8 max-w-4xl mx-auto">
+                        {activeTab === 'description' && (
+                          <ProblemDescription 
+                            description={problem.description} 
+                            examples={examples} 
+                            difficulty={problem.difficulty}
+                            category={problem.category}
+                            timeLimit={problem.timeLimit}
+                            memoryLimit={problem.memoryLimit}
+                            companies={problem.companies}
+                            companyTags={problem.companyTags}
+                          />
+                        )}
+                        {activeTab === 'database' && (
+                          <DatabaseSchemaViewer 
+                            problemId={problem.id}
+                            initialSchema={problem.initialSchema}
+                            initialData={problem.initialData}
+                          />
+                        )}
+                        {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
+                        {activeTab === 'submissions' && (
+                            <div className="space-y-3">
+                                {submissions.map((sub, i) => (
+                                    <div 
+                                    key={i} 
+                                    onClick={() => setSelectedSubmission(sub)}
+                                    className="flex items-center justify-between p-5 rounded-2xl border border-[var(--border)] bg-[var(--foreground)]/[0.02] hover:bg-[var(--foreground)]/[0.05] transition-all cursor-pointer group"
+                                    >
+                                    <div className="flex items-center gap-4">
+                                        <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
+                                            {sub.status === 'Accepted' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+                                        </div>
+                                        <div>
+                                            <div className="text-[14px] font-bold tracking-tight">{sub.status}</div>
+                                            <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-0.5">{new Date(sub.createdAt).toLocaleDateString()}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right font-mono text-[12px] font-bold text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">{sub.runtime}ms</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* RIGHT PANEL: IDE */}
@@ -372,51 +377,56 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         ))}
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto p-6">
-                        {activeTab === 'description' && (
-                          <ProblemDescription 
-                            description={problem.description} 
-                            examples={examples} 
-                            difficulty={problem.difficulty}
-                            category={problem.category}
-                            timeLimit={problem.timeLimit}
-                            memoryLimit={problem.memoryLimit}
-                            companyTags={problem.companyTags}
-                          />
-                        )}
-                        {activeTab === 'database' && (
-                          <DatabaseSchemaViewer 
-                            problemId={problem.id}
-                            initialSchema={problem.initialSchema}
-                            initialData={problem.initialData}
-                          />
-                        )}
-                        {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
-                        {activeTab === 'submissions' && (
-                            <div className="space-y-3">
-                                {submissions.map((sub, i) => (
-                                    <div 
-                                        key={i} 
-                                        onClick={() => setSelectedSubmission(sub)}
-                                        className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
-                                                {sub.status === 'Accepted' ? <CheckCircle size={18} /> : <XCircle size={18} />}
+                    {activeTab === 'ai' ? (
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                            <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />
+                        </div>
+                    ) : (
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {activeTab === 'description' && (
+                              <ProblemDescription 
+                                description={problem.description} 
+                                examples={examples} 
+                                difficulty={problem.difficulty}
+                                category={problem.category}
+                                timeLimit={problem.timeLimit}
+                                memoryLimit={problem.memoryLimit}
+                                companyTags={problem.companyTags}
+                              />
+                            )}
+                            {activeTab === 'database' && (
+                              <DatabaseSchemaViewer 
+                                problemId={problem.id}
+                                initialSchema={problem.initialSchema}
+                                initialData={problem.initialData}
+                              />
+                            )}
+                            {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
+                            {activeTab === 'submissions' && (
+                                <div className="space-y-3">
+                                    {submissions.map((sub, i) => (
+                                        <div 
+                                            key={i} 
+                                            onClick={() => setSelectedSubmission(sub)}
+                                            className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
+                                                    {sub.status === 'Accepted' ? <CheckCircle size={18} /> : <XCircle size={18} />}
+                                                </div>
+                                                <div>
+                                                    <div className="text-[13px] font-bold">{sub.status}</div>
+                                                    <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="text-[13px] font-bold">{sub.status}</div>
-                                                <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
-                                            </div>
+                                            <div className="font-mono text-[11px] text-[var(--muted-foreground)]">{sub.runtime}ms</div>
                                         </div>
-                                        <div className="font-mono text-[11px] text-[var(--muted-foreground)]">{sub.runtime}ms</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
-                        {activeTab === 'ai' && <GeminiChat problemId={problem.id} problemTitle={problem.title} problemDescription={problem.description} code={code} language={language} testCases={examples} />}
-                    </div>
+                                    ))}
+                                </div>
+                            )}
+                            {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
+                        </div>
+                    )}
                 </>
             ) : (
                 <>
