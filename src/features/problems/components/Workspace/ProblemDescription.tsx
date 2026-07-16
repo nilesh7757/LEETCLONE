@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Lightbulb, Hash, Timer, Cpu, Tag, Briefcase } from "lucide-react";
+import { FileText, Lightbulb, Hash, Timer, Cpu, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import DOMPurify from "dompurify";
@@ -51,6 +51,14 @@ export default function ProblemDescription({
     difficulty.toLowerCase() === "medium" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
     "bg-red-500/10 text-red-500 border-red-500/20";
 
+  // Merge both companies and companyTags into a single list to display only once
+  const allCompanies = Array.from(
+    new Set([
+      ...(companies || []),
+      ...(companyTags || [])
+    ])
+  );
+
   return (
     <div className="flex flex-col gap-8 pb-12 select-text bg-transparent">
       {/* Dynamic Metadata Bar */}
@@ -72,19 +80,6 @@ export default function ProblemDescription({
         </span>
       </div>
 
-      {/* Company Tags Section */}
-      {companyTags && companyTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 -mt-4 border-b border-[var(--border)]/20 pb-5">
-          <Briefcase size={14} className="text-[var(--muted-foreground)]" />
-          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--muted-foreground)]/60 mr-1">Target Companies:</span>
-          {companyTags.map(tag => (
-            <span key={tag} className="px-2.5 py-0.5 rounded-md bg-[var(--foreground)]/5 text-[9px] font-bold text-[var(--muted-foreground)]/80 border border-[var(--border)] uppercase tracking-wider">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* Main Prose description */}
       <div
         className={`prose prose-sm max-w-none ${isDark ? "prose-invert" : ""}
@@ -104,11 +99,11 @@ export default function ProblemDescription({
       </div>
 
       {/* Companies Section */}
-      {companies && companies.length > 0 && (
+      {allCompanies.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center mt-2 border-t border-[var(--border)]/20 pt-6">
           <div className="text-[10px] font-black text-[var(--muted-foreground)]/50 uppercase tracking-widest mr-2">Target Companies</div>
           <div className="flex flex-wrap gap-1.5">
-            {companies.map(c => (
+            {allCompanies.map(c => (
               <span 
                 key={c}
                 className="px-2.5 py-0.5 rounded-md bg-[var(--foreground)]/5 text-[9px] font-bold text-[var(--muted-foreground)]/80 border border-[var(--border)] uppercase tracking-wider hover:text-[var(--primary)] hover:border-[var(--primary)]/30 hover:bg-[var(--primary)]/5 transition-all cursor-default"
