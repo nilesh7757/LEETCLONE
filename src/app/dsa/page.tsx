@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDownNarrowWide, Search, Database, Network, 
-  Infinity as InfinityIcon, Sparkles, Cpu, ChevronDown, Share2, Gauge, Maximize2
+  Infinity as InfinityIcon, Sparkles, ChevronDown, Gauge, Maximize2
 } from "lucide-react";
 
 import { dsaCategories } from "@/components/dsa/dsaCategories";
 import { DSACategory } from "@/components/dsa/DSASidebar";
 import { DSAMainContent } from "@/components/dsa/DSAMainContent";
 import DSACopilotPanel from "@/features/visualizer/components/DSA/DSACopilotPanel";
-import Link from "next/link";
 
 export default function DSAPage() {
   const [selectedCategory, setSelectedCategory] = useState<DSACategory>(dsaCategories[0] as DSACategory);
@@ -21,24 +20,90 @@ export default function DSAPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   const [isDesktopChatOpen, setIsDesktopChatOpen] = useState(true);
-  const [drawerState, setDrawerState] = useState<"short" | "expanded">("short");
+  const [drawerHeight, setDrawerHeight] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [isHandleDragging, setIsHandleDragging] = useState(false);
 
-  const [vh, setVh] = useState(800);
+  // Keep a ref to drawerHeight to avoid stale closures in listeners
+  const drawerHeightRef = useRef(drawerHeight);
+  useEffect(() => {
+    drawerHeightRef.current = drawerHeight;
+  }, [drawerHeight]);
+
+  // Set default drawer height when mobile drawer is opened
+  useEffect(() => {
+    if (isMobileChatOpen && typeof window !== "undefined") {
+      const height = window.innerHeight * 0.6;
+      setTimeout(() => {
+        setDrawerHeight(height);
+      }, 0);
+    }
+  }, [isMobileChatOpen]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setVh(window.innerHeight);
-      const handleResize = () => setVh(window.innerHeight);
+      // Defer state update to avoid synchronous setState inside useEffect body warning
+      const initialHeight = window.innerHeight;
+      setTimeout(() => {
+        setDrawerHeight(prev => prev || initialHeight * 0.6);
+      }, 0);
+      const handleResize = () => {
+        setDrawerHeight(prev => Math.min(prev, window.innerHeight - 64));
+      };
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
   }, []);
 
-  const constraints = drawerState === "expanded"
-    ? { top: 0, bottom: 9999 }
-    : { top: -vh, bottom: 9999 };
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setIsHandleDragging(true);
+    const startY = e.clientY;
+    const startHeight = drawerHeightRef.current;
+    const startTime = Date.now();
+    const maxH = window.innerHeight - 64;
 
-  const dragControls = useDragControls();
+    let hasMoved = false;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const deltaY = moveEvent.clientY - startY;
+      if (Math.abs(deltaY) > 4) {
+        hasMoved = true;
+      }
+      const newHeight = Math.max(0, Math.min(maxH, startHeight - deltaY));
+      setDrawerHeight(newHeight);
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      setIsHandleDragging(false);
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+
+      const endTime = Date.now();
+      const clickDuration = endTime - startTime;
+
+      if (!hasMoved && clickDuration < 250) {
+        // Tapped / clicked top bar: toggle between 60% and full screen
+        const defaultHeight = window.innerHeight * 0.6;
+        if (Math.abs(drawerHeightRef.current - maxH) < 15) {
+          setDrawerHeight(defaultHeight);
+        } else {
+          setDrawerHeight(maxH);
+        }
+      } else {
+        // If dragged too low (below 120px), close the drawer
+        if (drawerHeightRef.current < 120) {
+          setIsMobileChatOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("pointerup", handlePointerUp);
+  };
+
   const vizContainerRef = useRef<HTMLDivElement>(null);
 
   const themeColor = selectedCategory.themeColor || "#3b82f6";
@@ -275,102 +340,63 @@ export default function DSAPage() {
 
        </main>
 
-       {/* Mobile FAB */}
-       <div className="lg:hidden fixed bottom-6 right-6 z-40">
-           <button 
-              onClick={() => { setDrawerState("short"); setIsMobileChatOpen(true); }}
-              className="p-4 bg-[#3b82f6] hover:bg-[#3b82f6]/95 text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-[#3b82f6]/20"
-              title="Ask AI Copilot"
-           >
-              <Sparkles size={20} />
-           </button>
-       </div>
+        {/* Mobile FAB */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-40">
+            <button 
+               onClick={() => setIsMobileChatOpen(true)}
+               className="p-4 bg-[#3b82f6] hover:bg-[#3b82f6]/95 text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-[#3b82f6]/20"
+               title="Ask AI Copilot"
+            >
+               <Sparkles size={20} />
+            </button>
+        </div>
 
-       {/* Mobile bottom drawer */}
-       <AnimatePresence>
-          {isMobileChatOpen && (
-             <>
-                {/* Backdrop */}
-                <motion.div 
-                   initial={{ opacity: 0 }}
-                   animate={{ opacity: 0.5 }}
-                   exit={{ opacity: 0 }}
-                   onClick={() => setIsMobileChatOpen(false)}
-                   className="fixed inset-0 bg-black/60 z-50 lg:hidden"
-                />
-                 {/* Bottom Drawer */}
-                 <motion.div
-                    drag="y"
-                    dragControls={dragControls}
-                    dragListener={false}
-                    dragElastic={0.15}
-                    dragConstraints={constraints}
-                    onDragEnd={(event, info) => {
-                       const offsetY = info.offset.y;
-                       const velocityY = info.velocity.y;
-
-                       if (drawerState === "short") {
-                          if (offsetY < -60 || velocityY < -150) {
-                             setDrawerState("expanded");
-                          } else if (offsetY > 100 || velocityY > 150) {
-                             setIsMobileChatOpen(false);
-                          }
-                       } else if (drawerState === "expanded") {
-                          if (offsetY > 200 || velocityY > 200) {
-                             setIsMobileChatOpen(false);
-                          } else if (offsetY > 60 || velocityY > 100) {
-                             setDrawerState("short");
-                          }
-                       }
-                    }}
-                    variants={{
-                       hidden: { y: "100%" },
-                       short: { y: 0, height: "45dvh" },
-                       expanded: { y: 0, height: "calc(100dvh - 4rem)" }
-                    }}
-                    initial="hidden"
-                    animate={drawerState}
-                    exit="hidden"
-                    transition={{ type: "spring", damping: 26, stiffness: 220 }}
-                    className="fixed bottom-0 left-0 right-0 bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col"
+        {/* Mobile bottom drawer */}
+        <AnimatePresence>
+           {isMobileChatOpen && (
+              <motion.div
+                 variants={{
+                    hidden: { height: 0, opacity: 0 },
+                    visible: { height: drawerHeight, opacity: 1 }
+                 }}
+                 initial="hidden"
+                 animate="visible"
+                 exit="hidden"
+                 transition={
+                    isDragging 
+                       ? { type: "tween", duration: 0 } 
+                       : { type: "spring", damping: 30, stiffness: 350 }
+                 }
+                 className="fixed bottom-0 left-0 right-0 bg-[var(--card)] border-t border-[var(--border)] rounded-t-[2rem] shadow-2xl z-50 lg:hidden flex flex-col overflow-hidden"
+              >
+                 {/* Drag Handle indicator wrapper */}
+                 <div 
+                    onPointerDown={handlePointerDown}
+                    className="w-full py-4 flex flex-col items-center cursor-ns-resize shrink-0 select-none bg-[var(--card)] z-10"
+                    title="Drag to resize or tap to toggle"
                  >
-                    {/* Drag Handle indicator wrapper */}
-                    <motion.div 
-                       onPointerDown={(e) => { setIsHandleDragging(true); dragControls.start(e); }}
-                       onPointerUp={() => setIsHandleDragging(false)}
-                       onPointerCancel={() => setIsHandleDragging(false)}
-                       onTap={() => {
-                          setDrawerState(prev => prev === "short" ? "expanded" : "short");
+                    <div 
+                       className="w-12 h-1.5 rounded-full transition-all duration-200"
+                       style={{
+                          background: isHandleDragging ? "#3b82f6" : "var(--border)",
+                          boxShadow: isHandleDragging ? "0 0 12px 3px rgba(59,130,246,0.6)" : "none",
+                          transform: isHandleDragging ? "scaleX(1.2)" : "scaleX(1)"
                        }}
-                       className="w-full py-4 flex flex-col items-center cursor-grab active:cursor-grabbing shrink-0 select-none transition-colors"
-                       title="Drag to resize or tap to toggle"
-                    >
-                       <div 
-                          className="w-12 h-1.5 rounded-full transition-all duration-200"
-                          style={{
-                             background: isHandleDragging ? "#3b82f6" : "var(--border)",
-                             boxShadow: isHandleDragging ? "0 0 12px 3px rgba(59,130,246,0.6)" : "none",
-                             transform: isHandleDragging ? "scaleX(1.2)" : "scaleX(1)"
-                          }}
-                       />
-                    </motion.div>
-                    
-                    <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4">
-                       <DSACopilotPanel 
-                          algorithmId={selectedCategory.id}
-                          algorithmName={selectedCategory.title}
-                          isMobile={true}
-                          onClose={() => setIsMobileChatOpen(false)}
-                          onFocus={() => setDrawerState("expanded")}
-                       />
-                    </div>
-                    
-                    {/* Seamless bottom background extension for dragging */}
-                    <div className="absolute top-full left-0 right-0 h-screen bg-[var(--card)] pointer-events-none" />
-                 </motion.div>
-              </>
+                    />
+                 </div>
+                 
+                 <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4">
+                    <DSACopilotPanel 
+                       algorithmId={selectedCategory.id}
+                       algorithmName={selectedCategory.title}
+                       isMobile={true}
+                       onClose={() => setIsMobileChatOpen(false)}
+                       onFocus={() => setDrawerHeight(window.innerHeight - 64)}
+                    />
+                 </div>
+              </motion.div>
            )}
-       </AnimatePresence>
+        </AnimatePresence>
 
       <style jsx global>{`
          .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
