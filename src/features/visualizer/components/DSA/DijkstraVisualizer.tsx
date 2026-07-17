@@ -1,16 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { motion } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, ChevronLeft, ChevronRight, 
-  TrendingUp, Activity, MapPin, Cpu, RefreshCw,
-  Plus, Trash2, Edit3, Move, Check, Terminal
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight,
+  Database, Move, Plus, Trash2, GitPullRequest
 } from "lucide-react";
 
-const INF = 99;
+const INF = 999;
 
-type Node = { id: number; x: number; y: number };
+interface Node {
+  id: number;
+  x: number;
+  y: number;
+}
+
+interface Edge {
+  u: number;
+  v: number;
+  weight: number;
+}
 
 interface DijkstraStep {
   distances: number[];
@@ -19,708 +28,670 @@ interface DijkstraStep {
   activeEdge: [number, number] | null;
   relaxedEdges: Set<string>;
   message: string;
-  step: string;
-  logs: string[];
 }
 
-const V_WIDTH = 800;
-const V_HEIGHT = 500;
+const DEFAULT_NODES: Node[] = [
+  { id: 0, x: 150, y: 200 },
+  { id: 1, x: 300, y: 100 },
+  { id: 2, x: 300, y: 300 },
+  { id: 3, x: 500, y: 100 },
+  { id: 4, x: 500, y: 300 },
+  { id: 5, x: 650, y: 200 },
+];
 
-export default function DijkstraVisualizer({ speed = 800 }: { speed?: number }) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [matrix, setMatrix] = useState<number[][]>([]);
+const DEFAULT_EDGES: Edge[] = [
+  { u: 0, v: 1, weight: 4 },
+  { u: 0, v: 2, weight: 2 },
+  { u: 1, v: 2, weight: 1 },
+  { u: 1, v: 3, weight: 5 },
+  { u: 2, v: 3, weight: 8 },
+  { u: 2, v: 4, weight: 10 },
+  { u: 3, v: 4, weight: 2 },
+  { u: 3, v: 5, weight: 6 },
+  { u: 4, v: 5, weight: 3 },
+];
+
+export default function DijkstraVisualizer({ speed = 1000 }: { speed?: number }) {
+  const [nodes, setNodes] = useState<Node[]>(DEFAULT_NODES);
+  const [edges, setEdges] = useState<Edge[]>(DEFAULT_EDGES);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<number | null>(null);
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [editMode, setEditMode] = useState<"select" | "addNode" | "addEdge" | "delete">("select");
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [draggedNodeId, setDraggedNodeId] = useState<number | null>(null);
 
-  // Dragging state
-  const [draggingNode, setDraggingNode] = useState<number | null>(null);
-  const startDragPos = useRef({ pointerX: 0, pointerY: 0, nodeX: 0, nodeY: 0 });
+  const containerRef = useRef<SVGSVGElement>(null);
 
-  const resetSimulation = React.useCallback(() => {
+  const resetSimulation = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
-  }, []);
+  };
 
-  const initializeDefaultGraph = React.useCallback(() => {
-    const numNodes = 5;
-    const centerX = V_WIDTH / 2;
-    const centerY = V_HEIGHT / 2;
-    const radius = 150;
-
-    const initialNodes: Node[] = [];
-    for (let i = 0; i < numNodes; i++) {
-      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
-      initialNodes.push({
-        id: i,
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-      });
-    }
-
-    const initialMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
-    for (let i = 0; i < numNodes; i++) {
-      for (let j = 0; j < numNodes; j++) {
-        if (i !== j && Math.random() < 0.4) {
-          initialMatrix[i][j] = Math.floor(Math.random() * 9) + 1;
-        }
-      }
-    }
-    for (let i = 0; i < numNodes - 1; i++) {
-        if (initialMatrix[i][i+1] === 0) initialMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
-    }
-
-    setNodes(initialNodes);
-    setMatrix(initialMatrix);
-    setIsPlaying(false);
-    setCurrentIndex(0);
-  }, []);
-
-  useEffect(() => {
-    if (nodes.length === 0) {
-      const t = setTimeout(() => {
-        initializeDefaultGraph();
-      }, 0);
-      return () => clearTimeout(t);
-    }
-  }, [nodes.length, initializeDefaultGraph]);
-
-  const generateGraph = React.useCallback(() => {
-    resetSimulation();
-    const numNodes = 5;
-    const centerX = V_WIDTH / 2;
-    const centerY = V_HEIGHT / 2;
-    const radius = 150;
-
-    const newNodes: Node[] = [];
-    for (let i = 0; i < numNodes; i++) {
-      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
-      newNodes.push({
-        id: i,
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-      });
-    }
-    setNodes(newNodes);
-
-    const newMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
-    for (let i = 0; i < numNodes; i++) {
-      for (let j = 0; j < numNodes; j++) {
-        if (i !== j && Math.random() < 0.4) {
-          newMatrix[i][j] = Math.floor(Math.random() * 9) + 1;
-        }
-      }
-    }
-    for (let i = 0; i < numNodes - 1; i++) {
-        if (newMatrix[i][i+1] === 0) newMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
-    }
-    setMatrix(newMatrix);
-  }, [resetSimulation]);
-
-  const addNode = React.useCallback(() => {
-    if (nodes.length >= 8) return;
-    const newId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
-    const newNode = {
-      id: newId,
-      x: V_WIDTH / 2 + (Math.random() - 0.5) * 150,
-      y: V_HEIGHT / 2 + (Math.random() - 0.5) * 150
-    };
-    
-    setNodes(prev => [...prev, newNode]);
-    setMatrix(prev => {
-        const newSize = Math.max(prev.length, newId + 1);
-        const newMat = Array(newSize).fill(0).map((_, r) => 
-            Array(newSize).fill(0).map((_, c) => {
-                if (r < prev.length && c < prev[0]?.length) return prev[r][c];
-                return 0;
-            })
-        );
-        return newMat;
-    });
-    resetSimulation();
-  }, [nodes, resetSimulation]);
-
-  const clearGraph = React.useCallback(() => {
+  const clearGraph = () => {
     setNodes([]);
-    setMatrix([]);
+    setEdges([]);
+    setSelectedNodeId(null);
     resetSimulation();
-  }, [resetSimulation]);
+  };
 
-  const handleNodeClick = React.useCallback((id: number) => {
-    if (selectedNode === null) {
-      setSelectedNode(id);
-    } else if (selectedNode === id) {
-      setSelectedNode(null);
-    } else {
-      const weight = Math.floor(Math.random() * 9) + 1;
-      setMatrix(prev => {
-          const newMat = prev.map(row => [...row]);
-          const currentW = newMat[selectedNode][id];
-          newMat[selectedNode][id] = currentW !== 0 ? 0 : weight;
-          return newMat;
-      });
-      setSelectedNode(null);
-      resetSimulation();
+  const loadDefaultGraph = () => {
+    setNodes(DEFAULT_NODES);
+    setEdges(DEFAULT_EDGES);
+    setSelectedNodeId(null);
+    resetSimulation();
+  };
+
+  // Generate Dijkstra steps dynamically
+  const history: DijkstraStep[] = useMemo(() => {
+    if (nodes.length === 0) {
+      return [{
+        distances: [],
+        visited: new Set(),
+        activeNode: null,
+        activeEdge: null,
+        relaxedEdges: new Set(),
+        message: "No graph loaded. Click '+ Node' to start drawing."
+      }];
     }
-  }, [selectedNode, resetSimulation]);
 
-  const handlePointerDown = (e: React.PointerEvent, node: Node) => {
-    e.preventDefault();
-    setDraggingNode(node.id);
-    startDragPos.current = {
-      pointerX: e.clientX,
-      pointerY: e.clientY,
-      nodeX: node.x,
-      nodeY: node.y
-    };
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (draggingNode === null) return;
-    if (!containerRef.current) return;
-
-    const rect = containerRef.current.getBoundingClientRect();
-    
-    const dx = (e.clientX - startDragPos.current.pointerX) * (V_WIDTH / rect.width);
-    const dy = (e.clientY - startDragPos.current.pointerY) * (V_HEIGHT / rect.height);
-    
-    const newX = startDragPos.current.nodeX + dx;
-    const newY = startDragPos.current.nodeY + dy;
-
-    setNodes(prev => prev.map(n => n.id === draggingNode ? {
-      ...n,
-      x: Math.min(Math.max(newX, 30), V_WIDTH - 30),
-      y: Math.min(Math.max(newY, 30), V_HEIGHT - 30)
-    } : n));
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (draggingNode !== null) {
-      const id = draggingNode;
-      setDraggingNode(null);
-
-      const dist = Math.hypot(e.clientX - startDragPos.current.pointerX, e.clientY - startDragPos.current.pointerY);
-      if (dist < 5) {
-        handleNodeClick(id);
-      }
-    }
-  };
-
-  const history = useMemo(() => {
-    if (nodes.length === 0) return [];
-    
     const V = nodes.length;
-    const maxId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
+    const adj = Array.from({ length: V }, () => [] as { node: number; weight: number }[]);
+    edges.forEach(({ u, v, weight }) => {
+      if (u < V && v < V) {
+        adj[u].push({ node: v, weight });
+      }
+    });
+
     const steps: DijkstraStep[] = [];
-    const dist = Array(maxId).fill(INF);
+    const distances = new Array(V).fill(INF);
     const visited = new Set<number>();
     const relaxedEdges = new Set<string>();
-    let currentLogs: string[] = [];
-    
-    const record = (msg: string, step: string, activeNode: number | null = null, activeEdge: [number, number] | null = null) => {
-      steps.push({
-        distances: [...dist],
-        visited: new Set(visited),
-        activeNode,
-        activeEdge,
-        relaxedEdges: new Set(relaxedEdges),
-        message: msg,
-        step,
-        logs: [...currentLogs]
-      });
-    };
 
-    const addLog = (l: string) => { currentLogs = [l, ...currentLogs]; };
+    distances[0] = 0;
 
-    const startNode = nodes[0]?.id ?? 0;
-    dist[startNode] = 0;
-    addLog(`Dijkstra's Algorithm initiated at source Node ${startNode}.`);
-    record(`Initializing distances. Node ${startNode} cost set to 0.`, "INIT", startNode);
+    steps.push({
+      distances: [...distances],
+      visited: new Set(visited),
+      activeNode: null,
+      activeEdge: null,
+      relaxedEdges: new Set(relaxedEdges),
+      message: "Initialized shortest path distances. Source Node 0 set to 0, others set to \u221E."
+    });
 
     for (let count = 0; count < V; count++) {
-        let u = -1;
-        let minDist = INF;
-        for (let i = 0; i < maxId; i++) {
-            if (!visited.has(i) && dist[i] < minDist) {
-                minDist = dist[i];
-                u = i;
-            }
+      // Find node with minimum distance value from unvisited nodes
+      let u = -1;
+      let minD = INF;
+      for (let i = 0; i < V; i++) {
+        if (!visited.has(i) && distances[i] < minD) {
+          minD = distances[i];
+          u = i;
         }
+      }
 
-        if (u === -1) break;
+      if (u === -1 || minD === INF) break;
 
-        visited.add(u);
-        addLog(`Settled Node ${u} with minimal cost ${dist[u]}.`);
-        record(`Selecting unvisited Node ${u} with smallest current distance.`, "PICK_MIN", u);
+      visited.add(u);
+      steps.push({
+        distances: [...distances],
+        visited: new Set(visited),
+        activeNode: u,
+        activeEdge: null,
+        relaxedEdges: new Set(relaxedEdges),
+        message: `Selected Node ${u} with minimum current distance (${minD}) and marked it as visited.`
+      });
 
-        for (let v = 0; v < maxId; v++) {
-            const weight = matrix[u]?.[v] || 0;
-            if (weight > 0 && !visited.has(v)) {
-                record(`Evaluating edge ${u} → ${v} (Weight: ${weight})...`, "PROBE", u, [u, v]);
-                if (dist[u] + weight < dist[v]) {
-                    dist[v] = dist[u] + weight;
-                    relaxedEdges.add(`${u}-${v}`);
-                    addLog(`Relaxed path to Node ${v} via Node ${u}: New Cost ${dist[v]}.`);
-                    record(`Relaxed path! dist[${v}] updated to ${dist[v]}.`, "RELAX", u, [u, v]);
-                } else {
-                    record(`No update for Node ${v}. Path via Node ${u} (${dist[u]} + ${weight}) >= current ${dist[v] === INF ? "∞" : dist[v]}.`, "STABLE", u, [u, v]);
-                }
-            }
+      for (const { node: v, weight } of adj[u]) {
+        if (!visited.has(v)) {
+          const edgeKey = `${u}-${v}`;
+          const currentDist = distances[v];
+          const newDist = distances[u] + weight;
+
+          steps.push({
+            distances: [...distances],
+            visited: new Set(visited),
+            activeNode: u,
+            activeEdge: [u, v],
+            relaxedEdges: new Set(relaxedEdges),
+            message: `Checking path from Node ${u} to ${v} (weight: ${weight}). Path length = ${newDist}.`
+          });
+
+          if (newDist < currentDist) {
+            distances[v] = newDist;
+            relaxedEdges.add(edgeKey);
+            steps.push({
+              distances: [...distances],
+              visited: new Set(visited),
+              activeNode: u,
+              activeEdge: [u, v],
+              relaxedEdges: new Set(relaxedEdges),
+              message: `Relaxed edge ${u} \u2192 ${v}. Updated distance to Node ${v} from ${currentDist === INF ? "\u221E" : currentDist} to ${newDist}.`
+            });
+          } else {
+            steps.push({
+              distances: [...distances],
+              visited: new Set(visited),
+              activeNode: u,
+              activeEdge: [u, v],
+              relaxedEdges: new Set(relaxedEdges),
+              message: `Path length via Node ${u} (${newDist}) \u2265 current distance of ${v} (${currentDist === INF ? "\u221E" : currentDist}). No update.`
+            });
+          }
         }
+      }
     }
 
-    record("Optimal shortest paths resolved from source.", "COMPLETE");
-    return steps;
-  }, [nodes, matrix]);
+    steps.push({
+      distances: [...distances],
+      visited: new Set(visited),
+      activeNode: null,
+      activeEdge: null,
+      relaxedEdges: new Set(relaxedEdges),
+      message: "Dijkstra's shortest path resolution complete."
+    });
 
+    return steps;
+  }, [nodes, edges]);
+
+  // Autoplay
   useEffect(() => {
     if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => {
-          if (prev >= history.length - 1) {
+      const timerId = setInterval(() => {
+        setCurrentIndex(p => {
+          if (p >= history.length - 1) {
             setIsPlaying(false);
-            return prev;
+            return p;
           }
-          return prev + 1;
+          return p + 1;
         });
       }, speed);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
+      return () => clearInterval(timerId);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = history[currentIndex] || {
-    distances: [],
-    visited: new Set(),
-    activeNode: null,
-    activeEdge: null,
-    relaxedEdges: new Set(),
-    message: "Initializing...",
-    step: "IDLE",
-    logs: []
+  const currentStep = history[currentIndex] || history[0];
+
+  const handleStepForward = () => {
+    setIsPlaying(false);
+    if (currentIndex < history.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
-  const getEdgeData = (uIdx: number, vIdx: number) => {
-    const u = nodes.find(n => n.id === uIdx);
-    const v = nodes.find(n => n.id === vIdx);
-    if (!u || !v) return null;
-    const dx = v.x - u.x, dy = v.y - u.y, d = Math.sqrt(dx*dx + dy*dy);
-    const ux = dx/d, uy = dy/d;
-    const hasOpposite = matrix[vIdx]?.[uIdx] !== 0;
-    const curve = hasOpposite ? 30 : 0;
-    const cpX = (u.x + v.x)/2 - uy * curve;
-    const cpY = (u.y + v.y)/2 + ux * curve;
-    const path = `M ${u.x + ux*20} ${u.y + uy*20} Q ${cpX} ${cpY} ${v.x - ux*25} ${v.y - uy*25}`;
-    return { path, cpX, cpY, ux, uy };
+  const handleStepBackward = () => {
+    setIsPlaying(false);
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  // Canvas Interactions
+  const handleCanvasPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (editMode !== "addNode" || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 400 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const constrainedX = Math.max(35, Math.min(765, x));
+    const constrainedY = Math.max(35, Math.min(365, y));
+
+    const newId = nodes.length;
+    setNodes(prev => [...prev, { id: newId, x: constrainedX, y: constrainedY }]);
+    resetSimulation();
+  };
+
+  const handleNodeClick = (e: React.MouseEvent, nodeId: number) => {
+    e.stopPropagation();
+    setIsPlaying(false);
+
+    if (editMode === "delete") {
+      const remainingNodes = nodes.filter(n => n.id !== nodeId);
+      const newNodes = remainingNodes.map((n, idx) => ({ ...n, id: idx }));
+      
+      const oldIdToNewId = new Map<number, number>();
+      remainingNodes.forEach((n, idx) => oldIdToNewId.set(n.id, idx));
+
+      const newEdges = edges
+        .filter(edge => edge.u !== nodeId && edge.v !== nodeId)
+        .map(edge => ({
+          u: oldIdToNewId.get(edge.u)!,
+          v: oldIdToNewId.get(edge.v)!,
+          weight: edge.weight
+        }));
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setSelectedNodeId(null);
+      resetSimulation();
+    } else if (editMode === "addEdge") {
+      if (selectedNodeId === null) {
+        setSelectedNodeId(nodeId);
+      } else {
+        if (selectedNodeId === nodeId) {
+          setSelectedNodeId(null);
+        } else {
+          const u = selectedNodeId;
+          const v = nodeId;
+          const edgeExists = edges.some(edge => edge.u === u && edge.v === v);
+
+          if (edgeExists) {
+            setEdges(prev => prev.filter(edge => !(edge.u === u && edge.v === v)));
+          } else {
+            const randomWeight = Math.floor(Math.random() * 9) + 1;
+            setEdges(prev => [...prev, { u, v, weight: randomWeight }]);
+          }
+          setSelectedNodeId(null);
+          resetSimulation();
+        }
+      }
+    }
+  };
+
+  const handleNodePointerDown = (e: React.PointerEvent, nodeId: number) => {
+    if (editMode !== "select") return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggedNodeId(nodeId);
+  };
+
+  const handleCanvasPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (draggedNodeId === null || editMode !== "select" || !containerRef.current) return;
+    e.preventDefault();
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 400 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const constrainedX = Math.max(35, Math.min(765, x));
+    const constrainedY = Math.max(35, Math.min(365, y));
+
+    setNodes(prev => prev.map(n => n.id === draggedNodeId ? { ...n, x: constrainedX, y: constrainedY } : n));
+  };
+
+  const handleCanvasPointerUp = () => {
+    setDraggedNodeId(null);
+  };
+
+  const getEdgePath = (uId: number, vId: number) => {
+    const n1 = nodes.find(n => n.id === uId);
+    const n2 = nodes.find(n => n.id === vId);
+    if (!n1 || !n2) return null;
+
+    const dx = n2.x - n1.x;
+    const dy = n2.y - n1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0) return null;
+
+    const ux = dx / dist;
+    const uy = dy / dist;
+
+    const hasOpposite = edges.some(edge => edge.u === vId && edge.v === uId);
+    const curve = hasOpposite ? 25 : 0;
+
+    const cpX = (n1.x + n2.x) / 2 - uy * curve;
+    const cpY = (n1.y + n2.y) / 2 + ux * curve;
+
+    const x1 = n1.x + ux * 28;
+    const y1 = n1.y + uy * 28;
+    const x2 = n2.x - ux * 34;
+    const y2 = n2.y - uy * 34;
+
+    if (curve !== 0) {
+      return { path: `M ${x1} ${y1} Q ${cpX} ${cpY} ${x2} ${y2}`, cpX, cpY };
+    }
+    return { path: `M ${x1} ${y1} L ${x2} ${y2}`, cpX: (x1 + x2) / 2, cpY: (y1 + y2) / 2 };
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* Header Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (currentIndex >= history.length - 1) setCurrentIndex(0);
-              setIsPlaying(!isPlaying);
-            }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-cyan)] hover:bg-[var(--viz-cyan)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            {isPlaying ? (
-              <>
-                <Pause size={14} fill="currentColor" />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play size={14} fill="currentColor" />
-                <span>Play</span>
-              </>
-            )}
-          </button>
+    <div className="flex flex-col gap-6 font-sans select-none text-[var(--foreground)] w-full">
+      {/* Visualizer Box */}
+      <div className="p-4 md:p-6 bg-[var(--card)] border border-[var(--border)] rounded-[2rem] shadow-xl flex flex-col min-h-[550px] w-full overflow-hidden">
+        
+        {/* Top Control Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl shadow-sm mb-6">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} 
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" 
+              title="Reset"
+            >
+              <RotateCcw size={14}/>
+            </button>
+            <button 
+              onClick={handleStepBackward} 
+              disabled={currentIndex === 0 || history.length <= 1}
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all disabled:opacity-30 disabled:hover:bg-muted/20 cursor-pointer"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button 
+              onClick={handleStepForward} 
+              disabled={currentIndex === history.length - 1 || history.length <= 1}
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all disabled:opacity-30 disabled:hover:bg-muted/20 cursor-pointer"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
 
-          <button
-            onClick={resetSimulation}
-            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
-            title="Reset Dijkstra Simulation"
-          >
-            <RotateCcw size={14} />
-          </button>
+          {/* Editor Toolset */}
+          <div className="flex items-center gap-1.5 p-1 bg-muted/20 border border-[var(--border)]/60 rounded-xl">
+            <button
+              onClick={() => { setEditMode("select"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "select" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Drag/Move Nodes"
+            >
+              <Move size={12} />
+              <span className="hidden sm:inline">Move</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("addNode"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "addNode" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click canvas to add Node"
+            >
+              <Plus size={12} />
+              <span className="hidden sm:inline">+ Node</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("addEdge"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "addEdge" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click Node A then Node B to create Directed Edge"
+            >
+              <GitPullRequest size={12} />
+              <span className="hidden sm:inline">Connect</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("delete"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "delete" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click a node to delete it"
+            >
+              <Trash2 size={12} />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+          </div>
 
-          <button
-            onClick={generateGraph}
-            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
-            title="Randomize Graph"
-          >
-            <RefreshCw size={14} />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={addNode}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-xs font-bold cursor-pointer"
-          >
-            <Plus size={14} />
-            <span>Add Node</span>
-          </button>
-
-          <button
-            onClick={clearGraph}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--card)] hover:bg-[var(--viz-rose)]/10 hover:text-[var(--viz-rose)] hover:border-[var(--viz-rose)]/30 border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] transition-all text-xs font-bold cursor-pointer"
-            title="Clear Graph"
-          >
-            <Trash2 size={14} />
-            <span>Clear</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Visual Canvas */}
-      <div ref={containerRef} className="relative w-full h-[360px] md:h-[450px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-0">
-        {/* Subtle grid backdrop */}
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-
-        {/* Real-time Status Badge / Help message */}
-        <div className="absolute top-4 left-4 flex justify-center z-30 pointer-events-none">
-          <div className="px-3 py-1.5 bg-[var(--popover)]/60 text-[var(--popover-foreground)] rounded-full border border-[var(--border)]/10 shadow-sm flex items-center gap-2">
-            <span className="text-[9px] font-bold text-[var(--muted-foreground)]/80">
-              {selectedNode !== null ? `Select target node to connect with node ${selectedNode}` : "Drag nodes to move • Click node, then click another to connect"}
-            </span>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={clearGraph}
+              className="px-3 py-2 border border-dashed border-[var(--border)] rounded-xl text-[10px] text-muted-foreground hover:text-red-500 font-bold hover:border-red-500/30 transition-all cursor-pointer"
+            >
+              Clear Graph
+            </button>
+            <button 
+              onClick={loadDefaultGraph}
+              className="px-3 py-2 bg-muted/20 border border-[var(--border)] rounded-xl text-[10px] text-muted-foreground hover:text-foreground font-bold transition-all cursor-pointer"
+            >
+              Default
+            </button>
+            <button 
+              onClick={() => setIsPlaying(!isPlaying)} 
+              disabled={history.length <= 1}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md disabled:opacity-40 disabled:hover:scale-100 cursor-pointer ${
+                isPlaying 
+                  ? "bg-muted/40 border border-[var(--border)] text-[var(--foreground)] hover:bg-muted/50" 
+                  : "bg-[var(--viz-rose)] text-white hover:scale-[1.03]"
+              }`}
+            >
+              {isPlaying ? <span className="flex items-center gap-1.5"><Pause size={12} /> Pause</span> : <span className="flex items-center gap-1.5"><Play size={12} /> Run</span>}
+            </button>
           </div>
         </div>
 
-        {/* Scalable Vector SVG Canvas */}
-        <svg 
-          viewBox={`0 0 ${V_WIDTH} ${V_HEIGHT}`} 
-          className="w-full h-full select-none touch-none z-10 overflow-visible"
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-        >
-          <defs>
-            <marker id="arrowhead-dijkstra" markerWidth="10" markerHeight="7" refX="19" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-            </marker>
-          </defs>
+        {/* Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 w-full animate-fadeIn">
+          
+          {/* Left Column (col-span-9): Graph Canvas */}
+          <div className="lg:col-span-9 relative p-3 md:p-6 bg-muted/10 border border-[var(--border)]/45 rounded-2xl flex flex-col items-center justify-center h-[400px] md:h-[460px] lg:h-[500px] w-full overflow-hidden">
+            
+            {/* SVG Canvas */}
+            <svg 
+              ref={containerRef}
+              viewBox="0 0 800 400" 
+              onPointerDown={handleCanvasPointerDown}
+              onPointerMove={handleCanvasPointerMove}
+              onPointerUp={handleCanvasPointerUp}
+              onPointerLeave={handleCanvasPointerUp}
+              className="w-full h-full select-none overflow-visible z-10 cursor-crosshair"
+            >
+              <defs>
+                <marker id="dijkstra-arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                </marker>
+              </defs>
 
-          {/* Edges */}
-          {matrix.map((row, i) => 
-            row.map((weight, j) => {
-              if (weight === 0) return null;
-              const edgeInfo = getEdgeData(i, j);
-              if (!edgeInfo) return null;
-              const { path } = edgeInfo;
-              
-              const isActive = currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j;
-              const isRelaxed = currentStep.relaxedEdges.has(`${i}-${j}`);
+              {/* Edge Connections */}
+              {edges.map(({ u, v, weight }, idx) => {
+                const edgeInfo = getEdgePath(u, v);
+                if (!edgeInfo) return null;
 
-              return (
-                <g key={`edge-path-${i}-${j}`}>
-                  <motion.path
-                    d={path}
-                    fill="none"
-                    stroke="currentColor"
-                    className={`${isActive ? "text-[var(--viz-cyan)]" : isRelaxed ? "text-[var(--viz-green)]/40" : "text-[var(--muted-foreground)]/35"}`}
-                    strokeWidth={isActive ? 3 : 1.5}
-                    markerEnd="url(#arrowhead-dijkstra)"
-                    animate={{ opacity: 1 }}
-                  />
-                  {isActive && (
-                    <motion.circle r="3.5" fill="var(--viz-cyan)">
-                      <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
-                    </motion.circle>
-                  )}
-                </g>
-              );
-            })
-          )}
+                const { path, cpX, cpY } = edgeInfo;
+                const edgeKey = `${u}-${v}`;
+                
+                const isActive = currentStep.activeEdge !== null && currentStep.activeEdge[0] === u && currentStep.activeEdge[1] === v;
+                const isRelaxed = currentStep.relaxedEdges?.has(edgeKey);
 
-          {/* Edge Weights (Centered bubbles on quadratic curve) */}
-          {matrix.map((row, i) => 
-            row.map((weight, j) => {
-              if (weight === 0) return null;
-              const edgeInfo = getEdgeData(i, j);
-              if (!edgeInfo) return null;
-              const { cpX, cpY } = edgeInfo;
-              
-              const isActive = currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j;
+                // Edge stroke color (high visibility)
+                let strokeColor = "rgba(255, 255, 255, 0.28)"; 
+                let strokeWidth = 2.5;
 
-              return (
-                <g key={`edge-weight-${i}-${j}`}>
-                  <circle 
-                    cx={cpX} 
-                    cy={cpY} 
-                    r="10" 
-                    fill="var(--viz-amber)" 
-                    stroke="var(--background)" 
-                    strokeWidth={isActive ? 2 : 0}
-                    className="shadow-sm"
-                  />
-                  <text 
-                    x={cpX} 
-                    y={cpY} 
-                    dy="3" 
-                    textAnchor="middle" 
-                    fontSize="9" 
-                    fontWeight="900" 
-                    className="font-mono fill-black pointer-events-none select-none"
+                if (isActive) {
+                  strokeColor = "var(--viz-rose)";
+                  strokeWidth = 4.5;
+                } else if (isRelaxed) {
+                  strokeColor = "rgba(var(--viz-green-rgb), 0.4)";
+                  strokeWidth = 2.5;
+                }
+
+                return (
+                  <g key={`edge-${idx}`}>
+                    {/* Connection Line */}
+                    <path
+                      d={path}
+                      fill="none"
+                      stroke={strokeColor}
+                      strokeWidth={strokeWidth}
+                      className="transition-all duration-300"
+                      markerEnd="url(#dijkstra-arrowhead)"
+                    />
+                    {isActive && (
+                      <circle r="4.5" fill="var(--viz-rose)">
+                        <animateMotion 
+                          dur="1.2s" 
+                          repeatCount="indefinite" 
+                          path={path} 
+                        />
+                      </circle>
+                    )}
+                    {/* Edge Weight Bubble */}
+                    <g transform={`translate(${cpX}, ${cpY})`}>
+                      <circle r="9.5" fill="var(--viz-amber)" stroke="var(--background)" strokeWidth="1.5" />
+                      <text
+                        dy="3"
+                        textAnchor="middle"
+                        fontSize="9"
+                        fontWeight="900"
+                        fill="black"
+                        className="font-mono"
+                      >
+                        {weight}
+                      </text>
+                    </g>
+                  </g>
+                );
+              })}
+
+              {/* Node Bubbles */}
+              {nodes.map((pos) => {
+                const i = pos.id;
+                const isCurrent = currentStep.activeNode === i;
+                const isVisited = currentStep.visited?.has(i);
+                const isSelected = selectedNodeId === i;
+                const dist = currentStep.distances?.[i];
+
+                let nodeColor = "var(--card)";
+                let borderColor = "var(--border)";
+                let textColor = "var(--foreground)";
+                let borderWidth = "2.5";
+                
+                let radius = 28; // Medium-sized nodes
+                let scale = 1;
+
+                if (isSelected) {
+                  nodeColor = "rgba(var(--viz-amber-rgb), 0.15)";
+                  borderColor = "var(--viz-amber)";
+                  borderWidth = "3.5";
+                  scale = 1.1;
+                } else if (isCurrent) {
+                  nodeColor = "rgba(var(--viz-rose-rgb), 0.1)";
+                  borderColor = "var(--viz-rose)";
+                  borderWidth = "4";
+                  scale = 1.15;
+                } else if (isVisited) {
+                  nodeColor = "rgba(var(--viz-green-rgb), 0.05)";
+                  borderColor = "var(--viz-green)";
+                } else if (dist !== INF && dist !== undefined) {
+                  nodeColor = "rgba(var(--viz-cyan-rgb), 0.05)";
+                  borderColor = "var(--viz-cyan)";
+                }
+
+                return (
+                  <g 
+                    key={`node-${i}`} 
+                    onClick={(e) => handleNodeClick(e, i)}
+                    onPointerDown={(e) => handleNodePointerDown(e, i)}
+                    className="transition-transform duration-300 cursor-grab active:cursor-grabbing"
                   >
-                    {weight}
-                  </text>
-                </g>
-              );
-            })
-          )}
+                    {/* Node Bubble */}
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r={radius * scale}
+                      fill={nodeColor}
+                      stroke={borderColor}
+                      strokeWidth={borderWidth}
+                      className="transition-colors duration-250"
+                    />
 
-          {/* Nodes */}
-          {nodes.map(node => {
-            const d = currentStep.distances[node.id];
-            const isVisited = currentStep.visited.has(node.id);
-            const isActive = currentStep.activeNode === node.id || currentStep.activeEdge?.[1] === node.id;
-            const isSource = node.id === (nodes[0]?.id ?? 0);
-            const isSelected = selectedNode === node.id;
+                    {/* Node Numeric label */}
+                    <text
+                      x={pos.x}
+                      y={pos.y - 2}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fontWeight="900"
+                      fill={textColor}
+                      className="font-mono select-none pointer-events-none opacity-40"
+                    >
+                      {i}
+                    </text>
 
-            let nodeColor = "var(--card)";
-            let borderColor = "var(--border)";
-            let textColor = "var(--foreground)";
+                    {/* Shortest Distance value inside bubble */}
+                    <text
+                      x={pos.x}
+                      y={pos.y + 10}
+                      textAnchor="middle"
+                      fontSize="13"
+                      fontWeight="bold"
+                      fill={textColor}
+                      className="font-mono select-none pointer-events-none"
+                    >
+                      {dist === INF || dist === undefined ? "\u221E" : dist}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
 
-            if (isSelected) {
-              nodeColor = "var(--viz-amber)";
-              borderColor = "var(--viz-amber)";
-              textColor = "#000";
-            } else if (isActive) {
-              nodeColor = "rgba(var(--viz-cyan-rgb), 0.1)";
-              borderColor = "var(--viz-cyan)";
-            } else if (isVisited) {
-              nodeColor = "rgba(var(--viz-green-rgb), 0.1)";
-              borderColor = "var(--viz-green)";
-            } else if (d !== INF) {
-              nodeColor = "rgba(var(--viz-cyan-rgb), 0.03)";
-              borderColor = "var(--viz-cyan)";
-            }
+          {/* Right Column (col-span-3): Live Array State */}
+          <div className="lg:col-span-3 flex flex-col gap-4 h-[400px] md:h-[460px] lg:h-[500px]">
+            <div className="p-4 bg-muted/20 border border-[var(--border)]/45 rounded-2xl flex-1 flex flex-col overflow-hidden">
+              <h3 className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest flex items-center gap-1.5 mb-3 shrink-0">
+                <Database size={12} className="text-[var(--viz-cyan)]" /> Distances
+              </h3>
+              <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                {nodes.length > 0 ? (
+                  <table className="w-full text-[10px] font-mono text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/40 text-muted-foreground">
+                        <th className="pb-2 pl-2">Node</th>
+                        <th className="pb-2 text-center">Visited</th>
+                        <th className="pb-2 text-center">Distance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => {
+                        const i = n.id;
+                        const isCurrent = currentStep.activeNode === i;
+                        const isVisited = currentStep.visited?.has(i) ? "Yes" : "No";
+                        const dist = currentStep.distances?.[i];
+                        const distVal = dist === INF || dist === undefined ? "\u221E" : `${dist}`;
 
-            return (
-              <g key={`node-group-${node.id}`} className="cursor-pointer" onPointerDown={(e) => handlePointerDown(e, node)}>
-                {/* Node Shape */}
-                <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r="20"
-                  fill={nodeColor}
-                  stroke={borderColor}
-                  strokeWidth="2.5"
-                  className="transition-colors duration-200"
-                />
-
-                {/* Node ID */}
-                <text
-                  x={node.x}
-                  y={node.y}
-                  dy="-2"
-                  textAnchor="middle"
-                  fontSize="9"
-                  className="font-mono font-black fill-[var(--muted-foreground)]/50 select-none pointer-events-none"
-                >
-                  {node.id}
-                </text>
-
-                {/* Node Distance value */}
-                <text
-                  x={node.x}
-                  y={node.y}
-                  dy="9"
-                  textAnchor="middle"
-                  fontSize="11"
-                  fontWeight="bold"
-                  className="font-mono select-none pointer-events-none fill-[var(--foreground)]"
-                >
-                  {d === INF ? "∞" : d}
-                </text>
-
-                {/* Source Node Pin */}
-                {isSource && (
-                  <path
-                    d={`M ${node.x - 6} ${node.y - 34} c -5 0 -9 4 -9 9 c 0 7 9 17 9 17 s 9 -10 9 -17 c 0 -5 -4 -9 -9 -9 z`}
-                    fill="var(--viz-rose)"
-                    className="pointer-events-none"
-                  />
+                        return (
+                          <tr key={i} className={`border-b border-border/20 last:border-0 transition-colors ${
+                            isCurrent ? "text-[var(--viz-rose)] font-black bg-[var(--viz-rose)]/5" : ""
+                          }`}>
+                            <td className="py-2.5 pl-3">Node {i}</td>
+                            <td className="py-2.5 text-center">{isVisited}</td>
+                            <td className="py-2.5 text-center font-bold">{distVal}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-10">
+                    <Database size={24} className="mb-2 text-muted-foreground" />
+                    <p className="text-[10px] uppercase font-bold tracking-wider">No nodes to show</p>
+                  </div>
                 )}
-
-                {/* Drag / Pointer capture area (Drawn on top of solid shapes) */}
-                <motion.circle
-                  cx={node.x}
-                  cy={node.y}
-                  r="26"
-                  fill="rgba(0,0,0,0)"
-                  pointerEvents="all"
-                  animate={{ scale: isActive || isSelected ? 1.15 : 1 }}
-                />
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* Step Message (below canvas) */}
-      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
-        <p className="text-xs text-[var(--viz-cyan)] font-mono font-bold tracking-tight">
-          {currentStep.message}
-        </p>
-      </div>
-
-      {/* Control Timeline (below canvas) */}
-      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
-          <div className="flex items-center gap-2">
-            <Activity size={14} className="text-[var(--viz-cyan)]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-              Step {currentIndex + 1} of {history.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} 
-              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button 
-              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} 
-              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Timeline Slider */}
-        <div className="relative flex items-center group/slider w-full h-6">
-          <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
-          <div 
-            className="absolute h-1 bg-[var(--viz-cyan)] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.4)]" 
-            style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
-          />
-          <input 
-            type="range" 
-            min="0" 
-            max={history.length - 1} 
-            value={currentIndex} 
-            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-            className="w-full h-full opacity-0 cursor-pointer z-10"
-          />
-          <div 
-            className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
-            style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
-          />
-        </div>
-      </div>
-
-      {/* Distance Array Table (below canvas) */}
-      <div className="w-full bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 md:p-6 shadow-sm overflow-x-auto">
-         <h3 className="text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-3 flex items-center gap-2">
-            <Cpu size={14} className="text-[var(--viz-cyan)]" />
-            Distance Array
-         </h3>
-         <table className="w-full text-center border-collapse text-xs font-mono">
-            <thead>
-               <tr className="border-b border-[var(--border)]">
-                  <th className="py-2 px-1 font-bold text-[var(--muted-foreground)]">Node</th>
-                  {nodes.map(n => (
-                     <th key={n.id} className="py-2 px-1 font-bold">{n.id}</th>
-                  ))}
-               </tr>
-            </thead>
-            <tbody>
-               <tr>
-                  <td className="py-2 px-1 font-bold text-[var(--muted-foreground)]">Distance</td>
-                  {nodes.map(n => {
-                     const val = currentStep.distances[n.id];
-                     const isSrc = n.id === 0;
-                     const isV = currentStep.visited.has(n.id);
-                     const isA = currentStep.activeNode === n.id;
-                     
-                     let txtColor = "";
-                     if (isA) txtColor = "text-[var(--viz-cyan)]";
-                     else if (isV) txtColor = "text-[var(--viz-green)]";
-                     else if (val !== INF) txtColor = "text-[var(--viz-cyan)]/70";
-                     
-                     return (
-                        <td key={n.id} className={`py-2 px-1 font-black transition-colors duration-200 ${txtColor}`}>
-                           {val === INF ? "∞" : val}
-                        </td>
-                     );
-                  })}
-               </tr>
-            </tbody>
-         </table>
-      </div>
-
-      {/* Logs & Visited Nodes (below canvas) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        {/* Step Logs */}
-        <div className="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-sm h-[200px] flex flex-col">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-3">
-            <Terminal size={12} className="text-[var(--viz-cyan)]" />
-            Step Logs
-          </span>
-          <div className="flex flex-col gap-2 overflow-y-auto pr-1 flex-1 custom-scrollbar text-xs font-mono">
-            <AnimatePresence mode="popLayout">
-              {currentStep.logs.map((log, i) => (
-                <motion.div 
-                  key={`log-${i}`}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-[11px] text-[var(--muted-foreground)]/80 leading-relaxed"
-                >
-                  <span className="text-[var(--viz-cyan)] mr-1.5 font-black">›</span>
-                  {log}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Visited Nodes */}
-        <div className="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-sm flex flex-col h-[200px]">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] flex items-center gap-2 mb-3">
-            <Check size={12} className="text-[var(--viz-cyan)]" />
-            Visited Nodes (Settled)
-          </span>
-          <div className="flex flex-wrap gap-2 overflow-y-auto content-start flex-1 pr-1 custom-scrollbar">
-            {Array.from(currentStep.visited).sort((a, b) => a - b).map(val => (
-              <div 
-                key={val} 
-                className="w-8 h-8 rounded-xl bg-[var(--viz-green)]/10 border border-[var(--viz-green)]/30 text-[var(--viz-green)] flex items-center justify-center font-mono text-xs font-bold"
-              >
-                {val}
               </div>
-            ))}
-            {currentStep.visited.size === 0 && (
-              <span className="text-xs text-[var(--muted-foreground)] italic p-2">None</span>
-            )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom scrubbing bar & Step Explanation */}
+        <div className="mt-6 p-4 bg-muted/15 border border-[var(--border)]/45 rounded-2xl flex flex-col gap-3">
+          <div className="flex items-center gap-4 bg-[var(--card)] border border-[var(--border)]/70 px-4 py-3 rounded-xl shadow-sm w-full">
+            <span className="font-mono text-[9px] font-black uppercase text-[var(--muted-foreground)] tracking-widest min-w-[55px]">Step {currentIndex + 1}/{history.length}</span>
+            <div className="flex-1 h-1 bg-[var(--border)] rounded-full relative flex items-center group/slider">
+              <div 
+                className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(244,63,94,0.45)]" 
+                style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+              />
+              <input 
+                type="range" 
+                min="0" 
+                max={history.length - 1} 
+                value={currentIndex} 
+                onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                className="w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div 
+                className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+                style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+              />
+            </div>
+          </div>
+          <div className="text-center text-[10px] font-mono text-[var(--viz-amber)] bg-card border border-border/70 py-2.5 px-3 rounded-lg leading-relaxed shadow-sm">
+            {currentStep.message}
           </div>
         </div>
-      </div>
 
-      {/* Legend Block */}
-      <div className="px-4 py-4 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)] animate-pulse" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Active Node</span>
-        </div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Visited / Settled</span>
-        </div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-rose)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Source Root</span>
-        </div>
       </div>
     </div>
   );

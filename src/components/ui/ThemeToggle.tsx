@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
 
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -28,15 +29,22 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)] border-none hover:bg-[var(--muted)] transition-all duration-300 shadow-sm cursor-pointer"
+      className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card)] border-none hover:bg-[var(--muted)] transition-all duration-300 shadow-sm cursor-pointer overflow-hidden"
       aria-label="Toggle theme"
     >
       <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[var(--viz-purple)]/0 to-[var(--viz-cyan)]/0 group-hover:from-[var(--viz-purple)]/5 group-hover:to-[var(--viz-cyan)]/5 transition-all duration-500" />
-      {isDark ? (
-        <Sun className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors" />
-      ) : (
-        <Moon className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors" />
-      )}
+      <motion.div
+        key={isDark ? "dark" : "light"}
+        initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
+        animate={{ rotate: 0, scale: 1, opacity: 1 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        {isDark ? (
+          <Sun className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors" />
+        ) : (
+          <Moon className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors" />
+        )}
+      </motion.div>
     </button>
   );
 }

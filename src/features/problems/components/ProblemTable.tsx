@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Play, AlertCircle, HelpCircle, Star } from "lucide-react";
+import { Check, Play, AlertCircle, HelpCircle, Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -43,8 +43,22 @@ const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
 };
 
 export default function ProblemTable({ problems, totalPages, currentPage }: ProblemTableProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Infinite scroll local states
+  const [items, setItems] = useState<Problem[]>(problems);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(1 < totalPages);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Sync state with parent server component when query/filters reset initial list
+  useEffect(() => {
+    setItems(problems);
+    setPage(1);
+    setHasMore(1 < totalPages);
+    setLoadingMore(false);
+  }, [problems, totalPages]);
 
   const [starredMap, setStarredMap] = useState<Record<string, boolean>>(() => {
     const initialMap: Record<string, boolean> = {};
@@ -54,16 +68,13 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
     return initialMap;
   });
 
-  const [prevProblems, setPrevProblems] = useState(problems);
-
-  if (problems !== prevProblems) {
-    setPrevProblems(problems);
+  useEffect(() => {
     const newMap: Record<string, boolean> = {};
-    problems.forEach(p => {
+    items.forEach(p => {
       newMap[p.id] = p.isStarred || false;
     });
     setStarredMap(newMap);
-  }
+  }, [items]);
 
   const toggleStar = async (id: string, slug: string) => {
     setStarredMap(prev => ({ ...prev, [id]: !prev[id] }));
@@ -81,36 +92,72 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", newPage.toString());
-    router.push(`?${params.toString()}`);
-  };
+  // Intersection Observer for Infinite Scroll
+  useEffect(() => {
+    if (!hasMore || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting) {
+          setLoadingMore(true);
+          try {
+            const nextPage = page + 1;
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("page", String(nextPage));
+
+            const { data } = await axios.get(`/api/problems?${params.toString()}`);
+            if (data.success && data.problems) {
+              setItems(prev => [...prev, ...data.problems]);
+              setPage(nextPage);
+              setHasMore(nextPage < data.totalPages);
+            }
+          } catch (err) {
+            console.error("Failed to load next page of problems", err);
+          } finally {
+            setLoadingMore(false);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentLoader = loaderRef.current;
+    if (currentLoader) {
+      observer.observe(currentLoader);
+    }
+
+    return () => {
+      if (currentLoader) {
+        observer.unobserve(currentLoader);
+      }
+    };
+  }, [hasMore, loadingMore, page, searchParams]);
 
   return (
-    <div className="space-y-8 select-none">
-      <div className="overflow-x-auto">
+    <div className="space-y-4 select-none">
+      
+      {/* Scrollable table body wrapper matching left sidebar card boundaries */}
+      <div className="overflow-x-auto overflow-y-auto max-h-[520px] custom-scrollbar border border-[var(--border)]/10 rounded-2xl bg-zinc-950/20">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border)] pb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/60">
+            <tr className="border-b border-[var(--border)]/40 bg-[var(--background)]/35 sticky top-0 z-10 backdrop-blur-md text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]/60">
               <th className="py-4 pl-4 w-[40px]"></th>
               <th className="py-4 pl-4 w-[60px]">Status</th>
               <th className="py-4">Title</th>
               <th className="py-4 w-[120px]">Difficulty</th>
               <th className="py-4 w-[160px]">Category</th>
-              <th className="py-4 w-[120px] text-right pr-4">Acceptance</th>
+              <th className="py-4 w-[120px] text-right pr-6">Acceptance</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]/40">
-            {problems.length === 0 ? (
+            {items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-[var(--muted-foreground)]">
+                <td colSpan={6} className="text-center py-12 text-[var(--muted-foreground)]">
                   No problems found matching these criteria.
                 </td>
               </tr>
             ) : (
-              problems.map((problem, idx) => (
+              items.map((problem, idx) => (
               <tr 
                 key={problem.id}
                 className="group hover:bg-[var(--foreground)]/[0.02] transition-colors"
@@ -151,7 +198,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                   <div className="flex flex-col gap-1">
                     <Link href={`/problems/${problem.slug}`} className="flex items-center gap-3">
                       <span className="font-mono text-xs text-[var(--muted-foreground)]/40 group-hover:text-[var(--primary)]/60 transition-colors">
-                        {String(idx + 1 + (currentPage - 1) * 12).padStart(3, '0')}.
+                        {String(idx + 1).padStart(3, '0')}.
                       </span>
                       <span className="font-bold text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors tracking-tight">
                         {problem.title}
@@ -187,7 +234,7 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
                 </td>
 
                 {/* Acceptance Column */}
-                <td className="py-4 pr-4 text-right">
+                <td className="py-4 pr-6 text-right">
                   <span className="font-mono text-xs font-semibold text-[var(--muted-foreground)]">
                     {problem.acceptanceRate || "0.0"}%
                   </span>
@@ -198,28 +245,16 @@ export default function ProblemTable({ problems, totalPages, currentPage }: Prob
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-8 pt-6 border-t border-[var(--border)]/20">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2.5 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--foreground)]/10 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer group"
-          >
-            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-          </button>
-          
-          <div className="text-xs font-semibold text-[var(--muted-foreground)] font-mono">
-            Page <span className="text-[var(--primary)] font-bold">{currentPage}</span> / <span className="text-[var(--foreground)]">{totalPages}</span>
-          </div>
-          
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2.5 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--foreground)]/10 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer group"
-          >
-            <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+      {/* Sentinel Loader node for infinite scroll */}
+      {hasMore && (
+        <div ref={loaderRef} className="py-4 flex justify-center items-center">
+          {loadingMore ? (
+            <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500/80 animate-pulse">
+              Scroll down to load more
+            </span>
+          )}
         </div>
       )}
     </div>

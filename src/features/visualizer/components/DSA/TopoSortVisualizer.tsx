@@ -1,12 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { motion } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Shuffle, ListOrdered, Zap, Activity, Layers, Network, Hash, ChevronLeft, ChevronRight
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight,
+  Database, ListOrdered, Layers, Move, Plus, Trash2, GitPullRequest
 } from "lucide-react";
 
-const NUM_NODES = 6;
+interface Node {
+  id: number;
+  x: number;
+  y: number;
+}
+
+interface Edge {
+  u: number;
+  v: number;
+}
 
 interface TopoStep {
   inDegree: number[];
@@ -15,65 +25,100 @@ interface TopoStep {
   activeNode: number | null;
   activeEdge: [number, number] | null;
   message: string;
-  step: string;
+  stepType: "BOOT" | "SOURCE_FOUND" | "EXTRACTION" | "RELAX" | "BUFFER_ADD" | "COMPLETE";
   logs: string[];
 }
 
-export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) {
-  const [edges, setEdges] = useState<[number, number][]>([
-    [0, 2], [0, 3], [1, 3], [1, 4], [2, 5], [3, 5], [4, 5]
-  ]);
+const DEFAULT_NODES: Node[] = [
+  { id: 0, x: 120, y: 120 }, // A
+  { id: 1, x: 120, y: 280 }, // B
+  { id: 2, x: 300, y: 80 },  // C
+  { id: 3, x: 300, y: 200 }, // D
+  { id: 4, x: 300, y: 320 }, // E
+  { id: 5, x: 520, y: 200 }, // F
+];
+
+const DEFAULT_EDGES: Edge[] = [
+  { u: 0, v: 2 },
+  { u: 0, v: 3 },
+  { u: 1, v: 3 },
+  { u: 1, v: 4 },
+  { u: 2, v: 5 },
+  { u: 3, v: 5 },
+  { u: 4, v: 5 },
+];
+
+export default function TopoSortVisualizer({ speed = 1000 }: { speed?: number }) {
+  const [nodes, setNodes] = useState<Node[]>(DEFAULT_NODES);
+  const [edges, setEdges] = useState<Edge[]>(DEFAULT_EDGES);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [editMode, setEditMode] = useState<"select" | "addNode" | "addEdge" | "delete">("select");
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [draggedNodeId, setDraggedNodeId] = useState<number | null>(null);
 
-  const labels = useMemo(() => ["A", "B", "C", "D", "E", "F"], []);
+  const containerRef = useRef<SVGSVGElement>(null);
 
-  const generateRandomEdges = React.useCallback(() => {
+  const resetSimulation = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
-    const newEdges: [number, number][] = [];
-    for (let i = 0; i < NUM_NODES; i++) {
-        for (let j = i + 1; j < NUM_NODES; j++) {
-            if (Math.random() > 0.7) newEdges.push([i, j]);
-        }
-    }
-    if (newEdges.length === 0) newEdges.push([0, 1], [1, 2], [2, 3]);
-    setEdges(newEdges);
-  }, []);
-
-  const nodePositions = useMemo(() => [
-    { x: 60, y: 100 }, { x: 60, y: 300 }, { x: 200, y: 60 }, { x: 200, y: 200 }, { x: 200, y: 340 }, { x: 340, y: 200 }
-  ], []);
-
-  const getEdgeData = (uIdx: number, vIdx: number) => {
-    const u = nodePositions[uIdx];
-    const v = nodePositions[vIdx];
-    if (!u || !v) return null;
-    const dx = v.x - u.x, dy = v.y - u.y, d = Math.sqrt(dx*dx + dy*dy);
-    if (d === 0) return null;
-    const ux = dx/d, uy = dy/d;
-    const hasOpposite = edges.some(([su, sv]) => su === vIdx && sv === uIdx);
-    const curve = hasOpposite ? 15 : 0;
-    const cpX = (u.x + v.x)/2 - uy * curve;
-    const cpY = (u.y + v.y)/2 + ux * curve;
-    const path = `M ${u.x + ux*16} ${u.y + uy*16} Q ${cpX} ${cpY} ${v.x - ux*20} ${v.y - uy*20}`;
-    return { path, cpX, cpY, ux, uy };
   };
 
-  const history = useMemo(() => {
-    const steps: TopoStep[] = [];
-    let logs: string[] = [];
-    const inDegree = new Array(NUM_NODES).fill(0);
-    const adj: number[][] = Array.from({ length: NUM_NODES }, () => []);
+  const clearGraph = () => {
+    setNodes([]);
+    setEdges([]);
+    setSelectedNodeId(null);
+    resetSimulation();
+  };
 
-    for (const [u, v] of edges) {
-        adj[u].push(v);
-        inDegree[v]++;
+  const loadDefaultGraph = () => {
+    setNodes(DEFAULT_NODES);
+    setEdges(DEFAULT_EDGES);
+    setSelectedNodeId(null);
+    resetSimulation();
+  };
+
+  // Convert node numeric ID to letter (A, B, C...)
+  const getLabel = (id: number) => String.fromCharCode(65 + id);
+
+  // Generate Kahn's Topo Sort Steps Dynamically
+  const history: TopoStep[] = useMemo(() => {
+    if (nodes.length === 0) {
+      return [{
+        inDegree: [],
+        queue: [],
+        result: [],
+        activeNode: null,
+        activeEdge: null,
+        message: "No graph loaded. Click '+ Node' to start drawing.",
+        stepType: "COMPLETE",
+        logs: ["Graph is empty."]
+      }];
     }
 
-    const record = (msg: string, step: string, active: number | null = null, edge: [number, number] | null = null, q: number[] = [], res: number[] = []) => {
+    const V = nodes.length;
+    const inDegree = new Array(V).fill(0);
+    const adj = Array.from({ length: V }, () => [] as number[]);
+
+    edges.forEach(({ u, v }) => {
+      if (u < V && v < V) {
+        adj[u].push(v);
+        inDegree[v]++;
+      }
+    });
+
+    const steps: TopoStep[] = [];
+    const logs: string[] = [];
+    const record = (
+      msg: string, 
+      stepType: TopoStep["stepType"], 
+      active: number | null = null, 
+      edge: [number, number] | null = null, 
+      q: number[] = [], 
+      res: number[] = []
+    ) => {
+      logs.push(msg);
       steps.push({
         inDegree: [...inDegree],
         queue: [...q],
@@ -81,379 +126,554 @@ export default function TopoSortVisualizer({ speed = 800 }: { speed?: number }) 
         activeNode: active,
         activeEdge: edge,
         message: msg,
-        step: step,
+        stepType,
         logs: [...logs]
       });
     };
 
-    const addLog = (l: string) => { logs = [l, ...logs]; };
-
-    addLog("Dependency structure initialized.");
-    record("Calculating in-degrees for all nodes.", "BOOT", null, null, [], []);
+    record("Calculating in-degrees (incoming edges count) for all nodes.", "BOOT", null, null, [], []);
 
     const q: number[] = [];
-    for (let i = 0; i < NUM_NODES; i++) {
-        if (inDegree[i] === 0) {
-            q.push(i);
-            addLog(`Node ${labels[i]} has zero dependencies.`);
-            record(`Source node ${labels[i]} detected. Adding to queue.`, "SOURCE_FOUND", i, null, q, []);
-        }
+    for (let i = 0; i < V; i++) {
+      if (inDegree[i] === 0) {
+        q.push(i);
+        record(`Source Node ${getLabel(i)} has 0 in-degree. Enqueueing.`, "SOURCE_FOUND", i, null, [...q], []);
+      }
     }
 
     const res: number[] = [];
     while (q.length > 0) {
-        const u = q.shift()!;
-        res.push(u);
-        addLog(`Processing Node ${labels[u]}.`);
-        record(`Extracting node ${labels[u]} and appending to sorted sequence.`, "EXTRACTION", u, null, q, res);
+      const u = q.shift()!;
+      res.push(u);
+      record(`Extracting Node ${getLabel(u)} from queue. Appending to sorted output list.`, "EXTRACTION", u, null, [...q], [...res]);
 
-        for (const v of adj[u]) {
-            record(`Reducing dependency for neighbor ${labels[v]}.`, "RELAX", u, [u, v], q, res);
-            inDegree[v]--;
-            if (inDegree[v] === 0) {
-                q.push(v);
-                addLog(`Node ${labels[v]} dependencies resolved.`);
-                record(`In-degree for ${labels[v]} reached zero. Enqueueing.`, "BUFFER_ADD", v, null, q, res);
-            }
+      for (const v of adj[u]) {
+        // Simulating the decrement before actual decrement
+        const edge: [number, number] = [u, v];
+        inDegree[v]--;
+        record(`Reducing dependency from ${getLabel(u)} to ${getLabel(v)}. New in-degree of ${getLabel(v)} = ${inDegree[v]}.`, "RELAX", u, edge, [...q], [...res]);
+        
+        if (inDegree[v] === 0) {
+          q.push(v);
+          record(`In-degree of ${getLabel(v)} reached 0. Adding Node ${getLabel(v)} to queue.`, "BUFFER_ADD", v, null, [...q], [...res]);
         }
+      }
     }
 
-    addLog("Topological resolution complete.");
-    record("Global sequence fully resolved.", "COMPLETE", null, null, [], res);
+    if (res.length < V) {
+      record("Topological Sort complete. Cycle detected! Topological sorting is impossible for cyclic graphs.", "COMPLETE", null, null, [], [...res]);
+    } else {
+      record("Topological Sort complete. Kahn's sequence fully resolved.", "COMPLETE", null, null, [], [...res]);
+    }
 
     return steps;
-  }, [edges, labels]);
+  }, [nodes, edges]);
 
+  // Autoplay
   useEffect(() => {
     if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => {
-          if (prev >= history.length - 1) {
+      const timerId = setInterval(() => {
+        setCurrentIndex(p => {
+          if (p >= history.length - 1) {
             setIsPlaying(false);
-            return prev;
+            return p;
           }
-          return prev + 1;
+          return p + 1;
         });
       }, speed);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
+      return () => clearInterval(timerId);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = history[currentIndex] || { 
-    inDegree: [], queue: [], result: [], activeNode: null, activeEdge: null, message: "Initializing...", step: "IDLE", logs: []
+  const currentStep = history[currentIndex] || history[0];
+
+  const handleStepForward = () => {
+    setIsPlaying(false);
+    if (currentIndex < history.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const handleStepBackward = () => {
+    setIsPlaying(false);
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  // Canvas Interactions
+  const handleCanvasPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (editMode !== "addNode" || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 400 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const constrainedX = Math.max(35, Math.min(765, x));
+    const constrainedY = Math.max(35, Math.min(365, y));
+
+    const newId = nodes.length;
+    setNodes(prev => [...prev, { id: newId, x: constrainedX, y: constrainedY }]);
+    resetSimulation();
+  };
+
+  const handleNodeClick = (e: React.MouseEvent, nodeId: number) => {
+    e.stopPropagation();
+    setIsPlaying(false);
+
+    if (editMode === "delete") {
+      const remainingNodes = nodes.filter(n => n.id !== nodeId);
+      const newNodes = remainingNodes.map((n, idx) => ({ ...n, id: idx }));
+      
+      const oldIdToNewId = new Map<number, number>();
+      remainingNodes.forEach((n, idx) => oldIdToNewId.set(n.id, idx));
+
+      const newEdges = edges
+        .filter(edge => edge.u !== nodeId && edge.v !== nodeId)
+        .map(edge => ({
+          u: oldIdToNewId.get(edge.u)!,
+          v: oldIdToNewId.get(edge.v)!
+        }));
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setSelectedNodeId(null);
+      resetSimulation();
+    } else if (editMode === "addEdge") {
+      if (selectedNodeId === null) {
+        setSelectedNodeId(nodeId);
+      } else {
+        if (selectedNodeId === nodeId) {
+          setSelectedNodeId(null);
+        } else {
+          const u = selectedNodeId;
+          const v = nodeId;
+          const edgeExists = edges.some(edge => edge.u === u && edge.v === v);
+
+          if (edgeExists) {
+            setEdges(prev => prev.filter(edge => !(edge.u === u && edge.v === v)));
+          } else {
+            setEdges(prev => [...prev, { u, v }]);
+          }
+          setSelectedNodeId(null);
+          resetSimulation();
+        }
+      }
+    }
+  };
+
+  const handleNodePointerDown = (e: React.PointerEvent, nodeId: number) => {
+    if (editMode !== "select") return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggedNodeId(nodeId);
+  };
+
+  const handleCanvasPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (draggedNodeId === null || editMode !== "select" || !containerRef.current) return;
+    e.preventDefault();
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 400 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const constrainedX = Math.max(35, Math.min(765, x));
+    const constrainedY = Math.max(35, Math.min(365, y));
+
+    setNodes(prev => prev.map(n => n.id === draggedNodeId ? { ...n, x: constrainedX, y: constrainedY } : n));
+  };
+
+  const handleCanvasPointerUp = () => {
+    setDraggedNodeId(null);
+  };
+
+  // Helper to calculate directed path coordinates with marker offset
+  const getEdgePath = (uId: number, vId: number) => {
+    const n1 = nodes.find(n => n.id === uId);
+    const n2 = nodes.find(n => n.id === vId);
+    if (!n1 || !n2) return null;
+
+    const dx = n2.x - n1.x;
+    const dy = n2.y - n1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0) return null;
+
+    const ux = dx / dist;
+    const uy = dy / dist;
+
+    // Node radius = 28. Offset start by 28, and end by 36 (radius + marker size)
+    const x1 = n1.x + ux * 28;
+    const y1 = n1.y + uy * 28;
+    const x2 = n2.x - ux * 34;
+    const y2 = n2.y - uy * 34;
+
+    return `M ${x1} ${y1} L ${x2} ${y2}`;
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* Header Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-sm">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (currentIndex >= history.length - 1) setCurrentIndex(0);
-              setIsPlaying(!isPlaying);
-            }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--viz-rose)] hover:bg-[var(--viz-rose)]/80 text-black rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            {isPlaying ? (
-              <>
-                <Pause size={14} fill="currentColor" />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play size={14} fill="currentColor" />
-                <span>Play</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setCurrentIndex(0);
-            }}
-            className="p-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer"
-            title="Reset Simulation"
-          >
-            <RotateCcw size={14} />
-          </button>
-
-          <button
-            onClick={generateRandomEdges}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--card)] hover:bg-[var(--accent)] border border-[var(--border)] rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all text-xs font-bold cursor-pointer"
-            title="Randomize Graph"
-          >
-            <Shuffle size={14} />
-            <span>Randomize</span>
-          </button>
-        </div>
-
-        {/* Kahn's Algorithm Badge */}
-        <div className="px-3 py-1.5 bg-[var(--muted)]/20 border border-[var(--border)]/40 rounded-xl text-[10px] font-mono text-[var(--muted-foreground)] font-bold tracking-tight">
-          Kahn&apos;s Algorithm
-        </div>
-      </div>
-
-      {/* Visual Stage */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="flex flex-col gap-6 font-sans select-none text-[var(--foreground)] w-full">
+      {/* Visualizer Box */}
+      <div className="p-4 md:p-6 bg-[var(--card)] border border-[var(--border)] rounded-[2rem] shadow-xl flex flex-col min-h-[550px] w-full overflow-hidden">
         
-        {/* Topology View (Graph State) */}
-        <div className="relative w-full h-[320px] md:h-[400px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-0 lg:col-span-8">
+        {/* Top Control Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl shadow-sm mb-6">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} 
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" 
+              title="Reset"
+            >
+              <RotateCcw size={14}/>
+            </button>
+            <button 
+              onClick={handleStepBackward} 
+              disabled={currentIndex === 0 || history.length <= 1}
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all disabled:opacity-30 disabled:hover:bg-muted/20 cursor-pointer"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button 
+              onClick={handleStepForward} 
+              disabled={currentIndex === history.length - 1 || history.length <= 1}
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all disabled:opacity-30 disabled:hover:bg-muted/20 cursor-pointer"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
 
+          {/* Editor Toolset */}
+          <div className="flex items-center gap-1.5 p-1 bg-muted/20 border border-[var(--border)]/60 rounded-xl">
+            <button
+              onClick={() => { setEditMode("select"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "select" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Drag/Move Nodes"
+            >
+              <Move size={12} />
+              <span className="hidden sm:inline">Move</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("addNode"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "addNode" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click canvas to add Node"
+            >
+              <Plus size={12} />
+              <span className="hidden sm:inline">+ Node</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("addEdge"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "addEdge" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click Node A then Node B to create Directed Edge"
+            >
+              <GitPullRequest size={12} />
+              <span className="hidden sm:inline">Connect</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("delete"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "delete" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click a node to delete it"
+            >
+              <Trash2 size={12} />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+          </div>
 
-          <div className="relative w-full aspect-[4/3] max-w-[400px] h-auto flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={clearGraph}
+              className="px-3 py-2 border border-dashed border-[var(--border)] rounded-xl text-[10px] text-muted-foreground hover:text-red-500 font-bold hover:border-red-500/30 transition-all cursor-pointer"
+            >
+              Clear Graph
+            </button>
+            <button 
+              onClick={loadDefaultGraph}
+              className="px-3 py-2 bg-muted/20 border border-[var(--border)] rounded-xl text-[10px] text-muted-foreground hover:text-foreground font-bold transition-all cursor-pointer"
+            >
+              Default
+            </button>
+            <button 
+              onClick={() => setIsPlaying(!isPlaying)} 
+              disabled={history.length <= 1}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md disabled:opacity-40 disabled:hover:scale-100 cursor-pointer ${
+                isPlaying 
+                  ? "bg-muted/40 border border-[var(--border)] text-[var(--foreground)] hover:bg-muted/50" 
+                  : "bg-[var(--viz-rose)] text-white hover:scale-[1.03]"
+              }`}
+            >
+              {isPlaying ? <span className="flex items-center gap-1.5"><Pause size={12} /> Pause</span> : <span className="flex items-center gap-1.5"><Play size={12} /> Run</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 w-full animate-fadeIn">
+          
+          {/* Left Column (col-span-9): Graph Canvas */}
+          <div className="lg:col-span-9 relative p-3 md:p-6 bg-muted/10 border border-[var(--border)]/45 rounded-2xl flex flex-col items-center justify-center h-[400px] md:h-[460px] lg:h-[500px] w-full overflow-hidden">
+            
+            {/* SVG Canvas */}
             <svg 
-              viewBox="0 0 400 400" 
-              className="w-full h-full select-none touch-none z-10 overflow-visible"
+              ref={containerRef}
+              viewBox="0 0 800 400" 
+              onPointerDown={handleCanvasPointerDown}
+              onPointerMove={handleCanvasPointerMove}
+              onPointerUp={handleCanvasPointerUp}
+              onPointerLeave={handleCanvasPointerUp}
+              className="w-full h-full select-none overflow-visible z-10 cursor-crosshair"
             >
               <defs>
-                <marker id="topo-arrow" markerWidth="10" markerHeight="7" refX="19" refY="3.5" orient="auto">
+                <marker id="topo-arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
                   <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
                 </marker>
               </defs>
 
-              {/* Draw Edges */}
-              {edges.map(([u, v], i) => {
-                const edgeInfo = getEdgeData(u, v);
-                if (!edgeInfo) return null;
-                const { path } = edgeInfo;
+              {/* Edge Connections */}
+              {edges.map(({ u, v }, idx) => {
+                const n1 = nodes.find(n => n.id === u);
+                const n2 = nodes.find(n => n.id === v);
+                if (!n1 || !n2) return null;
 
-                const isActive = currentStep.activeEdge?.[0] === u && currentStep.activeEdge?.[1] === v;
+                const path = getEdgePath(u, v);
+                if (!path) return null;
+
+                const isActive = currentStep.activeEdge !== null && currentStep.activeEdge[0] === u && currentStep.activeEdge[1] === v;
                 const isResolved = currentStep.result.includes(u);
-                
-                let strokeColor = "text-[var(--muted-foreground)]/20";
-                let strokeWidth = 1.5;
+
+                // Lighter white edges for dark screen visibility
+                let strokeColor = "rgba(255, 255, 255, 0.28)"; 
+                let strokeWidth = 2.5;
 
                 if (isActive) {
-                  strokeColor = "text-[var(--viz-rose)]";
-                  strokeWidth = 3;
+                  strokeColor = "var(--viz-rose)";
+                  strokeWidth = 4.5;
                 } else if (isResolved) {
-                  strokeColor = "text-[var(--viz-green)]/30";
-                  strokeWidth = 1.5;
+                  strokeColor = "rgba(var(--viz-cyan-rgb), 0.35)";
+                  strokeWidth = 2.5;
                 }
 
                 return (
-                  <g key={`edge-${i}`}>
-                    <motion.path
+                  <g key={`edge-${idx}`}>
+                    <path
                       d={path}
                       fill="none"
-                      stroke="currentColor"
-                      className={strokeColor}
+                      stroke={strokeColor}
                       strokeWidth={strokeWidth}
-                      markerEnd="url(#topo-arrow)"
-                      animate={{ opacity: 1 }}
+                      className="transition-all duration-300"
+                      markerEnd="url(#topo-arrowhead)"
                     />
                     {isActive && (
-                      <motion.circle r="3" fill="var(--viz-rose)">
-                        <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
-                      </motion.circle>
+                      <circle r="4.5" fill="var(--viz-rose)">
+                        <animateMotion 
+                          dur="1.2s" 
+                          repeatCount="indefinite" 
+                          path={path} 
+                        />
+                      </circle>
                     )}
                   </g>
                 );
               })}
 
-              {/* Draw Nodes */}
-              {nodePositions.map((pos, idx) => {
-                const isA = currentStep.activeNode === idx;
-                const isQ = currentStep.queue.includes(idx);
-                const isR = currentStep.result.includes(idx);
+              {/* Node Bubbles */}
+              {nodes.map((pos) => {
+                const i = pos.id;
+                const isCurrent = currentStep.activeNode === i;
+                const isQ = currentStep.queue.includes(i);
+                const isR = currentStep.result.includes(i);
+                const isSelected = selectedNodeId === i;
 
                 let nodeColor = "var(--card)";
                 let borderColor = "var(--border)";
+                let textColor = "var(--foreground)";
+                let borderWidth = "2.5";
+                
+                let radius = 28; // Medium-sized nodes
+                let scale = 1;
 
-                if (isA) {
+                if (isSelected) {
                   nodeColor = "rgba(var(--viz-amber-rgb), 0.15)";
                   borderColor = "var(--viz-amber)";
+                  borderWidth = "3.5";
+                  scale = 1.1;
+                } else if (isCurrent) {
+                  nodeColor = "rgba(var(--viz-rose-rgb), 0.1)";
+                  borderColor = "var(--viz-rose)";
+                  borderWidth = "4";
+                  scale = 1.15;
                 } else if (isR) {
-                  nodeColor = "rgba(var(--viz-green-rgb), 0.15)";
+                  nodeColor = "rgba(var(--viz-green-rgb), 0.05)";
                   borderColor = "var(--viz-green)";
                 } else if (isQ) {
-                  nodeColor = "rgba(var(--viz-cyan-rgb), 0.15)";
+                  nodeColor = "rgba(var(--viz-cyan-rgb), 0.05)";
                   borderColor = "var(--viz-cyan)";
                 }
 
                 return (
-                  <g key={`node-group-${idx}`} className="select-none pointer-events-none">
+                  <g 
+                    key={`node-${i}`} 
+                    onClick={(e) => handleNodeClick(e, i)}
+                    onPointerDown={(e) => handleNodePointerDown(e, i)}
+                    className="transition-transform duration-300 cursor-grab active:cursor-grabbing"
+                  >
+                    {/* Node Bubble */}
                     <circle
                       cx={pos.x}
                       cy={pos.y}
-                      r="16"
+                      r={radius * scale}
                       fill={nodeColor}
                       stroke={borderColor}
-                      strokeWidth="2.5"
-                      className="transition-colors duration-200"
+                      strokeWidth={borderWidth}
+                      className="transition-colors duration-250"
                     />
-                    <text
-                      cx={pos.x}
-                      cy={pos.y}
-                      x={pos.x}
-                      y={pos.y}
-                      dy="3"
-                      textAnchor="middle"
-                      fontSize="10"
-                      fontWeight="bold"
-                      className="font-mono select-none pointer-events-none fill-[var(--foreground)]"
-                    >
-                      {labels[idx]}
-                    </text>
+
+                    {/* Node Alphabet label */}
                     <text
                       x={pos.x}
-                      y={pos.y + 24}
+                      y={pos.y + 6}
                       textAnchor="middle"
-                      fontSize="7"
-                      fontWeight="bold"
-                      className="font-mono fill-[var(--muted-foreground)]/50 uppercase tracking-tighter"
+                      fontSize="16"
+                      fontWeight="900"
+                      fill={textColor}
+                      className="font-mono select-none pointer-events-none"
                     >
-                      IN:{currentStep.inDegree[idx]}
+                      {getLabel(i)}
                     </text>
+
+                    {/* In-Degree badge text directly below the node */}
+                    {currentStep.inDegree?.[i] !== undefined && (
+                      <g transform={`translate(${pos.x}, ${pos.y + 44 * scale})`}>
+                        <rect
+                          x="-28"
+                          y="-8"
+                          width="56"
+                          height="14"
+                          rx="4"
+                          fill="var(--card)"
+                          stroke="var(--border)"
+                          strokeWidth="1"
+                        />
+                        <text
+                          textAnchor="middle"
+                          fontSize="7.5"
+                          fontWeight="bold"
+                          className="font-mono fill-[var(--muted-foreground)]"
+                        >
+                          in-degree: {currentStep.inDegree[i]}
+                        </text>
+                      </g>
+                    )}
                   </g>
                 );
               })}
             </svg>
-          </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Sorted Sequence */}
-          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-3 shadow-sm">
-            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
-              <ListOrdered size={14} className="text-[var(--viz-rose)]" /> Sorted Sequence
-            </h3>
-            <div className="flex flex-wrap gap-2 justify-center min-h-[36px] items-center">
-              <AnimatePresence>
-                {currentStep.result.map((idx) => (
-                  <motion.div
-                    key={`res-${idx}`}
-                    initial={{ scale: 0, x: -20 }}
-                    animate={{ scale: 1, x: 0 }}
-                    className="w-8 h-8 rounded-xl border border-[var(--viz-green)] bg-[var(--viz-green)]/10 flex items-center justify-center font-mono text-xs font-black text-[var(--viz-green)]"
-                  >
-                    {labels[idx]}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {currentStep.result.length === 0 && (
-                <span className="text-[9px] italic text-[var(--muted-foreground)]/30">Awaiting resolution...</span>
-              )}
+            {/* Queue & Sorted Output Panels merged below Canvas */}
+            <div className="absolute bottom-4 flex flex-wrap justify-center gap-4 z-20 w-full px-8">
+              {/* Queue */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-card/90 border border-border/80 rounded-xl shadow-sm text-[10px]">
+                <Layers size={11} className="text-[var(--viz-cyan)]" />
+                <span className="font-bold text-muted-foreground mr-1">Queue (In-Degree 0):</span>
+                <span className="font-mono font-black text-[var(--viz-cyan)]">
+                  [{currentStep.queue.map(id => getLabel(id)).join(", ")}]
+                </span>
+              </div>
+              {/* Result */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-card/90 border border-border/80 rounded-xl shadow-sm text-[10px]">
+                <ListOrdered size={11} className="text-[var(--viz-rose)]" />
+                <span className="font-bold text-muted-foreground mr-1">Sorted Output:</span>
+                <span className="font-mono font-black text-[var(--viz-rose)]">
+                  [{currentStep.result.map(id => getLabel(id)).join(" \u2192 ")}]
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Resolve Stream */}
-          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex-col h-[200px] flex shadow-sm">
-            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2 mb-3">
-              <Activity size={14} className="text-[var(--viz-rose)]" /> Resolve Stream
-            </h3>
-            <div className="flex flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar flex-1 text-xs font-mono">
-              <AnimatePresence mode="popLayout">
-                {currentStep.logs.map((log, i) => (
-                  <motion.div
-                    key={`log-${currentIndex}-${i}`}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-[11px] text-[var(--muted-foreground)]/80 leading-relaxed pl-2 border-l-2 border-[var(--border)] flex gap-1.5"
-                  >
-                    <span className="text-[var(--viz-rose)] font-black">»</span>
-                    {log}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {currentStep.logs.length === 0 && (
-                <span className="text-[9px] italic text-[var(--muted-foreground)]/30 text-center py-8">Bit stream empty...</span>
-              )}
+          {/* Right Column (col-span-3): Live Array State */}
+          <div className="lg:col-span-3 flex flex-col gap-4 h-[400px] md:h-[460px] lg:h-[500px]">
+            <div className="p-4 bg-muted/20 border border-[var(--border)]/45 rounded-2xl flex-1 flex flex-col overflow-hidden">
+              <h3 className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest flex items-center gap-1.5 mb-3 shrink-0">
+                <Database size={12} className="text-[var(--viz-cyan)]" /> Live In-Degrees
+              </h3>
+              <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                {nodes.length > 0 ? (
+                  <table className="w-full text-[10px] font-mono text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/40 text-muted-foreground">
+                        <th className="pb-2 pl-2">Node</th>
+                        <th className="pb-2 text-center">In-Degree</th>
+                        <th className="pb-2 text-center">In Queue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => {
+                        const i = n.id;
+                        const isCurrent = currentStep.activeNode === i;
+                        const inDeg = currentStep.inDegree?.[i] !== undefined ? currentStep.inDegree[i] : 0;
+                        const inQ = currentStep.queue.includes(i) ? "Yes" : "No";
+
+                        return (
+                          <tr key={i} className={`border-b border-border/20 last:border-0 transition-colors ${
+                            isCurrent ? "text-[var(--viz-rose)] font-black bg-[var(--viz-rose)]/5" : ""
+                          }`}>
+                            <td className="py-2.5 pl-3">Node {getLabel(i)}</td>
+                            <td className="py-2.5 text-center font-bold">{inDeg}</td>
+                            <td className="py-2.5 text-center">{inQ}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-10">
+                    <Database size={24} className="mb-2 text-muted-foreground" />
+                    <p className="text-[10px] uppercase font-bold tracking-wider">No nodes to show</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Buffer */}
-          <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-3 shadow-sm">
-            <h3 className="text-[9px] font-black uppercase text-[var(--muted-foreground)]/50 tracking-widest flex items-center gap-2">
-              <Layers size={14} className="text-[var(--viz-rose)]" /> Buffer (In-Degree 0)
-            </h3>
-            <div className="flex flex-wrap gap-2 justify-center min-h-[36px] items-center">
-              {currentStep.queue.map((idx) => (
-                <div key={`q-${idx}`} className="w-8 h-8 rounded-xl bg-[var(--viz-cyan)]/10 border border-[var(--viz-cyan)]/30 flex items-center justify-center text-[10px] font-black text-[var(--viz-cyan)]">
-                  {labels[idx]}
-                </div>
-              ))}
-              {currentStep.queue.length === 0 && (
-                <span className="text-[9px] italic text-[var(--muted-foreground)]/30">Buffer empty</span>
-              )}
+        </div>
+
+        {/* Bottom scrubbing bar & Step Explanation */}
+        <div className="mt-6 p-4 bg-muted/15 border border-[var(--border)]/45 rounded-2xl flex flex-col gap-3">
+          <div className="flex items-center gap-4 bg-[var(--card)] border border-[var(--border)]/70 px-4 py-3 rounded-xl shadow-sm w-full">
+            <span className="font-mono text-[9px] font-black uppercase text-[var(--muted-foreground)] tracking-widest min-w-[55px]">Step {currentIndex + 1}/{history.length}</span>
+            <div className="flex-1 h-1 bg-[var(--border)] rounded-full relative flex items-center group/slider">
+              <div 
+                className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(244,63,94,0.45)]" 
+                style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+              />
+              <input 
+                type="range" 
+                min="0" 
+                max={history.length - 1} 
+                value={currentIndex} 
+                onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                className="w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div 
+                className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+                style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+              />
             </div>
           </div>
-        </div>
-
-      </div>
-
-      {/* Message Box */}
-      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center shadow-sm">
-        <p className="text-xs text-[var(--viz-rose)] font-mono font-bold tracking-tight">
-          {currentStep.message}
-        </p>
-      </div>
-
-      {/* Scrubber Controls */}
-      <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex flex-col gap-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
-          <div className="flex items-center gap-2">
-            <Activity size={14} className="text-[var(--viz-rose)]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-              Step {currentIndex + 1} of {history.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} 
-              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button 
-              onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} 
-              className="p-1.5 hover:bg-[var(--accent)] border border-[var(--border)]/40 rounded-lg text-[var(--muted-foreground)] transition-all cursor-pointer"
-            >
-              <ChevronRight size={16} />
-            </button>
+          <div className="text-center text-[10px] font-mono text-[var(--viz-amber)] bg-card border border-border/70 py-2.5 px-3 rounded-lg leading-relaxed shadow-sm">
+            {currentStep.message}
           </div>
         </div>
 
-        <div className="relative flex items-center group/slider w-full h-6">
-          <div className="absolute w-full h-1 bg-[var(--border)] rounded-full" />
-          <div 
-            className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(244,63,94,0.4)]" 
-            style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
-          />
-          <input 
-            type="range" 
-            min="0" 
-            max={history.length - 1} 
-            value={currentIndex} 
-            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-            className="w-full h-full opacity-0 cursor-pointer z-10"
-          />
-          <div 
-            className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
-            style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
-          />
-        </div>
-      </div>
-
-      {/* Legend Block */}
-      <div className="px-4 py-4 bg-[var(--muted)]/20 border border-[var(--border)] rounded-2xl flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Active (Extracting)</span>
-        </div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Ready (In Queue)</span>
-        </div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)]" />
-          <span className="text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">Resolved (Sorted)</span>
-        </div>
       </div>
     </div>
   );

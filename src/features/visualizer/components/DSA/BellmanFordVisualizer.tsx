@@ -1,633 +1,666 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { motion } from "framer-motion";
 import { 
-  Play, RotateCcw, Pause, Hash, ChevronLeft, ChevronRight, 
-  Activity, MapPin, RefreshCw, Plus, AlertTriangle, Layers, Database
+  Play, RotateCcw, Pause, ChevronLeft, ChevronRight,
+  Database, Move, Plus, Trash2, GitPullRequest
 } from "lucide-react";
 
-const INF = 99;
+const INF = 999;
 
-type Node = { id: number; x: number; y: number };
-
-interface BellmanFordState {
-  distances: number[];
-  activeEdge: [number, number] | null;
-  relaxedEdges: Set<string>;
-  iteration: number;
-  message: string;
-  step: string;
-  logs: string[];
-  hasNegativeCycle: boolean;
-  phase: "INIT" | "RELAX" | "DETECTION" | "COMPLETE";
+interface Node {
+  id: number;
+  x: number;
+  y: number;
 }
 
-export default function BellmanFordVisualizer({ speed = 800 }: { speed?: number }) {
-  // Virtual Coordinate Space: 800x500
-  const V_WIDTH = 800;
-  const V_HEIGHT = 500;
+interface Edge {
+  u: number;
+  v: number;
+  weight: number;
+}
 
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [matrix, setMatrix] = useState<number[][]>([]);
+interface BellmanStep {
+  distances: number[];
+  predecessor: number[];
+  activeEdge: [number, number] | null;
+  relaxedEdges: Set<string>;
+  message: string;
+  hasNegativeCycle: boolean;
+}
+
+const DEFAULT_NODES: Node[] = [
+  { id: 0, x: 150, y: 200 },
+  { id: 1, x: 300, y: 100 },
+  { id: 2, x: 300, y: 300 },
+  { id: 3, x: 500, y: 100 },
+  { id: 4, x: 500, y: 300 },
+  { id: 5, x: 650, y: 200 },
+];
+
+const DEFAULT_EDGES: Edge[] = [
+  { u: 0, v: 1, weight: 6 },
+  { u: 0, v: 2, weight: 4 },
+  { u: 1, v: 3, weight: -2 }, // Shows negative weight capability
+  { u: 2, v: 1, weight: -1 },
+  { u: 2, v: 4, weight: 3 },
+  { u: 3, v: 5, weight: 3 },
+  { u: 4, v: 3, weight: 1 },
+  { u: 4, v: 5, weight: 3 },
+];
+
+export default function BellmanFordVisualizer({ speed = 1000 }: { speed?: number }) {
+  const [nodes, setNodes] = useState<Node[]>(DEFAULT_NODES);
+  const [edges, setEdges] = useState<Edge[]>(DEFAULT_EDGES);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<number | null>(null);
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [editMode, setEditMode] = useState<"select" | "addNode" | "addEdge" | "delete">("select");
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [draggedNodeId, setDraggedNodeId] = useState<number | null>(null);
 
-  // Dragging state
-  const [draggingNode, setDraggingNode] = useState<number | null>(null);
-  const startDragPos = useRef({ pointerX: 0, pointerY: 0, nodeX: 0, nodeY: 0 });
+  const containerRef = useRef<SVGSVGElement>(null);
 
-  // Initialize nodes to default state
-  const initializeDefaultGraph = React.useCallback(() => {
-    const numNodes = 5;
-    const centerX = V_WIDTH / 2;
-    const centerY = V_HEIGHT / 2;
-    const radius = 150;
-
-    const initialNodes: Node[] = [];
-    for (let i = 0; i < numNodes; i++) {
-      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
-      initialNodes.push({
-        id: i,
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-      });
-    }
-
-    const initialMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
-    for (let i = 0; i < numNodes; i++) {
-      for (let j = 0; j < numNodes; j++) {
-        if (i !== j && Math.random() < 0.35) {
-          const weight = Math.floor(Math.random() * 12) - 4;
-          initialMatrix[i][j] = weight === 0 ? 1 : weight;
-        }
-      }
-    }
-    for (let i = 0; i < numNodes - 1; i++) {
-        if (initialMatrix[i][i+1] === 0) initialMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
-    }
-
-    setNodes(initialNodes);
-    setMatrix(initialMatrix);
+  const resetSimulation = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
-  }, []);
+  };
 
-  useEffect(() => {
+  const clearGraph = () => {
+    setNodes([]);
+    setEdges([]);
+    setSelectedNodeId(null);
+    resetSimulation();
+  };
+
+  const loadDefaultGraph = () => {
+    setNodes(DEFAULT_NODES);
+    setEdges(DEFAULT_EDGES);
+    setSelectedNodeId(null);
+    resetSimulation();
+  };
+
+  // Generate Bellman-Ford steps dynamically
+  const history: BellmanStep[] = useMemo(() => {
     if (nodes.length === 0) {
-      const t = setTimeout(() => {
-        initializeDefaultGraph();
-      }, 0);
-      return () => clearTimeout(t);
+      return [{
+        distances: [],
+        predecessor: [],
+        activeEdge: null,
+        relaxedEdges: new Set(),
+        message: "No graph loaded. Click '+ Node' to start drawing.",
+        hasNegativeCycle: false
+      }];
     }
-  }, [nodes.length, initializeDefaultGraph]);
 
-  const resetSimulation = React.useCallback(() => {
-    setIsPlaying(false);
-    setCurrentIndex(0);
-  }, []);
-
-  const generateRandomGraph = React.useCallback(() => {
-    resetSimulation();
-    const numNodes = 5;
-    const centerX = V_WIDTH / 2;
-    const centerY = V_HEIGHT / 2;
-    const radius = 150;
-
-    const newNodes: Node[] = [];
-    for (let i = 0; i < numNodes; i++) {
-      const angle = (i / numNodes) * 2 * Math.PI - Math.PI / 2;
-      newNodes.push({
-        id: i,
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-      });
-    }
-    setNodes(newNodes);
-
-    const newMatrix = Array(numNodes).fill(0).map(() => Array(numNodes).fill(0));
-    for (let i = 0; i < numNodes; i++) {
-      for (let j = 0; j < numNodes; j++) {
-        if (i !== j && Math.random() < 0.35) {
-          const weight = Math.floor(Math.random() * 12) - 4;
-          newMatrix[i][j] = weight === 0 ? 1 : weight;
-        }
-      }
-    }
-    for (let i = 0; i < numNodes - 1; i++) {
-        if (newMatrix[i][i+1] === 0) newMatrix[i][i+1] = Math.floor(Math.random() * 5) + 1;
-    }
-    setMatrix(newMatrix);
-  }, [resetSimulation]);
-
-  const addNode = React.useCallback(() => {
-    if (nodes.length >= 8) return;
-    const newId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
-    const newNode = {
-      id: newId,
-      x: V_WIDTH / 2 + (Math.random() - 0.5) * 150,
-      y: V_HEIGHT / 2 + (Math.random() - 0.5) * 150
-    };
-    
-    setNodes(prev => [...prev, newNode]);
-    setMatrix(prev => {
-        const newSize = Math.max(prev.length, newId + 1);
-        const newMat = Array(newSize).fill(0).map((_, r) => 
-            Array(newSize).fill(0).map((_, c) => {
-                if (r < prev.length && c < prev[0]?.length) return prev[r][c];
-                return 0;
-            })
-        );
-        return newMat;
-    });
-    resetSimulation();
-  }, [nodes, resetSimulation]);
-
-  const handleNodeClick = React.useCallback((id: number) => {
-    if (selectedNode === null) {
-      setSelectedNode(id);
-    } else if (selectedNode === id) {
-      setSelectedNode(null);
-    } else {
-      const weight = Math.floor(Math.random() * 9) - 3; // Allows negative weights!
-      const finalWeight = weight === 0 ? 1 : weight;
-      setMatrix(prev => {
-          const newMat = prev.map(row => [...row]);
-          const currentW = newMat[selectedNode][id];
-          newMat[selectedNode][id] = currentW !== 0 ? 0 : finalWeight;
-          return newMat;
-      });
-      setSelectedNode(null);
-      resetSimulation();
-    }
-  }, [selectedNode, resetSimulation]);
-
-  const handlePointerDown = (e: React.PointerEvent, node: Node) => {
-    e.preventDefault();
-    setDraggingNode(node.id);
-    startDragPos.current = {
-      pointerX: e.clientX,
-      pointerY: e.clientY,
-      nodeX: node.x,
-      nodeY: node.y
-    };
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (draggingNode === null) return;
-    if (!containerRef.current) return;
-
-    const rect = containerRef.current.getBoundingClientRect();
-    
-    const dx = (e.clientX - startDragPos.current.pointerX) * (V_WIDTH / rect.width);
-    const dy = (e.clientY - startDragPos.current.pointerY) * (V_HEIGHT / rect.height);
-    
-    const newX = startDragPos.current.nodeX + dx;
-    const newY = startDragPos.current.nodeY + dy;
-
-    setNodes(prev => prev.map(n => n.id === draggingNode ? {
-      ...n,
-      x: Math.min(Math.max(newX, 30), V_WIDTH - 30),
-      y: Math.min(Math.max(newY, 30), V_HEIGHT - 30)
-    } : n));
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (draggingNode !== null) {
-      const id = draggingNode;
-      setDraggingNode(null);
-
-      const dist = Math.hypot(e.clientX - startDragPos.current.pointerX, e.clientY - startDragPos.current.pointerY);
-      if (dist < 5) {
-        handleNodeClick(id);
-      }
-    }
-  };
-
-  const history = useMemo(() => {
-    if (nodes.length === 0) return [];
-    
     const V = nodes.length;
-    const maxId = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 0;
-    const steps: BellmanFordState[] = [];
-    const dist = Array(maxId).fill(INF);
+    const steps: BellmanStep[] = [];
+    const distances = new Array(V).fill(INF);
+    const predecessor = new Array(V).fill(-1);
     const relaxedEdges = new Set<string>();
-    let currentLogs: string[] = [];
-    
-    const record = (msg: string, step: string, activeEdge: [number, number] | null = null, iteration: number = 0, phase: BellmanFordState["phase"] = "RELAX", hasNeg: boolean = false) => {
+
+    distances[0] = 0;
+
+    const record = (msg: string, activeEdge: [number, number] | null = null, hasNegativeCycle = false) => {
       steps.push({
-        distances: [...dist],
+        distances: [...distances],
+        predecessor: [...predecessor],
         activeEdge,
         relaxedEdges: new Set(relaxedEdges),
-        iteration,
         message: msg,
-        logs: [...currentLogs],
-        hasNegativeCycle: hasNeg,
-        phase,
-        step
+        hasNegativeCycle
       });
     };
 
-    const addLog = (l: string) => { currentLogs = [l, ...currentLogs]; };
+    record("Bellman-Ford initialized. Source Node 0 set to 0, all other nodes set to \u221E.");
 
-    const startNode = nodes[0]?.id ?? 0;
-    dist[startNode] = 0;
-    addLog(`Initialized: source node ${startNode} distance set to 0.`);
-    record(`Bellman-Ford initiated. Initializing distances from source node ${startNode}.`, "INIT", null, 0, "INIT");
+    // Run V - 1 iterations
+    let globalChange = false;
+    for (let i = 1; i <= V - 1; i++) {
+      let iterationChange = false;
+      record(`Starting Iteration ${i} of relaxation loop.`);
 
-    const edges: { u: number, v: number, w: number }[] = [];
-    for (let i = 0; i < maxId; i++) {
-        for (let j = 0; j < maxId; j++) {
-            if (matrix[i]?.[j] !== 0) edges.push({ u: i, v: j, w: matrix[i][j] });
+      for (const { u, v, weight } of edges) {
+        if (u >= V || v >= V) continue;
+
+        const currentDist = distances[v];
+        const newDist = distances[u] === INF ? INF : distances[u] + weight;
+
+        record(`Checking Edge ${u} \u2192 ${v} (weight: ${weight}). Potential distance = ${newDist === INF ? "\u221E" : newDist}.`, [u, v]);
+
+        if (newDist < currentDist) {
+          distances[v] = newDist;
+          predecessor[v] = u;
+          relaxedEdges.add(`${u}-${v}`);
+          iterationChange = true;
+          globalChange = true;
+          record(`Relaxed Edge ${u} \u2192 ${v}. Updated distance to Node ${v} from ${currentDist === INF ? "\u221E" : currentDist} to ${newDist}.`, [u, v]);
         }
+      }
+
+      if (!iterationChange) {
+        record(`No distances relaxed in Iteration ${i}. Shortest paths have converged early!`);
+        break;
+      }
     }
 
-    for (let i = 1; i < V; i++) {
-        let changed = false;
-        addLog(`--- Starting Iteration ${i} ---`);
-        for (const { u, v, w } of edges) {
-            record(`Checking edge ${u} → ${v} (Weight: ${w}). Current distance[${v}] = ${dist[v] === INF ? "∞" : dist[v]}`, "PROBE", [u, v], i, "RELAX");
-            
-            if (dist[u] !== INF && dist[u] + w < dist[v]) {
-                dist[v] = dist[u] + w;
-                relaxedEdges.add(`${u}-${v}`);
-                changed = true;
-                addLog(`Relaxed edge: distance to node ${v} updated to ${dist[v]}.`);
-                record(`Relaxed edge: distance to node ${v} updated to ${dist[v]}.`, "RELAX", [u, v], i, "RELAX");
-            } else {
-                record(`No update: distance to node ${v} is already optimal.`, "STABLE", [u, v], i, "RELAX");
-            }
+    // N-th iteration to check for negative cycles
+    let hasNegativeCycle = false;
+    if (globalChange) {
+      record("Checking for negative weight cycles (Iteration V).");
+      for (const { u, v, weight } of edges) {
+        if (u >= V || v >= V) continue;
+        if (distances[u] !== INF && distances[u] + weight < distances[v]) {
+          hasNegativeCycle = true;
+          record(`Negative cycle detected at Edge ${u} \u2192 ${v}! Infinite negative path exists.`, [u, v], true);
+          break;
         }
-        if (!changed) {
-            addLog(`Optimal paths converged at iteration ${i}.`);
-            record(`Optimal paths converged at iteration ${i}.`, "CONVERGED", null, i, "RELAX");
-            break;
-        }
+      }
     }
 
-    // Negative weight cycle check
-    addLog(`Checking for negative weight cycles...`);
-    for (const { u, v, w } of edges) {
-        record(`Checking edge ${u} → ${v} (Weight: ${w}) for negative cycle.`, "DETECTION_PROBE", [u, v], V, "DETECTION");
-        if (dist[u] !== INF && dist[u] + w < dist[v]) {
-            addLog(`Negative cycle detected on edge ${u} → ${v}!`);
-            record(`Negative weight cycle detected! Edge ${u} → ${v} can still be relaxed.`, "FAILURE", [u, v], V, "DETECTION", true);
-            break;
-        }
+    if (!hasNegativeCycle) {
+      record("No negative weight cycle detected. Paths are stable and complete.");
     }
 
-    if (!steps[steps.length - 1].hasNegativeCycle) {
-        addLog(`Bellman-Ford execution complete. Shortest paths established.`);
-        record("Bellman-Ford execution complete.", "COMPLETE", null, V, "COMPLETE");
-    }
-    
     return steps;
-  }, [nodes, matrix]);
+  }, [nodes, edges]);
 
+  // Autoplay
   useEffect(() => {
     if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => {
-          if (prev >= history.length - 1) {
+      const timerId = setInterval(() => {
+        setCurrentIndex(p => {
+          if (p >= history.length - 1) {
             setIsPlaying(false);
-            return prev;
+            return p;
           }
-          return prev + 1;
+          return p + 1;
         });
       }, speed);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
+      return () => clearInterval(timerId);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, history.length, speed]);
 
-  const currentStep = history[currentIndex] || {
-    distances: [],
-    activeEdge: null,
-    relaxedEdges: new Set(),
-    iteration: 0,
-    message: "Initializing...",
-    step: "IDLE",
-    logs: [],
-    hasNegativeCycle: false,
-    phase: "INIT"
+  const currentStep = history[currentIndex] || history[0];
+
+  const handleStepForward = () => {
+    setIsPlaying(false);
+    if (currentIndex < history.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
-  const getEdgeData = (uIdx: number, vIdx: number) => {
-    const u = nodes.find(n => n.id === uIdx);
-    const v = nodes.find(n => n.id === vIdx);
-    if (!u || !v) return null;
-    const dx = v.x - u.x, dy = v.y - u.y, distVal = Math.sqrt(dx*dx + dy*dy);
-    const ux = dx/distVal, uy = dy/distVal;
-    const hasOpposite = matrix[vIdx]?.[uIdx] !== 0;
-    const curve = hasOpposite ? 30 : 0;
-    const cpX = (u.x + v.x)/2 - uy * curve;
-    const cpY = (u.y + v.y)/2 + ux * curve;
-    const path = `M ${u.x + ux*20} ${u.y + uy*20} Q ${cpX} ${cpY} ${v.x - ux*25} ${v.y - uy*25}`;
-    return { path, cpX, cpY, ux, uy };
+  const handleStepBackward = () => {
+    setIsPlaying(false);
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  // Canvas Interactions
+  const handleCanvasPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (editMode !== "addNode" || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 400 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const constrainedX = Math.max(35, Math.min(765, x));
+    const constrainedY = Math.max(35, Math.min(365, y));
+
+    const newId = nodes.length;
+    setNodes(prev => [...prev, { id: newId, x: constrainedX, y: constrainedY }]);
+    resetSimulation();
+  };
+
+  const handleNodeClick = (e: React.MouseEvent, nodeId: number) => {
+    e.stopPropagation();
+    setIsPlaying(false);
+
+    if (editMode === "delete") {
+      const remainingNodes = nodes.filter(n => n.id !== nodeId);
+      const newNodes = remainingNodes.map((n, idx) => ({ ...n, id: idx }));
+      
+      const oldIdToNewId = new Map<number, number>();
+      remainingNodes.forEach((n, idx) => oldIdToNewId.set(n.id, idx));
+
+      const newEdges = edges
+        .filter(edge => edge.u !== nodeId && edge.v !== nodeId)
+        .map(edge => ({
+          u: oldIdToNewId.get(edge.u)!,
+          v: oldIdToNewId.get(edge.v)!,
+          weight: edge.weight
+        }));
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setSelectedNodeId(null);
+      resetSimulation();
+    } else if (editMode === "addEdge") {
+      if (selectedNodeId === null) {
+        setSelectedNodeId(nodeId);
+      } else {
+        if (selectedNodeId === nodeId) {
+          setSelectedNodeId(null);
+        } else {
+          const u = selectedNodeId;
+          const v = nodeId;
+          const edgeExists = edges.some(edge => edge.u === u && edge.v === v);
+
+          if (edgeExists) {
+            setEdges(prev => prev.filter(edge => !(edge.u === u && edge.v === v)));
+          } else {
+            // Random weights between -2 and 7 (includes negative edges!)
+            const randomWeight = Math.floor(Math.random() * 10) - 2;
+            setEdges(prev => [...prev, { u, v, weight: randomWeight }]);
+          }
+          setSelectedNodeId(null);
+          resetSimulation();
+        }
+      }
+    }
+  };
+
+  const handleNodePointerDown = (e: React.PointerEvent, nodeId: number) => {
+    if (editMode !== "select") return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggedNodeId(nodeId);
+  };
+
+  const handleCanvasPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (draggedNodeId === null || editMode !== "select" || !containerRef.current) return;
+    e.preventDefault();
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 400 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const constrainedX = Math.max(35, Math.min(765, x));
+    const constrainedY = Math.max(35, Math.min(365, y));
+
+    setNodes(prev => prev.map(n => n.id === draggedNodeId ? { ...n, x: constrainedX, y: constrainedY } : n));
+  };
+
+  const handleCanvasPointerUp = () => {
+    setDraggedNodeId(null);
+  };
+
+  const getEdgePath = (uId: number, vId: number) => {
+    const n1 = nodes.find(n => n.id === uId);
+    const n2 = nodes.find(n => n.id === vId);
+    if (!n1 || !n2) return null;
+
+    const dx = n2.x - n1.x;
+    const dy = n2.y - n1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0) return null;
+
+    const ux = dx / dist;
+    const uy = dy / dist;
+
+    const hasOpposite = edges.some(edge => edge.u === vId && edge.v === uId);
+    const curve = hasOpposite ? 25 : 0;
+
+    const cpX = (n1.x + n2.x) / 2 - uy * curve;
+    const cpY = (n1.y + n2.y) / 2 + ux * curve;
+
+    const x1 = n1.x + ux * 28;
+    const y1 = n1.y + uy * 28;
+    const x2 = n2.x - ux * 34;
+    const y2 = n2.y - uy * 34;
+
+    if (curve !== 0) {
+      return { path: `M ${x1} ${y1} Q ${cpX} ${cpY} ${x2} ${y2}`, cpX, cpY };
+    }
+    return { path: `M ${x1} ${y1} L ${x2} ${y2}`, cpX: (x1 + x2) / 2, cpY: (y1 + y2) / 2 };
   };
 
   return (
-    <div className="flex flex-col gap-4 select-none font-sans w-full">
-      {/* Header + Mode Selector */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold tracking-tight text-[var(--viz-lavender)]">Bellman-Ford</h2>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted-foreground)]/40">Shortest Paths with Negative Edge Weights</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <button onClick={addNode} className="flex items-center gap-1 px-3 py-1.5 bg-[var(--muted)] hover:bg-[var(--accent)] rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--muted-foreground)]"><Plus size={14}/> Add Node</button>
-          <button onClick={generateRandomGraph} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]" title="Randomize Graph Weights"><RefreshCw size={16}/></button>
-          <button 
-            onClick={() => {
-              if (currentIndex >= history.length - 1) setCurrentIndex(0);
-              setIsPlaying(!isPlaying);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${isPlaying ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-[var(--viz-lavender)] text-black border-transparent hover:scale-105"}`}
-          >
-            {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
-            {isPlaying ? "Pause" : "Play"}
-          </button>
-          <button onClick={initializeDefaultGraph} className="p-2 bg-[var(--muted)] hover:bg-[var(--foreground)]/5 rounded-xl border border-[var(--border)] transition-all text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)]" title="Reset Graph to Default"><RotateCcw size={16}/></button>
-        </div>
-      </div>
-
-      {/* Traversal State Info Bar */}
-      <div className="flex items-center gap-6 px-4 py-2 bg-[var(--card)] border border-[var(--border)] rounded-xl text-[10px] font-mono">
-        <span className="text-[var(--muted-foreground)]/50">Current Iteration: <strong className="text-[var(--viz-lavender)]">{currentStep.iteration}</strong></span>
-        <span className="text-[var(--muted-foreground)]/50">Active Phase: <strong className="text-[var(--viz-cyan)]">{currentStep.phase === "DETECTION" ? "Negative Cycle Check" : currentStep.phase === "INIT" ? "Initialization" : currentStep.phase === "COMPLETE" ? "Finished" : "Relaxation"}</strong></span>
-      </div>
-
-      {/* Visual Canvas (Autofits perfectly & never overflows) */}
-      <div ref={containerRef} className="relative w-full h-[360px] md:h-[450px] bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)] overflow-hidden shadow-inner flex items-center justify-center p-0">
-        {/* Subtle grid backdrop */}
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
-             style={{ backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-
-        {/* Real-time Status Badge / Help message */}
-        <div className="absolute top-4 left-4 flex justify-center z-30 pointer-events-none">
-          <div className="px-3 py-1.5 bg-[var(--popover)]/60 text-[var(--popover-foreground)] rounded-full border border-[var(--border)]/10 shadow-sm flex items-center gap-2">
-            <span className="text-[9px] font-bold text-[var(--muted-foreground)]/80">
-              {selectedNode !== null ? `Select target node to connect with node ${selectedNode}` : "Drag nodes to move • Click node, then click another to connect"}
-            </span>
-          </div>
-        </div>
-
-        {/* Scalable Vector SVG Canvas */}
-        <svg 
-          viewBox={`0 0 ${V_WIDTH} ${V_HEIGHT}`} 
-          className="w-full h-full select-none touch-none z-10 overflow-visible"
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-        >
-          <defs>
-              <marker id="arrowhead-bellman" markerWidth="10" markerHeight="7" refX="19" refY="3.5" orient="auto">
-                  <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-              </marker>
-          </defs>
-
-          {/* Edges */}
-          {matrix.map((row, i) => 
-            row.map((weight, j) => {
-              if (weight === 0) return null;
-              const edgeInfo = getEdgeData(i, j);
-              if (!edgeInfo) return null;
-              const { path } = edgeInfo;
-              
-              const isActive = currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j;
-              const isRelaxed = currentStep.relaxedEdges.has(`${i}-${j}`);
-              const isFailure = currentStep.hasNegativeCycle && isActive;
-
-              return (
-                <g key={`edge-group-${i}-${j}`}>
-                  <motion.path
-                    d={path}
-                    fill="none"
-                    stroke="currentColor"
-                    className={`${isFailure ? "text-[var(--viz-rose)]" : isActive ? "text-[var(--viz-cyan)]" : isRelaxed ? "text-[var(--viz-green)]/40" : "text-[var(--muted-foreground)]/35"}`}
-                    strokeWidth={isActive ? 3 : 1.5}
-                    markerEnd="url(#arrowhead-bellman)"
-                    animate={{ opacity: 1 }}
-                  />
-                  {isActive && (
-                    <motion.circle r="3.5" fill={isFailure ? "var(--viz-rose)" : "var(--viz-cyan)"}>
-                      <animateMotion dur="0.8s" repeatCount="indefinite" path={path} />
-                    </motion.circle>
-                  )}
-                </g>
-              );
-            })
-          )}
-
-          {/* Edge Weights (Centered bubbles on quadratic curve) */}
-          {matrix.map((row, i) => 
-            row.map((weight, j) => {
-              if (weight === 0) return null;
-              const edgeInfo = getEdgeData(i, j);
-              if (!edgeInfo) return null;
-              const { cpX, cpY } = edgeInfo;
-              
-              const isActive = currentStep.activeEdge?.[0] === i && currentStep.activeEdge?.[1] === j;
-
-              return (
-                <g key={`weight-bubble-${i}-${j}`}>
-                  <circle 
-                    cx={cpX} 
-                    cy={cpY} 
-                    r="10" 
-                    fill="var(--viz-amber)" 
-                    stroke="var(--background)" 
-                    strokeWidth={isActive ? 2 : 0}
-                    className="shadow-sm"
-                  />
-                  <text 
-                    x={cpX} 
-                    y={cpY} 
-                    dy="3" 
-                    textAnchor="middle" 
-                    fontSize="9" 
-                    fontWeight="900" 
-                    className="font-mono fill-black pointer-events-none select-none"
-                  >
-                    {weight}
-                  </text>
-                </g>
-              );
-            })
-          )}
-
-          {/* Nodes */}
-          {nodes.map(node => {
-            const d = currentStep.distances[node.id];
-            const isActive = currentStep.activeEdge?.[0] === node.id || currentStep.activeEdge?.[1] === node.id;
-            const isSource = node.id === (nodes[0]?.id ?? 0);
-            const isSelected = selectedNode === node.id;
-
-            let nodeColor = "var(--card)";
-            let borderColor = "var(--border)";
-            let textColor = "var(--foreground)";
-
-            if (isSelected) {
-              nodeColor = "var(--viz-amber)";
-              borderColor = "var(--viz-amber)";
-              textColor = "#000";
-            } else if (isActive) {
-              nodeColor = "rgba(var(--viz-cyan-rgb), 0.1)";
-              borderColor = "var(--viz-cyan)";
-            } else if (d !== INF) {
-              nodeColor = "rgba(var(--viz-cyan-rgb), 0.03)";
-              borderColor = "var(--viz-cyan)";
-            }
-
-            return (
-              <g key={`node-group-${node.id}`} className="cursor-pointer" onPointerDown={(e) => handlePointerDown(e, node)}>
-                {/* Outer circle */}
-                <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r="20"
-                  fill={nodeColor}
-                  stroke={borderColor}
-                  strokeWidth="2.5"
-                  className="transition-colors duration-200"
-                />
-
-                {/* Node ID */}
-                <text
-                  x={node.x}
-                  y={node.y}
-                  dy="-2"
-                  textAnchor="middle"
-                  fontSize="9"
-                  className="font-mono font-black fill-[var(--muted-foreground)]/50 select-none pointer-events-none"
-                >
-                  {node.id}
-                </text>
-
-                {/* Node Distance value */}
-                <text
-                  x={node.x}
-                  y={node.y}
-                  dy="9"
-                  textAnchor="middle"
-                  fontSize="11"
-                  fontWeight="bold"
-                  className="font-mono select-none pointer-events-none fill-[var(--foreground)]"
-                >
-                  {d === INF ? "∞" : d}
-                </text>
-
-                {/* Source Node Pin */}
-                {isSource && (
-                  <path
-                    d={`M ${node.x - 6} ${node.y - 34} c -5 0 -9 4 -9 9 c 0 7 9 17 9 17 s 9 -10 9 -17 c 0 -5 -4 -9 -9 -9 z`}
-                    fill="var(--viz-rose)"
-                    className="pointer-events-none"
-                  />
-                )}
-
-                {/* Drag / Pointer capture area (Drawn on top of solid shapes) */}
-                <motion.circle
-                  cx={node.x}
-                  cy={node.y}
-                  r="26"
-                  fill="rgba(0,0,0,0)"
-                  pointerEvents="all"
-                  animate={{ scale: isActive || isSelected ? 1.15 : 1 }}
-                />
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* ── Step Message (below canvas) ── */}
-      <div className="w-full px-4 py-2.5 bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl text-center">
-        <div className="flex items-center justify-center gap-2">
-          {currentStep.hasNegativeCycle && <AlertTriangle size={14} className="text-[var(--viz-rose)]" />}
-          <p className={`text-xs font-mono font-medium ${currentStep.hasNegativeCycle ? "text-[var(--viz-rose)]" : "text-[var(--viz-cyan)]"}`}>{currentStep.message}</p>
-        </div>
-      </div>
-
-      {/* ── Step Log (below canvas) ── */}
-      {currentStep.logs && currentStep.logs.length > 0 && (
-        <div className="w-full bg-[var(--muted)]/30 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
-          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
-            <Activity size={10} /> Step Log
-          </span>
-          <div className="flex flex-row flex-wrap gap-x-6 gap-y-1">
-            {currentStep.logs.slice(0, 4).map((log, i) => (
-              <motion.p key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="text-[9px] font-mono text-[var(--muted-foreground)]/60 leading-tight">
-                <span className="text-[var(--viz-lavender)] mr-1">»</span>{log}
-              </motion.p>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Distances Array (below canvas) ── */}
-      <div className="w-full bg-[var(--muted)]/25 border border-[var(--border)] rounded-2xl px-4 py-3 flex flex-col gap-2">
-        <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/50 flex items-center gap-1.5">
-          <Database size={10} /> Distances Array State
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {nodes.map(n => {
-            const d = currentStep.distances[n.id];
-            const isActive = currentStep.activeEdge?.[0] === n.id || currentStep.activeEdge?.[1] === n.id;
-            return (
-              <motion.div 
-                key={`dist-${n.id}`}
-                animate={{ 
-                  scale: isActive ? 1.05 : 1,
-                  borderColor: isActive ? "var(--viz-cyan)" : "var(--border)",
-                  backgroundColor: isActive ? "rgba(var(--viz-cyan-rgb), 0.1)" : "var(--card)"
-                }}
-                className="flex flex-col items-center border rounded-lg p-1 min-w-[2.5rem] transition-colors"
-              >
-                <span className="text-[7px] font-mono text-[var(--muted-foreground)] mb-0.5">node {n.id}</span>
-                <span className={`text-xs font-bold font-mono ${d === 0 ? "text-[var(--viz-green)]" : "text-[var(--foreground)]"}`}>{d === INF ? "∞" : d}</span>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Scrubber + Nav */}
-      <div className="flex flex-col gap-3 w-full p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl">
-        <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6 font-sans select-none text-[var(--foreground)] w-full">
+      {/* Visualizer Box */}
+      <div className="p-4 md:p-6 bg-[var(--card)] border border-[var(--border)] rounded-[2rem] shadow-xl flex flex-col min-h-[550px] w-full overflow-hidden">
+        
+        {/* Top Control Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl shadow-sm mb-6">
           <div className="flex items-center gap-2">
-            <Hash size={14} className="text-[var(--viz-lavender)]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]/40">Step {currentIndex + 1} of {history.length}</span>
+            <button 
+              onClick={() => { setCurrentIndex(0); setIsPlaying(false); }} 
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all cursor-pointer" 
+              title="Reset"
+            >
+              <RotateCcw size={14}/>
+            </button>
+            <button 
+              onClick={handleStepBackward} 
+              disabled={currentIndex === 0 || history.length <= 1}
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all disabled:opacity-30 disabled:hover:bg-muted/20 cursor-pointer"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button 
+              onClick={handleStepForward} 
+              disabled={currentIndex === history.length - 1 || history.length <= 1}
+              className="p-2.5 bg-muted/20 hover:bg-muted/40 border border-[var(--border)]/60 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all disabled:opacity-30 disabled:hover:bg-muted/20 cursor-pointer"
+            >
+              <ChevronRight size={14} />
+            </button>
           </div>
-          <div className="flex items-center gap-1">
-            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex === 0}><ChevronLeft size={18} /></button>
-            <button onClick={() => { setIsPlaying(false); setCurrentIndex(Math.min(history.length - 1, currentIndex + 1)); }} className="p-1.5 hover:bg-[var(--accent)] rounded-lg text-[var(--muted-foreground)]/40 transition-all" disabled={currentIndex >= history.length - 1}><ChevronRight size={18} /></button>
-          </div>
-        </div>
-        <div className="relative flex items-center w-full">
-          <div className="absolute w-full h-1 bg-[var(--muted)]/30 rounded-full" />
-          <div className="absolute h-1 bg-[var(--viz-lavender)] rounded-full transition-all"
-            style={{ width: `${(currentIndex / Math.max((history.length - 1), 1)) * 100}%` }} />
-          <input type="range" min="0" max={Math.max((history.length - 1), 0)} value={currentIndex}
-            onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
-            className="w-full h-6 opacity-0 cursor-pointer z-10" />
-          <div className="absolute w-1.5 h-4 bg-[var(--viz-cyan)] rounded-full pointer-events-none transition-all"
-            style={{ left: `calc(${(currentIndex / Math.max((history.length - 1), 1)) * 100}% - 3px)` }} />
-        </div>
-      </div>
 
-      {/* Legend */}
-      <div className="px-4 py-4 bg-[var(--muted)]/10 rounded-2xl border border-[var(--border)]/20 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-cyan)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Active Probe</span></div>
-        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-green)] animate-pulse" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Relaxed Edge</span></div>
-        <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[var(--viz-amber)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Edge Weight</span></div>
-        <div className="flex items-center gap-2"><AlertTriangle size={14} className="text-[var(--viz-rose)]" /><span className="text-[9px] md:text-[10px] font-bold uppercase text-[var(--muted-foreground)]/30 tracking-widest">Negative Cycle</span></div>
+          {/* Editor Toolset */}
+          <div className="flex items-center gap-1.5 p-1 bg-muted/20 border border-[var(--border)]/60 rounded-xl">
+            <button
+              onClick={() => { setEditMode("select"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "select" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Drag/Move Nodes"
+            >
+              <Move size={12} />
+              <span className="hidden sm:inline">Move</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("addNode"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "addNode" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click canvas to add Node"
+            >
+              <Plus size={12} />
+              <span className="hidden sm:inline">+ Node</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("addEdge"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "addEdge" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click Node A then Node B to create Edge"
+            >
+              <GitPullRequest size={12} />
+              <span className="hidden sm:inline">Connect</span>
+            </button>
+            <button
+              onClick={() => { setEditMode("delete"); setSelectedNodeId(null); }}
+              className={`p-2 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                editMode === "delete" ? "bg-[var(--viz-rose)] text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Click a node to delete it"
+            >
+              <Trash2 size={12} />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={clearGraph}
+              className="px-3 py-2 border border-dashed border-[var(--border)] rounded-xl text-[10px] text-muted-foreground hover:text-red-500 font-bold hover:border-red-500/30 transition-all cursor-pointer"
+            >
+              Clear Graph
+            </button>
+            <button 
+              onClick={loadDefaultGraph}
+              className="px-3 py-2 bg-muted/20 border border-[var(--border)] rounded-xl text-[10px] text-muted-foreground hover:text-foreground font-bold transition-all cursor-pointer"
+            >
+              Default
+            </button>
+            <button 
+              onClick={() => setIsPlaying(!isPlaying)} 
+              disabled={history.length <= 1}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md disabled:opacity-40 disabled:hover:scale-100 cursor-pointer ${
+                isPlaying 
+                  ? "bg-muted/40 border border-[var(--border)] text-[var(--foreground)] hover:bg-muted/50" 
+                  : "bg-[var(--viz-rose)] text-white hover:scale-[1.03]"
+              }`}
+            >
+              {isPlaying ? <span className="flex items-center gap-1.5"><Pause size={12} /> Pause</span> : <span className="flex items-center gap-1.5"><Play size={12} /> Run</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 w-full animate-fadeIn">
+          
+          {/* Left Column (col-span-9): Graph Canvas */}
+          <div className="lg:col-span-9 relative p-3 md:p-6 bg-muted/10 border border-[var(--border)]/45 rounded-2xl flex flex-col items-center justify-center h-[400px] md:h-[460px] lg:h-[500px] w-full overflow-hidden">
+            
+            {/* SVG Canvas */}
+            <svg 
+              ref={containerRef}
+              viewBox="0 0 800 400" 
+              onPointerDown={handleCanvasPointerDown}
+              onPointerMove={handleCanvasPointerMove}
+              onPointerUp={handleCanvasPointerUp}
+              onPointerLeave={handleCanvasPointerUp}
+              className="w-full h-full select-none overflow-visible z-10 cursor-crosshair"
+            >
+              <defs>
+                <marker id="bellman-arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                </marker>
+              </defs>
+
+              {/* Edge Connections */}
+              {edges.map(({ u, v, weight }, idx) => {
+                const edgeInfo = getEdgePath(u, v);
+                if (!edgeInfo) return null;
+
+                const { path, cpX, cpY } = edgeInfo;
+                const edgeKey = `${u}-${v}`;
+                
+                const isActive = currentStep.activeEdge !== null && currentStep.activeEdge[0] === u && currentStep.activeEdge[1] === v;
+                const isRelaxed = currentStep.relaxedEdges?.has(edgeKey);
+                const isCycleFailure = currentStep.hasNegativeCycle && isActive;
+
+                // High contrast edge paths
+                let strokeColor = "rgba(255, 255, 255, 0.28)"; 
+                let strokeWidth = 2.5;
+
+                if (isCycleFailure) {
+                  strokeColor = "var(--viz-rose)";
+                  strokeWidth = 4.5;
+                } else if (isActive) {
+                  strokeColor = "var(--viz-cyan)";
+                  strokeWidth = 4.5;
+                } else if (isRelaxed) {
+                  strokeColor = "rgba(var(--viz-green-rgb), 0.4)";
+                  strokeWidth = 2.5;
+                }
+
+                return (
+                  <g key={`edge-${idx}`}>
+                    <path
+                      d={path}
+                      fill="none"
+                      stroke={strokeColor}
+                      strokeWidth={strokeWidth}
+                      className="transition-all duration-300"
+                      markerEnd="url(#bellman-arrowhead)"
+                    />
+                    {isActive && (
+                      <circle r="4.5" fill={isCycleFailure ? "var(--viz-rose)" : "var(--viz-cyan)"}>
+                        <animateMotion 
+                          dur="1.2s" 
+                          repeatCount="indefinite" 
+                          path={path} 
+                        />
+                      </circle>
+                    )}
+                    {/* Edge Weight badge */}
+                    <g transform={`translate(${cpX}, ${cpY})`}>
+                      <circle r="9.5" fill="var(--viz-amber)" stroke="var(--background)" strokeWidth="1.5" />
+                      <text
+                        dy="3"
+                        textAnchor="middle"
+                        fontSize="9"
+                        fontWeight="900"
+                        fill="black"
+                        className="font-mono"
+                      >
+                        {weight}
+                      </text>
+                    </g>
+                  </g>
+                );
+              })}
+
+              {/* Node Bubbles */}
+              {nodes.map((pos) => {
+                const i = pos.id;
+                const isCurrent = currentStep.activeEdge !== null && (currentStep.activeEdge[0] === i || currentStep.activeEdge[1] === i);
+                const isSelected = selectedNodeId === i;
+                const dist = currentStep.distances?.[i];
+
+                let nodeColor = "var(--card)";
+                let borderColor = "var(--border)";
+                let textColor = "var(--foreground)";
+                let borderWidth = "2.5";
+                
+                let radius = 28; // Medium-sized nodes
+                let scale = 1;
+
+                if (isSelected) {
+                  nodeColor = "rgba(var(--viz-amber-rgb), 0.15)";
+                  borderColor = "var(--viz-amber)";
+                  borderWidth = "3.5";
+                  scale = 1.1;
+                } else if (isCurrent) {
+                  nodeColor = "rgba(var(--viz-rose-rgb), 0.1)";
+                  borderColor = "var(--viz-rose)";
+                  borderWidth = "4";
+                  scale = 1.15;
+                } else if (dist !== INF && dist !== undefined) {
+                  nodeColor = "rgba(var(--viz-cyan-rgb), 0.05)";
+                  borderColor = "var(--viz-cyan)";
+                }
+
+                return (
+                  <g 
+                    key={`node-${i}`} 
+                    onClick={(e) => handleNodeClick(e, i)}
+                    onPointerDown={(e) => handleNodePointerDown(e, i)}
+                    className="transition-transform duration-300 cursor-grab active:cursor-grabbing"
+                  >
+                    {/* Node Bubble */}
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r={radius * scale}
+                      fill={nodeColor}
+                      stroke={borderColor}
+                      strokeWidth={borderWidth}
+                      className="transition-colors duration-250"
+                    />
+
+                    {/* Node Numeric label */}
+                    <text
+                      x={pos.x}
+                      y={pos.y - 2}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fontWeight="900"
+                      fill={textColor}
+                      className="font-mono select-none pointer-events-none opacity-40"
+                    >
+                      {i}
+                    </text>
+
+                    {/* Shortest Distance value inside bubble */}
+                    <text
+                      x={pos.x}
+                      y={pos.y + 10}
+                      textAnchor="middle"
+                      fontSize="13"
+                      fontWeight="bold"
+                      fill={textColor}
+                      className="font-mono select-none pointer-events-none"
+                    >
+                      {dist === INF || dist === undefined ? "\u221E" : dist}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* Right Column (col-span-3): Live Array State */}
+          <div className="lg:col-span-3 flex flex-col gap-4 h-[400px] md:h-[460px] lg:h-[500px]">
+            <div className="p-4 bg-muted/20 border border-[var(--border)]/45 rounded-2xl flex-1 flex flex-col overflow-hidden">
+              <h3 className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest flex items-center gap-1.5 mb-3 shrink-0">
+                <Database size={12} className="text-[var(--viz-cyan)]" /> Distances
+              </h3>
+              <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                {nodes.length > 0 ? (
+                  <table className="w-full text-[10px] font-mono text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/40 text-muted-foreground">
+                        <th className="pb-2 pl-2">Node</th>
+                        <th className="pb-2 text-center">Predec.</th>
+                        <th className="pb-2 text-center">Distance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => {
+                        const i = n.id;
+                        const pred = currentStep.predecessor?.[i];
+                        const dist = currentStep.distances?.[i];
+                        const distVal = dist === INF || dist === undefined ? "\u221E" : `${dist}`;
+
+                        return (
+                          <tr key={i} className="border-b border-border/20 last:border-0 transition-colors">
+                            <td className="py-2.5 pl-3">Node {i}</td>
+                            <td className="py-2.5 text-center">{pred !== undefined && pred !== -1 ? pred : "-"}</td>
+                            <td className="py-2.5 text-center font-bold">{distVal}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-10">
+                    <Database size={24} className="mb-2 text-muted-foreground" />
+                    <p className="text-[10px] uppercase font-bold tracking-wider">No nodes to show</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom scrubbing bar & Step Explanation */}
+        <div className="mt-6 p-4 bg-muted/15 border border-[var(--border)]/45 rounded-2xl flex flex-col gap-3">
+          <div className="flex items-center gap-4 bg-[var(--card)] border border-[var(--border)]/70 px-4 py-3 rounded-xl shadow-sm w-full">
+            <span className="font-mono text-[9px] font-black uppercase text-[var(--muted-foreground)] tracking-widest min-w-[55px]">Step {currentIndex + 1}/{history.length}</span>
+            <div className="flex-1 h-1 bg-[var(--border)] rounded-full relative flex items-center group/slider">
+              <div 
+                className="absolute h-1 bg-[var(--viz-rose)] rounded-full shadow-[0_0_10px_rgba(244,63,94,0.45)]" 
+                style={{ width: `${(currentIndex / (history.length - 1 || 1)) * 100}%` }} 
+              />
+              <input 
+                type="range" 
+                min="0" 
+                max={history.length - 1} 
+                value={currentIndex} 
+                onChange={(e) => { setIsPlaying(false); setCurrentIndex(parseInt(e.target.value)); }}
+                className="w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div 
+                className="absolute w-2.5 h-2.5 bg-[var(--foreground)] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none group-hover/slider:scale-125 transition-transform"
+                style={{ left: `calc(${(currentIndex / (history.length - 1 || 1)) * 100}% - 5px)` }}
+              />
+            </div>
+          </div>
+          <div className="text-center text-[10px] font-mono text-[var(--viz-amber)] bg-card border border-border/70 py-2.5 px-3 rounded-lg leading-relaxed shadow-sm">
+            {currentStep.message}
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -1,18 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import ProblemTable from "@/features/problems/components/ProblemTable";
 import ProblemFilters from "@/features/problems/components/ProblemFilters";
-import DailyProblemCard from "@/features/problems/components/DailyProblemCard";
 import MasteryCalendar from "@/features/problems/components/MasteryCalendar";
 import ReviewQueueWidget from "@/features/problems/components/ReviewQueueWidget";
 import { auth } from "@/auth"; 
 import Link from "next/link";
-import { Trophy, Target, Sparkles } from "lucide-react";
-import { Prisma, ProblemType } from "@prisma/client";
-import * as motion from "framer-motion/client";
+import { Trophy } from "lucide-react";
+import { Prisma } from "@prisma/client";
 
 export const metadata = {
   title: "Problems | LogiQuest",
-  description: "Browse 60+ curated algorithmic problems spanning arrays, graphs, DP, trees, and more. Practice with real-time code execution and AI hints.",
+  description: "Browse curated algorithmic problems spanning arrays, graphs, DP, trees, and more.",
 };
 
 export const dynamic = "force-dynamic";
@@ -49,8 +47,6 @@ async function getStats(userId?: string) {
   return { totalProblems, solvedCount, attemptCount };
 }
 
-// Relying on Prisma.ProblemWhereInput directly for strict type safety
-
 export default async function ProblemsPage({ searchParams }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -63,7 +59,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       ? "sql" 
       : "public";
   const currentPage = parseInt(resolvedSearchParams.page || "1");
-  const pageSize = 12; 
+  const pageSize = 8; 
   const skip = (currentPage - 1) * pageSize;
 
   const whereClause: Prisma.ProblemWhereInput = {};
@@ -167,7 +163,6 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
       const accepted = problem.submissions.filter(s => s.status === "Accepted").length;
       rateStr = ((accepted / total) * 100).toFixed(1);
     } else {
-      // Deterministic realistic fallback rate based on title character values and difficulty
       const titleSum = problem.title.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
       const diff = problem.difficulty;
       if (diff === "Easy") {
@@ -255,32 +250,27 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
           )}
         </div>
 
-        {/* 4. MAIN CONTENT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">  
+        {/* 4. MAIN CONTENT GRID (Equal Heights via items-stretch) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">  
 
-          {/* SIDEBAR */}
-          <div className="lg:col-span-3 space-y-10">
+          {/* SIDEBAR (col-span-4) */}
+          <div className="lg:col-span-4 flex flex-col gap-6 h-full">
             {userId && <ReviewQueueWidget />}
-            <div className="space-y-3">
-               <div className="flex items-center gap-2 px-1">
-                  <div className="w-1 h-1 rounded-full bg-[var(--primary)]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Daily Challenge</span>
-               </div>
-               <DailyProblemCard />
-            </div>
 
-            <div className="space-y-3">
-               <div className="flex items-center gap-2 px-1">
-                  <div className="w-1 h-1 rounded-full bg-blue-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Mastery Planner</span>
+            <div className="flex-grow flex flex-col gap-3">
+               <div className="flex items-center gap-2 px-1 shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Mastery Planner</span>
                </div>
-               <MasteryCalendar />
+               <div className="flex-1">
+                 <MasteryCalendar />
+               </div>
             </div>
           </div>
 
-          {/* MAIN TABLE */}
-          <div className="lg:col-span-9">             
-             <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col gap-6">
+          {/* MAIN PROBLEMS TABLE (col-span-8) */}
+          <div className="lg:col-span-8 flex flex-col h-full">             
+             <div className="bg-[var(--card)] border border-[var(--border)] rounded-[2.5rem] p-6 lg:p-8 shadow-2xl relative flex flex-col gap-6 h-full justify-between w-full">
                 <div className="flex bg-[var(--foreground)]/5 border border-[var(--border)] rounded-2xl p-1 gap-1 shrink-0 max-w-md">
                   {[
                     { id: "public", label: "Coding Set" },
@@ -305,11 +295,13 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
                   })}
                 </div>
                 <ProblemFilters />
-                <ProblemTable 
-                   problems={problemsWithStatus} 
-                   totalPages={totalPages} 
-                   currentPage={currentPage} 
-                />
+                <div className="flex-grow">
+                  <ProblemTable 
+                     problems={problemsWithStatus} 
+                     totalPages={totalPages} 
+                     currentPage={currentPage} 
+                  />
+                </div>
              </div>
           </div>
         </div>

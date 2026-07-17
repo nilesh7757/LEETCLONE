@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -78,6 +79,35 @@ export default function MasteryCalendar() {
   useEffect(() => {
     fetchMonthData(currentMonth, currentYear);
   }, [currentMonth, currentYear, fetchMonthData]);
+
+  const [dailyProblem, setDailyProblem] = useState<{ title: string; slug: string; difficulty: string; isSolved?: boolean } | null>(null);
+  const [loadingDaily, setLoadingDaily] = useState(false);
+
+  useEffect(() => {
+    if (isPopoverOpen && selectedDate) {
+      const fetchDaily = async () => {
+        setLoadingDaily(true);
+        try {
+          const yyyy = selectedDate.getFullYear();
+          const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(selectedDate.getDate()).padStart(2, '0');
+          const formattedDate = `${yyyy}-${mm}-${dd}`;
+          const { data } = await axios.get(`/api/problems/daily?date=${formattedDate}`);
+          if (data.problem) {
+            setDailyProblem({ ...data.problem, isSolved: data.isSolved });
+          } else {
+            setDailyProblem(null);
+          }
+        } catch (err) {
+          console.error("Failed to fetch daily challenge for selected date:", err);
+          setDailyProblem(null);
+        } finally {
+          setLoadingDaily(false);
+        }
+      };
+      fetchDaily();
+    }
+  }, [selectedDate, isPopoverOpen]);
 
   // Calendar math
   const getDaysInMonth = (month: number, year: number) => {
@@ -253,7 +283,7 @@ export default function MasteryCalendar() {
 
   // Calendar Component Core JSX
   const renderCalendarCard = () => (
-    <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-2xl relative select-none w-full">
+    <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-2xl relative select-none w-full h-full flex flex-col justify-between">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--primary)]/30 to-transparent" />
       
       {/* HEADER */}
@@ -354,9 +384,9 @@ export default function MasteryCalendar() {
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       {/* 1. DESKTOP VIEW (Visible on lg and larger) */}
-      <div className="hidden lg:block w-full">
+      <div className="hidden lg:block w-full h-full">
         {renderCalendarCard()}
       </div>
 
@@ -423,6 +453,43 @@ export default function MasteryCalendar() {
               >
                 <X size={16} />
               </button>
+            </div>
+
+            {/* Daily Challenge of this date */}
+            <div className="bg-zinc-900/40 border border-zinc-800/60 p-4 rounded-2xl flex flex-col gap-2">
+              <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Sparkles size={11} className="text-amber-500 animate-pulse" /> Daily Challenge
+              </span>
+              {loadingDaily ? (
+                <div className="h-10 bg-white/5 border border-white/5 rounded-xl animate-pulse" />
+              ) : dailyProblem ? (
+                <Link
+                  href={`/problems/${dailyProblem.slug}`}
+                  onClick={() => setIsPopoverOpen(false)}
+                  className="flex items-center justify-between p-3 bg-zinc-950/60 hover:bg-zinc-900 border border-zinc-800/80 hover:border-amber-500/30 rounded-xl transition-all group"
+                >
+                  <div className="flex flex-col min-w-0 gap-1.5 pl-0.5">
+                    <span className="text-xs font-bold text-zinc-200 truncate group-hover:text-purple-300 transition-colors">
+                      {dailyProblem.title}
+                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[8px] font-black uppercase tracking-widest ${
+                        dailyProblem.difficulty === 'Easy' ? 'text-emerald-500' : dailyProblem.difficulty === 'Medium' ? 'text-amber-500' : 'text-rose-500'
+                      }`}>
+                        {dailyProblem.difficulty}
+                      </span>
+                      {dailyProblem.isSolved && (
+                        <span className="text-[7.5px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-md animate-pulse">
+                          ✓ Solved
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <ArrowRight size={12} className="text-amber-500 shrink-0 group-hover:translate-x-0.5 transition-transform animate-pulse" />
+                </Link>
+              ) : (
+                <p className="text-[10px] text-zinc-500 italic">No challenge available for this date.</p>
+              )}
             </div>
 
             {/* Todays Tasks Header with Plus Button */}

@@ -10,13 +10,21 @@ export const GET = apiHandler(async (req: Request) => {
     throw new ApiError("Unauthorized", 401);
   }
 
+  const { searchParams } = new URL(req.url);
+  const all = searchParams.get("all") === "true";
+
+  const whereClause: any = {
+    userId: session.user.id,
+  };
+
+  if (!all) {
+    whereClause.nextReviewDate = {
+      lte: new Date(),
+    };
+  }
+
   const dueItems = await prisma.reviewQueue.findMany({
-    where: {
-      userId: session.user.id,
-      nextReviewDate: {
-        lte: new Date(),
-      },
-    },
+    where: whereClause,
     include: {
       problem: {
         select: {
@@ -30,7 +38,7 @@ export const GET = apiHandler(async (req: Request) => {
     orderBy: {
       nextReviewDate: "asc",
     },
-    take: 5,
+    take: all ? 50 : 5,
   });
 
   return NextResponse.json({ success: true, dueItems });
