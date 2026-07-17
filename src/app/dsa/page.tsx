@@ -324,9 +324,9 @@ export default function DSAPage() {
                       animate={{ width: 384, opacity: 1, marginLeft: 24 }}
                       exit={{ width: 0, opacity: 0, marginLeft: 0 }}
                       transition={{ type: "spring", stiffness: 200, damping: 25 }}
-                      className="hidden lg:block shrink-0 overflow-hidden"
+                      className="hidden lg:block shrink-0 overflow-hidden self-start sticky top-24"
                    >
-                      <div className="w-[360px] h-full">
+                      <div className="w-[360px] h-[calc(100vh-180px)] min-h-[450px] max-h-[640px]">
                          <DSACopilotPanel 
                             algorithmId={selectedCategory.id}
                             algorithmName={selectedCategory.title}

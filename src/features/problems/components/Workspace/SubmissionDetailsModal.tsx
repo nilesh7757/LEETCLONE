@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, Cpu, Layout, Sparkles, Loader2, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Clock, Cpu, Layout, Sparkles, Loader2, CheckCircle, XCircle, AlertTriangle, Copy } from "lucide-react";
 import { Submission } from "@/types/submission";
 import axios from "axios";
 import { toast } from "sonner";
@@ -133,8 +133,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
               <CheckCircle size={18} />
             </div>
             <div>
-              <p className="font-bold text-sm text-[var(--foreground)]">All test cases passed!</p>
-              <p className="text-xs text-[var(--muted-foreground)]">Your solution is fully correct and optimal.</p>
+              <p className="font-bold text-sm text-[var(--foreground)]">{results.length}/{results.length} test cases passed!</p>
             </div>
           </div>
         ) : (
@@ -149,16 +148,45 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                   
                   {res.input !== undefined && res.input !== null && (
                     <div className="space-y-1">
-                      <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Input</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Input</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(String(res.input));
+                            toast.success("Input copied to clipboard!");
+                          }}
+                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer"
+                        >
+                          <Copy size={10} />
+                          <span>Copy</span>
+                        </button>
+                      </div>
                       <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">{String(res.input)}</pre>
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
-                         <span>Actual Output</span>
-                         <XCircle size={10} className="text-red-500" />
+                      <div className="flex items-center justify-between text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5">
+                           <span>Actual Output</span>
+                           <XCircle size={10} className="text-red-500" />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const val = res.actual !== undefined 
+                              ? (typeof res.actual === 'string' ? res.actual : JSON.stringify(res.actual))
+                              : (res.actualOutput !== undefined 
+                                  ? (typeof res.actualOutput === 'string' ? res.actualOutput : JSON.stringify(res.actualOutput))
+                                  : "N/A");
+                            navigator.clipboard.writeText(val);
+                            toast.success("Actual output copied!");
+                          }}
+                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer"
+                        >
+                          <Copy size={10} />
+                          <span>Copy</span>
+                        </button>
                       </div>
                       <pre className="p-3 bg-red-500/5 border border-red-500/20 text-red-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">
                         {res.actual !== undefined 
@@ -169,9 +197,26 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                       </pre>
                     </div>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
-                         <span>Expected Output</span>
-                         <CheckCircle size={10} className="text-green-500" />
+                      <div className="flex items-center justify-between text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5">
+                           <span>Expected Output</span>
+                           <CheckCircle size={10} className="text-green-500" />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const val = res.expected !== undefined 
+                              ? (typeof res.expected === 'string' ? res.expected : JSON.stringify(res.expected))
+                              : (res.expectedOutput !== undefined 
+                                  ? (typeof res.expectedOutput === 'string' ? res.expectedOutput : JSON.stringify(res.expectedOutput))
+                                  : "N/A");
+                            navigator.clipboard.writeText(val);
+                            toast.success("Expected output copied!");
+                          }}
+                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer"
+                        >
+                          <Copy size={10} />
+                          <span>Copy</span>
+                        </button>
                       </div>
                       <pre className="p-3 bg-green-500/5 border border-green-500/20 text-green-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">
                         {res.expected !== undefined 
