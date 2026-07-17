@@ -132,6 +132,12 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
     if (activeTab === 'submissions') fetchSubmissions();
   }, [activeTab, fetchSubmissions]);
 
+  useEffect(() => {
+    if (selectedSubmission) {
+      setActiveTab("submission-details");
+    }
+  }, [selectedSubmission, setActiveTab]);
+
   if (!mounted) return null;
 
   return (
@@ -202,9 +208,10 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                       ...(problem.type === "SQL" ? [{ id: 'database', label: 'Database', icon: Database }] : []),
                       { id: 'resources', label: 'Resources', icon: Library },
                       { id: 'submissions', label: 'History', icon: History },
+                      ...(selectedSubmission ? [{ id: 'submission-details', label: 'Result', icon: CheckCircle }] : []),
                       { id: 'solutions', label: 'Solutions', icon: MessageCircle },
                       { id: 'ai', label: 'AI Coach', icon: Sparkles }, 
-                    ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database"; label: string; icon: typeof Info }[]).map(t => (
+                    ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"; label: string; icon: typeof Info }[]).map(t => (
                     <button
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
@@ -217,6 +224,18 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                         <span className={`text-[10px] font-black uppercase tracking-wider tab-label-${t.id} truncate`}>
                             {t.label}
                         </span>
+                        {t.id === 'submission-details' && (
+                          <span 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSubmission(null);
+                              setActiveTab('submissions');
+                            }}
+                            className="ml-1 hover:bg-[var(--foreground)]/10 p-0.5 rounded text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                          >
+                            <X size={10} />
+                          </span>
+                        )}
                         {activeTab === t.id && (
                             <motion.div layoutId="left-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)] shadow-[0_0_12px_rgba(143,68,240,0.5)]" />
                         )}
@@ -272,6 +291,15 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                     </div>
                                 ))}
                             </div>
+                        )}
+                        {activeTab === 'submission-details' && (
+                          <SubmissionDetailsModal 
+                            submission={selectedSubmission}
+                            onClose={() => {
+                              setSelectedSubmission(null);
+                              setActiveTab('submissions');
+                            }}
+                          />
                         )}
                         {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
                         </div>
@@ -358,9 +386,10 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             ...(problem.type === "SQL" ? [{ id: 'database', label: 'Database', icon: Database }] : []),
                             { id: 'resources', label: 'Resources', icon: Library },
                             { id: 'submissions', label: 'History', icon: History },
+                            ...(selectedSubmission ? [{ id: 'submission-details', label: 'Result', icon: CheckCircle }] : []),
                             { id: 'solutions', label: 'Solutions', icon: MessageCircle },
                             { id: 'ai', label: 'Coach', icon: Sparkles }, 
-                        ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database"; label: string; icon: typeof Info }[]).map(t => (
+                        ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"; label: string; icon: typeof Info }[]).map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setActiveTab(t.id)}
@@ -370,6 +399,18 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                             >
                                 <t.icon size={13} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
                                 {t.label}
+                                {t.id === 'submission-details' && (
+                                  <span 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedSubmission(null);
+                                      setActiveTab('submissions');
+                                    }}
+                                    className="ml-1 hover:bg-[var(--foreground)]/10 p-0.5 rounded text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                                  >
+                                    <X size={10} />
+                                  </span>
+                                )}
                                 {activeTab === t.id && (
                                     <motion.div layoutId="mobile-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)]" />
                                 )}
@@ -401,30 +442,41 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                 initialData={problem.initialData}
                               />
                             )}
-                            {activeTab === 'resources' && <ProblemResources resources={problem.resources || []} />}
+                            {activeTab === 'resources' && <div className="p-6"><ProblemResources resources={problem.resources || []} /></div>}
                             {activeTab === 'submissions' && (
-                                <div className="space-y-3">
+                                <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-250px)]">
                                     {submissions.map((sub, i) => (
                                         <div 
-                                            key={i} 
-                                            onClick={() => setSelectedSubmission(sub)}
-                                            className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]"
+                                        key={i} 
+                                        onClick={() => setSelectedSubmission(sub)}
+                                        className="flex items-center justify-between p-4 rounded-2xl border border-[var(--border)] bg-[var(--foreground)]/[0.02] hover:bg-[var(--foreground)]/[0.05] transition-all cursor-pointer group"
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
-                                                    {sub.status === 'Accepted' ? <CheckCircle size={18} /> : <XCircle size={18} />}
-                                                </div>
-                                                <div>
-                                                    <div className="text-[13px] font-bold">{sub.status}</div>
-                                                    <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest">{new Date(sub.createdAt).toLocaleDateString()}</div>
-                                                </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className={sub.status === 'Accepted' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
+                                                {sub.status === 'Accepted' ? <CheckCircle size={18} /> : <XCircle size={18} />}
                                             </div>
-                                            <div className="font-mono text-[11px] text-[var(--muted-foreground)]">{sub.runtime}ms</div>
+                                            <div>
+                                                <div className="text-[13px] font-bold tracking-tight">{sub.status}</div>
+                                                <div className="text-[9px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-0.5">{new Date(sub.createdAt).toLocaleDateString()}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right font-mono text-[11px] font-bold text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">{sub.runtime}ms</div>
                                         </div>
                                     ))}
                                 </div>
                             )}
-                            {activeTab === 'solutions' && <DiscussionSection problemId={problem.id} />}
+                            {activeTab === 'submission-details' && (
+                              <div className="p-4 overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar">
+                                <SubmissionDetailsModal 
+                                  submission={selectedSubmission}
+                                  onClose={() => {
+                                    setSelectedSubmission(null);
+                                    setActiveTab('submissions');
+                                  }}
+                                />
+                              </div>
+                            )}
+                            {activeTab === 'solutions' && <div className="p-6"><DiscussionSection problemId={problem.id} /></div>}
                         </div>
                     )}
                 </>
@@ -574,11 +626,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         </div>
       </main>
 
-      <SubmissionDetailsModal
-        submission={selectedSubmission}
-        onClose={() => setSelectedSubmission(null)}
-      />
-
       <style jsx global>{`
         .gutter { z-index: 50; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -599,19 +646,20 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
           }
         }
 
-        @container sidebar (max-width: 560px) {
+        @container sidebar (max-width: 640px) {
           .tab-label-ai { display: none; }
+          .tab-label-submission-details { display: none; }
         }
-        @container sidebar (max-width: 490px) {
+        @container sidebar (max-width: 560px) {
           .tab-label-solutions { display: none; }
         }
-        @container sidebar (max-width: 420px) {
+        @container sidebar (max-width: 485px) {
           .tab-label-submissions { display: none; }
         }
-        @container sidebar (max-width: 350px) {
+        @container sidebar (max-width: 410px) {
           .tab-label-resources { display: none; }
         }
-        @container sidebar (max-width: 280px) {
+        @container sidebar (max-width: 330px) {
           .tab-label-description { display: none; }
         }
       `}</style>

@@ -65,7 +65,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "description" | "resources" | "submissions" | "solutions" | "ai" | "database"
+    "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"
   >("description");
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [consoleTab, setConsoleTab] = useState<"testcase" | "result">(
@@ -229,7 +229,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
           colors: ["#22c55e", "#3b82f6", "#eab308", "#ef4444"],
         });
         if (data.newStreak) update({ streak: data.newStreak });
-        setActiveTab("submissions");
+        setActiveTab("submission-details");
         setSelectedSubmission(data.submission);
       } else {
         toast.error(data.submission.status || "Wrong Answer");
@@ -237,7 +237,7 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
         setConsoleOpen(true);
         setConsoleTab("result");
         setActiveTestCaseId(0);
-        setActiveTab("submissions");
+        setActiveTab("submission-details");
         setSelectedSubmission(data.submission);
         if (data.failedTestCase) {
           setResults([
