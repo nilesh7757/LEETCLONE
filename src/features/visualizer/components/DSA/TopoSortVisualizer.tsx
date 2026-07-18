@@ -495,10 +495,10 @@ export default function TopoSortVisualizer({ speed = 1000 }: { speed?: number })
 
                 let nodeColor = "var(--card)";
                 let borderColor = "var(--border)";
-                let textColor = "var(--foreground)";
+                const textColor = "var(--foreground)";
                 let borderWidth = "2.5";
                 
-                let radius = 28; // Medium-sized nodes
+                const radius = 28; // Medium-sized nodes
                 let scale = 1;
 
                 if (isSelected) {

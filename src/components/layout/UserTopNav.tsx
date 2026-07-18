@@ -27,7 +27,7 @@ export default function UserTopNav() {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 sm:gap-6 p-4 md:p-6 bg-gradient-to-b from-[var(--background)] to-transparent pointer-events-auto">
+    <div className="flex items-center gap-3 sm:gap-6">
       {status === "authenticated" && (
         <Link
           href={dailySlug ? `/problems/${dailySlug}` : "/problems"}

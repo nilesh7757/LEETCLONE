@@ -147,6 +147,7 @@ export async function GET(req: Request) {
         category: problem.category,
         isSolved: solvedProblemIds.has(problem.id),
         isAttempted: attemptedProblemIds.has(problem.id) && !solvedProblemIds.has(problem.id),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         isStarred: userId ? ((problem as any).starredBy?.length ?? 0) > 0 : false,
         acceptanceRate: rateStr,
         companyTags: problem.companyTags || [],

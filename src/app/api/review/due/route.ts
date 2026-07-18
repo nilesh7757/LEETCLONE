@@ -13,6 +13,7 @@ export const GET = apiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const all = searchParams.get("all") === "true";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const whereClause: any = {
     userId: session.user.id,
   };

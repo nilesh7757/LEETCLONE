@@ -521,10 +521,10 @@ export default function SCCVisualizer({ speed = 1000 }: { speed?: number }) {
 
                 let nodeColor = "var(--card)";
                 let borderColor = sccColor;
-                let textColor = "var(--foreground)";
+                const textColor = "var(--foreground)";
                 let borderWidth = sccIdx !== -1 ? "3.5" : "2.5";
                 
-                let radius = 28; // Medium-sized nodes
+                const radius = 28; // Medium-sized nodes
                 let scale = 1;
 
                 if (isSelected) {

@@ -56,11 +56,15 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       {/* Mobile Navigation */}
       <MobileNav />
 
-      {/* Desktop Top Utilities */}
+      {/* Desktop Top Utilities Header */}
       {!isWorkspace && (
-        <div className="hidden md:block fixed top-0 right-0 z-40">
+        <header 
+          className={`hidden md:flex fixed top-0 right-0 z-40 ${
+            isCollapsed ? "left-20" : "left-64"
+          } h-16 items-center justify-end px-8 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--border)] transition-all duration-300 ease-in-out`}
+        >
           <UserTopNav />
-        </div>
+        </header>
       )}
 
       {/* Main Content Area */}
@@ -68,7 +72,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
         id="main-content"
         className={`flex-1 ${isCollapsed ? "md:pl-20" : "md:pl-64"} min-h-screen relative flex flex-col transition-all duration-300 ease-in-out overflow-hidden`}
       >
-        <div className={`flex-1 w-full max-w-[1800px] mx-auto flex flex-col ${isWorkspace ? "pt-16 md:pt-0" : "p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"}`}>
+        <div className={`flex-1 w-full flex flex-col ${isWorkspace ? "max-w-none pt-16 md:pt-0" : "max-w-[1800px] mx-auto p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"}`}>
           {children}
         </div>
       </main>

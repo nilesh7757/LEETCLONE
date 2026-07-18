@@ -235,6 +235,7 @@ export default function FloydWarshallVisualizer({ speed = 1000 }: { speed?: numb
           if (edgeExists) {
             setEdges(prev => prev.filter(edge => !(edge.u === u && edge.v === v)));
           } else {
+            // eslint-disable-next-line react-hooks/purity
             const randomWeight = Math.floor(Math.random() * 8) + 2;
             setEdges(prev => [...prev, { u, v, weight: randomWeight }]);
           }
@@ -496,10 +497,10 @@ export default function FloydWarshallVisualizer({ speed = 1000 }: { speed?: numb
 
                 let nodeColor = "var(--card)";
                 let borderColor = "var(--border)";
-                let textColor = "var(--foreground)";
+                const textColor = "var(--foreground)";
                 let borderWidth = "2.5";
                 
-                let radius = 28; // Medium-sized nodes
+                const radius = 28; // Medium-sized nodes
                 let scale = 1;
 
                 if (isSelected) {
@@ -606,7 +607,7 @@ export default function FloydWarshallVisualizer({ speed = 1000 }: { speed?: numb
                               const isCellTarget = currentStep.i === rIdx && currentStep.j === cIdx;
 
                               let cellBg = "";
-                              let cellText = "";
+                              const cellText = "";
                               if (isCellTarget) {
                                 cellBg = "bg-[var(--viz-rose)]/15 text-[var(--viz-rose)] font-black";
                               } else if (isCellK) {

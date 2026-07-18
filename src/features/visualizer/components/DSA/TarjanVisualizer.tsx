@@ -531,11 +531,11 @@ export default function TarjanVisualizer({ speed = 1000 }: { speed?: number }) {
 
                 let nodeColor = "var(--card)";
                 let borderColor = "var(--border)";
-                let textColor = "var(--foreground)";
+                const textColor = "var(--foreground)";
                 let borderWidth = "2.5";
                 
                 // Medium-sized nodes: radius increased to 28 (r=28)
-                let radius = 28;
+                const radius = 28;
                 let scale = 1;
 
                 if (isSelected) {

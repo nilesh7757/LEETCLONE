@@ -51,14 +51,14 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--foreground)]/[0.02] border border-[var(--border)]">
-        <div className="flex items-center gap-3.5">
-          <div className={`p-2.5 rounded-xl ${isAccepted ? 'bg-[var(--viz-green)]/10 text-[var(--viz-green)]' : 'bg-[var(--viz-red)]/10 text-[var(--viz-red)]'}`}>
+      <div className="flex flex-col @sm:flex-row items-start @sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--foreground)]/[0.02] border border-[var(--border)]">
+        <div className="flex items-center gap-3.5 min-w-0 w-full @sm:w-auto">
+          <div className={`p-2.5 rounded-xl shrink-0 ${isAccepted ? 'bg-[var(--viz-green)]/10 text-[var(--viz-green)]' : 'bg-[var(--viz-red)]/10 text-[var(--viz-red)]'}`}>
             {isAccepted ? <CheckCircle size={20} /> : <XCircle size={20} />}
           </div>
-          <div>
-            <h3 className="font-black text-lg leading-none mb-1">{submission.status}</h3>
-            <p className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
+          <div className="min-w-0">
+            <h3 className="font-black text-lg leading-none mb-1 truncate">{submission.status}</h3>
+            <p className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-widest truncate">
               {submission.language} • {new Date(submission.createdAt).toLocaleString()}
             </p>
           </div>
@@ -66,14 +66,14 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
         
         <button 
           onClick={onClose} 
-          className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-3 py-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--foreground)]/5 transition-all"
+          className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-3 py-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--foreground)]/5 transition-all w-full @sm:w-auto text-center shrink-0"
         >
           Close Result
         </button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 @sm:grid-cols-3 gap-3 @md:gap-4">
         <StatItem icon={Clock} label="Runtime" value={submission.runtime ? `${submission.runtime} ms` : "N/A"} />
         <StatItem icon={Cpu} label="Memory" value={submission.memory ? `${(submission.memory / 1024 / 1024).toFixed(2)} MB` : "N/A"} />
         <StatItem icon={Layout} label="Language" value={submission.language} />
@@ -83,23 +83,23 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
       {isAccepted && (
         <div className="pt-2">
           {complexity ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-4">
-                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 font-bold shrink-0">
-                  <Clock size={18} />
+            <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 @md:gap-4">
+              <div className="p-3 @md:p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-3 @md:gap-4 min-w-0">
+                <div className="p-2 @md:p-2.5 rounded-xl bg-amber-500/10 text-amber-500 font-bold shrink-0">
+                  <Clock size={16} className="@md:w-[18px] @md:h-[18px]" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 font-sans">Time Complexity</p>
-                  <p className="font-bold text-sm text-amber-500 font-mono">{complexity.time}</p>
+                <div className="min-w-0">
+                  <p className="text-[9px] @md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 font-sans truncate">Time Complexity</p>
+                  <p className="font-bold text-xs @md:text-sm text-amber-500 font-mono truncate">{complexity.time}</p>
                 </div>
               </div>
-              <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-4">
-                <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
-                  <Cpu size={18} />
+              <div className="p-3 @md:p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-3 @md:gap-4 min-w-0">
+                <div className="p-2 @md:p-2.5 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
+                  <Cpu size={16} className="@md:w-[18px] @md:h-[18px]" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 font-sans">Space Complexity</p>
-                  <p className="font-bold text-sm text-purple-500 font-mono">{complexity.space}</p>
+                <div className="min-w-0">
+                  <p className="text-[9px] @md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 font-sans truncate">Space Complexity</p>
+                  <p className="font-bold text-xs @md:text-sm text-purple-500 font-mono truncate">{complexity.space}</p>
                 </div>
               </div>
             </div>
@@ -161,16 +161,16 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                           <span>Copy</span>
                         </button>
                       </div>
-                      <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">{String(res.input)}</pre>
+                      <pre className="p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap break-all">{String(res.input)}</pre>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
-                        <div className="flex items-center gap-1.5">
-                           <span>Actual Output</span>
-                           <XCircle size={10} className="text-red-500" />
+                  <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 @md:gap-4 mt-1">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center justify-between text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider gap-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                           <XCircle size={10} className="text-red-500 shrink-0" />
+                           <span className="truncate">Actual Output</span>
                         </div>
                         <button
                           onClick={() => {
@@ -182,13 +182,13 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                             navigator.clipboard.writeText(val);
                             toast.success("Actual output copied!");
                           }}
-                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer"
+                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer shrink-0"
                         >
                           <Copy size={10} />
                           <span>Copy</span>
                         </button>
                       </div>
-                      <pre className="p-3 bg-red-500/5 border border-red-500/20 text-red-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">
+                      <pre className="p-3 bg-red-500/5 border border-red-500/20 text-red-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap break-all">
                         {res.actual !== undefined 
                           ? (typeof res.actual === 'string' ? res.actual : JSON.stringify(res.actual))
                           : (res.actualOutput !== undefined 
@@ -196,11 +196,11 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                               : "N/A")}
                       </pre>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
-                        <div className="flex items-center gap-1.5">
-                           <span>Expected Output</span>
-                           <CheckCircle size={10} className="text-green-500" />
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center justify-between text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider gap-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                           <CheckCircle size={10} className="text-green-500 shrink-0" />
+                           <span className="truncate">Expected Output</span>
                         </div>
                         <button
                           onClick={() => {
@@ -212,13 +212,13 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                             navigator.clipboard.writeText(val);
                             toast.success("Expected output copied!");
                           }}
-                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer"
+                          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-2 py-0.5 rounded hover:bg-[var(--foreground)]/5 transition-all cursor-pointer shrink-0"
                         >
                           <Copy size={10} />
                           <span>Copy</span>
                         </button>
                       </div>
-                      <pre className="p-3 bg-green-500/5 border border-green-500/20 text-green-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap">
+                      <pre className="p-3 bg-green-500/5 border border-green-500/20 text-green-500 rounded-lg text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap break-all">
                         {res.expected !== undefined 
                           ? (typeof res.expected === 'string' ? res.expected : JSON.stringify(res.expected))
                           : (res.expectedOutput !== undefined 
@@ -231,7 +231,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                   {res.error && (
                     <div className="space-y-1">
                       <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider">Error Details</span>
-                      <pre className="p-3 bg-red-500/5 text-red-500 border border-red-500/20 rounded-lg text-xs font-mono whitespace-pre-wrap">{res.error}</pre>
+                      <pre className="p-3 bg-red-500/5 text-red-500 border border-red-500/20 rounded-lg text-xs font-mono whitespace-pre-wrap break-all">{res.error}</pre>
                     </div>
                   )}
                 </div>
@@ -243,7 +243,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
                   <span>Execution Failure Details</span>
                 </div>
                 {executionError ? (
-                  <pre className="p-3 bg-red-500/5 text-red-500 border border-red-500/20 rounded-lg text-xs font-mono whitespace-pre-wrap">{executionError}</pre>
+                  <pre className="p-3 bg-red-500/5 text-red-500 border border-red-500/20 rounded-lg text-xs font-mono whitespace-pre-wrap break-all">{executionError}</pre>
                 ) : (
                   <p className="text-xs text-[var(--muted-foreground)]">No test case details are available for this run status.</p>
                 )}
@@ -256,7 +256,7 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
       {/* Code Section */}
       <div className="space-y-3">
         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Submitted Code</h3>
-        <pre className="p-5 bg-[var(--background)] rounded-2xl border border-[var(--border)] overflow-x-auto font-mono text-sm leading-relaxed text-[var(--foreground)]/80">
+        <pre className="p-4 @md:p-5 bg-[var(--background)] rounded-2xl border border-[var(--border)] overflow-x-auto font-mono text-xs @md:text-sm leading-relaxed text-[var(--foreground)]/80">
           <code>{submission.code}</code>
         </pre>
       </div>
@@ -266,13 +266,13 @@ export default function SubmissionDetailsModal({ submission, onClose }: Submissi
 
 function StatItem({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
   return (
-    <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-4">
-      <div className="p-2.5 rounded-xl bg-[var(--foreground)]/5 text-[var(--muted-foreground)]">
-        <Icon size={18} />
+    <div className="p-3 @md:p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center gap-3 @md:gap-4 min-w-0">
+      <div className="p-2 @md:p-2.5 rounded-xl bg-[var(--foreground)]/5 text-[var(--muted-foreground)] shrink-0">
+        <Icon size={16} className="@md:w-[18px] @md:h-[18px]" />
       </div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5">{label}</p>
-        <p className="font-bold text-sm">{value}</p>
+      <div className="min-w-0">
+        <p className="text-[9px] @md:text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] mb-0.5 truncate">{label}</p>
+        <p className="font-bold text-xs @md:text-sm truncate">{value}</p>
       </div>
     </div>
   );

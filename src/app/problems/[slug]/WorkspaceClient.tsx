@@ -199,7 +199,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
             >
             {/* LEFT PANEL: CONTENT */}
             <div 
-              className="flex flex-col h-full bg-[var(--card)] overflow-hidden min-h-0 border-r border-[var(--border)]"
+              className="flex flex-col h-full bg-[var(--card)] overflow-hidden min-h-0 border-r border-[var(--border)] @container"
               style={{ containerType: 'inline-size', containerName: 'sidebar' }}
             >
                 <div className="flex items-center px-2 border-b border-[var(--border)] h-[44px] shrink-0 gap-1 xl:gap-2 bg-[var(--card)] overflow-hidden">
@@ -466,7 +466,7 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                 </div>
                             )}
                             {activeTab === 'submission-details' && (
-                              <div className="p-4 overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar">
+                              <div className="p-4 overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar @container">
                                 <SubmissionDetailsModal 
                                   submission={selectedSubmission}
                                   onClose={() => {

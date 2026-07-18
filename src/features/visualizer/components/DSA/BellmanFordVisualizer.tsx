@@ -254,6 +254,7 @@ export default function BellmanFordVisualizer({ speed = 1000 }: { speed?: number
             setEdges(prev => prev.filter(edge => !(edge.u === u && edge.v === v)));
           } else {
             // Random weights between -2 and 7 (includes negative edges!)
+            // eslint-disable-next-line react-hooks/purity
             const randomWeight = Math.floor(Math.random() * 10) - 2;
             setEdges(prev => [...prev, { u, v, weight: randomWeight }]);
           }
@@ -518,10 +519,10 @@ export default function BellmanFordVisualizer({ speed = 1000 }: { speed?: number
 
                 let nodeColor = "var(--card)";
                 let borderColor = "var(--border)";
-                let textColor = "var(--foreground)";
+                const textColor = "var(--foreground)";
                 let borderWidth = "2.5";
                 
-                let radius = 28; // Medium-sized nodes
+                const radius = 28; // Medium-sized nodes
                 let scale = 1;
 
                 if (isSelected) {

@@ -281,6 +281,7 @@ export default function DijkstraVisualizer({ speed = 1000 }: { speed?: number })
           if (edgeExists) {
             setEdges(prev => prev.filter(edge => !(edge.u === u && edge.v === v)));
           } else {
+            // eslint-disable-next-line react-hooks/purity
             const randomWeight = Math.floor(Math.random() * 9) + 1;
             setEdges(prev => [...prev, { u, v, weight: randomWeight }]);
           }
@@ -543,10 +544,10 @@ export default function DijkstraVisualizer({ speed = 1000 }: { speed?: number })
 
                 let nodeColor = "var(--card)";
                 let borderColor = "var(--border)";
-                let textColor = "var(--foreground)";
+                const textColor = "var(--foreground)";
                 let borderWidth = "2.5";
                 
-                let radius = 28; // Medium-sized nodes
+                const radius = 28; // Medium-sized nodes
                 let scale = 1;
 
                 if (isSelected) {
