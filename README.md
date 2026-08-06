@@ -158,15 +158,15 @@ graph TD
     AI[Gemini / OpenAI LLM Fleet]:::extStyle
 
     %% Relationships
-    Client -->|REST / Server Actions| API
-    Client <-->|WebSockets (ws://)| SocketServer
+    Client -->|"REST / Server Actions"| API
+    Client <-->|"WebSockets (ws://)"| SocketServer
     
-    API -->|Read / Write| Postgres
-    API -->|Queue Jobs / Cache| Redis
-    SocketServer -->|Pub / Sub State| Redis
+    API -->|"Read / Write"| Postgres
+    API -->|"Queue Jobs / Cache"| Redis
+    SocketServer -->|"Pub / Sub State"| Redis
     
-    API -->|Submit Payload| Judge0
-    API -->|Prompt Injection| AI
+    API -->|"Submit Payload"| Judge0
+    API -->|"Prompt Injection"| AI
 ```
 
 ---
