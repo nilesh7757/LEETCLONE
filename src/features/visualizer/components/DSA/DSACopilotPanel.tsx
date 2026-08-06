@@ -24,7 +24,10 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
   useEffect(() => {
     const parse = async () => {
       const parsed = await marked.parse(content || "");
-      setHtml(DOMPurify.sanitize(parsed));
+      setHtml(DOMPurify.sanitize(parsed, {
+        ADD_TAGS: ["svg", "defs", "marker", "circle", "line", "path", "text", "rect", "g", "tspan"],
+        ADD_ATTR: ["width", "height", "viewBox", "x", "y", "rx", "ry", "fill", "stroke", "stroke-width", "font-size", "font-weight", "text-anchor", "cx", "cy", "r", "x1", "y1", "x2", "y2", "d", "fill-opacity", "stroke-dasharray", "stroke-opacity", "marker-end", "id", "orient", "refX", "refY", "markerWidth", "markerHeight", "style"]
+      }));
     };
     parse();
   }, [content]);

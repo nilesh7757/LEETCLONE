@@ -160,22 +160,19 @@ export const POST = apiHandler(async (req: Request) => {
         });
         results = await job.waitUntilFinished(queueEvents, 55000);
       } catch (err) {
-        logger.error("[SUBMIT_CODE] Queue submit failed, falling back to direct execution:", err);
-        results = await executeCode({
-          problemId: problem.id,
-          problemSlug: problem.slug,
-          problemTitle: problem.title,
-          customChecker: problem.customChecker,
-          code,
-          language,
-          type: "CODING",
-          testCases: combinedTestCases.map(tc => ({
-            input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
-            expectedOutput: typeof tc.expectedOutput === "object" ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || "")
-          })),
-          timeLimit: problem.timeLimit,
-          memoryLimit: problem.memoryLimit
-        });
+        logger.error("[SUBMIT_CODE] Queue wait failed or timed out:", err);
+        // If the queue takes longer than 55 seconds, it's almost certainly because
+        // the code is TLE'ing on multiple test cases (or the server is extremely overloaded).
+        // Falling back to executeCode will just guarantee a 504 Gateway Timeout.
+        // Instead, we fail fast with a Time Limit Exceeded.
+        results = [{
+          input: "Hidden Test Cases",
+          expected: "N/A",
+          actual: "",
+          status: "Time Limit Exceeded",
+          error: "Your code took too long to execute and exceeded the maximum allowed queue time. Please check for infinite loops or sub-optimal time complexity.",
+          runtime: 2000
+        }] as unknown as ExecutionResult[];
       }
     }
   } else if (problem.type === "SQL") {
@@ -214,21 +211,15 @@ export const POST = apiHandler(async (req: Request) => {
         });
         results = await job.waitUntilFinished(queueEvents, 55000);
       } catch (err) {
-        logger.error("[SUBMIT_SQL] Queue submit failed, falling back to direct execution:", err);
-        results = await executeCode({
-          problemId: problem.id,
-          code,
-          language: "sql",
-          type: "SQL",
-          testCases: combinedTestCases.map(tc => ({
-            input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
-            expectedOutput: typeof tc.expectedOutput === "object" ? JSON.stringify(tc.expectedOutput) : String(tc.expectedOutput || ""),
-            initialSchema: tc.initialSchema,
-            initialData: tc.initialData
-          })),
-          initialSchema: problem.initialSchema || "",
-          initialData: problem.initialData || ""
-        });
+        logger.error("[SUBMIT_SQL] Queue wait failed or timed out:", err);
+        results = [{
+          input: "Hidden SQL Test Cases",
+          expected: "N/A",
+          actual: "",
+          status: "Time Limit Exceeded",
+          error: "Your SQL query took too long to execute. Please optimize your query.",
+          runtime: 2000
+        }] as unknown as ExecutionResult[];
       }
     }
   } else if (problem.type === "SYSTEM_DESIGN") {

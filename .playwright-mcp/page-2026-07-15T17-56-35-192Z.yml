@@ -1,0 +1,68 @@
+- generic [active] [ref=f14e1]:
+  - generic [ref=f14e2]:
+    - link "Skip to main content" [ref=f14e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=f14e4]:
+      - generic [ref=f14e5]:
+        - link "LogiQuest" [ref=f14e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=f14e16]
+      - generic [ref=f14e17]:
+        - generic [ref=f14e18]: Platform
+        - link "Problems" [ref=f14e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=f14e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=f14e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=f14e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=f14e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Arena" [ref=f14e53] [cursor=pointer]:
+          - /url: /arena
+        - link "Siege" [ref=f14e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=f14e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=f14e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=f14e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=f14e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=f14e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=f14e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f14e93]:
+        - button "Collapse" [ref=f14e94]
+        - generic [ref=f14e99]:
+          - link "Log In" [ref=f14e100] [cursor=pointer]:
+            - /url: /login
+          - link "Sign Up" [ref=f14e101] [cursor=pointer]:
+            - /url: /signup
+    - main [ref=f14e102]:
+      - generic [ref=f14e105]:
+        - generic [ref=f14e106]:
+          - link "DSA Studio" [ref=f14e108] [cursor=pointer]:
+            - /url: /
+          - button [ref=f14e115] [cursor=pointer]
+        - main [ref=f14e122]:
+          - generic [ref=f14e123]:
+            - generic [ref=f14e124]:
+              - generic [ref=f14e125]: SORTING
+              - heading "Bubble Sort" [level=1] [ref=f14e127]
+              - paragraph [ref=f14e128]: Simple comparison-based sorting.
+            - button "Bubble Sort" [ref=f14e130] [cursor=pointer]
+          - generic [ref=f14e138]:
+            - generic [ref=f14e139]:
+              - generic [ref=f14e140]:
+                - button "Visualizer" [ref=f14e141]
+                - button "Code" [ref=f14e145]
+                - button "Resources" [ref=f14e151]
+              - generic [ref=f14e155]:
+                - button "1×" [ref=f14e157]
+                - button "Fullscreen" [ref=f14e164] [cursor=pointer]
+            - paragraph [ref=f14e175]: Loading visualizer...
+  - region "Notifications alt+T"

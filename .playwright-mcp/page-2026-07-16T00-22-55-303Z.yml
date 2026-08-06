@@ -1,0 +1,370 @@
+- generic [active] [ref=f11e1]:
+  - generic [ref=f11e2]:
+    - link "Skip to main content" [ref=f11e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=f11e4]:
+      - generic [ref=f11e5]:
+        - link "LogiQuest" [ref=f11e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=f11e16]
+      - generic [ref=f11e17]:
+        - generic [ref=f11e18]: Platform
+        - link "Problems" [ref=f11e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=f11e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=f11e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=f11e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=f11e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Contests" [ref=f11e53] [cursor=pointer]:
+          - /url: /contest
+        - link "Siege" [ref=f11e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=f11e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=f11e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=f11e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=f11e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=f11e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=f11e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f11e93]:
+        - button "Collapse" [ref=f11e94]
+        - link [ref=f11e100] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=f11e105]:
+            - paragraph [ref=f11e106]: Nilesh mori
+            - paragraph [ref=f11e107]: View Profile
+    - generic [ref=f11e109]:
+      - link "0" [ref=f11e110] [cursor=pointer]:
+        - /url: /problems/course-schedule-ii
+        - generic "Solve a challenge today to continue your streak!" [ref=f11e111]: "0"
+      - generic [ref=f11e116]:
+        - button [ref=f11e118]
+        - button "Toggle theme" [ref=f11e124] [cursor=pointer]
+    - main [ref=f11e132]:
+      - generic [ref=f11e136]:
+        - generic [ref=f11e137]:
+          - generic [ref=f11e138]:
+            - heading "Problem Set" [level=1] [ref=f11e146]
+            - generic [ref=f11e147]: 63 Challenges
+          - generic [ref=f11e149]:
+            - generic [ref=f11e150]: Progress
+            - generic [ref=f11e151]:
+              - text: 0/63
+              - generic [ref=f11e152]: (0%)
+        - generic [ref=f11e154]:
+          - generic [ref=f11e155]:
+            - generic [ref=f11e156]:
+              - generic [ref=f11e157]: Daily Challenge
+              - link "Daily Challenge Medium Course Schedule II Graphs Solve challenge" [ref=f11e161] [cursor=pointer]:
+                - /url: /problems/course-schedule-ii
+                - generic [ref=f11e163]:
+                  - generic [ref=f11e164]:
+                    - generic [ref=f11e165]: Daily Challenge
+                    - generic [ref=f11e167]: Medium
+                  - generic [ref=f11e168]:
+                    - heading "Course Schedule II" [level=3] [ref=f11e169]
+                    - generic [ref=f11e170]: Graphs
+                  - generic [ref=f11e176]: Solve challenge
+            - generic [ref=f11e180]:
+              - generic [ref=f11e181]: Mastery Planner
+              - generic [ref=f11e186]:
+                - generic [ref=f11e188]:
+                  - generic [ref=f11e189]: Goal Tracker
+                  - generic [ref=f11e193]:
+                    - button [ref=f11e194]
+                    - generic [ref=f11e197]: Jul 2026
+                    - button [ref=f11e198]
+                - generic [ref=f11e201]:
+                  - generic [ref=f11e202]: M
+                  - generic [ref=f11e203]: T
+                  - generic [ref=f11e204]: W
+                  - generic [ref=f11e205]: T
+                  - generic [ref=f11e206]: F
+                  - generic [ref=f11e207]: S
+                  - generic [ref=f11e208]: S
+                  - button "1" [ref=f11e211] [cursor=pointer]
+                  - button "2" [ref=f11e212] [cursor=pointer]
+                  - button "3" [ref=f11e213] [cursor=pointer]
+                  - button "4" [ref=f11e214] [cursor=pointer]
+                  - button "5" [ref=f11e215] [cursor=pointer]
+                  - button "6" [ref=f11e216] [cursor=pointer]
+                  - button "7" [ref=f11e217] [cursor=pointer]
+                  - button "8" [ref=f11e218] [cursor=pointer]
+                  - button "9" [ref=f11e219] [cursor=pointer]
+                  - button "10" [ref=f11e220] [cursor=pointer]
+                  - button "11" [ref=f11e221] [cursor=pointer]
+                  - button "12" [ref=f11e222] [cursor=pointer]
+                  - button "13" [ref=f11e223] [cursor=pointer]
+                  - button "14" [ref=f11e224] [cursor=pointer]
+                  - button "15" [ref=f11e225] [cursor=pointer]
+                  - button "16" [ref=f11e226] [cursor=pointer]
+                  - button "17" [ref=f11e227] [cursor=pointer]
+                  - button "18" [ref=f11e228] [cursor=pointer]
+                  - button "19" [ref=f11e229] [cursor=pointer]
+                  - button "20" [ref=f11e230] [cursor=pointer]
+                  - button "21" [ref=f11e231] [cursor=pointer]
+                  - button "22" [ref=f11e232] [cursor=pointer]
+                  - button "23" [ref=f11e233] [cursor=pointer]
+                  - button "24" [ref=f11e234] [cursor=pointer]
+                  - button "25" [ref=f11e235] [cursor=pointer]
+                  - button "26" [ref=f11e236] [cursor=pointer]
+                  - button "27" [ref=f11e237] [cursor=pointer]
+                  - button "28" [ref=f11e238] [cursor=pointer]
+                  - button "29" [ref=f11e239] [cursor=pointer]
+                  - button "30" [ref=f11e240] [cursor=pointer]
+                  - button "31" [ref=f11e241] [cursor=pointer]
+                - generic [ref=f11e242]:
+                  - generic [ref=f11e243]:
+                    - generic [ref=f11e244]: "12"
+                    - generic [ref=f11e245]: Active Tasks
+                  - generic [ref=f11e246]:
+                    - generic [ref=f11e247]: "28"
+                    - generic [ref=f11e248]: All Completed
+          - generic [ref=f11e250]:
+            - generic [ref=f11e251]:
+              - link "Coding Set" [ref=f11e252] [cursor=pointer]:
+                - /url: "?tab=public"
+              - link "Database (SQL)" [ref=f11e253] [cursor=pointer]:
+                - /url: "?tab=sql"
+              - link "My Foundry" [ref=f11e254] [cursor=pointer]:
+                - /url: "?tab=mine"
+            - generic [ref=f11e255]:
+              - textbox "Search problems..." [ref=f11e257]
+              - generic [ref=f11e258]:
+                - button "Starred" [ref=f11e259] [cursor=pointer]
+                - generic [ref=f11e262]:
+                  - button "All" [ref=f11e263] [cursor=pointer]
+                  - button "Easy" [ref=f11e264] [cursor=pointer]
+                  - button "Medium" [ref=f11e265] [cursor=pointer]
+                  - button "Hard" [ref=f11e266] [cursor=pointer]
+                - button "Topic tags" [ref=f11e268] [cursor=pointer]
+                - button "Companies" [ref=f11e275] [cursor=pointer]
+            - generic [ref=f11e281]:
+              - table [ref=f11e283]:
+                - rowgroup [ref=f11e284]:
+                  - row [ref=f11e285]:
+                    - columnheader [ref=f11e286]
+                    - columnheader "Status" [ref=f11e287]
+                    - columnheader "Title" [ref=f11e288]
+                    - columnheader "Difficulty" [ref=f11e289]
+                    - columnheader "Category" [ref=f11e290]
+                    - columnheader "Acceptance" [ref=f11e291]
+                - rowgroup [ref=f11e292]:
+                  - row [ref=f11e293]:
+                    - cell [ref=f11e294]:
+                      - button "Bookmark problem" [ref=f11e295] [cursor=pointer]
+                    - cell [ref=f11e298]
+                    - cell "001. Task Scheduler Google Amazon Meta" [ref=f11e301]:
+                      - generic [ref=f11e302]:
+                        - link "001. Task Scheduler" [ref=f11e303] [cursor=pointer]:
+                          - /url: /problems/task-scheduler
+                          - generic [ref=f11e304]: "001."
+                          - generic [ref=f11e305]: Task Scheduler
+                        - generic [ref=f11e306]:
+                          - generic [ref=f11e307]: Google
+                          - generic [ref=f11e308]: Amazon
+                          - generic [ref=f11e309]: Meta
+                    - cell "Medium" [ref=f11e310]
+                    - cell "Greedy" [ref=f11e311]
+                    - cell "33.3%" [ref=f11e312]
+                  - row [ref=f11e314]:
+                    - cell [ref=f11e315]:
+                      - button "Bookmark problem" [ref=f11e316] [cursor=pointer]
+                    - cell [ref=f11e319]
+                    - cell "002. Accounts Merge Google Amazon Meta" [ref=f11e322]:
+                      - generic [ref=f11e323]:
+                        - link "002. Accounts Merge" [ref=f11e324] [cursor=pointer]:
+                          - /url: /problems/accounts-merge
+                          - generic [ref=f11e325]: "002."
+                          - generic [ref=f11e326]: Accounts Merge
+                        - generic [ref=f11e327]:
+                          - generic [ref=f11e328]: Google
+                          - generic [ref=f11e329]: Amazon
+                          - generic [ref=f11e330]: Meta
+                    - cell "Medium" [ref=f11e331]
+                    - cell "Graphs" [ref=f11e332]
+                    - cell "50.0%" [ref=f11e333]
+                  - row [ref=f11e335]:
+                    - cell [ref=f11e336]:
+                      - button "Bookmark problem" [ref=f11e337] [cursor=pointer]
+                    - cell [ref=f11e340]
+                    - cell "003. Meeting Rooms II Google Amazon Meta" [ref=f11e343]:
+                      - generic [ref=f11e344]:
+                        - link "003. Meeting Rooms II" [ref=f11e345] [cursor=pointer]:
+                          - /url: /problems/meeting-rooms-ii
+                          - generic [ref=f11e346]: "003."
+                          - generic [ref=f11e347]: Meeting Rooms II
+                        - generic [ref=f11e348]:
+                          - generic [ref=f11e349]: Google
+                          - generic [ref=f11e350]: Amazon
+                          - generic [ref=f11e351]: Meta
+                    - cell "Medium" [ref=f11e352]
+                    - cell "Arrays" [ref=f11e353]
+                    - cell "54.1%" [ref=f11e354]
+                  - row [ref=f11e356]:
+                    - cell [ref=f11e357]:
+                      - button "Bookmark problem" [ref=f11e358] [cursor=pointer]
+                    - cell [ref=f11e361]
+                    - cell "004. Sum of Subarray Minimums Google Amazon Meta" [ref=f11e364]:
+                      - generic [ref=f11e365]:
+                        - link "004. Sum of Subarray Minimums" [ref=f11e366] [cursor=pointer]:
+                          - /url: /problems/sum-of-subarray-minimums
+                          - generic [ref=f11e367]: "004."
+                          - generic [ref=f11e368]: Sum of Subarray Minimums
+                        - generic [ref=f11e369]:
+                          - generic [ref=f11e370]: Google
+                          - generic [ref=f11e371]: Amazon
+                          - generic [ref=f11e372]: Meta
+                    - cell "Medium" [ref=f11e373]
+                    - cell "Stack" [ref=f11e374]
+                    - cell "100.0%" [ref=f11e375]
+                  - row [ref=f11e377]:
+                    - cell [ref=f11e378]:
+                      - button "Bookmark problem" [ref=f11e379] [cursor=pointer]
+                    - cell [ref=f11e382]
+                    - cell "005. Largest Rectangle in Histogram Google Amazon Meta" [ref=f11e385]:
+                      - generic [ref=f11e386]:
+                        - link "005. Largest Rectangle in Histogram" [ref=f11e387] [cursor=pointer]:
+                          - /url: /problems/largest-rectangle-in-histogram
+                          - generic [ref=f11e388]: "005."
+                          - generic [ref=f11e389]: Largest Rectangle in Histogram
+                        - generic [ref=f11e390]:
+                          - generic [ref=f11e391]: Google
+                          - generic [ref=f11e392]: Amazon
+                          - generic [ref=f11e393]: Meta
+                    - cell "Hard" [ref=f11e394]
+                    - cell "Stack" [ref=f11e395]
+                    - cell "100.0%" [ref=f11e396]
+                  - row [ref=f11e398]:
+                    - cell [ref=f11e399]:
+                      - button "Bookmark problem" [ref=f11e400] [cursor=pointer]
+                    - cell [ref=f11e403]
+                    - cell "006. Product of Array Except Self Google Amazon Meta" [ref=f11e406]:
+                      - generic [ref=f11e407]:
+                        - link "006. Product of Array Except Self" [ref=f11e408] [cursor=pointer]:
+                          - /url: /problems/product-of-array-except-self
+                          - generic [ref=f11e409]: "006."
+                          - generic [ref=f11e410]: Product of Array Except Self
+                        - generic [ref=f11e411]:
+                          - generic [ref=f11e412]: Google
+                          - generic [ref=f11e413]: Amazon
+                          - generic [ref=f11e414]: Meta
+                    - cell "Medium" [ref=f11e415]
+                    - cell "Arrays" [ref=f11e416]
+                    - cell "100.0%" [ref=f11e417]
+                  - row [ref=f11e419]:
+                    - cell [ref=f11e420]:
+                      - button "Bookmark problem" [ref=f11e421] [cursor=pointer]
+                    - cell [ref=f11e424]
+                    - cell "007. Longest Zero-Sum Subarray Google Amazon Meta" [ref=f11e427]:
+                      - generic [ref=f11e428]:
+                        - link "007. Longest Zero-Sum Subarray" [ref=f11e429] [cursor=pointer]:
+                          - /url: /problems/longest-zero-sum-subarray
+                          - generic [ref=f11e430]: "007."
+                          - generic [ref=f11e431]: Longest Zero-Sum Subarray
+                        - generic [ref=f11e432]:
+                          - generic [ref=f11e433]: Google
+                          - generic [ref=f11e434]: Amazon
+                          - generic [ref=f11e435]: Meta
+                    - cell "Medium" [ref=f11e436]
+                    - cell "Arrays" [ref=f11e437]
+                    - cell "100.0%" [ref=f11e438]
+                  - row [ref=f11e440]:
+                    - cell [ref=f11e441]:
+                      - button "Bookmark problem" [ref=f11e442] [cursor=pointer]
+                    - cell [ref=f11e445]
+                    - cell "008. Subarray Sum Equals K Google Amazon Meta" [ref=f11e448]:
+                      - generic [ref=f11e449]:
+                        - link "008. Subarray Sum Equals K" [ref=f11e450] [cursor=pointer]:
+                          - /url: /problems/subarray-sum-equals-k
+                          - generic [ref=f11e451]: "008."
+                          - generic [ref=f11e452]: Subarray Sum Equals K
+                        - generic [ref=f11e453]:
+                          - generic [ref=f11e454]: Google
+                          - generic [ref=f11e455]: Amazon
+                          - generic [ref=f11e456]: Meta
+                    - cell "Medium" [ref=f11e457]
+                    - cell "Arrays" [ref=f11e458]
+                    - cell "100.0%" [ref=f11e459]
+                  - row [ref=f11e461]:
+                    - cell [ref=f11e462]:
+                      - button "Bookmark problem" [ref=f11e463] [cursor=pointer]
+                    - cell [ref=f11e466]
+                    - cell "009. Matrix Median Google Amazon Meta" [ref=f11e469]:
+                      - generic [ref=f11e470]:
+                        - link "009. Matrix Median" [ref=f11e471] [cursor=pointer]:
+                          - /url: /problems/matrix-median
+                          - generic [ref=f11e472]: "009."
+                          - generic [ref=f11e473]: Matrix Median
+                        - generic [ref=f11e474]:
+                          - generic [ref=f11e475]: Google
+                          - generic [ref=f11e476]: Amazon
+                          - generic [ref=f11e477]: Meta
+                    - cell "Hard" [ref=f11e478]
+                    - cell "Binary Search" [ref=f11e479]
+                    - cell "100.0%" [ref=f11e480]
+                  - row [ref=f11e482]:
+                    - cell [ref=f11e483]:
+                      - button "Bookmark problem" [ref=f11e484] [cursor=pointer]
+                    - cell [ref=f11e487]
+                    - cell "010. Maximize Minimum Distance Google Amazon Meta" [ref=f11e490]:
+                      - generic [ref=f11e491]:
+                        - link "010. Maximize Minimum Distance" [ref=f11e492] [cursor=pointer]:
+                          - /url: /problems/maximize-minimum-distance
+                          - generic [ref=f11e493]: "010."
+                          - generic [ref=f11e494]: Maximize Minimum Distance
+                        - generic [ref=f11e495]:
+                          - generic [ref=f11e496]: Google
+                          - generic [ref=f11e497]: Amazon
+                          - generic [ref=f11e498]: Meta
+                    - cell "Medium" [ref=f11e499]
+                    - cell "Binary Search" [ref=f11e500]
+                    - cell "100.0%" [ref=f11e501]
+                  - row [ref=f11e503]:
+                    - cell [ref=f11e504]:
+                      - button "Bookmark problem" [ref=f11e505] [cursor=pointer]
+                    - cell [ref=f11e508]
+                    - cell "011. Median of Two Sorted Arrays Google Amazon" [ref=f11e511]:
+                      - generic [ref=f11e512]:
+                        - link "011. Median of Two Sorted Arrays" [ref=f11e513] [cursor=pointer]:
+                          - /url: /problems/median-of-two-sorted-arrays
+                          - generic [ref=f11e514]: "011."
+                          - generic [ref=f11e515]: Median of Two Sorted Arrays
+                        - generic [ref=f11e516]:
+                          - generic [ref=f11e517]: Google
+                          - generic [ref=f11e518]: Amazon
+                    - cell "Hard" [ref=f11e519]
+                    - cell "Binary Search" [ref=f11e520]
+                    - cell "100.0%" [ref=f11e521]
+                  - row [ref=f11e523]:
+                    - cell [ref=f11e524]:
+                      - button "Bookmark problem" [ref=f11e525] [cursor=pointer]
+                    - cell [ref=f11e528]
+                    - cell "012. Kth Element of Two Sorted Arrays Google Amazon Meta" [ref=f11e531]:
+                      - generic [ref=f11e532]:
+                        - link "012. Kth Element of Two Sorted Arrays" [ref=f11e533] [cursor=pointer]:
+                          - /url: /problems/kth-element-of-two-sorted-arrays
+                          - generic [ref=f11e534]: "012."
+                          - generic [ref=f11e535]: Kth Element of Two Sorted Arrays
+                        - generic [ref=f11e536]:
+                          - generic [ref=f11e537]: Google
+                          - generic [ref=f11e538]: Amazon
+                          - generic [ref=f11e539]: Meta
+                    - cell "Medium" [ref=f11e540]
+                    - cell "Binary Search" [ref=f11e541]
+                    - cell "100.0%" [ref=f11e542]
+              - generic [ref=f11e544]:
+                - button [disabled]
+                - generic [ref=f11e545]: Page 1 / 5
+                - button [ref=f11e546] [cursor=pointer]
+  - region "Notifications alt+T"
+  - alert [ref=f11e549]

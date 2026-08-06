@@ -1,0 +1,32 @@
+- generic [ref=f15e1]:
+  - generic [ref=f15e2]:
+    - link "Skip to main content" [ref=f15e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f15e4]:
+      - generic [ref=f15e5]:
+        - button [ref=f15e6]
+        - link "LogiQuest" [ref=f15e8] [cursor=pointer]:
+          - /url: /
+    - main [ref=f15e16]:
+      - generic [ref=f15e19]:
+        - generic [ref=f15e20]:
+          - link "LQ LogiQuest" [ref=f15e22] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f15e23]: LQ
+            - generic [ref=f15e25]: LogiQuest
+          - generic [ref=f15e26]:
+            - link "Dashboard" [ref=f15e27] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f15e28] [cursor=pointer]
+        - main [ref=f15e35]:
+          - generic [ref=f15e36]:
+            - generic [ref=f15e37]:
+              - generic [ref=f15e38]: SORTING
+              - heading "Bubble Sort" [level=1] [ref=f15e40]
+              - paragraph [ref=f15e41]: Simple comparison-based sorting.
+            - generic [ref=f15e42]:
+              - button "Playback Speed" [ref=f15e44] [cursor=pointer]
+              - button "Fullscreen" [ref=f15e50] [cursor=pointer]
+              - button "Bubble Sort" [active] [ref=f15e57] [cursor=pointer]
+          - paragraph [ref=f15e71]: Loading visualizer...
+  - region "Notifications alt+T"

@@ -1,0 +1,109 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=e231]:
+      - generic [ref=e232]:
+        - button [ref=e233]
+        - link "LogiQuest" [ref=e235] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=e242] [cursor=pointer]
+    - main [ref=e102]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - link "LQ LogiQuest" [ref=e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e109]: LQ
+            - generic [ref=e111]: LogiQuest
+          - generic [ref=e112]:
+            - link "Dashboard" [ref=e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=e114] [cursor=pointer]
+        - main [ref=e121]:
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e124]: DP
+              - heading "Kadane's Lemma" [level=1] [ref=e440]
+              - paragraph [ref=e127]: Maximum subarray sum structure.
+            - generic [ref=e128]:
+              - button "Playback Speed" [ref=e250] [cursor=pointer]
+              - button "Fullscreen" [ref=e137] [cursor=pointer]
+              - button "Kadane's Lemma" [ref=e441] [cursor=pointer]
+          - generic [ref=e447]:
+            - generic [ref=e448]:
+              - generic [ref=e449]:
+                - button "Play" [ref=e450] [cursor=pointer]
+                - button "Randomize Array" [ref=e454] [cursor=pointer]
+              - generic [ref=e458]: Kadane's Subarray Algorithm
+            - generic [ref=e459]:
+              - generic [ref=e463]:
+                - generic [ref=e464]:
+                  - generic [ref=e465]: idx 0
+                  - generic [ref=e466]: "-5"
+                - generic [ref=e468]:
+                  - generic [ref=e469]: idx 1
+                  - generic [ref=e470]: "1"
+                - generic [ref=e472]:
+                  - generic [ref=e473]: idx 2
+                  - generic [ref=e474]: "5"
+                - generic [ref=e476]:
+                  - generic [ref=e477]: idx 3
+                  - generic [ref=e478]: "-9"
+                - generic [ref=e480]:
+                  - generic [ref=e481]: idx 4
+                  - generic [ref=e482]: "-7"
+                - generic [ref=e484]:
+                  - generic [ref=e485]: idx 5
+                  - generic [ref=e486]: "14"
+                - generic [ref=e488]:
+                  - generic [ref=e489]: idx 6
+                  - generic [ref=e490]: "-5"
+                - generic [ref=e492]:
+                  - generic [ref=e493]: idx 7
+                  - generic [ref=e494]: "-10"
+                - generic [ref=e496]:
+                  - generic [ref=e497]: idx 8
+                  - generic [ref=e498]: "8"
+                - generic [ref=e500]:
+                  - generic [ref=e501]: idx 9
+                  - generic [ref=e502]: "-6"
+                - generic [ref=e504]:
+                  - generic [ref=e505]: idx 10
+                  - generic [ref=e506]: "-10"
+                - generic [ref=e508]:
+                  - generic [ref=e509]: idx 11
+                  - generic [ref=e510]: "-1"
+              - generic [ref=e512]:
+                - generic [ref=e513]:
+                  - heading "DP Metrics" [level=3] [ref=e514]
+                  - generic [ref=e518]:
+                    - generic [ref=e519]:
+                      - generic [ref=e520]:
+                        - generic [ref=e521]: Current Sum
+                        - generic [ref=e522]: DP[i]
+                      - generic [ref=e523]: "0"
+                    - generic [ref=e524]:
+                      - generic [ref=e525]:
+                        - generic [ref=e526]: Max So Far
+                        - generic [ref=e527]: Result
+                      - generic [ref=e528]: "0"
+                - generic [ref=e529]:
+                  - heading "Simulation Log" [level=3] [ref=e530]
+                  - generic [ref=e534]:
+                    - generic [ref=e535]: »
+                    - text: Optimal subarray search initiated.
+            - paragraph [ref=e537]: Optimal subarray search initiated.
+            - generic [ref=e538]:
+              - generic [ref=e539]:
+                - generic [ref=e540]: Step 1 of 24
+                - generic [ref=e544]:
+                  - button [ref=e545] [cursor=pointer]
+                  - button [ref=e548] [cursor=pointer]
+              - slider [ref=e553] [cursor=pointer]: "0"
+            - generic [ref=e554]:
+              - generic [ref=e555]: Active Probe
+              - generic [ref=e558]: Current Chain
+              - generic [ref=e561]: Max Subarray
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e226] [cursor=pointer]
+  - alert [ref=e230]

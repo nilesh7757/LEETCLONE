@@ -1,0 +1,117 @@
+- generic [active] [ref=f14e1]:
+  - generic [ref=f14e2]:
+    - link "Skip to main content" [ref=f14e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f14e612]:
+      - generic [ref=f14e613]:
+        - button [ref=f14e614]
+        - link "LogiQuest" [ref=f14e616] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f14e623] [cursor=pointer]
+    - main [ref=f14e102]:
+      - generic [ref=f14e105]:
+        - generic [ref=f14e106]:
+          - link "DSA Studio" [ref=f14e108] [cursor=pointer]:
+            - /url: /
+          - button [ref=f14e115] [cursor=pointer]
+        - main [ref=f14e122]:
+          - generic [ref=f14e123]:
+            - generic [ref=f14e124]:
+              - generic [ref=f14e125]: GRAPHS
+              - heading "Floyd-Warshall" [level=1] [ref=f14e848]
+              - paragraph [ref=f14e128]: All-pairs shortest paths.
+            - button "Floyd-Warshall" [ref=f14e849] [cursor=pointer]
+          - generic [ref=f14e138]:
+            - generic [ref=f14e139]:
+              - generic [ref=f14e140]:
+                - button [ref=f14e631]
+                - button [ref=f14e632]
+                - button [ref=f14e633]
+              - generic [ref=f14e155]:
+                - button "Playback Speed" [ref=f14e634]
+                - button "Fullscreen" [ref=f14e164] [cursor=pointer]
+            - generic [ref=f14e857]:
+              - generic [ref=f14e858]:
+                - generic [ref=f14e864]:
+                  - heading "Floyd-Warshall" [level=2] [ref=f14e865]
+                  - paragraph [ref=f14e866]: All-Pairs Shortest Path Tensor
+                - generic [ref=f14e867]:
+                  - button "Change Graph Size" [ref=f14e868]
+                  - button [ref=f14e874]
+                  - button "RUN" [ref=f14e878]
+              - generic [ref=f14e881]:
+                - generic [ref=f14e882]:
+                  - generic [ref=f14e883]: INIT
+                  - generic [ref=f14e889]:
+                    - generic [ref=f14e890]:
+                      - generic [ref=f14e892]: "0"
+                      - generic [ref=f14e893]: "1"
+                      - generic [ref=f14e894]: "2"
+                      - generic [ref=f14e895]: "3"
+                    - generic [ref=f14e896]:
+                      - generic [ref=f14e897]: "0"
+                      - generic [ref=f14e898]: "0"
+                      - generic [ref=f14e901]: "8"
+                      - generic [ref=f14e904]: "3"
+                      - generic [ref=f14e907]: "7"
+                    - generic [ref=f14e910]:
+                      - generic [ref=f14e911]: "1"
+                      - generic [ref=f14e912]: "2"
+                      - generic [ref=f14e915]: "0"
+                      - generic [ref=f14e918]: "1"
+                      - generic [ref=f14e921]: "5"
+                    - generic [ref=f14e924]:
+                      - generic [ref=f14e925]: "2"
+                      - generic [ref=f14e926]: "9"
+                      - generic [ref=f14e929]: "4"
+                      - generic [ref=f14e932]: "0"
+                      - generic [ref=f14e935]: "3"
+                    - generic [ref=f14e938]:
+                      - generic [ref=f14e939]: "3"
+                      - generic [ref=f14e940]: "7"
+                      - generic [ref=f14e943]: "2"
+                      - generic [ref=f14e946]: "6"
+                      - generic [ref=f14e949]: "0"
+                  - generic [ref=f14e952]:
+                    - generic [ref=f14e953]:
+                      - generic [ref=f14e954]: Via (k)
+                      - generic [ref=f14e955]: "-"
+                    - generic [ref=f14e956]:
+                      - generic [ref=f14e957]: From (i)
+                      - generic [ref=f14e958]: "-"
+                    - generic [ref=f14e959]:
+                      - generic [ref=f14e960]: To (j)
+                      - generic [ref=f14e961]: "-"
+                - generic [ref=f14e962]:
+                  - generic [ref=f14e963]: Graph State
+                  - generic [ref=f14e970]:
+                    - generic [ref=f14e971]: "0"
+                    - generic [ref=f14e973]: "1"
+                    - generic [ref=f14e975]: "2"
+                    - generic [ref=f14e977]: "3"
+                - generic [ref=f14e979]:
+                  - generic [ref=f14e980]:
+                    - heading "Logic Core" [level=3] [ref=f14e981]
+                    - generic [ref=f14e985]:
+                      - generic [ref=f14e986]: "CHECK: Dist[i][k] + Dist[k][j] < Dist[i][j]"
+                      - generic [ref=f14e987]: "UPDATE: Dist[i][j] = New Path"
+                  - generic [ref=f14e988]:
+                    - heading "Log" [level=3] [ref=f14e989]
+                    - generic [ref=f14e993]:
+                      - generic [ref=f14e994]: »
+                      - text: Initializing Adjacency Tensor (4x4).
+              - generic [ref=f14e995]:
+                - generic [ref=f14e996]:
+                  - generic [ref=f14e997]: Frame 1 / 60
+                  - generic [ref=f14e1002]:
+                    - button [ref=f14e1003]
+                    - button [ref=f14e1006]
+                - slider [ref=f14e1011] [cursor=pointer]: "0"
+                - generic [ref=f14e1012]: Initializing Distance Matrix. D[i][j] = Direct Edge Weight.
+              - generic [ref=f14e1014]:
+                - generic [ref=f14e1015]: Via Path (i→k, k→j)
+                - generic [ref=f14e1018]: Target (i→j)
+                - generic [ref=f14e1021]: Intermediate (k)
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f14e250] [cursor=pointer]
+  - alert [ref=f14e254]

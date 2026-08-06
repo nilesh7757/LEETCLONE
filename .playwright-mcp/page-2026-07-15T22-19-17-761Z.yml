@@ -1,0 +1,24 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - link "Skip to main content" [ref=f8e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - button [ref=f8e6]
+        - link "LogiQuest" [ref=f8e8] [cursor=pointer]:
+          - /url: /
+    - main [ref=f8e16]:
+      - main [ref=f8e20]:
+        - generic [ref=f8e21]:
+          - heading "Bubble Sort" [level=1] [ref=f8e23]
+          - generic [ref=f8e24]:
+            - button "Playback Speed" [ref=f8e26] [cursor=pointer]
+            - button "Fullscreen" [ref=f8e32] [cursor=pointer]
+            - button "Bubble Sort" [ref=f8e39] [cursor=pointer]
+        - generic [ref=f8e47]:
+          - generic [ref=f8e48]:
+            - button "Visualizer" [ref=f8e49] [cursor=pointer]
+            - button "Resources" [ref=f8e53] [cursor=pointer]
+            - button "Code" [ref=f8e57] [cursor=pointer]
+          - paragraph [ref=f8e68]: Loading visualizer...
+  - region "Notifications alt+T"

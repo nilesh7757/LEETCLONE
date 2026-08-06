@@ -1,0 +1,125 @@
+- generic [active] [ref=f15e1]:
+  - generic [ref=f15e2]:
+    - link "Skip to main content" [ref=f15e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f15e4]:
+      - generic [ref=f15e5]:
+        - button [ref=f15e6]
+        - link "LogiQuest" [ref=f15e8] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f15e86] [cursor=pointer]
+    - main [ref=f15e16]:
+      - generic [ref=f15e19]:
+        - generic [ref=f15e20]:
+          - link "DSA Studio" [ref=f15e22] [cursor=pointer]:
+            - /url: /
+          - button [ref=f15e29] [cursor=pointer]
+        - main [ref=f15e36]:
+          - generic [ref=f15e37]:
+            - generic [ref=f15e38]:
+              - generic [ref=f15e39]: GRAPHS
+              - heading "Floyd-Warshall" [level=1] [ref=f15e378]
+              - paragraph [ref=f15e42]: All-pairs shortest paths.
+            - button "Floyd-Warshall" [ref=f15e379] [cursor=pointer]
+          - generic [ref=f15e52]:
+            - generic [ref=f15e53]:
+              - generic [ref=f15e54]:
+                - button [ref=f15e55]
+                - button [ref=f15e58]
+                - button [ref=f15e63]
+              - generic [ref=f15e66]:
+                - button "Playback Speed" [ref=f15e68]
+                - button "Fullscreen" [ref=f15e74] [cursor=pointer]
+            - generic [ref=f15e386]:
+              - generic [ref=f15e388]:
+                - button "Play" [ref=f15e389] [cursor=pointer]
+                - button "Reset Floyd-Warshall Simulation" [ref=f15e393] [cursor=pointer]
+                - button "Resize (4 Nodes)" [ref=f15e397] [cursor=pointer]
+              - generic [ref=f15e404]:
+                - generic [ref=f15e405]:
+                  - generic: Graph State
+                  - img [ref=f15e407]:
+                    - generic [ref=f15e432]: "8"
+                    - generic [ref=f15e434]: "3"
+                    - generic [ref=f15e436]: "7"
+                    - generic [ref=f15e438]: "2"
+                    - generic [ref=f15e440]: "1"
+                    - generic [ref=f15e442]: "5"
+                    - generic [ref=f15e444]: "9"
+                    - generic [ref=f15e446]: "4"
+                    - generic [ref=f15e448]: "3"
+                    - generic [ref=f15e450]: "7"
+                    - generic [ref=f15e452]: "2"
+                    - generic [ref=f15e454]: "6"
+                    - generic: "0"
+                    - generic: "1"
+                    - generic: "2"
+                    - generic: "3"
+                - generic [ref=f15e456]:
+                  - generic [ref=f15e457]: INIT
+                  - generic [ref=f15e463]:
+                    - generic [ref=f15e464]:
+                      - generic [ref=f15e466]: "0"
+                      - generic [ref=f15e467]: "1"
+                      - generic [ref=f15e468]: "2"
+                      - generic [ref=f15e469]: "3"
+                    - generic [ref=f15e470]:
+                      - generic [ref=f15e471]: "0"
+                      - generic [ref=f15e472]: "0"
+                      - generic [ref=f15e475]: "8"
+                      - generic [ref=f15e478]: "3"
+                      - generic [ref=f15e481]: "7"
+                    - generic [ref=f15e484]:
+                      - generic [ref=f15e485]: "1"
+                      - generic [ref=f15e486]: "2"
+                      - generic [ref=f15e489]: "0"
+                      - generic [ref=f15e492]: "1"
+                      - generic [ref=f15e495]: "5"
+                    - generic [ref=f15e498]:
+                      - generic [ref=f15e499]: "2"
+                      - generic [ref=f15e500]: "9"
+                      - generic [ref=f15e503]: "4"
+                      - generic [ref=f15e506]: "0"
+                      - generic [ref=f15e509]: "3"
+                    - generic [ref=f15e512]:
+                      - generic [ref=f15e513]: "3"
+                      - generic [ref=f15e514]: "7"
+                      - generic [ref=f15e517]: "2"
+                      - generic [ref=f15e520]: "6"
+                      - generic [ref=f15e523]: "0"
+                  - generic [ref=f15e526]:
+                    - generic [ref=f15e527]:
+                      - generic [ref=f15e528]: Via (k)
+                      - generic [ref=f15e529]: "-"
+                    - generic [ref=f15e530]:
+                      - generic [ref=f15e531]: From (i)
+                      - generic [ref=f15e532]: "-"
+                    - generic [ref=f15e533]:
+                      - generic [ref=f15e534]: To (j)
+                      - generic [ref=f15e535]: "-"
+                - generic [ref=f15e536]:
+                  - generic [ref=f15e537]:
+                    - heading "Logic Core" [level=3] [ref=f15e538]
+                    - generic [ref=f15e542]:
+                      - generic [ref=f15e543]: "CHECK: Dist[i][k] + Dist[k][j] < Dist[i][j]"
+                      - generic [ref=f15e544]: "UPDATE: Dist[i][j] = New Path"
+                  - generic [ref=f15e545]:
+                    - heading "Log Stream" [level=3] [ref=f15e546]
+                    - generic [ref=f15e550]:
+                      - generic [ref=f15e551]: »
+                      - text: Initializing Adjacency Matrix (4x4).
+              - paragraph [ref=f15e553]: Initializing Distance Matrix. D[i][j] = Direct Edge Weight.
+              - generic [ref=f15e554]:
+                - generic [ref=f15e555]:
+                  - generic [ref=f15e556]: Step 1 of 60
+                  - generic [ref=f15e560]:
+                    - button [ref=f15e561] [cursor=pointer]
+                    - button [ref=f15e564] [cursor=pointer]
+                - slider [ref=f15e569] [cursor=pointer]: "0"
+              - generic [ref=f15e570]:
+                - generic [ref=f15e571]: Source (i)
+                - generic [ref=f15e574]: Destination (j)
+                - generic [ref=f15e577]: Intermediate (k)
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f15e373] [cursor=pointer]
+  - alert [ref=f15e377]

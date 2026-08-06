@@ -1,224 +1,325 @@
-# LogiQuest - Solve Logic, Master the Journey
+<div align="center">
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nilesh7757/LEETCLONE)
+<img src="public/favicon.svg" alt="LogiQuest Logo" width="150" />
 
-![LogiQuest Workspace Showcase](public/workspace_demo.jpg)
+# LogiQuest
 
-LogiQuest is a premium, high-fidelity full-stack platform designed to provide a robust environment for competitive programming, technical interview preparation, and coding practice. It integrates cutting-edge frontend animations, an interactive data structure visualizer, real-time contest dashboards, secure background code execution, and multi-model AI agents to offer an unmatched, state-of-the-art developer learning experience.
+### Code. Compete. Conquer.
 
----
-
-## 📖 Complete Documentation Suite
-
-LogiQuest is designed with a professional development lifecycle in mind. Explore our detailed documentation modules categorized below:
-
-### 📋 Requirements & Specifications
-*   **[Vision Document](Documents/vision_document.md):** High-level product goals, user personas, problem statement, and scope.
-*   **[Functional Requirements](Documents/Functional_Requirements.md):** Comprehensive breakdown of functional modules (Problem Workspace, Arena, AI Mock Interview).
-*   **[Non-Functional Requirements](Documents/Non-Functional_Requirements.md):** Detailed performance benchmarks, security mandates, reliability, and accessibility parameters.
-*   **[Stakeholder Analysis](Documents/stakeholder_analysis.md):** Analysis of primary users, contributors, administrators, and third-party dependencies.
-*   **[Use Cases](Documents/Use_cases.md):** Sequence of events and actor-system interaction pathways.
-*   **[User Stories](Documents/User_Stories.md):** User-centric feature definitions written in standard Agile format with clear acceptance criteria.
-
-### 🏗️ Architecture & Technical Design
-*   **[High-Level Design (HLD)](Documents/High_Level_Design.md):** System topology, microservices-oriented hybrid monolith architecture, caching, and horizontal scaling strategies.
-*   **[Low-Level Design (LLD)](Documents/Low_Level_Design.md):** Code-level architecture, module decomposition, utility structures, and UI layout trees.
-*   **[Database Design](Documents/Database_Design.md):** Schema design, Entity-Relationship (ER) descriptions, indexing strategies, and database optimization techniques.
-*   **[API Specification](Documents/API_Design.md):** Detailed documentation of REST endpoints and WebSocket protocols (`Socket.IO` namespaces/events).
-
-### 📊 System Diagrams & Lifecycles
-*   **[Activity Diagrams](Documents/Activity_Diagrams.md):** High-level workflow charts representing sequential processes.
-*   **[Component Diagram](Documents/Component-Diagram.md):** Physical structural breakdown of client components, features, and core libraries.
-
-### 📅 Project Management & Development Roadmap
-*   **[Agile Sprint Plan](Documents/Agile-Sprint-Plan.md):** Week-by-week sprint logs mapping the initial product creation from foundation to final release.
-*   **[Project Overview](Documents/project_overview.md):** Concise technical pitch, core stack list, and basic execution flows.
+[![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-00599C?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-Latest-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-4.x-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Judge0](https://img.shields.io/badge/Judge0-Execution-FF0000?style=for-the-badge&logo=codeforces&logoColor=white)](https://judge0.com/)
+[![Gemini AI](https://img.shields.io/badge/Gemini-AI_Powered-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 ---
 
-## ✨ Key Features
+**A full-stack, real-time algorithmic playground and competitive programming platform that brings the thrill of coding directly to your browser.**
 
-### 💻 Advanced Problem-Solving Workspace
-*   **Multi-Domain Support:** Workspace configured for standard Coding problems, SQL queries, Shell scripting, Interactive tasks, System Design questions, and Reading prompts.
-*   **Rich Editor Environment:** Power-packed editor utilizing **Monaco Editor** (`@monaco-editor/react`) featuring VS Code shortcuts, syntax highlighting, autocompletion, and user-customizable theme/layout structures.
-*   **Boilerplate & Blueprint Generation:** Automatically provides starter code structures for multiple target languages (Python, C++, Java, JS) and structures data mappings.
+[Live Demo](https://logiquest.nileshmori.me) • [API Docs](#api-documentation) • [Getting Started](#getting-started) • [Architecture](#system-architecture)
 
-### 🚀 Code Execution Engine
-*   **Secure Sandboxing:** Evaluates user submissions through a high-reliability **Judge0 Cloud Engine** using Linux cgroups and namespaces to isolate user code with zero network access and customized CPU/memory caps.
-*   **Asynchronous Processing:** Code evaluations run as background jobs notifying Next.js through callback webhooks. Real-time client updates are pushed via Redis Pub/Sub events.
-
-### 🏆 Contest Arena & Live Standings
-*   **Contest System:** Features scheduled and community coding contests with time-bound solving configurations.
-*   **Real-Time Leaderboards:** Tracks score calculations and ranks participants based on dynamic penalty calculations and solved weight distributions.
-*   **Live Broadcasts:** Stream announcements and contest notices to all active participants in real-time.
-
-### 🤖 Multi-Model AI Suite
-*   **Automated Solution Audit:** Get instant feedback on time/space complexity and AST parsing analysis using **Google Gemini** or **Groq (Llama-3.3-70b)**.
-*   **Tailored Mock Interviews:** AI-simulated oral/coding interviews that build personalized study roadmaps and performance reviews based on your solutions.
-
-### 📈 Gamification & Progress Loops
-*   **Interactive Visualizers:** Visually trace data structures (e.g., [LinkedListVisualizer](file:///D:/LEETCLONE/src/features/visualizer/LinkedListVisualizer.tsx)) step-by-step.
-*   **User Streaks & Badges:** Gamified feedback based on daily activity, submission frequency, and contest ratings.
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## 🎯 The Problem We Solve
 
-*   **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS 4, Framer Motion, Monaco Editor, Recharts.
-*   **Backend & WS:** Socket.io, Node.js (`server.js`), Next.js Server Actions, NextAuth.js v5.
-*   **Database & Cache:** PostgreSQL, Prisma ORM, Redis (ioredis / Upstash).
-*   **AI Integration:** Google Generative AI (Gemini Pro/Flash SDK), Groq SDK.
-*   **Execution:** Judge0 Cloud API.
-*   **Testing:** Jest, React Testing Library, `jest-mock-extended`.
+In the modern tech landscape, software engineers and computer science students face an overwhelming array of resources to prepare for technical interviews. Jumping between a compiler, a whiteboard, a system design canvas, and an AI chatbot creates immense friction.
+
+Furthermore, traditional competitive programming platforms often suffer from outdated user interfaces, rigid constraints, and a lack of collaborative, real-time engagement. 
+
+**LogiQuest bridges this gap.** It operates as a modern, unified hub for developers. Users can write code in a VS-Code equivalent editor, execute it securely in the cloud across 5+ languages, compete in live multiplayer arenas with real-time leaderboards, visualize complex graphs, and receive instant AI-powered code audits—all within a single, beautifully designed application.
+
+> This is not just a clone. LogiQuest is a fully functional, production-grade platform featuring real-time WebSockets, distributed background queues, advanced Abstract Syntax Tree (AST) checking, and multi-model AI agents built entirely from the ground up.
 
 ---
 
-## 📐 System Architecture
+## 📸 Platform Features & Walkthrough
 
-The following diagram illustrates the component architecture and data flows:
+<table>
+
+<tr>
+<td width="35%" align="center">
+  <img src="docs/assets/dashboard.png" width="100%" alt="Dashboard" style="border-radius: 8px;"/>
+</td>
+<td width="65%">
+  <h3>1. Interactive Developer Dashboard</h3>
+  <p>The central hub for every user. It provides a real-time snapshot of the user's progress, upcoming contests, and personal statistics.</p>
+  <ul>
+    <li><b>Radar Analytics:</b> Uses <code>Recharts</code> to visually map a user's proficiency across Arrays, DP, Graphs, and Trees.</li>
+    <li><b>Activity Heatmap:</b> GitHub-style contribution graphs mapping submission streaks and consistency.</li>
+    <li><b>Live Feed:</b> WebSocket-powered notifications for new followers, contest results, and trending community posts.</li>
+  </ul>
+</td>
+</tr>
+
+<tr>
+<td width="35%" align="center">
+  <img src="docs/assets/problems.png" width="100%" alt="Problem Explorer" style="border-radius: 8px;"/>
+</td>
+<td width="65%">
+  <h3>2. Advanced Problem Explorer</h3>
+  <p>A high-performance repository of curated coding challenges ranging from basic arrays to complex system designs.</p>
+  <ul>
+    <li><b>Multi-Faceted Search:</b> Filter by difficulty, pattern, tags, or company-specific lists using optimistic UI updates via React 19.</li>
+    <li><b>Dynamic Visuals:</b> Problems feature interactive SVG diagrams in their descriptions that respond to the user's system theme (Light/Dark mode).</li>
+    <li><b>Status Tracking:</b> Instantly see which problems are solved, attempted, or part of an active study plan.</li>
+  </ul>
+</td>
+</tr>
+
+<tr>
+<td width="35%" align="center">
+  <img src="docs/assets/workspace.png" width="100%" alt="Monaco Workspace" style="border-radius: 8px;"/>
+</td>
+<td width="65%">
+  <h3>3. The Monaco Execution Workspace</h3>
+  <p>The beating heart of LogiQuest. A split-pane code editor that feels exactly like a local IDE.</p>
+  <ul>
+    <li><b>Pro-Level Editing:</b> Multi-cursor support, minimap, syntax highlighting, and Vim bindings powered by <code>@monaco-editor/react</code>.</li>
+    <li><b>Cloud Execution:</b> Submit code to the Judge0 sandbox architecture with strict Memory limits (MB) and Time constraints (ms).</li>
+    <li><b>Custom Test Cases:</b> Define manual test matrices or run against up to 100 hidden performance test cases seamlessly in the background.</li>
+  </ul>
+</td>
+</tr>
+
+<tr>
+<td width="35%" align="center">
+  <img src="docs/assets/contest.png" width="100%" alt="Live Arena" style="border-radius: 8px;"/>
+</td>
+<td width="65%">
+  <h3>4. Real-Time Arena & Contests</h3>
+  <p>Multiplayer competitive programming where every millisecond counts, powered entirely by Socket.IO.</p>
+  <ul>
+    <li><b>Live Leaderboards:</b> The frontend instantly recalculates rankings, delta scores, and penalties across all active participants using Redis Pub/Sub.</li>
+    <li><b>Tactical Scoring:</b> Incorporates ICPC-style penalty tracking for wrong submissions, preventing brute-force guessing.</li>
+    <li><b>Anti-Cheat Mechanisms:</b> Prevents tab switching and utilizes AST comparisons to detect hardcoded outputs during active contests.</li>
+  </ul>
+</td>
+</tr>
+
+<tr>
+<td width="35%" align="center">
+  <img src="docs/assets/architect.png" width="100%" alt="Problem Architect" style="border-radius: 8px;"/>
+</td>
+<td width="65%">
+  <h3>5. Problem Architect Mode</h3>
+  <p>A specialized suite for instructors and community moderators to build and vet new algorithms.</p>
+  <ul>
+    <li><b>Test Case Generator:</b> Write seeding scripts to auto-generate edge cases, large inputs, and strict output boundaries.</li>
+    <li><b>Vetting Pipeline:</b> New problems are isolated in an "Unstable" queue where reference solutions (C++, Java, Python) must execute successfully before the problem is published.</li>
+  </ul>
+</td>
+</tr>
+
+<tr>
+<td width="35%" align="center">
+  <img src="docs/assets/interview.png" width="100%" alt="AI Mock Interviews" style="border-radius: 8px;"/>
+</td>
+<td width="65%">
+  <h3>6. AI Mock Interviews & Audits</h3>
+  <p>Integrated Large Language Models that act as a personal coach and technical interviewer.</p>
+  <ul>
+    <li><b>Instant Code Audits:</b> Upon a successful AC submission, a background job uses Google Gemini to audit the code's Big-O Time & Space complexity.</li>
+    <li><b>Conversational Scenarios:</b> Simulates FAANG-style interview loops where the AI asks follow-up constraint questions and grades system design answers.</li>
+  </ul>
+</td>
+</tr>
+
+</table>
+
+---
+
+## ⚙️ System Architecture
+
+LogiQuest's architecture is distributed, modular, and optimized for high-throughput code execution and real-time multiplayer synchronization.
 
 ```mermaid
 graph TD
-    Client["Client (Next.js / Monaco / Framer Motion)"]
-    SocketServer["Socket.IO Server (server.js)"]
-    NextServer["Next.js App Server (API / Actions)"]
-    PostgreSQL[("PostgreSQL DB (Prisma ORM)")]
-    RedisCache[("Redis Cache / Pub/Sub")]
-    Judge0["Judge0 Code Execution"]
-    AISuite["AI Suite (Gemini / Groq)"]
+    %% Define Styles
+    classDef clientStyle fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff;
+    classDef apiStyle fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff;
+    classDef dbStyle fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff;
+    classDef extStyle fill:#8b5cf6,stroke:#5b21b6,stroke-width:2px,color:#fff;
+    
+    %% Nodes
+    Client[Web Client<br/>Next.js 15]:::clientStyle
+    API[Next.js API & Server Actions]:::apiStyle
+    SocketServer[Custom Socket.io Server]:::apiStyle
+    
+    Postgres[(PostgreSQL via Prisma)]:::dbStyle
+    Redis[(Redis Cache & Queue)]:::dbStyle
+    
+    Judge0[Judge0 Sandbox Execution]:::extStyle
+    AI[Gemini / OpenAI LLM Fleet]:::extStyle
 
-    Client <-->|WebSockets| SocketServer
-    Client <-->|HTTPS API / Server Actions| NextServer
-
-    SocketServer <-->|Pub/Sub Sync| RedisCache
-    NextServer <-->|Cache / Rate Limits| RedisCache
-    NextServer <-->|Queries| PostgreSQL
-    NextServer -->|Code Eval| Judge0
-    NextServer -->|Inference| AISuite
-    Judge0 -->|Webhooks| NextServer
+    %% Relationships
+    Client -->|REST / Server Actions| API
+    Client <-->|WebSockets (ws://)| SocketServer
+    
+    API -->|Read / Write| Postgres
+    API -->|Queue Jobs / Cache| Redis
+    SocketServer -->|Pub / Sub State| Redis
+    
+    API -->|Submit Payload| Judge0
+    API -->|Prompt Injection| AI
 ```
 
 ---
 
-## 📂 Directory Structure
+## 🔄 Execution Lifecycle
 
-Here is a simplified map of the project repository directory layout:
+Every code submission in LogiQuest follows a carefully designed state machine to ensure security, accuracy, and performance under load:
+
+| Phase | Flow | Key Mechanism |
+| :--- | :--- | :--- |
+| **Submission** | Client > Next.js API > Redis Queue | Request is validated using Zod, sanitized, and queued via BullMQ to prevent API bottlenecks. |
+| **Execution** | Redis Queue > Worker > Judge0 | Worker batches test cases (up to 100) and streams them to the Judge0 sandbox containers. |
+| **Evaluation** | Judge0 > Worker > Normalization | Output is heavily validated against expected outcomes, handling trailing spaces, floating point precision, and TLEs. |
+| **Persistence** | Worker > PostgreSQL > AI Audit | The result (AC, WA, TLE, RE) is saved. If Accepted, an async AI job audits the code for Space/Time complexity. |
+
+---
+
+## 🛠️ Technology Stack -- Deep Dive
+
+### Frontend
+
+| Technology | Version | Role in LogiQuest |
+| :--- | :--- | :--- |
+| **Next.js** | 15.1 | App Router-based framework providing hybrid SSR/CSR. Delivers lightning-fast initial paints and SEO-friendly problem pages. |
+| **React** | 19.2 | Component architecture utilizing the latest Hooks and Actions paradigm. |
+| **TailwindCSS** | 4.0 | Utility-first CSS powering a massive bespoke design system (dark modes, glassmorphism, fluid typography). |
+| **Monaco Editor** | 0.53 | The core code editing experience. Hooks directly into the DOM to provide syntax highlighting, IntelliSense, and multi-cursor capabilities. |
+| **Framer Motion** | 12.23 | Orchestrates complex micro-interactions, modal popovers, and smooth route transitions. |
+| **Socket.IO Client** | 4.8 | Maintains a persistent duplex connection for live arena leaderboards and peer-to-peer chat. |
+| **Recharts** | 3.5 | Renders complex SVG-based analytics dashboards for user profiles (e.g., radar charts for skills). |
+| **Tiptap** | 3.13 | A headless wrapper around ProseMirror providing a rich, notion-style text editor for the discussion forums. |
+
+### Backend
+
+| Technology | Version | Role in LogiQuest |
+| :--- | :--- | :--- |
+| **Node.js** | 22+ | Execution environment for the custom WebSocket server and serverless backend routes. |
+| **TypeScript** | 5.x | Enforces strict, end-to-end type safety bridging the database schema, API contracts, and frontend props. |
+| **PostgreSQL** | 16 | Primary relational datastore holding over 30 deeply relational tables. |
+| **Prisma ORM** | 5.22 | Type-safe database client handling complex aggregations, transactions, and automated migrations. |
+| **Redis** | 7.x | High-throughput in-memory datastore acting as the BullMQ broker and Socket.io state adapter. |
+| **Judge0** | v1.13 | Isolated, Docker-based code execution engine supporting multiple languages with strict CPU and Memory boundaries. |
+| **BullMQ** | 5.76 | Distributed background job queue. Handles code submission scaling and async AI audits without blocking the main event loop. |
+| **Google Gemini** | 0.24 | AI reasoning engine utilizing `gemini-1.5-pro` for deep code analysis and `gemini-1.5-flash` for rapid hints. |
+| **Next-Auth** | v5 (Beta) | Zero-trust authentication layer handling Credentials, Google OAuth, and secure HTTP-only session cookies. |
+
+---
+
+## 📂 Project Structure
 
 ```text
 logiquest/
-├── .github/              # CI/CD Workflows (GitHub Actions)
-├── prisma/               # Prisma Database Schema, Migrations, and Seeding Scripts
-│   ├── migrations/       # SQL Database migration logs
-│   ├── schema.prisma     # Central PostgreSQL relational schema
-│   ├── seed.ts           # Core database seeding script
-│   └── seed-problems.ts  # Problem set seeder
-├── public/               # Static assets (images, icons, default code blocks)
-├── server.js             # Dedicated Socket.io server for contests and live updates
-├── src/
-│   ├── app/              # Next.js App Router (Routes & API endpoints)
-│   ├── components/       # Shared UI components (Layout, Monaco wrapper, Visualizers)
-│   ├── features/         # Encapsulated, domain-driven modules
-│   │   ├── ai/           # AI feedback agents, chat models, and prompts
-│   │   ├── arena/        # Live contest synchronization, leaderboards, and scoring
-│   │   ├── architect/    # Problem builder and vetting tools
-│   │   └── visualizer/   # Core DSA visualization components (LinkedList, etc.)
-│   ├── lib/              # Utility configurations (Prisma client, Logger, Gemini wrapper)
-│   └── types/            # App-wide TypeScript definitions
-├── package.json          # Node dependencies, versions, and scripts
-└── tsconfig.json         # TypeScript compiler specifications
+|
+|-- prisma/                       # Database schema and seed files
+|   |-- schema.prisma             # The source of truth for the 30+ tables
+|
+|-- src/
+|   |-- app/                      # Next.js App Router (Pages, Layouts, API Routes)
+|   |   |-- api/                  # Backend REST / RPC endpoints
+|   |   |   |-- submission/       # Async execution route handlers
+|   |
+|   |-- components/               # Global UI library (Buttons, Modals, Navbars)
+|   |
+|   |-- features/                 # Domain-Driven Design Modules
+|   |   |-- arena/                # Contest logic, realtime leaderboards
+|   |   |-- architect/            # Problem creation & AST validation
+|   |   |-- ai/                   # AI Chatbot & Mock Interview interface
+|   |   |-- visualizer/           # Interactive Algorithm visualizations (SVG/Canvas)
+|   |   |-- problems/             # Workspace, Monaco Editor, Test Case panes
+|   |
+|   |-- lib/                      # Core Backend Services
+|   |   |-- codeExecution.ts      # Judge0 interface & polling logic
+|   |   |-- worker.ts             # BullMQ consumer for async tasks
+|   |   |-- gemini.ts             # AI prompt engineering & inference
+|   |   |-- prisma.ts             # Global ORM singleton
+|
+|-- public/                       # Static assets, SVGs, and audio files
+|-- server.js                     # Custom Express/Socket.IO server
+|-- tailwind.config.mjs           # Centralized design tokens
+|-- docker-compose.yml            # Local infrastructure orchestration
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚦 Getting Started
 
 ### Prerequisites
-*   Node.js v20+
-*   PostgreSQL Database
-*   Redis Server (or Upstash Redis endpoint)
-*   Docker (Optional, for running services locally)
 
-### Installation & Configuration
+| Requirement | Minimum Version |
+| :--- | :--- |
+| Node.js | 22.x |
+| npm | 10.x |
+| PostgreSQL | 16.x (local or cloud) |
+| Redis | 7.x (local or cloud) |
+| Docker | Latest (Optional, for easy infra) |
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/nilesh7757/LOGIQUEST.git
-    cd LOGIQUEST
-    ```
+### Local Setup
 
-2.  **Install Node Modules:**
-    ```bash
-    npm install
-    ```
+```bash
+# 1. Clone the repository
+git clone https://github.com/nileshmori/logiquest.git
+cd logiquest
 
-3.  **Setup Environment Variables:**
-    Create a `.env` file in the root directory by copying the template:
-    ```bash
-    cp .env.example .env
-    ```
-    Fill in the `.env` variables with your local secrets:
-    *   `DATABASE_URL`: Your PostgreSQL connection string.
-    *   `NEXTAUTH_SECRET`: NextAuth authentication secret (at least 32 characters).
-    *   `GEMINI_API_KEY`: Your Google AI Studio API key.
-    *   `GROQ_API_KEY`: Your Groq API key (optional, for Groq-supported features).
-    *   `CLOUDINARY_*`: Credentials for media uploads.
-    *   `GITHUB_*` / `GOOGLE_*`: OAuth client IDs and secrets.
+# 2. Configure environment variables
+cp .env.example .env
 
-4.  **Database Migration & Seeding:**
-    Generate the Prisma client client bindings, deploy migrations, and run seed files to populate standard problems:
-    ```bash
-    npx prisma generate
-    npx prisma migrate dev
-    npx prisma db seed
-    ```
+# 3. Start local Postgres and Redis via Docker (Optional)
+docker-compose up -d
 
-5.  **Running the Servers:**
-    To launch the platform locally, run both Next.js development server and the Socket.IO event handler in separate terminal sessions:
-    ```bash
-    # Session 1: Next.js Client & Route Handlers
-    npm run dev
+# 4. Install dependencies
+npm install
 
-    # Session 2: Custom WebSockets Event Hub
-    npm run socket
-    ```
-    Access the application at `http://localhost:3000`.
+# 5. Bootstrap the database
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed
+
+# 6. Start the environment
+# Terminal 1: Starts Next.js Server
+npm run dev
+
+# Terminal 2: Starts WebSocket Server
+npm run socket
+```
 
 ---
 
-## 🧪 Testing
+## 🛡️ Security
 
-We use Jest and React Testing Library to write and run unit and integration test blocks:
-
-*   **Run entire test suites:**
-    ```bash
-    npm test
-    ```
-*   **Run tests in watcher mode:**
-    ```bash
-    npm run test:watch
-    ```
-*   **Format and Lint Check:**
-    ```bash
-    npm run lint
-    ```
-
----
-
-## 🔒 Security & Best Practices
-
-*   **API Rate Limiting:** Rate limiters protect resources using Redis-backed token buckets (max 10 submissions/minute per IP/User).
-*   **Secure Headers:** Strict security headers are configured inside `next.config.ts` covering Content-Security-Policy (CSP), X-Frame-Options, and more.
-*   **Structured Logging:** A specialized logging service (`src/lib/logger.ts`) is used uniformly across server environments.
-*   **Unified Error Boundary:** Routes utilize the `apiHandler` higher-order function mapping to standardized `ApiError` shapes to avoid exposing infrastructure internals.
-
----
-
-## 🤝 Contributing
-
-Contributions make the open-source community an amazing place to learn, inspire, and create. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, development guidelines, and PR guidelines.
+| Layer | Implementation |
+| :--- | :--- |
+| **Authentication** | JWT access via HTTP-only secure cookies encrypted via Next-Auth v5. |
+| **Sandbox Execution** | Untrusted user code is executed in strictly isolated, unprivileged Docker containers (Judge0). |
+| **System Constraints** | Code execution is hardware-capped with absolute CPU `timeLimits` and `memoryLimits`. |
+| **Input Validation** | All client payloads are sanitized and strictly typed via `Zod` before reaching controllers. |
+| **Rate Limiting** | Custom middleware utilizing Redis to throttle execution spam and DDOS vectors. |
 
 ---
 
 ## 📜 License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
+This project is proprietary software. Unauthorized distribution, reproduction, or commercial use without explicit permission is strictly prohibited.
+
+---
+
+<div align="center">
+
+**Built with conviction that developer tools should be beautiful, fast, and completely unified.**
+
+[![Made with TypeScript](https://img.shields.io/badge/Made_with-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](#)
+[![Powered by Next.js](https://img.shields.io/badge/Powered_by-Next.js-000000?style=flat-square&logo=next.js&logoColor=white)](#)
+[![Database PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](#)
+[![Real-Time Socket.IO](https://img.shields.io/badge/Real--Time-Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white)](#)
+[![Execution Judge0](https://img.shields.io/badge/Execution-Judge0-FF0000?style=flat-square&logo=codeforces&logoColor=white)](#)
+
+</div>

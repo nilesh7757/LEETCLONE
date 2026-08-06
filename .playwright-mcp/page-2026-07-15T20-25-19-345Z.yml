@@ -1,0 +1,104 @@
+- generic [ref=f14e1]:
+  - generic [ref=f14e2]:
+    - link "Skip to main content" [ref=f14e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f14e231]:
+      - generic [ref=f14e232]:
+        - button [ref=f14e233]
+        - link "LogiQuest" [ref=f14e235] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f14e242] [cursor=pointer]
+    - main [ref=f14e102]:
+      - generic [ref=f14e105]:
+        - generic [ref=f14e106]:
+          - link "LQ LogiQuest" [ref=f14e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f14e109]: LQ
+            - generic [ref=f14e111]: LogiQuest
+          - generic [ref=f14e112]:
+            - link "Dashboard" [ref=f14e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f14e114] [cursor=pointer]
+        - main [ref=f14e121]:
+          - generic [ref=f14e122]:
+            - generic [ref=f14e123]:
+              - generic [ref=f14e124]: SORTING
+              - heading "Bubble Sort" [level=1] [ref=f14e126]
+              - paragraph [ref=f14e127]: Simple comparison-based sorting.
+            - generic [ref=f14e128]:
+              - button "Playback Speed" [ref=f14e250] [cursor=pointer]
+              - button "Fullscreen" [ref=f14e137] [cursor=pointer]
+              - generic [ref=f14e143]:
+                - button "Bubble Sort" [active] [ref=f14e144] [cursor=pointer]
+                - generic [ref=f14e252]:
+                  - generic [ref=f14e253]:
+                    - generic [ref=f14e254]: Sorting
+                    - generic [ref=f14e257]:
+                      - button "Bubble Sort" [ref=f14e258]
+                      - button "Selection Sort" [ref=f14e263]
+                      - button "Insertion Sort" [ref=f14e270]
+                      - button "Quick Sort" [ref=f14e274]
+                      - button "Merge Sort" [ref=f14e279]
+                  - generic [ref=f14e286]:
+                    - generic [ref=f14e287]: Searching
+                    - generic [ref=f14e291]:
+                      - button "Binary Search" [ref=f14e292]
+                      - button "KMP Algorithm" [ref=f14e298]
+                  - generic [ref=f14e306]:
+                    - generic [ref=f14e307]: Data Structures
+                    - generic [ref=f14e312]:
+                      - button "Linked List" [ref=f14e313]
+                      - button "Stack & Queue" [ref=f14e319]
+                      - button "Binary Search Tree" [ref=f14e326]
+                      - button "Trie (Prefix Tree)" [ref=f14e333]
+                      - button "Binary Heap" [ref=f14e341]
+                      - button "Segment Tree" [ref=f14e349]
+                      - button "Disjoint Set Union" [ref=f14e357]
+                      - button "Tree Traversal" [ref=f14e365]
+                  - generic [ref=f14e371]:
+                    - generic [ref=f14e372]: Graphs
+                    - generic [ref=f14e378]:
+                      - button "Graph Traversal" [ref=f14e379]
+                      - button "Bellman-Ford" [ref=f14e387]
+                      - button "Minimum Spanning Tree" [ref=f14e393]
+                      - button "Dijkstra's Algorithm" [ref=f14e400]
+                      - button "Floyd-Warshall" [ref=f14e405]
+                      - button "Topological Sort" [ref=f14e412]
+                  - generic [ref=f14e418]:
+                    - generic [ref=f14e419]: Dynamic Programming
+                    - generic [ref=f14e422]:
+                      - button "Fibonacci Sequence" [ref=f14e423]
+                      - button "0/1 Knapsack" [ref=f14e428]
+                      - button "Kadane's Lemma" [ref=f14e434]
+          - generic [ref=f14e159]:
+            - generic [ref=f14e160]:
+              - generic [ref=f14e161]:
+                - button "Play" [ref=f14e162] [cursor=pointer]
+                - button "Randomize Array" [ref=f14e166] [cursor=pointer]
+              - generic [ref=f14e170]: Bubble Sort Algorithm
+            - generic [ref=f14e172]:
+              - generic [ref=f14e173]: "61"
+              - generic [ref=f14e175]: "53"
+              - generic [ref=f14e177]: "29"
+              - generic [ref=f14e179]: "75"
+              - generic [ref=f14e181]: "50"
+              - generic [ref=f14e183]: "38"
+              - generic [ref=f14e185]: "50"
+              - generic [ref=f14e187]: "49"
+              - generic [ref=f14e189]: "39"
+              - generic [ref=f14e191]: "45"
+            - paragraph [ref=f14e194]: Array initialized. Press Play to begin Bubble Sort.
+            - generic [ref=f14e195]:
+              - generic [ref=f14e196]:
+                - generic [ref=f14e197]: Step 1 of 132
+                - generic [ref=f14e201]:
+                  - button [ref=f14e202] [cursor=pointer]
+                  - button [ref=f14e205] [cursor=pointer]
+              - slider [ref=f14e210] [cursor=pointer]: "0"
+            - generic [ref=f14e211]:
+              - generic [ref=f14e212]: Comparing
+              - generic [ref=f14e215]: Swapping
+              - generic [ref=f14e218]: Sorted
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f14e226] [cursor=pointer]
+  - alert [ref=f14e230]

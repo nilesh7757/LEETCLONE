@@ -70,7 +70,10 @@ export default function StudioProblemEditor() {
   useEffect(() => {
     const parseMarkdown = async () => {
       const parsed = await marked.parse(description || "");
-      setRenderedDescription(DOMPurify.sanitize(parsed));
+      setRenderedDescription(DOMPurify.sanitize(parsed, {
+        ADD_TAGS: ["svg", "defs", "marker", "circle", "line", "path", "text", "rect", "g", "tspan"],
+        ADD_ATTR: ["width", "height", "viewBox", "x", "y", "rx", "ry", "fill", "stroke", "stroke-width", "font-size", "font-weight", "text-anchor", "cx", "cy", "r", "x1", "y1", "x2", "y2", "d", "fill-opacity", "stroke-dasharray", "stroke-opacity", "marker-end", "id", "orient", "refX", "refY", "markerWidth", "markerHeight", "style"]
+      }));
     };
     parseMarkdown();
   }, [description]);

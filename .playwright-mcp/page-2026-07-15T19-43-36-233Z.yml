@@ -1,0 +1,109 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f4e652]:
+      - generic [ref=f4e653]:
+        - button [ref=f4e654]
+        - link "LogiQuest" [ref=f4e656] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f4e663] [cursor=pointer]
+    - main [ref=f4e102]:
+      - generic [ref=f4e105]:
+        - generic [ref=f4e106]:
+          - link "LQ LogiQuest" [ref=f4e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f4e109]: LQ
+            - generic [ref=f4e111]: LogiQuest
+          - generic [ref=f4e112]:
+            - link "Dashboard" [ref=f4e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f4e114] [cursor=pointer]
+        - main [ref=f4e121]:
+          - generic [ref=f4e122]:
+            - generic [ref=f4e123]:
+              - generic [ref=f4e124]: GRAPHS
+              - heading "Dijkstra's Algorithm" [level=1] [ref=f4e1834]
+              - paragraph [ref=f4e127]: Finds the shortest path from a source to all nodes.
+            - generic [ref=f4e128]:
+              - button "Playback Speed" [ref=f4e671] [cursor=pointer]
+              - button "Fullscreen" [ref=f4e137] [cursor=pointer]
+              - button "Dijkstra's Algorithm" [ref=f4e1835] [cursor=pointer]
+          - generic [ref=f4e1840]:
+            - generic [ref=f4e1841]:
+              - generic [ref=f4e1842]:
+                - button "Play" [ref=f4e1843] [cursor=pointer]
+                - button "Reset Dijkstra Simulation" [ref=f4e1847] [cursor=pointer]
+                - button "Randomize Graph" [ref=f4e1851] [cursor=pointer]
+              - generic [ref=f4e1857]:
+                - button "Add Node" [ref=f4e1858] [cursor=pointer]
+                - button "Clear" [ref=f4e1861] [cursor=pointer]
+            - generic [ref=f4e1866]:
+              - generic: Drag nodes to move • Click node, then click another to connect
+              - img [ref=f4e1867]:
+                - generic [ref=f4e1886]: "5"
+                - generic [ref=f4e1888]: "9"
+                - generic [ref=f4e1890]: "7"
+                - generic [ref=f4e1892]: "6"
+                - generic [ref=f4e1894]: "6"
+                - generic [ref=f4e1896]: "9"
+                - generic [ref=f4e1898]: "1"
+                - generic [ref=f4e1900]: "1"
+                - generic [ref=f4e1902]: "9"
+                - generic [ref=f4e1904]: "2"
+                - generic [ref=f4e1906] [cursor=pointer]:
+                  - generic: "0"
+                  - generic: "0"
+                - generic [ref=f4e1909] [cursor=pointer]:
+                  - generic: "1"
+                  - generic: ∞
+                - generic [ref=f4e1912] [cursor=pointer]:
+                  - generic: "2"
+                  - generic: ∞
+                - generic [ref=f4e1915] [cursor=pointer]:
+                  - generic: "3"
+                  - generic: ∞
+                - generic [ref=f4e1918] [cursor=pointer]:
+                  - generic: "4"
+                  - generic: ∞
+            - paragraph [ref=f4e1922]: Initializing distances. Node 0 cost set to 0.
+            - generic [ref=f4e1923]:
+              - generic [ref=f4e1924]:
+                - generic [ref=f4e1925]: Step 1 of 21
+                - generic [ref=f4e1929]:
+                  - button [ref=f4e1930] [cursor=pointer]
+                  - button [ref=f4e1933] [cursor=pointer]
+              - slider [ref=f4e1938] [cursor=pointer]: "0"
+            - generic [ref=f4e1939]:
+              - heading "Distance Array" [level=3] [ref=f4e1940]
+              - table [ref=f4e1944]:
+                - rowgroup [ref=f4e1945]:
+                  - row [ref=f4e1946]:
+                    - columnheader "Node" [ref=f4e1947]
+                    - columnheader "0" [ref=f4e1948]
+                    - columnheader "1" [ref=f4e1949]
+                    - columnheader "2" [ref=f4e1950]
+                    - columnheader "3" [ref=f4e1951]
+                    - columnheader "4" [ref=f4e1952]
+                - rowgroup [ref=f4e1953]:
+                  - row [ref=f4e1954]:
+                    - cell "Distance" [ref=f4e1955]
+                    - cell "0" [ref=f4e1956]
+                    - cell "∞" [ref=f4e1957]
+                    - cell "∞" [ref=f4e1958]
+                    - cell "∞" [ref=f4e1959]
+                    - cell "∞" [ref=f4e1960]
+            - generic [ref=f4e1961]:
+              - generic [ref=f4e1962]:
+                - generic [ref=f4e1963]: Step Logs
+                - generic [ref=f4e1966]: ›Dijkstra's Algorithm initiated at source Node 0.
+              - generic [ref=f4e1968]:
+                - generic [ref=f4e1969]: Visited Nodes (Settled)
+                - generic [ref=f4e1972]: None
+            - generic [ref=f4e1974]:
+              - generic [ref=f4e1975]: Active Node
+              - generic [ref=f4e1978]: Visited / Settled
+              - generic [ref=f4e1981]: Source Root
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e422] [cursor=pointer]
+  - alert [ref=f4e426]

@@ -1,0 +1,126 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f4e652]:
+      - generic [ref=f4e653]:
+        - button [ref=f4e654]
+        - link "LogiQuest" [ref=f4e656] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f4e663] [cursor=pointer]
+    - main [ref=f4e102]:
+      - generic [ref=f4e105]:
+        - generic [ref=f4e106]:
+          - link "LQ LogiQuest" [ref=f4e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f4e109]: LQ
+            - generic [ref=f4e111]: LogiQuest
+          - generic [ref=f4e112]:
+            - link "Dashboard" [ref=f4e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f4e114] [cursor=pointer]
+        - main [ref=f4e121]:
+          - generic [ref=f4e122]:
+            - generic [ref=f4e123]:
+              - generic [ref=f4e124]: GRAPHS
+              - heading "Topological Sort" [level=1] [ref=f4e1160]
+              - paragraph [ref=f4e127]: DAG linear ordering.
+            - generic [ref=f4e128]:
+              - button "Playback Speed" [ref=f4e671] [cursor=pointer]
+              - button "Fullscreen" [ref=f4e137] [cursor=pointer]
+              - generic [ref=f4e143]:
+                - button "Topological Sort" [active] [ref=f4e1161] [cursor=pointer]
+                - generic [ref=f4e1255]:
+                  - generic [ref=f4e1256]:
+                    - generic [ref=f4e1257]: Sorting
+                    - generic [ref=f4e1260]:
+                      - button "Bubble Sort" [ref=f4e1261]
+                      - button "Selection Sort" [ref=f4e1266]
+                      - button "Insertion Sort" [ref=f4e1273]
+                      - button "Quick Sort" [ref=f4e1277]
+                      - button "Merge Sort" [ref=f4e1282]
+                  - generic [ref=f4e1289]:
+                    - generic [ref=f4e1290]: Searching
+                    - generic [ref=f4e1294]:
+                      - button "Binary Search" [ref=f4e1295]
+                      - button "KMP Algorithm" [ref=f4e1301]
+                  - generic [ref=f4e1309]:
+                    - generic [ref=f4e1310]: Data Structures
+                    - generic [ref=f4e1315]:
+                      - button "Linked List" [ref=f4e1316]
+                      - button "Stack & Queue" [ref=f4e1322]
+                      - button "Binary Search Tree" [ref=f4e1329]
+                      - button "Trie (Prefix Tree)" [ref=f4e1336]
+                      - button "Binary Heap" [ref=f4e1344]
+                      - button "Segment Tree" [ref=f4e1352]
+                      - button "Disjoint Set Union" [ref=f4e1360]
+                      - button "Tree Traversal" [ref=f4e1368]
+                  - generic [ref=f4e1374]:
+                    - generic [ref=f4e1375]: Graphs
+                    - generic [ref=f4e1381]:
+                      - button "Graph Traversal" [ref=f4e1382]
+                      - button "Bellman-Ford" [ref=f4e1390]
+                      - button "Minimum Spanning Tree" [ref=f4e1396]
+                      - button "Dijkstra's Algorithm" [ref=f4e1403]
+                      - button "Floyd-Warshall" [ref=f4e1408]
+                      - button "Topological Sort" [ref=f4e1415]
+                  - generic [ref=f4e1421]:
+                    - generic [ref=f4e1422]: Dynamic Programming
+                    - generic [ref=f4e1425]:
+                      - button "Fibonacci Sequence" [ref=f4e1426]
+                      - button "0/1 Knapsack" [ref=f4e1431]
+                      - button "Kadane's Lemma" [ref=f4e1437]
+          - generic [ref=f4e1167]:
+            - generic [ref=f4e1168]:
+              - generic [ref=f4e1169]:
+                - button "Play" [ref=f4e1170] [cursor=pointer]
+                - button "Reset Simulation" [ref=f4e1174] [cursor=pointer]
+                - button "Randomize" [ref=f4e1178] [cursor=pointer]
+              - generic [ref=f4e1186]: Kahn's Algorithm
+            - generic [ref=f4e1187]:
+              - img [ref=f4e1190]:
+                - generic:
+                  - generic: A
+                  - generic: IN:0
+                - generic:
+                  - generic: B
+                  - generic: IN:0
+                - generic:
+                  - generic: C
+                  - generic: IN:1
+                - generic:
+                  - generic: D
+                  - generic: IN:2
+                - generic:
+                  - generic: E
+                  - generic: IN:1
+                - generic:
+                  - generic: F
+                  - generic: IN:3
+              - generic [ref=f4e1203]:
+                - generic [ref=f4e1204]:
+                  - heading "Sorted Sequence" [level=3] [ref=f4e1205]
+                  - generic [ref=f4e1209]: Awaiting resolution...
+                - generic [ref=f4e1211]:
+                  - heading "Resolve Stream" [level=3] [ref=f4e1212]
+                  - generic [ref=f4e1216]:
+                    - generic [ref=f4e1217]: »
+                    - text: Dependency structure initialized.
+                - generic [ref=f4e1218]:
+                  - heading "Buffer (In-Degree 0)" [level=3] [ref=f4e1219]
+                  - generic [ref=f4e1224]: Buffer empty
+            - paragraph [ref=f4e1227]: Calculating in-degrees for all nodes.
+            - generic [ref=f4e1228]:
+              - generic [ref=f4e1229]:
+                - generic [ref=f4e1230]: Step 1 of 21
+                - generic [ref=f4e1234]:
+                  - button [ref=f4e1235] [cursor=pointer]
+                  - button [ref=f4e1238] [cursor=pointer]
+              - slider [ref=f4e1243] [cursor=pointer]: "0"
+            - generic [ref=f4e1244]:
+              - generic [ref=f4e1245]: Active (Extracting)
+              - generic [ref=f4e1248]: Ready (In Queue)
+              - generic [ref=f4e1251]: Resolved (Sorted)
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e422] [cursor=pointer]
+  - alert [ref=f4e426]

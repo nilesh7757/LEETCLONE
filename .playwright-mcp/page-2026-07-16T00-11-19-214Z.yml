@@ -1,0 +1,72 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - link "Skip to main content" [ref=f8e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - link "LogiQuest" [ref=f8e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=f8e16]
+      - generic [ref=f8e17]:
+        - generic [ref=f8e18]: Platform
+        - link "Problems" [ref=f8e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=f8e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=f8e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=f8e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=f8e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Contests" [ref=f8e53] [cursor=pointer]:
+          - /url: /contest
+        - link "Siege" [ref=f8e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=f8e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=f8e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=f8e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=f8e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=f8e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=f8e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f8e93]:
+        - button "Collapse" [ref=f8e94]
+        - generic [ref=f8e99]:
+          - link "Log In" [ref=f8e100] [cursor=pointer]:
+            - /url: /login
+          - link "Sign Up" [ref=f8e101] [cursor=pointer]:
+            - /url: /signup
+    - main [ref=f8e107]:
+      - generic [ref=f8e111]:
+        - generic [ref=f8e112]: LOGIQUEST
+        - generic [ref=f8e119]:
+          - generic [ref=f8e120]: error.log
+          - generic [ref=f8e127]:
+            - generic [ref=f8e128]: $ navigate --to requested_page
+            - generic [ref=f8e129]: "✗ Error: Resource not found at requested path"
+            - generic [ref=f8e130]: $ status_code
+            - generic [ref=f8e131]:
+              - generic "Click to glitch" [ref=f8e132] [cursor=pointer]: "404"
+              - generic [ref=f8e133]: PAGE_NOT_FOUND
+            - generic [ref=f8e134]: The route you requested does not exist or has been moved.
+        - generic [ref=f8e135]:
+          - link "Home" [ref=f8e136] [cursor=pointer]:
+            - /url: /
+          - button "Go Back" [ref=f8e140]
+        - generic [ref=f8e143]:
+          - link "Problems" [ref=f8e144] [cursor=pointer]:
+            - /url: /problems
+          - link "Contests" [ref=f8e145] [cursor=pointer]:
+            - /url: /contest
+          - link "Visualizer" [ref=f8e146] [cursor=pointer]:
+            - /url: /dsa
+          - link "Leaderboard" [ref=f8e147] [cursor=pointer]:
+            - /url: /leaderboard
+  - region "Notifications alt+T"
+  - alert [ref=f8e148]

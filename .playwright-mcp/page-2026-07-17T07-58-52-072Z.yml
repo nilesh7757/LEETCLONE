@@ -1,0 +1,244 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "LogiQuest" [ref=e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=e16]
+      - generic [ref=e17]:
+        - generic [ref=e18]: Platform
+        - link "Problems" [ref=e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Contests" [ref=e53] [cursor=pointer]:
+          - /url: /contest
+        - link "Siege" [ref=e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=e93]:
+        - button "Collapse" [ref=e94]
+        - generic [ref=e99]:
+          - link "Log In" [ref=e100] [cursor=pointer]:
+            - /url: /login
+          - link "Sign Up" [ref=e101] [cursor=pointer]:
+            - /url: /signup
+    - button "Toggle theme" [ref=e106] [cursor=pointer]
+    - main [ref=e111]:
+      - generic [ref=e115]:
+        - generic [ref=e117]:
+          - heading "Problem Set" [level=1] [ref=e125]
+          - generic [ref=e126]: 71 Challenges
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - link "Coding Set" [ref=e130] [cursor=pointer]:
+              - /url: "?tab=public"
+            - link "Database (SQL)" [ref=e131] [cursor=pointer]:
+              - /url: "?tab=sql"
+            - link "My Foundry" [ref=e132] [cursor=pointer]:
+              - /url: "?tab=mine"
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - textbox "Search problems..." [ref=e136]
+              - button "Starred" [ref=e137] [cursor=pointer]
+            - generic [ref=e140]:
+              - generic [ref=e141]:
+                - button "All" [ref=e142] [cursor=pointer]
+                - button "Easy" [ref=e143] [cursor=pointer]
+                - button "Medium" [ref=e144] [cursor=pointer]
+                - button "Hard" [ref=e145] [cursor=pointer]
+              - generic [ref=e146]:
+                - button [ref=e148] [cursor=pointer]
+                - button [ref=e156] [cursor=pointer]
+          - generic [ref=e163]:
+            - table [ref=e165]:
+              - rowgroup [ref=e166]:
+                - row [ref=e167]:
+                  - columnheader [ref=e168]
+                  - columnheader "Status" [ref=e169]
+                  - columnheader "Title" [ref=e170]
+                  - columnheader "Difficulty" [ref=e171]
+                  - columnheader "Category" [ref=e172]
+                  - columnheader "Acceptance" [ref=e173]
+              - rowgroup [ref=e174]:
+                - row [ref=e175]:
+                  - cell [ref=e176]:
+                    - button "Bookmark problem" [ref=e177] [cursor=pointer]
+                  - cell [ref=e180]
+                  - cell [ref=e183]:
+                    - link "001. LRU Cache with TTL (Expiry)" [ref=e185] [cursor=pointer]:
+                      - /url: /problems/lru-cache-with-ttl
+                      - generic [ref=e186]: "001."
+                      - generic [ref=e187]: LRU Cache with TTL (Expiry)
+                  - cell "Hard" [ref=e188]
+                  - cell "Design" [ref=e189]
+                  - cell "36.7%" [ref=e190]
+                - row [ref=e192]:
+                  - cell [ref=e193]:
+                    - button "Bookmark problem" [ref=e194] [cursor=pointer]
+                  - cell [ref=e197]
+                  - cell [ref=e200]:
+                    - link "002. Merge K Sorted Arrays" [ref=e202] [cursor=pointer]:
+                      - /url: /problems/merge-k-sorted-arrays
+                      - generic [ref=e203]: "002."
+                      - generic [ref=e204]: Merge K Sorted Arrays
+                  - cell "Medium" [ref=e205]
+                  - cell "Heap" [ref=e206]
+                  - cell "100.0%" [ref=e207]
+                - row [ref=e209]:
+                  - cell [ref=e210]:
+                    - button "Bookmark problem" [ref=e211] [cursor=pointer]
+                  - cell [ref=e214]
+                  - cell [ref=e217]:
+                    - link "003. Design a Rate Limiter for an AI API" [ref=e219] [cursor=pointer]:
+                      - /url: /problems/design-a-rate-limiter-for-an-ai-api
+                      - generic [ref=e220]: "003."
+                      - generic [ref=e221]: Design a Rate Limiter for an AI API
+                  - cell "Medium" [ref=e222]
+                  - cell "Design" [ref=e223]
+                  - cell "50.0%" [ref=e224]
+                - row [ref=e226]:
+                  - cell [ref=e227]:
+                    - button "Bookmark problem" [ref=e228] [cursor=pointer]
+                  - cell [ref=e231]
+                  - cell "004. Maximum XOR Subarray Google Directi Sprinklr" [ref=e234]:
+                    - generic [ref=e235]:
+                      - link "004. Maximum XOR Subarray" [ref=e236] [cursor=pointer]:
+                        - /url: /problems/maximum-xor-subarray
+                        - generic [ref=e237]: "004."
+                        - generic [ref=e238]: Maximum XOR Subarray
+                      - generic [ref=e239]:
+                        - generic [ref=e240]: Google
+                        - generic [ref=e241]: Directi
+                        - generic [ref=e242]: Sprinklr
+                  - cell "Hard" [ref=e243]
+                  - cell "Tries" [ref=e244]
+                  - cell "100.0%" [ref=e245]
+                - row [ref=e247]:
+                  - cell [ref=e248]:
+                    - button "Bookmark problem" [ref=e249] [cursor=pointer]
+                  - cell [ref=e252]
+                  - cell "005. UnifyApps Data Pipeline UnifyApps Microsoft Goldman Sachs" [ref=e255]:
+                    - generic [ref=e256]:
+                      - link "005. UnifyApps Data Pipeline" [ref=e257] [cursor=pointer]:
+                        - /url: /problems/unifyapps-data-pipeline
+                        - generic [ref=e258]: "005."
+                        - generic [ref=e259]: UnifyApps Data Pipeline
+                      - generic [ref=e260]:
+                        - generic [ref=e261]: UnifyApps
+                        - generic [ref=e262]: Microsoft
+                        - generic [ref=e263]: Goldman Sachs
+                  - cell "Medium" [ref=e264]
+                  - cell "Graphs" [ref=e265]
+                  - cell "44.1%" [ref=e266]
+                - row [ref=e268]:
+                  - cell [ref=e269]:
+                    - button "Bookmark problem" [ref=e270] [cursor=pointer]
+                  - cell [ref=e273]
+                  - cell "006. Sprinklr Social Viral Reach Sprinklr Media.net Tower Research" [ref=e276]:
+                    - generic [ref=e277]:
+                      - link "006. Sprinklr Social Viral Reach" [ref=e278] [cursor=pointer]:
+                        - /url: /problems/sprinklr-viral-reach
+                        - generic [ref=e279]: "006."
+                        - generic [ref=e280]: Sprinklr Social Viral Reach
+                      - generic [ref=e281]:
+                        - generic [ref=e282]: Sprinklr
+                        - generic [ref=e283]: Media.net
+                        - generic [ref=e284]: Tower Research
+                  - cell "Hard" [ref=e285]
+                  - cell "Trees" [ref=e286]
+                  - cell "32.7%" [ref=e287]
+                - row [ref=e289]:
+                  - cell [ref=e290]:
+                    - button "Bookmark problem" [ref=e291] [cursor=pointer]
+                  - cell [ref=e294]
+                  - cell "007. Meesho Delivery Network Meesho Amazon Microsoft" [ref=e297]:
+                    - generic [ref=e298]:
+                      - link "007. Meesho Delivery Network" [ref=e299] [cursor=pointer]:
+                        - /url: /problems/meesho-delivery-network
+                        - generic [ref=e300]: "007."
+                        - generic [ref=e301]: Meesho Delivery Network
+                      - generic [ref=e302]:
+                        - generic [ref=e303]: Meesho
+                        - generic [ref=e304]: Amazon
+                        - generic [ref=e305]: Microsoft
+                  - cell "Medium" [ref=e306]
+                  - cell "Binary Search" [ref=e307]
+                  - cell "48.1%" [ref=e308]
+                - row [ref=e310]:
+                  - cell [ref=e311]:
+                    - button "Bookmark problem" [ref=e312] [cursor=pointer]
+                  - cell [ref=e315]
+                  - cell "008. Optimal Route to Campus Atlassian DE Shaw Google" [ref=e318]:
+                    - generic [ref=e319]:
+                      - link "008. Optimal Route to Campus" [ref=e320] [cursor=pointer]:
+                        - /url: /problems/optimal-route-campus
+                        - generic [ref=e321]: "008."
+                        - generic [ref=e322]: Optimal Route to Campus
+                      - generic [ref=e323]:
+                        - generic [ref=e324]: Atlassian
+                        - generic [ref=e325]: DE Shaw
+                        - generic [ref=e326]: Google
+                  - cell "Hard" [ref=e327]
+                  - cell "Advanced Graphs" [ref=e328]
+                  - cell "25.7%" [ref=e329]
+                - row [ref=e331]:
+                  - cell [ref=e332]:
+                    - button "Bookmark problem" [ref=e333] [cursor=pointer]
+                  - cell [ref=e336]
+                  - cell "009. Task Scheduler Google Amazon Meta" [ref=e339]:
+                    - generic [ref=e340]:
+                      - link "009. Task Scheduler" [ref=e341] [cursor=pointer]:
+                        - /url: /problems/task-scheduler
+                        - generic [ref=e342]: "009."
+                        - generic [ref=e343]: Task Scheduler
+                      - generic [ref=e344]:
+                        - generic [ref=e345]: Google
+                        - generic [ref=e346]: Amazon
+                        - generic [ref=e347]: Meta
+                  - cell "Medium" [ref=e348]
+                  - cell "Greedy" [ref=e349]
+                  - cell "27.3%" [ref=e350]
+                - row [ref=e352]:
+                  - cell [ref=e353]:
+                    - button "Bookmark problem" [ref=e354] [cursor=pointer]
+                  - cell [ref=e357]
+                  - cell "010. Accounts Merge Google Amazon Meta" [ref=e360]:
+                    - generic [ref=e361]:
+                      - link "010. Accounts Merge" [ref=e362] [cursor=pointer]:
+                        - /url: /problems/accounts-merge
+                        - generic [ref=e363]: "010."
+                        - generic [ref=e364]: Accounts Merge
+                      - generic [ref=e365]:
+                        - generic [ref=e366]: Google
+                        - generic [ref=e367]: Amazon
+                        - generic [ref=e368]: Meta
+                  - cell "Medium" [ref=e369]
+                  - cell "Graphs" [ref=e370]
+                  - cell "50.0%" [ref=e371]
+            - generic [ref=e373]:
+              - button [disabled]
+              - generic [ref=e374]: Page 1 / 7
+              - button [ref=e375] [cursor=pointer]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e383] [cursor=pointer]
+  - alert [ref=e387]

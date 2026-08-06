@@ -1,0 +1,156 @@
+- generic [active] [ref=f13e1]:
+  - generic [ref=f13e2]:
+    - link "Skip to main content" [ref=f13e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=f13e4]:
+      - generic [ref=f13e5]:
+        - link "LogiQuest" [ref=f13e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=f13e16]
+      - generic [ref=f13e17]:
+        - generic [ref=f13e18]: Platform
+        - link "Problems" [ref=f13e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=f13e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=f13e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=f13e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=f13e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Contests" [ref=f13e53] [cursor=pointer]:
+          - /url: /contest
+        - link "Siege" [ref=f13e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=f13e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=f13e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=f13e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=f13e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=f13e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=f13e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f13e93]:
+        - button "Collapse" [ref=f13e94]
+        - link [ref=f13e100] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=f13e105]:
+            - paragraph [ref=f13e106]: Nilesh mori
+            - paragraph [ref=f13e107]: View Profile
+    - generic [ref=f13e109]:
+      - link:
+        - /url: /problems
+      - generic [ref=f13e111]:
+        - button [ref=f13e113]
+        - button "Toggle theme" [ref=f13e119] [cursor=pointer]
+    - main [ref=f13e127]:
+      - generic [ref=f13e132]:
+        - generic [ref=f13e133]:
+          - generic [ref=f13e135]:
+            - generic [ref=f13e136] [cursor=pointer]: Pupil
+            - generic [ref=f13e154]:
+              - heading "Nilesh mori" [level=2] [ref=f13e155]
+              - generic [ref=f13e156]:
+                - generic [ref=f13e157]: PL 0
+                - generic [ref=f13e158]: Code Rookie
+            - generic [ref=f13e159]:
+              - generic [ref=f13e160]:
+                - generic [ref=f13e161]:
+                  - generic [ref=f13e162]: Identity_Alias
+                  - textbox [ref=f13e163]: Nilesh mori
+                - generic [ref=f13e164]:
+                  - generic [ref=f13e165]: Neural_Bio
+                  - textbox [ref=f13e166]
+              - generic [ref=f13e167]:
+                - generic [ref=f13e168]: Matrix_Skills
+                - generic [ref=f13e169]:
+                  - textbox "Inject Skill..." [ref=f13e170]
+                  - button [ref=f13e171] [cursor=pointer]
+              - generic [ref=f13e175]:
+                - button "Save Profile" [ref=f13e176] [cursor=pointer]
+                - button [ref=f13e181] [cursor=pointer]
+            - generic [ref=f13e185]:
+              - generic [ref=f13e186]: Platform Score
+              - generic [ref=f13e187]: 0 PTS
+          - generic [ref=f13e191]:
+            - generic [ref=f13e199]:
+              - generic [ref=f13e200]: Identity Nodes
+              - generic [ref=f13e201]: Platform Connections
+            - generic [ref=f13e202]:
+              - generic [ref=f13e203]:
+                - generic [ref=f13e204]:
+                  - generic [ref=f13e205]: GitHub
+                  - generic [ref=f13e210]: Disconnected
+                - textbox "Username" [ref=f13e211]
+              - generic [ref=f13e212]:
+                - generic [ref=f13e213]:
+                  - generic [ref=f13e214]: LeetCode
+                  - generic [ref=f13e218]: Disconnected
+                - textbox "Username" [ref=f13e219]
+              - generic [ref=f13e220]:
+                - generic [ref=f13e221]:
+                  - generic [ref=f13e222]: Codeforces
+                  - generic [ref=f13e227]: Disconnected
+                - textbox "Username" [ref=f13e228]
+              - generic [ref=f13e229]:
+                - generic [ref=f13e230]:
+                  - generic [ref=f13e231]:
+                    - generic [ref=f13e232]: C
+                    - generic [ref=f13e233]: CodeChef
+                  - generic [ref=f13e234]: Disconnected
+                - textbox "Username" [ref=f13e235]
+              - generic [ref=f13e236]:
+                - generic [ref=f13e237]:
+                  - generic [ref=f13e238]:
+                    - generic [ref=f13e239]: A
+                    - generic [ref=f13e240]: AtCoder
+                  - generic [ref=f13e241]: Disconnected
+                - textbox "Username" [ref=f13e242]
+              - button "Sync Platforms" [ref=f13e243] [cursor=pointer]
+        - generic [ref=f13e249]:
+          - generic [ref=f13e250]:
+            - heading "Neural Coach Assessment" [level=3] [ref=f13e251]
+            - generic [ref=f13e255]: Awaiting neural synchronization to provide placement intelligence...
+          - generic [ref=f13e257]:
+            - generic [ref=f13e258]:
+              - generic [ref=f13e266]:
+                - heading "Nilesh mori" [level=2] [ref=f13e267]
+                - generic [ref=f13e268]:
+                  - generic [ref=f13e269]: Unrated
+                  - generic [ref=f13e270]: "Rating: 0"
+              - generic [ref=f13e272]:
+                - generic [ref=f13e273]:
+                  - generic [ref=f13e274]: Problems Solved
+                  - generic [ref=f13e275]: "0"
+                - generic [ref=f13e278]:
+                  - generic [ref=f13e279]: 0 Easy
+                  - generic [ref=f13e280]: 0 Med
+                  - generic [ref=f13e281]: 0 Hard
+            - generic [ref=f13e282]: Radar visualization loading...
+            - generic [ref=f13e285]:
+              - heading "Focus Areas" [level=3] [ref=f13e286]
+              - paragraph [ref=f13e287]: Solve problems to build algorithms focus profile.
+          - generic [ref=f13e288]:
+            - generic [ref=f13e290]:
+              - generic [ref=f13e291]: Easy
+              - generic [ref=f13e292]: "0"
+            - generic [ref=f13e295]:
+              - generic [ref=f13e296]: Medium
+              - generic [ref=f13e297]: "0"
+            - generic [ref=f13e300]:
+              - generic [ref=f13e301]: Hard
+              - generic [ref=f13e302]: "0"
+          - generic [ref=f13e306]:
+            - heading "Rating History" [level=3] [ref=f13e307]
+            - generic [ref=f13e308]: "1500"
+          - heading "Submission Activity" [level=3] [ref=f13e315]
+          - generic [ref=f13e319]:
+            - heading "Recent Submissions" [level=3] [ref=f13e320]
+            - generic [ref=f13e324]: No recent activity.
+  - region "Notifications alt+T"
+  - alert [ref=f13e326]

@@ -1,0 +1,95 @@
+- generic [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - button [ref=f6e6]
+        - link "LogiQuest" [ref=f6e8] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f6e72] [cursor=pointer]
+    - main [ref=f6e16]:
+      - main [ref=f6e20]:
+        - generic [ref=f6e21]:
+          - generic [ref=f6e22]:
+            - generic [ref=f6e23]: SORTING
+            - heading "Bubble Sort" [level=1] [ref=f6e25]
+            - paragraph [ref=f6e26]: Simple comparison-based sorting.
+          - generic [ref=f6e27]:
+            - button "Playback Speed" [ref=f6e29] [cursor=pointer]
+            - button "Fullscreen" [ref=f6e35] [cursor=pointer]
+            - generic [ref=f6e41]:
+              - button "Bubble Sort" [active] [ref=f6e42] [cursor=pointer]
+              - generic [ref=f6e145]:
+                - generic [ref=f6e146]:
+                  - generic [ref=f6e147]: Sorting
+                  - generic [ref=f6e150]:
+                    - button "Bubble Sort" [ref=f6e151]
+                    - button "Selection Sort" [ref=f6e156]
+                    - button "Insertion Sort" [ref=f6e163]
+                    - button "Quick Sort" [ref=f6e167]
+                    - button "Merge Sort" [ref=f6e172]
+                - generic [ref=f6e179]:
+                  - generic [ref=f6e180]: Searching
+                  - generic [ref=f6e184]:
+                    - button "Binary Search" [ref=f6e185]
+                    - button "KMP Algorithm" [ref=f6e191]
+                - generic [ref=f6e199]:
+                  - generic [ref=f6e200]: Data Structures
+                  - generic [ref=f6e205]:
+                    - button "Linked List" [ref=f6e206]
+                    - button "Stack & Queue" [ref=f6e212]
+                    - button "Binary Search Tree" [ref=f6e219]
+                    - button "Trie (Prefix Tree)" [ref=f6e226]
+                    - button "Binary Heap" [ref=f6e234]
+                    - button "Segment Tree" [ref=f6e242]
+                    - button "Disjoint Set Union" [ref=f6e250]
+                    - button "Tree Traversal" [ref=f6e258]
+                - generic [ref=f6e264]:
+                  - generic [ref=f6e265]: Graphs
+                  - generic [ref=f6e271]:
+                    - button "Graph Traversal" [ref=f6e272]
+                    - button "Bellman-Ford" [ref=f6e280]
+                    - button "Minimum Spanning Tree" [ref=f6e286]
+                    - button "Dijkstra's Algorithm" [ref=f6e293]
+                    - button "Floyd-Warshall" [ref=f6e298]
+                    - button "Topological Sort" [ref=f6e305]
+                - generic [ref=f6e311]:
+                  - generic [ref=f6e312]: Dynamic Programming
+                  - generic [ref=f6e315]:
+                    - button "Fibonacci Sequence" [ref=f6e316]
+                    - button "0/1 Knapsack" [ref=f6e321]
+                    - button "Kadane's Algorithm" [ref=f6e327]
+        - generic [ref=f6e50]:
+          - generic [ref=f6e51]:
+            - button "Visualizer" [ref=f6e52] [cursor=pointer]
+            - button "Resources" [ref=f6e56] [cursor=pointer]
+            - button "Code" [ref=f6e60] [cursor=pointer]
+          - generic [ref=f6e80]:
+            - generic [ref=f6e81]:
+              - generic [ref=f6e82]:
+                - button "Play" [ref=f6e83] [cursor=pointer]
+                - button "Randomize Array" [ref=f6e87] [cursor=pointer]
+              - generic [ref=f6e91]: Bubble Sort Algorithm
+            - generic [ref=f6e93]:
+              - generic [ref=f6e94]: "49"
+              - generic [ref=f6e96]: "21"
+              - generic [ref=f6e98]: "35"
+              - generic [ref=f6e100]: "57"
+              - generic [ref=f6e102]: "44"
+              - generic [ref=f6e104]: "55"
+            - paragraph [ref=f6e107]: Array initialized. Press Play to begin Bubble Sort.
+            - generic [ref=f6e108]:
+              - generic [ref=f6e109]:
+                - generic [ref=f6e110]: Step 1 of 43
+                - generic [ref=f6e114]:
+                  - button [ref=f6e115] [cursor=pointer]
+                  - button [ref=f6e118] [cursor=pointer]
+              - slider [ref=f6e123] [cursor=pointer]: "0"
+            - generic [ref=f6e124]:
+              - generic [ref=f6e125]: Comparing
+              - generic [ref=f6e128]: Swapping
+              - generic [ref=f6e131]: Sorted
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f6e139] [cursor=pointer]
+  - alert [ref=f6e143]

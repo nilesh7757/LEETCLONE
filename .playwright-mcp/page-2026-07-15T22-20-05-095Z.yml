@@ -1,0 +1,106 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - link "Skip to main content" [ref=f9e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f9e4]:
+      - generic [ref=f9e5]:
+        - button [ref=f9e6]
+        - link "LogiQuest" [ref=f9e8] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f9e69] [cursor=pointer]
+    - main [ref=f9e16]:
+      - main [ref=f9e20]:
+        - generic [ref=f9e21]:
+          - heading "0/1 Knapsack" [level=1] [ref=f9e330]
+          - generic [ref=f9e24]:
+            - button "Playback Speed" [ref=f9e26] [cursor=pointer]
+            - button "Fullscreen" [ref=f9e32] [cursor=pointer]
+            - button "0/1 Knapsack" [ref=f9e331] [cursor=pointer]
+        - generic [ref=f9e47]:
+          - generic [ref=f9e48]:
+            - button "Visualizer" [ref=f9e49] [cursor=pointer]
+            - button "Resources" [ref=f9e53] [cursor=pointer]
+            - button "Code" [ref=f9e57] [cursor=pointer]
+          - generic [ref=f9e337]:
+            - generic [ref=f9e338]:
+              - generic [ref=f9e339]:
+                - button "Play" [ref=f9e340] [cursor=pointer]
+                - button "Reset Simulation" [ref=f9e344] [cursor=pointer]
+              - generic [ref=f9e348]: 0/1 Knapsack DP
+            - generic [ref=f9e352]:
+              - generic [ref=f9e353]:
+                - generic [ref=f9e355]: 0k
+                - generic [ref=f9e356]: 1k
+                - generic [ref=f9e357]: 2k
+                - generic [ref=f9e358]: 3k
+                - generic [ref=f9e359]: 4k
+                - generic [ref=f9e360]: 5k
+                - generic [ref=f9e361]: 6k
+              - generic [ref=f9e362]:
+                - generic [ref=f9e363]: Empty
+                - generic [ref=f9e364]: "0"
+                - generic [ref=f9e367]: "0"
+                - generic [ref=f9e370]: "0"
+                - generic [ref=f9e373]: "0"
+                - generic [ref=f9e376]: "0"
+                - generic [ref=f9e379]: "0"
+                - generic [ref=f9e382]: "0"
+              - generic [ref=f9e385]:
+                - generic [ref=f9e387]:
+                  - generic [ref=f9e388]: Gem
+                  - generic [ref=f9e389]: 1k|$10
+                - generic [ref=f9e390]: "0"
+                - generic [ref=f9e393]: "0"
+                - generic [ref=f9e396]: "0"
+                - generic [ref=f9e399]: "0"
+                - generic [ref=f9e402]: "0"
+                - generic [ref=f9e405]: "0"
+                - generic [ref=f9e408]: "0"
+              - generic [ref=f9e411]:
+                - generic [ref=f9e413]:
+                  - generic [ref=f9e414]: Crown
+                  - generic [ref=f9e415]: 2k|$25
+                - generic [ref=f9e416]: "0"
+                - generic [ref=f9e419]: "0"
+                - generic [ref=f9e422]: "0"
+                - generic [ref=f9e425]: "0"
+                - generic [ref=f9e428]: "0"
+                - generic [ref=f9e431]: "0"
+                - generic [ref=f9e434]: "0"
+              - generic [ref=f9e437]:
+                - generic [ref=f9e439]:
+                  - generic [ref=f9e440]: Phone
+                  - generic [ref=f9e441]: 3k|$40
+                - generic [ref=f9e442]: "0"
+                - generic [ref=f9e445]: "0"
+                - generic [ref=f9e448]: "0"
+                - generic [ref=f9e451]: "0"
+                - generic [ref=f9e454]: "0"
+                - generic [ref=f9e457]: "0"
+                - generic [ref=f9e460]: "0"
+              - generic [ref=f9e463]:
+                - generic [ref=f9e465]:
+                  - generic [ref=f9e466]: Laptop
+                  - generic [ref=f9e467]: 4k|$60
+                - generic [ref=f9e468]: "0"
+                - generic [ref=f9e471]: "0"
+                - generic [ref=f9e474]: "0"
+                - generic [ref=f9e477]: "0"
+                - generic [ref=f9e480]: "0"
+                - generic [ref=f9e483]: "0"
+                - generic [ref=f9e486]: "0"
+            - paragraph [ref=f9e490]: Initializing DP table. Row 0 represents 0 items.
+            - generic [ref=f9e491]:
+              - generic [ref=f9e492]:
+                - generic [ref=f9e493]: Step 1 of 76
+                - generic [ref=f9e497]:
+                  - button [ref=f9e498] [cursor=pointer]
+                  - button [ref=f9e501] [cursor=pointer]
+              - slider [ref=f9e506] [cursor=pointer]: "0"
+            - generic [ref=f9e507]:
+              - generic [ref=f9e508]: Current Cell
+              - generic [ref=f9e511]: Include Path
+              - generic [ref=f9e514]: Exclude Path
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f9e136] [cursor=pointer]
+  - alert [ref=f9e140]

@@ -1,0 +1,20 @@
+- generic [active] [ref=f9e1]:
+  - main [ref=f9e2]:
+    - generic [ref=f9e3]:
+      - generic [ref=f9e4]:
+        - img "Icon for codeforces.com" [ref=f9e5]
+        - heading "codeforces.com" [level=1] [ref=f9e6]
+      - heading "Performing security verification" [level=2] [ref=f9e7]
+      - paragraph [ref=f9e8]: This website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot.
+  - contentinfo [ref=f9e15]:
+    - generic [ref=f9e17]:
+      - generic [ref=f9e19]:
+        - text: "Ray ID:"
+        - code [ref=f9e20]: a1da6e0a7ca9ff66
+      - generic [ref=f9e21]:
+        - generic [ref=f9e22]:
+          - text: Performance and Security by
+          - link "Cloudflare" [ref=f9e23] [cursor=pointer]:
+            - /url: https://www.cloudflare.com?utm_source=challenge&utm_campaign=m
+        - link "Privacy" [ref=f9e25] [cursor=pointer]:
+          - /url: https://www.cloudflare.com/privacypolicy/

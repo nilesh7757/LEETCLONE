@@ -1,0 +1,33 @@
+- generic [active] [ref=f15e1]:
+  - generic [ref=f15e2]:
+    - link "Skip to main content" [ref=f15e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f15e4]:
+      - generic [ref=f15e5]:
+        - button [ref=f15e6]
+        - link "LogiQuest" [ref=f15e8] [cursor=pointer]:
+          - /url: /
+    - main [ref=f15e16]:
+      - generic [ref=f15e19]:
+        - generic [ref=f15e20]:
+          - link "DSA Studio" [ref=f15e22] [cursor=pointer]:
+            - /url: /
+          - button [ref=f15e29] [cursor=pointer]
+        - main [ref=f15e36]:
+          - generic [ref=f15e37]:
+            - generic [ref=f15e38]:
+              - generic [ref=f15e39]: SORTING
+              - heading "Bubble Sort" [level=1] [ref=f15e41]
+              - paragraph [ref=f15e42]: Simple comparison-based sorting.
+            - button "Bubble Sort" [ref=f15e44] [cursor=pointer]
+          - generic [ref=f15e52]:
+            - generic [ref=f15e53]:
+              - generic [ref=f15e54]:
+                - button [ref=f15e55]
+                - button [ref=f15e58]
+                - button [ref=f15e63]
+              - generic [ref=f15e66]:
+                - button "Playback Speed" [ref=f15e68]
+                - button "Fullscreen" [ref=f15e74] [cursor=pointer]
+            - paragraph [ref=f15e85]: Loading visualizer...
+  - region "Notifications alt+T"

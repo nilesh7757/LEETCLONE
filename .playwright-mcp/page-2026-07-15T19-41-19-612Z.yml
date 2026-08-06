@@ -1,0 +1,101 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f4e652]:
+      - generic [ref=f4e653]:
+        - button [ref=f4e654]
+        - link "LogiQuest" [ref=f4e656] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f4e663] [cursor=pointer]
+    - main [ref=f4e102]:
+      - generic [ref=f4e105]:
+        - generic [ref=f4e106]:
+          - link "LQ LogiQuest" [ref=f4e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f4e109]: LQ
+            - generic [ref=f4e111]: LogiQuest
+          - generic [ref=f4e112]:
+            - link "Dashboard" [ref=f4e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f4e114] [cursor=pointer]
+        - main [ref=f4e121]:
+          - generic [ref=f4e122]:
+            - generic [ref=f4e123]:
+              - generic [ref=f4e124]: DP
+              - heading "Fibonacci Sequence" [level=1] [ref=f4e861]
+              - paragraph [ref=f4e127]: DP state memoization.
+            - generic [ref=f4e128]:
+              - button "Playback Speed" [ref=f4e671] [cursor=pointer]
+              - button "Fullscreen" [ref=f4e137] [cursor=pointer]
+              - button "Fibonacci Sequence" [ref=f4e862] [cursor=pointer]
+          - generic [ref=f4e867]:
+            - generic [ref=f4e868]:
+              - generic [ref=f4e869]:
+                - button "Play" [ref=f4e870] [cursor=pointer]
+                - button "Reset Simulation" [ref=f4e874] [cursor=pointer]
+                - generic [ref=f4e878]:
+                  - generic [ref=f4e879]: Target (N)
+                  - spinbutton [ref=f4e880]: "10"
+              - generic [ref=f4e881]: Bottom-Up Tabulation
+            - generic [ref=f4e882]:
+              - generic [ref=f4e883]:
+                - generic: DP Table
+                - generic [ref=f4e884]:
+                  - generic [ref=f4e885]:
+                    - generic [ref=f4e886]: idx 0
+                    - generic [ref=f4e887]: "?"
+                  - generic [ref=f4e889]:
+                    - generic [ref=f4e890]: idx 1
+                    - generic [ref=f4e891]: "?"
+                  - generic [ref=f4e893]:
+                    - generic [ref=f4e894]: idx 2
+                    - generic [ref=f4e895]: "?"
+                  - generic [ref=f4e897]:
+                    - generic [ref=f4e898]: idx 3
+                    - generic [ref=f4e899]: "?"
+                  - generic [ref=f4e901]:
+                    - generic [ref=f4e902]: idx 4
+                    - generic [ref=f4e903]: "?"
+                  - generic [ref=f4e905]:
+                    - generic [ref=f4e906]: idx 5
+                    - generic [ref=f4e907]: "?"
+                  - generic [ref=f4e909]:
+                    - generic [ref=f4e910]: idx 6
+                    - generic [ref=f4e911]: "?"
+                  - generic [ref=f4e913]:
+                    - generic [ref=f4e914]: idx 7
+                    - generic [ref=f4e915]: "?"
+                  - generic [ref=f4e917]:
+                    - generic [ref=f4e918]: idx 8
+                    - generic [ref=f4e919]: "?"
+                  - generic [ref=f4e921]:
+                    - generic [ref=f4e922]: idx 9
+                    - generic [ref=f4e923]: "?"
+                  - generic [ref=f4e925]:
+                    - generic [ref=f4e926]: idx 10
+                    - generic [ref=f4e927]: "?"
+              - generic [ref=f4e929]:
+                - generic [ref=f4e930]:
+                  - heading "Log Stream" [level=3] [ref=f4e931]
+                  - generic [ref=f4e935]:
+                    - generic [ref=f4e936]: »
+                    - text: Initializing DP tabulation structure.
+                - generic [ref=f4e937]:
+                  - heading "State Transition" [level=3] [ref=f4e938]
+                  - generic [ref=f4e942]: dp[i] = dp[i-1] + dp[i-2]
+            - paragraph [ref=f4e944]: Awaiting base case injection.
+            - generic [ref=f4e945]:
+              - generic [ref=f4e946]:
+                - generic [ref=f4e947]: Step 1 of 22
+                - generic [ref=f4e951]:
+                  - button [ref=f4e952] [cursor=pointer]
+                  - button [ref=f4e955] [cursor=pointer]
+              - slider [ref=f4e960] [cursor=pointer]: "0"
+            - generic [ref=f4e961]:
+              - generic [ref=f4e962]: Active State
+              - generic [ref=f4e965]: Sum Dependency
+              - generic [ref=f4e968]: Stabilized DP
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e422] [cursor=pointer]
+  - alert [ref=f4e426]

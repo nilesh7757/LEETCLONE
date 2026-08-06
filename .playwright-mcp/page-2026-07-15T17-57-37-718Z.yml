@@ -1,0 +1,155 @@
+- generic [ref=f14e1]:
+  - generic [ref=f14e2]:
+    - link "Skip to main content" [ref=f14e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f14e612]:
+      - generic [ref=f14e613]:
+        - button [ref=f14e614]
+        - link "LogiQuest" [ref=f14e616] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f14e623] [cursor=pointer]
+    - main [ref=f14e102]:
+      - generic [ref=f14e105]:
+        - generic [ref=f14e106]:
+          - link "DSA Studio" [ref=f14e108] [cursor=pointer]:
+            - /url: /
+          - button [ref=f14e115] [cursor=pointer]
+        - main [ref=f14e122]:
+          - generic [ref=f14e123]:
+            - generic [ref=f14e124]:
+              - generic [ref=f14e125]: GRAPHS
+              - heading "Dijkstra's Algorithm" [level=1] [ref=f14e468]
+              - paragraph [ref=f14e128]: Finds the shortest path from a source to all nodes.
+            - generic [ref=f14e129]:
+              - button "Dijkstra's Algorithm" [active] [ref=f14e469] [cursor=pointer]
+              - generic [ref=f14e636]:
+                - generic [ref=f14e637]:
+                  - generic [ref=f14e638]: Sorting
+                  - generic [ref=f14e641]:
+                    - button "Bubble Sort" [ref=f14e642]
+                    - button "Selection Sort" [ref=f14e647]
+                    - button "Insertion Sort" [ref=f14e654]
+                    - button "Quick Sort" [ref=f14e658]
+                    - button "Merge Sort" [ref=f14e663]
+                - generic [ref=f14e670]:
+                  - generic [ref=f14e671]: Searching
+                  - generic [ref=f14e675]:
+                    - button "Binary Search" [ref=f14e676]
+                    - button "KMP Algorithm" [ref=f14e682]
+                - generic [ref=f14e690]:
+                  - generic [ref=f14e691]: Data Structures
+                  - generic [ref=f14e696]:
+                    - button "Linked List" [ref=f14e697]
+                    - button "Stack & Queue" [ref=f14e703]
+                    - button "Binary Search Tree" [ref=f14e710]
+                    - button "Trie (Prefix Tree)" [ref=f14e717]
+                    - button "Binary Heap" [ref=f14e725]
+                    - button "Segment Tree" [ref=f14e733]
+                    - button "Disjoint Set Union" [ref=f14e741]
+                    - button "Tree Traversal" [ref=f14e749]
+                - generic [ref=f14e755]:
+                  - generic [ref=f14e756]: Graphs
+                  - generic [ref=f14e762]:
+                    - button "Graph Traversal" [ref=f14e763]
+                    - button "Bellman-Ford" [ref=f14e771]
+                    - button "Minimum Spanning Tree" [ref=f14e777]
+                    - button "Dijkstra's Algorithm" [ref=f14e784]
+                    - button "Floyd-Warshall" [ref=f14e789]
+                    - button "Topological Sort" [ref=f14e796]
+                - generic [ref=f14e802]:
+                  - generic [ref=f14e803]: Dynamic Programming
+                  - generic [ref=f14e806]:
+                    - button "Fibonacci Sequence" [ref=f14e807]
+                    - button "0/1 Knapsack" [ref=f14e812]
+                    - button "Kadane's Lemma" [ref=f14e818]
+                    - button "Longest Common Subsequence" [ref=f14e824]
+                - generic [ref=f14e829]:
+                  - generic [ref=f14e830]: Advanced Algorithms
+                  - generic [ref=f14e834]:
+                    - button "Sliding Window" [ref=f14e835]
+                    - button "N-Queens Protocol" [ref=f14e843]
+          - generic [ref=f14e138]:
+            - generic [ref=f14e139]:
+              - generic [ref=f14e140]:
+                - button [ref=f14e631]
+                - button [ref=f14e632]
+                - button [ref=f14e633]
+              - generic [ref=f14e155]:
+                - button "Playback Speed" [ref=f14e634]
+                - button "Fullscreen" [ref=f14e164] [cursor=pointer]
+            - generic [ref=f14e474]:
+              - generic [ref=f14e475]:
+                - generic [ref=f14e476]:
+                  - button "Play" [ref=f14e477] [cursor=pointer]
+                  - button "Reset Dijkstra Simulation" [ref=f14e481] [cursor=pointer]
+                  - button "Randomize Graph" [ref=f14e485] [cursor=pointer]
+                - generic [ref=f14e491]:
+                  - button "Add Node" [ref=f14e492] [cursor=pointer]
+                  - button "Clear" [ref=f14e495] [cursor=pointer]
+              - generic [ref=f14e500]:
+                - generic: Drag nodes to move • Click node, then click another to connect
+                - img [ref=f14e501]:
+                  - generic [ref=f14e518]: "3"
+                  - generic [ref=f14e520]: "1"
+                  - generic [ref=f14e522]: "3"
+                  - generic [ref=f14e524]: "8"
+                  - generic [ref=f14e526]: "1"
+                  - generic [ref=f14e528]: "5"
+                  - generic [ref=f14e530]: "4"
+                  - generic [ref=f14e532]: "3"
+                  - generic [ref=f14e534] [cursor=pointer]:
+                    - generic: "0"
+                    - generic: "0"
+                  - generic [ref=f14e537] [cursor=pointer]:
+                    - generic: "1"
+                    - generic: ∞
+                  - generic [ref=f14e540] [cursor=pointer]:
+                    - generic: "2"
+                    - generic: ∞
+                  - generic [ref=f14e543] [cursor=pointer]:
+                    - generic: "3"
+                    - generic: ∞
+                  - generic [ref=f14e546] [cursor=pointer]:
+                    - generic: "4"
+                    - generic: ∞
+              - paragraph [ref=f14e550]: Initializing distances. Node 0 cost set to 0.
+              - generic [ref=f14e551]:
+                - generic [ref=f14e552]:
+                  - generic [ref=f14e553]: Step 1 of 15
+                  - generic [ref=f14e557]:
+                    - button [ref=f14e558] [cursor=pointer]
+                    - button [ref=f14e561] [cursor=pointer]
+                - slider [ref=f14e566] [cursor=pointer]: "0"
+              - generic [ref=f14e567]:
+                - heading "Distance Array" [level=3] [ref=f14e568]
+                - table [ref=f14e572]:
+                  - rowgroup [ref=f14e573]:
+                    - row [ref=f14e574]:
+                      - columnheader "Node" [ref=f14e575]
+                      - columnheader "0" [ref=f14e576]
+                      - columnheader "1" [ref=f14e577]
+                      - columnheader "2" [ref=f14e578]
+                      - columnheader "3" [ref=f14e579]
+                      - columnheader "4" [ref=f14e580]
+                  - rowgroup [ref=f14e581]:
+                    - row [ref=f14e582]:
+                      - cell "Distance" [ref=f14e583]
+                      - cell "0" [ref=f14e584]
+                      - cell "∞" [ref=f14e585]
+                      - cell "∞" [ref=f14e586]
+                      - cell "∞" [ref=f14e587]
+                      - cell "∞" [ref=f14e588]
+              - generic [ref=f14e589]:
+                - generic [ref=f14e590]:
+                  - generic [ref=f14e591]: Step Logs
+                  - generic [ref=f14e594]: ›Dijkstra's Algorithm initiated at source Node 0.
+                - generic [ref=f14e596]:
+                  - generic [ref=f14e597]: Visited Nodes (Settled)
+                  - generic [ref=f14e600]: None
+              - generic [ref=f14e602]:
+                - generic [ref=f14e603]: Active Node
+                - generic [ref=f14e606]: Visited / Settled
+                - generic [ref=f14e609]: Source Root
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f14e250] [cursor=pointer]
+  - alert [ref=f14e254]

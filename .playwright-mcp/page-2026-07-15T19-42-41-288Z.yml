@@ -1,0 +1,124 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f4e652]:
+      - generic [ref=f4e653]:
+        - button [ref=f4e654]
+        - link "LogiQuest" [ref=f4e656] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f4e663] [cursor=pointer]
+    - main [ref=f4e102]:
+      - generic [ref=f4e105]:
+        - generic [ref=f4e106]:
+          - link "LQ LogiQuest" [ref=f4e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f4e109]: LQ
+            - generic [ref=f4e111]: LogiQuest
+          - generic [ref=f4e112]:
+            - link "Dashboard" [ref=f4e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f4e114] [cursor=pointer]
+        - main [ref=f4e121]:
+          - generic [ref=f4e122]:
+            - generic [ref=f4e123]:
+              - generic [ref=f4e124]: GRAPHS
+              - heading "Floyd-Warshall" [level=1] [ref=f4e1443]
+              - paragraph [ref=f4e127]: All-pairs shortest paths.
+            - generic [ref=f4e128]:
+              - button "Playback Speed" [ref=f4e671] [cursor=pointer]
+              - button "Fullscreen" [ref=f4e137] [cursor=pointer]
+              - button "Floyd-Warshall" [ref=f4e1444] [cursor=pointer]
+          - generic [ref=f4e1451]:
+            - generic [ref=f4e1453]:
+              - button "Play" [ref=f4e1454] [cursor=pointer]
+              - button "Reset Floyd-Warshall Simulation" [ref=f4e1458] [cursor=pointer]
+              - button "Resize (4 Nodes)" [ref=f4e1462] [cursor=pointer]
+            - generic [ref=f4e1469]:
+              - generic [ref=f4e1470]:
+                - generic: Graph State
+                - img [ref=f4e1472]:
+                  - generic [ref=f4e1497]: "8"
+                  - generic [ref=f4e1499]: "3"
+                  - generic [ref=f4e1501]: "7"
+                  - generic [ref=f4e1503]: "2"
+                  - generic [ref=f4e1505]: "1"
+                  - generic [ref=f4e1507]: "5"
+                  - generic [ref=f4e1509]: "9"
+                  - generic [ref=f4e1511]: "4"
+                  - generic [ref=f4e1513]: "3"
+                  - generic [ref=f4e1515]: "7"
+                  - generic [ref=f4e1517]: "2"
+                  - generic [ref=f4e1519]: "6"
+                  - generic: "0"
+                  - generic: "1"
+                  - generic: "2"
+                  - generic: "3"
+              - generic [ref=f4e1521]:
+                - generic [ref=f4e1522]: INIT
+                - generic [ref=f4e1528]:
+                  - generic [ref=f4e1529]:
+                    - generic [ref=f4e1531]: "0"
+                    - generic [ref=f4e1532]: "1"
+                    - generic [ref=f4e1533]: "2"
+                    - generic [ref=f4e1534]: "3"
+                  - generic [ref=f4e1535]:
+                    - generic [ref=f4e1536]: "0"
+                    - generic [ref=f4e1537]: "0"
+                    - generic [ref=f4e1540]: "8"
+                    - generic [ref=f4e1543]: "3"
+                    - generic [ref=f4e1546]: "7"
+                  - generic [ref=f4e1549]:
+                    - generic [ref=f4e1550]: "1"
+                    - generic [ref=f4e1551]: "2"
+                    - generic [ref=f4e1554]: "0"
+                    - generic [ref=f4e1557]: "1"
+                    - generic [ref=f4e1560]: "5"
+                  - generic [ref=f4e1563]:
+                    - generic [ref=f4e1564]: "2"
+                    - generic [ref=f4e1565]: "9"
+                    - generic [ref=f4e1568]: "4"
+                    - generic [ref=f4e1571]: "0"
+                    - generic [ref=f4e1574]: "3"
+                  - generic [ref=f4e1577]:
+                    - generic [ref=f4e1578]: "3"
+                    - generic [ref=f4e1579]: "7"
+                    - generic [ref=f4e1582]: "2"
+                    - generic [ref=f4e1585]: "6"
+                    - generic [ref=f4e1588]: "0"
+                - generic [ref=f4e1591]:
+                  - generic [ref=f4e1592]:
+                    - generic [ref=f4e1593]: Via (k)
+                    - generic [ref=f4e1594]: "-"
+                  - generic [ref=f4e1595]:
+                    - generic [ref=f4e1596]: From (i)
+                    - generic [ref=f4e1597]: "-"
+                  - generic [ref=f4e1598]:
+                    - generic [ref=f4e1599]: To (j)
+                    - generic [ref=f4e1600]: "-"
+              - generic [ref=f4e1601]:
+                - generic [ref=f4e1602]:
+                  - heading "Logic Core" [level=3] [ref=f4e1603]
+                  - generic [ref=f4e1607]:
+                    - generic [ref=f4e1608]: "CHECK: Dist[i][k] + Dist[k][j] < Dist[i][j]"
+                    - generic [ref=f4e1609]: "UPDATE: Dist[i][j] = New Path"
+                - generic [ref=f4e1610]:
+                  - heading "Log Stream" [level=3] [ref=f4e1611]
+                  - generic [ref=f4e1615]:
+                    - generic [ref=f4e1616]: »
+                    - text: Initializing Adjacency Matrix (4x4).
+            - paragraph [ref=f4e1618]: Initializing Distance Matrix. D[i][j] = Direct Edge Weight.
+            - generic [ref=f4e1619]:
+              - generic [ref=f4e1620]:
+                - generic [ref=f4e1621]: Step 1 of 60
+                - generic [ref=f4e1625]:
+                  - button [ref=f4e1626] [cursor=pointer]
+                  - button [ref=f4e1629] [cursor=pointer]
+              - slider [ref=f4e1634] [cursor=pointer]: "0"
+            - generic [ref=f4e1635]:
+              - generic [ref=f4e1636]: Source (i)
+              - generic [ref=f4e1639]: Destination (j)
+              - generic [ref=f4e1642]: Intermediate (k)
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e422] [cursor=pointer]
+  - alert [ref=f4e426]

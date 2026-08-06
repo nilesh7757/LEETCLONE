@@ -1,0 +1,68 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f4e652]:
+      - generic [ref=f4e653]:
+        - button [ref=f4e654]
+        - link "LogiQuest" [ref=f4e656] [cursor=pointer]:
+          - /url: /
+      - button "Toggle theme" [ref=f4e663] [cursor=pointer]
+    - main [ref=f4e102]:
+      - generic [ref=f4e105]:
+        - generic [ref=f4e106]:
+          - link "LQ LogiQuest" [ref=f4e108] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f4e109]: LQ
+            - generic [ref=f4e111]: LogiQuest
+          - generic [ref=f4e112]:
+            - link "Dashboard" [ref=f4e113] [cursor=pointer]:
+              - /url: /dashboard
+            - button [ref=f4e114] [cursor=pointer]
+        - main [ref=f4e121]:
+          - generic [ref=f4e122]:
+            - generic [ref=f4e123]:
+              - generic [ref=f4e124]: SORTING
+              - heading "Bubble Sort" [level=1] [ref=f4e2173]
+              - paragraph [ref=f4e127]: Simple comparison-based sorting.
+            - generic [ref=f4e128]:
+              - button "Playback Speed" [ref=f4e671] [cursor=pointer]
+              - button "Fullscreen" [ref=f4e137] [cursor=pointer]
+              - button "Bubble Sort" [ref=f4e2174] [cursor=pointer]
+          - generic [ref=f4e2179]:
+            - generic [ref=f4e2180]:
+              - generic [ref=f4e2181]:
+                - heading "Bubble Sort Analysis" [level=2] [ref=f4e2183]
+                - generic [ref=f4e2186]:
+                  - button [ref=f4e2187] [cursor=pointer]
+                  - button "START" [ref=f4e2191] [cursor=pointer]
+              - generic [ref=f4e2195]:
+                - generic [ref=f4e2196]: "70"
+                - generic [ref=f4e2198]: "28"
+                - generic [ref=f4e2200]: "72"
+                - generic [ref=f4e2202]: "35"
+                - generic [ref=f4e2204]: "38"
+                - generic [ref=f4e2206]: "39"
+              - paragraph [ref=f4e2209]: Array initialized. Press Start to begin Bubble Sort.
+              - generic [ref=f4e2210]:
+                - generic [ref=f4e2211]:
+                  - generic [ref=f4e2212]: Step 1 of 45
+                  - generic [ref=f4e2217]:
+                    - button [ref=f4e2218] [cursor=pointer]
+                    - button [ref=f4e2221] [cursor=pointer]
+                  - generic [ref=f4e2224]:
+                    - generic [ref=f4e2225]: Speed
+                    - combobox [ref=f4e2226] [cursor=pointer]:
+                      - option "0.25x" [selected]
+                      - option "0.5x"
+                      - option "1.0x"
+                      - option "1.5x"
+                      - option "2.0x"
+                - slider [ref=f4e2229] [cursor=pointer]: "0"
+            - generic [ref=f4e2230]:
+              - generic [ref=f4e2231]: Comparing
+              - generic [ref=f4e2234]: Swapping
+              - generic [ref=f4e2237]: Sorted
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e422] [cursor=pointer]
+  - alert [ref=f4e426]

@@ -1,0 +1,208 @@
+- generic [active] [ref=f17e1]:
+  - generic [ref=f17e2]:
+    - link "Skip to main content" [ref=f17e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=f17e4]:
+      - generic [ref=f17e5]:
+        - link "LogiQuest" [ref=f17e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=f17e16]
+      - generic [ref=f17e17]:
+        - generic [ref=f17e18]: Platform
+        - link "Problems" [ref=f17e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=f17e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=f17e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=f17e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=f17e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Contests" [ref=f17e53] [cursor=pointer]:
+          - /url: /contest
+        - link "Siege" [ref=f17e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=f17e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=f17e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=f17e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=f17e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=f17e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=f17e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f17e93]:
+        - button "Collapse" [ref=f17e94]
+        - generic [ref=f17e99]:
+          - link "Log In" [ref=f17e100] [cursor=pointer]:
+            - /url: /login
+          - link "Sign Up" [ref=f17e101] [cursor=pointer]:
+            - /url: /signup
+    - main [ref=f17e102]:
+      - generic [ref=f17e106]:
+        - generic [ref=f17e107]:
+          - generic [ref=f17e108]:
+            - link [ref=f17e109] [cursor=pointer]:
+              - /url: /problems
+            - generic [ref=f17e112]:
+              - generic [ref=f17e113]: Problems
+              - generic [ref=f17e114]: /
+              - generic [ref=f17e115]: Task Scheduler
+              - button "Bookmark problem" [ref=f17e116] [cursor=pointer]
+          - generic [ref=f17e119]:
+            - generic [ref=f17e120]: "0"
+            - button "Toggle theme" [ref=f17e125] [cursor=pointer]
+        - main [ref=f17e129]:
+          - generic [ref=f17e132]:
+            - generic [ref=f17e133]:
+              - generic [ref=f17e134]:
+                - button "Description" [ref=f17e135]
+                - button "Resources" [ref=f17e140]
+                - button "History" [ref=f17e144]
+                - button "Solutions" [ref=f17e150]
+                - button "AI Coach" [ref=f17e153]
+              - generic [ref=f17e159]:
+                - generic [ref=f17e160]:
+                  - generic [ref=f17e161]: Medium
+                  - generic [ref=f17e162]: Greedy
+                  - generic [ref=f17e166]: 2s Limit
+                  - generic [ref=f17e170]: 256MB Limit
+                - generic [ref=f17e174]:
+                  - generic [ref=f17e178]: "Target Companies:"
+                  - generic [ref=f17e179]: Google
+                  - generic [ref=f17e180]: Amazon
+                  - generic [ref=f17e181]: Meta
+                - generic [ref=f17e183]:
+                  - heading "Task Scheduler" [level=1] [ref=f17e184]
+                  - paragraph [ref=f17e185]:
+                    - text: You are given an array of CPU tasks, each represented by a single uppercase letter (
+                    - code [ref=f17e186]: A
+                    - text: to
+                    - code [ref=f17e187]: Z
+                    - text: ), and a non-negative integer
+                    - code [ref=f17e188]: "n"
+                    - text: representing the cooldown period between two same tasks.
+                  - paragraph [ref=f17e189]:
+                    - text: "Each cycle or interval allows the completion of one task. Tasks can be completed in any order, but there is a constraint:"
+                    - strong [ref=f17e190]:
+                      - text: identical tasks must be separated by at least
+                      - code [ref=f17e191]: "n"
+                      - text: intervals
+                    - text: due to cooling time.
+                  - paragraph [ref=f17e192]: Return the minimum number of intervals the CPU will take to finish all the given tasks. The CPU can sit idle during a cooling interval if no other task is available.
+                  - heading "Input Format" [level=2] [ref=f17e193]
+                  - list [ref=f17e194]:
+                    - listitem [ref=f17e195]:
+                      - text: The first line contains a single integer
+                      - code [ref=f17e196]: t
+                      - text: representing the total number of tasks.
+                    - listitem [ref=f17e197]:
+                      - text: The second line contains
+                      - code [ref=f17e198]: t
+                      - text: space-separated uppercase characters representing the tasks.
+                    - listitem [ref=f17e199]:
+                      - text: The third line contains a single integer
+                      - code [ref=f17e200]: "n"
+                      - text: representing the cooldown period.
+                  - heading "Output Format" [level=2] [ref=f17e201]
+                  - list [ref=f17e202]:
+                    - listitem [ref=f17e203]: Print a single integer representing the minimum number of intervals needed.
+                  - heading "Constraints:" [level=2] [ref=f17e204]
+                  - list [ref=f17e205]:
+                    - listitem [ref=f17e206]:
+                      - code [ref=f17e207]:
+                        - text: 1 ≤ t ≤ 10
+                        - superscript [ref=f17e208]: "4"
+                    - listitem [ref=f17e209]:
+                      - code [ref=f17e210]: tasks[i]
+                      - text: is an uppercase English letter.
+                    - listitem [ref=f17e211]:
+                      - code [ref=f17e212]: 0 ≤ n ≤ 100
+                - generic [ref=f17e213]:
+                  - generic [ref=f17e214]: Target Companies
+                  - generic [ref=f17e215]:
+                    - generic [ref=f17e216]: Facebook
+                    - generic [ref=f17e217]: Amazon
+                    - generic [ref=f17e218]: Google
+                    - generic [ref=f17e219]: Microsoft
+                    - generic [ref=f17e220]: Bloomberg
+                - generic [ref=f17e221]:
+                  - generic [ref=f17e222]: Examples
+                  - generic [ref=f17e225]:
+                    - generic [ref=f17e226]:
+                      - generic [ref=f17e227]: Example 1
+                      - generic [ref=f17e228]:
+                        - generic [ref=f17e229]:
+                          - generic [ref=f17e230]: "Input:"
+                          - generic [ref=f17e231]: 6 A A A B B B 2
+                        - generic [ref=f17e232]:
+                          - generic [ref=f17e233]: "Output:"
+                          - generic [ref=f17e234]: "8"
+                    - generic [ref=f17e235]:
+                      - generic [ref=f17e236]: Example 2
+                      - generic [ref=f17e237]:
+                        - generic [ref=f17e238]:
+                          - generic [ref=f17e239]: "Input:"
+                          - generic [ref=f17e240]: 5 A A A B B 2
+                        - generic [ref=f17e241]:
+                          - generic [ref=f17e242]: "Output:"
+                          - generic [ref=f17e243]: "7"
+                    - generic [ref=f17e244]:
+                      - generic [ref=f17e245]: Example 3
+                      - generic [ref=f17e246]:
+                        - generic [ref=f17e247]:
+                          - generic [ref=f17e248]: "Input:"
+                          - generic [ref=f17e249]: 6 A A A A A A 2
+                        - generic [ref=f17e250]:
+                          - generic [ref=f17e251]: "Output:"
+                          - generic [ref=f17e252]: "16"
+            - generic [ref=f17e255]:
+              - generic [ref=f17e256]:
+                - generic [ref=f17e257]:
+                  - generic [ref=f17e258]: Code Workbench
+                  - generic [ref=f17e265]:
+                    - button "JavaScript" [ref=f17e267]
+                    - button "Reset" [ref=f17e272]
+                    - button "Run" [ref=f17e277]
+                    - button "Submit" [ref=f17e280]
+                - code [ref=f17e289]:
+                  - generic [ref=f17e290]:
+                    - textbox "Editor content"
+                    - textbox [ref=f17e291]
+                    - generic [ref=f17e293]:
+                      - generic [ref=f17e294]: "1"
+                      - generic [ref=f17e297]: "2"
+                      - generic [ref=f17e299]: "3"
+                      - generic [ref=f17e301]: "4"
+                      - generic [ref=f17e303]: "5"
+                      - generic [ref=f17e305]: "6"
+                    - generic [ref=f17e314]:
+                      - generic [ref=f17e315]: "// Read input (example: single line, space-separated numbers)"
+                      - generic [ref=f17e317]: // const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split(' ').map(Number);
+                      - generic [ref=f17e319]: // console.log(input);
+                      - generic [ref=f17e322]: // Write your solution below
+              - generic [ref=f17e330]:
+                - generic [ref=f17e331]:
+                  - button "Testcases" [ref=f17e332]
+                  - button "Results" [ref=f17e335]
+                - generic [ref=f17e337]:
+                  - button "Case 1" [ref=f17e338]
+                  - button "Case 2" [ref=f17e340]
+                  - button "Case 3" [ref=f17e342]
+                  - button "New Case" [ref=f17e344]
+                - generic [ref=f17e348]:
+                  - generic [ref=f17e349]:
+                    - generic [ref=f17e350]: Input Parameters
+                    - textbox "Enter input here..." [ref=f17e355]: 6 A A A B B B 2
+                  - generic [ref=f17e356]:
+                    - generic [ref=f17e357]: Expected Output
+                    - 'textbox "Optional: Enter expected output for verification..." [ref=f17e362]': "8"
+  - region "Notifications alt+T"
+  - alert [ref=f17e131]
+  - generic [ref=f17e363]:
+    - alert
+    - alert

@@ -1,0 +1,171 @@
+- generic [active] [ref=f12e1]:
+  - generic [ref=f12e2]:
+    - link "Skip to main content" [ref=f12e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - complementary [ref=f12e4]:
+      - generic [ref=f12e5]:
+        - link "LogiQuest" [ref=f12e7] [cursor=pointer]:
+          - /url: /
+        - textbox "Search users..." [ref=f12e16]
+      - generic [ref=f12e17]:
+        - generic [ref=f12e18]: Platform
+        - link "Problems" [ref=f12e19] [cursor=pointer]:
+          - /url: /problems
+        - link "Study Plans" [ref=f12e25] [cursor=pointer]:
+          - /url: /study-plans
+        - link "CS Core" [ref=f12e29] [cursor=pointer]:
+          - /url: /cs-core
+        - link "Academy" [ref=f12e43] [cursor=pointer]:
+          - /url: /resources
+        - link "Interview" [ref=f12e48] [cursor=pointer]:
+          - /url: /interview
+        - link "Contests" [ref=f12e53] [cursor=pointer]:
+          - /url: /contest
+        - link "Siege" [ref=f12e60] [cursor=pointer]:
+          - /url: /siege
+        - link "Arcade" [ref=f12e64] [cursor=pointer]:
+          - /url: /arcade
+        - link "Visualize" [ref=f12e68] [cursor=pointer]:
+          - /url: /dsa
+        - link "Leaderboard" [ref=f12e75] [cursor=pointer]:
+          - /url: /leaderboard
+        - link "Blog" [ref=f12e80] [cursor=pointer]:
+          - /url: /blog
+        - link "Chat" [ref=f12e85] [cursor=pointer]:
+          - /url: /chat
+        - link "About Build" [ref=f12e89] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f12e93]:
+        - button "Collapse" [ref=f12e94]
+        - link [ref=f12e100] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=f12e105]:
+            - paragraph [ref=f12e106]: Nilesh mori
+            - paragraph [ref=f12e107]: View Profile
+    - main [ref=f12e108]:
+      - generic [ref=f12e112]:
+        - generic [ref=f12e113]:
+          - generic [ref=f12e114]:
+            - link [ref=f12e115] [cursor=pointer]:
+              - /url: /problems
+            - generic [ref=f12e118]:
+              - generic [ref=f12e119]: Problems
+              - generic [ref=f12e120]: /
+              - generic [ref=f12e121]: Task Scheduler
+              - button "Bookmark problem" [ref=f12e122] [cursor=pointer]
+          - generic [ref=f12e125]:
+            - generic [ref=f12e126]: "0"
+            - button [ref=f12e132]
+            - button "Toggle theme" [ref=f12e138] [cursor=pointer]
+        - main [ref=f12e146]:
+          - generic [ref=f12e149]:
+            - generic [ref=f12e150]:
+              - generic [ref=f12e151]:
+                - button "Description" [ref=f12e152]
+                - button "Resources" [ref=f12e157]
+                - button "History" [ref=f12e161]
+                - button "Solutions" [ref=f12e167]
+                - button "AI Coach" [ref=f12e170]
+              - generic [ref=f12e414] [cursor=pointer]:
+                - generic [ref=f12e421]:
+                  - generic [ref=f12e422]: Time Limit Exceeded
+                  - generic [ref=f12e423]: 7/16/2026
+                - generic [ref=f12e424]: 2074ms
+            - generic [ref=f12e272]:
+              - generic [ref=f12e273]:
+                - generic [ref=f12e274]:
+                  - generic [ref=f12e275]: Code Workbench
+                  - generic [ref=f12e282]:
+                    - button "JavaScript" [ref=f12e284]
+                    - button "Reset" [ref=f12e289]
+                    - button "Run" [ref=f12e294]
+                    - button "Submit" [ref=f12e297]
+                - code [ref=f12e306]:
+                  - generic [ref=f12e307]:
+                    - textbox "Editor content"
+                    - textbox [ref=f12e308]
+                    - generic [ref=f12e310]:
+                      - generic [ref=f12e311]: "1"
+                      - generic [ref=f12e314]: "2"
+                      - generic [ref=f12e316]: "3"
+                      - generic [ref=f12e318]: "4"
+                      - generic [ref=f12e320]: "5"
+                      - generic [ref=f12e322]: "6"
+                    - generic [ref=f12e331]:
+                      - generic [ref=f12e332]: "// Read input (example: single line, space-separated numbers)"
+                      - generic [ref=f12e334]: // const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split(' ').map(Number);
+                      - generic [ref=f12e336]: // console.log(input);
+                      - generic [ref=f12e339]: // Write your solution below
+              - generic [ref=f12e347]:
+                - generic [ref=f12e348]:
+                  - button "Testcases" [ref=f12e349]
+                  - button "Results" [ref=f12e352]
+                - generic [ref=f12e354]:
+                  - button "Case 1" [ref=f12e355]
+                  - button "Case 2" [ref=f12e357]
+                  - button "Case 3" [ref=f12e359]
+                  - button "New Case" [ref=f12e361]
+                - generic [ref=f12e434]:
+                  - generic [ref=f12e435]:
+                    - generic [ref=f12e436]:
+                      - generic [ref=f12e437]:
+                        - generic [ref=f12e438]: Execution Status
+                        - generic [ref=f12e439]: Time Limit Exceeded
+                      - generic [ref=f12e441]:
+                        - generic [ref=f12e442]: Latency
+                        - generic [ref=f12e443]: 0ms
+                    - generic [ref=f12e444]:
+                      - button "Visualize Logic" [ref=f12e445]
+                      - generic [ref=f12e450]: Case 1
+                  - generic [ref=f12e451]:
+                    - generic [ref=f12e452]:
+                      - generic [ref=f12e453]: Actual Output
+                      - generic [ref=f12e459]: No return value
+                    - generic [ref=f12e460]:
+                      - generic [ref=f12e461]: Expected Output
+                      - generic [ref=f12e466]: "8"
+                  - generic [ref=f12e467]:
+                    - generic [ref=f12e468]: Trace Input
+                    - generic [ref=f12e469]: 6 A A A B B B 2
+        - generic [ref=f12e472]:
+          - generic [ref=f12e473]:
+            - generic [ref=f12e480]:
+              - heading "Time Limit Exceeded" [level=2] [ref=f12e481]
+              - paragraph [ref=f12e482]: javascript • 7/16/2026, 5:54:05 AM
+            - button [ref=f12e483]
+          - generic [ref=f12e487]:
+            - generic [ref=f12e488]:
+              - generic [ref=f12e494]:
+                - paragraph [ref=f12e495]: Runtime
+                - paragraph [ref=f12e496]: 2074 ms
+              - generic [ref=f12e502]:
+                - paragraph [ref=f12e503]: Memory
+                - paragraph [ref=f12e504]: N/A
+              - generic [ref=f12e509]:
+                - paragraph [ref=f12e510]: Language
+                - paragraph [ref=f12e511]: javascript
+            - generic [ref=f12e512]:
+              - heading "Submitted Code" [level=3] [ref=f12e513]
+              - code [ref=f12e516]: "// Read input (example: single line, space-separated numbers) // const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split(' ').map(Number); // console.log(input); // Write your solution below"
+            - generic [ref=f12e517]:
+              - heading "Test Case Results" [level=3] [ref=f12e518]
+              - generic [ref=f12e520]:
+                - generic [ref=f12e521]:
+                  - generic [ref=f12e522]: "Case #1"
+                  - generic [ref=f12e523]: Time Limit Exceeded
+                - generic [ref=f12e524]:
+                  - text: Input
+                  - generic [ref=f12e525]: 6 A A A B B B 2
+                - generic [ref=f12e526]:
+                  - generic [ref=f12e527]: Actual
+                  - generic [ref=f12e535]:
+                    - generic [ref=f12e536]: Expected
+                    - generic [ref=f12e541]: "8"
+                - generic [ref=f12e542]:
+                  - text: Error Details
+                  - generic [ref=f12e543]: Time limit exceeded
+  - region "Notifications alt+T"
+  - alert [ref=f12e148]
+  - generic [ref=f12e380]:
+    - alert
+    - alert
