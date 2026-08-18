@@ -4,7 +4,6 @@ import "./globals.css";
 import LayoutShell from "@/components/layout/LayoutShell";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { SessionProvider } from "next-auth/react";
-import { auth } from "@/auth"; // Import auth directly
 import { Toaster } from "sonner";
 import PageTransition from "@/components/layout/PageTransition"; // Import the PageTransition component
 import ActiveTracker from "@/components/ActiveTracker";

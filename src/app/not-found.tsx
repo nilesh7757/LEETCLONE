@@ -42,10 +42,11 @@ export default function NotFound() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const t0 = setTimeout(() => setMounted(true), 0);
     const t1 = setTimeout(() => setGlitching(true), 300);
     const t2 = setTimeout(() => setGlitching(false), 2500);
     return () => {
+      clearTimeout(t0);
       clearTimeout(t1);
       clearTimeout(t2);
     };

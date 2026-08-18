@@ -10,11 +10,19 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const skip = (page - 1) * limit;
 
+    const whereFilter = {
+      isBanned: false,
+      NOT: [
+        { email: { startsWith: "guest_" } },
+        { email: { contains: "@logiquest.com" } },
+        { name: { startsWith: "Guest" } },
+        { description: "Temporary Guest Account" },
+      ],
+    };
+
     const [users, total] = await Promise.all([
       prisma.user.findMany({
-        where: {
-          isBanned: false,
-        },
+        where: whereFilter,
         select: {
           id: true,
           name: true,
@@ -31,9 +39,7 @@ export async function GET(req: Request) {
         skip: skip,
       }),
       prisma.user.count({
-        where: {
-            isBanned: false
-        }
+        where: whereFilter,
       })
     ]);
 

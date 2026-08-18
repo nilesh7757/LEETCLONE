@@ -133,81 +133,105 @@ export default function Hero({ initialProblemsCount, initialUserCount }: HeroPro
 
       {/* Bento Box Grid */}
       <section className="max-w-7xl mx-auto mb-32 px-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
-            
-            {/* Bento 1: Advanced Execution Engine */}
-            <motion.div 
-               whileHover={{ scale: 1.02 }}
-               className="md:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-[var(--primary)]/30 transition-all duration-300 text-left"
-            >
-               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)]">
-                  <Terminal className="w-6 h-6" />
-               </div>
-               <div className="space-y-3 z-10 max-w-lg">
-                  <div className="text-[10px] font-black text-[#8F44F0] uppercase tracking-[0.2em]">Sandboxed Sandbox</div>
-                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Advanced Execution Engine</h3>
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                     Compile and run your C++, Python, JavaScript, and Java solutions with zero-latency. Utilizes Judge0, advanced web workers, and compiler tests to evaluate custom test cases instantly.
-                  </p>
-               </div>
-               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-[var(--primary)]/[0.02] rounded-full blur-3xl group-hover:bg-[var(--primary)]/[0.05] transition-all duration-500" />
-            </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Bento 1: Advanced Execution Engine */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className="md:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[280px] group shadow-sm hover:border-[var(--primary)]/40 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center justify-between gap-4 mb-6 z-10">
+              <div className="w-12 h-12 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] shrink-0 border border-[var(--primary)]/20">
+                <Terminal className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-black text-[#8F44F0] uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-[#8F44F0]/10 border border-[#8F44F0]/20">
+                Sandboxed Engine
+              </span>
+            </div>
+            <div className="space-y-2 z-10 max-w-xl">
+              <h3 className="text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight">
+                Advanced Execution Engine
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Compile and run your C++, Python, JavaScript, and Java solutions with zero-latency. Utilizes Judge0, advanced web workers, and compiler tests to evaluate custom test cases instantly.
+              </p>
+            </div>
+            <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-[var(--primary)]/[0.03] rounded-full blur-3xl group-hover:bg-[var(--primary)]/[0.08] transition-all duration-500 pointer-events-none" />
+          </motion.div>
 
-            {/* Bento 2: Socratic AI Coach */}
-            <motion.div 
-               whileHover={{ scale: 1.02 }}
-               className="md:col-span-1 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-purple-500/40 transition-all duration-300 text-left"
-            >
-               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400">
-                  <Sparkles className="w-6 h-6" />
-               </div>
-               <div className="space-y-3 z-10">
-                  <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Built-In AI Assistant</div>
-                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Socratic AI Coach</h3>
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                     Get progressive prompts, logic hints, time/space complexity analysis, and custom case breakdowns from Gemini AI, designed to guide you without revealing the direct solution.
-                  </p>
-               </div>
-               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-blue-500/[0.02] rounded-full blur-3xl group-hover:bg-blue-500/[0.05] transition-all duration-500" />
-            </motion.div>
+          {/* Bento 2: Socratic AI Coach */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className="md:col-span-1 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[280px] group shadow-sm hover:border-purple-500/50 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center justify-between gap-4 mb-6 z-10">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
+                AI Coach
+              </span>
+            </div>
+            <div className="space-y-2 z-10">
+              <h3 className="text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight">
+                Socratic AI Coach
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Get progressive prompts, logic hints, time/space complexity analysis, and custom case breakdowns from Gemini AI, designed to guide you without revealing the direct solution.
+              </p>
+            </div>
+            <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-blue-500/[0.03] rounded-full blur-3xl group-hover:bg-blue-500/[0.08] transition-all duration-500 pointer-events-none" />
+          </motion.div>
 
-            {/* Bento 3: Multiplayer Arena */}
-            <motion.div 
-               whileHover={{ scale: 1.02 }}
-               className="md:col-span-1 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-[var(--primary)]/30 transition-all duration-300 text-left"
-            >
-               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-[#eab308]/10 flex items-center justify-center text-[#eab308]">
-                  <Trophy className="w-6 h-6" />
-               </div>
-               <div className="space-y-3 z-10">
-                  <div className="text-[10px] font-black text-[#eab308] uppercase tracking-[0.2em]">Real-time matchmaker</div>
-                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Multiplayer Arena</h3>
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                     Challenge global developers in Head-To-Head coding contests. Solve algorithms under match stress, check constraints, and secure top rankings on socket-synchronized leaderboards.
-                  </p>
-               </div>
-               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-[#eab308]/[0.02] rounded-full blur-3xl group-hover:bg-[#eab308]/[0.05] transition-all duration-500" />
-            </motion.div>
+          {/* Bento 3: Multiplayer Arena */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className="md:col-span-1 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[280px] group shadow-sm hover:border-amber-500/40 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center justify-between gap-4 mb-6 z-10">
+              <div className="w-12 h-12 rounded-2xl bg-[#eab308]/10 flex items-center justify-center text-[#eab308] shrink-0 border border-[#eab308]/20">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-black text-[#eab308] uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-[#eab308]/10 border border-[#eab308]/20">
+                Real-Time
+              </span>
+            </div>
+            <div className="space-y-2 z-10">
+              <h3 className="text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight">
+                Multiplayer Arena
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Challenge global developers in Head-To-Head coding contests. Solve algorithms under match stress, check constraints, and secure top rankings on socket-synchronized leaderboards.
+              </p>
+            </div>
+            <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-[#eab308]/[0.03] rounded-full blur-3xl group-hover:bg-[#eab308]/[0.08] transition-all duration-500 pointer-events-none" />
+          </motion.div>
 
-            {/* Bento 4: Spaced Repetition System */}
-            <motion.div 
-               whileHover={{ scale: 1.02 }}
-               className="md:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-end group shadow-sm hover:border-[var(--primary)]/30 transition-all duration-300 text-left"
-            >
-               <div className="absolute top-8 left-8 w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
-                  <Repeat className="w-6 h-6" />
-               </div>
-               <div className="space-y-3 z-10 max-w-lg">
-                  <div className="text-[10px] font-black text-green-400 uppercase tracking-[0.2em]">Long-term retention</div>
-                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Spaced Repetition System</h3>
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                     Lock in patterns for standard algorithm paradigms. Custom Anki-style review queues scan your coding velocity and edge case flags to suggest reviews right when your retention drops.
-                  </p>
-               </div>
-               <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-green-500/[0.02] rounded-full blur-3xl group-hover:bg-green-500/[0.05] transition-all duration-500" />
-            </motion.div>
+          {/* Bento 4: Spaced Repetition System */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className="md:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[280px] group shadow-sm hover:border-green-500/40 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center justify-between gap-4 mb-6 z-10">
+              <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400 shrink-0 border border-green-500/20">
+                <Repeat className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-black text-green-400 uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                Spaced Retention
+              </span>
+            </div>
+            <div className="space-y-2 z-10 max-w-xl">
+              <h3 className="text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight">
+                Spaced Repetition System
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Lock in patterns for standard algorithm paradigms. Custom Anki-style review queues scan your coding velocity and edge case flags to suggest reviews right when your retention drops.
+              </p>
+            </div>
+            <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-green-500/[0.03] rounded-full blur-3xl group-hover:bg-green-500/[0.08] transition-all duration-500 pointer-events-none" />
+          </motion.div>
 
-         </div>
+        </div>
       </section>
       
       <Footer />
