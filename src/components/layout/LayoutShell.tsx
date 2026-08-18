@@ -77,7 +77,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
         <div className={`flex-1 w-full flex flex-col ${
           isWorkspace 
             ? "max-w-none h-full max-h-full overflow-hidden pt-16 md:pt-0" 
-            : "max-w-[1800px] mx-auto p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"
+            : "max-w-[1800px] mx-auto p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500"
         }`}>
           {children}
         </div>

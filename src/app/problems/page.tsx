@@ -173,7 +173,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--primary)]/30 overflow-x-hidden">
+    <div className="w-full bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[var(--primary)]/30">
       
       {/* 1. BACKGROUND ARCHITECTURE */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -193,7 +193,7 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
          <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-[var(--viz-purple)]/5 rounded-full blur-[140px]" />
       </div>
       
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 relative z-10"> 
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative z-10"> 
       
         {/* 2. DASHBOARD HEADER & STATS (REFINED & COMPACTED) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-[var(--border)]/40">
