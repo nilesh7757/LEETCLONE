@@ -38,7 +38,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex">
+    <div className={`bg-[var(--background)] flex ${isWorkspace ? "h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen"}`}>
 
       {/* Skip-to-content: visually hidden until focused — keyboard/screen-reader users bypass sidebar */}
       <a
@@ -70,9 +70,15 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <main
         id="main-content"
-        className={`flex-1 ${isCollapsed ? "md:pl-20" : "md:pl-64"} min-h-screen relative flex flex-col transition-all duration-300 ease-in-out overflow-hidden`}
+        className={`flex-1 ${isCollapsed ? "md:pl-20" : "md:pl-64"} ${
+          isWorkspace ? "h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen"
+        } relative flex flex-col transition-all duration-300 ease-in-out`}
       >
-        <div className={`flex-1 w-full flex flex-col ${isWorkspace ? "max-w-none pt-16 md:pt-0" : "max-w-[1800px] mx-auto p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"}`}>
+        <div className={`flex-1 w-full flex flex-col ${
+          isWorkspace 
+            ? "max-w-none h-full max-h-full overflow-hidden pt-16 md:pt-0" 
+            : "max-w-[1800px] mx-auto p-4 md:p-8 pt-20 md:pt-20 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto"
+        }`}>
           {children}
         </div>
       </main>

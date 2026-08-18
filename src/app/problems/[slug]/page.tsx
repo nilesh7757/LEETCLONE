@@ -160,7 +160,7 @@ export default async function Workspace({ params, searchParams }: WorkspaceProps
   }) : null;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[var(--background)] relative">
+    <div className="flex-1 flex flex-col h-full w-full overflow-hidden bg-[var(--background)] relative">
       {/* Background Ambience */}
       <div className="absolute inset-0 pointer-events-none -z-10 bg-grid-pattern opacity-[0.02]" />
       

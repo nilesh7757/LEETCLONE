@@ -141,43 +141,56 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-[var(--background)] text-[var(--foreground)] overflow-hidden font-sans">
+    <div className="flex flex-col h-full w-full bg-[var(--background)] text-[var(--foreground)] overflow-hidden font-sans">
       <ExecutionAnimation 
         isVisible={showSuccessAnimation} 
         onComplete={() => setShowSuccessAnimation(false)} 
       />
 
       {/* PRO STUDIO HEADER */}
-      <header className="h-[52px] border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shrink-0 z-[60] shadow-sm">
-         <div className="flex items-center gap-6">
-            <Link href="/problems" className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] group">
-               <ChevronLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
+      <header className="h-[48px] border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-3.5 shrink-0 z-[60] shadow-xs select-none">
+         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <Link href="/problems" className="p-1.5 hover:bg-[var(--foreground)]/5 rounded-lg transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] shrink-0 group">
+               <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
             </Link>
-            <div className="flex items-center gap-3 text-[14px]">
-               <span className="text-[var(--muted-foreground)] font-medium tracking-tight">Problems</span>
-               <span className="text-[var(--muted-foreground)] font-light opacity-30">/</span>
-               <span className="text-[var(--foreground)] font-bold tracking-tight">{problem.title}</span>
+            <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
+               <Link href="/problems" className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium tracking-tight shrink-0 hidden sm:inline">
+                 Problems
+               </Link>
+               <span className="text-[var(--muted-foreground)] font-light opacity-30 hidden sm:inline">/</span>
+               <span className="text-[var(--foreground)] font-bold tracking-tight truncate max-w-[200px] sm:max-w-[320px]">
+                 {problem.title}
+               </span>
+               <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 border ${
+                 problem.difficulty === "Easy"
+                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                   : problem.difficulty === "Medium"
+                   ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                   : "bg-red-500/10 text-red-400 border-red-500/20"
+               }`}>
+                 {problem.difficulty}
+               </span>
                <button
                   onClick={toggleWorkspaceStar}
-                  className="p-1 rounded-lg hover:bg-white/5 transition-all text-gray-500 hover:text-yellow-500 shrink-0 cursor-pointer"
+                  className="p-1 rounded-lg hover:bg-[var(--foreground)]/5 transition-all text-gray-400 hover:text-yellow-500 shrink-0 cursor-pointer"
                   title={isStarred ? "Remove bookmark" : "Bookmark problem"}
                >
                   <Star 
-                     size={14} 
-                     className={isStarred ? "fill-yellow-500 text-yellow-500" : "text-gray-500 hover:text-yellow-500"} 
+                     size={13} 
+                     className={isStarred ? "fill-yellow-500 text-yellow-500" : "text-gray-400 hover:text-yellow-500"} 
                   />
                </button>
             </div>
          </div>
 
-         <div className="flex items-center gap-4">
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
+         <div className="flex items-center gap-3 shrink-0">
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
                solvedToday ? "bg-orange-500/10 text-orange-500 border-orange-500/20" : "bg-[var(--foreground)]/5 text-[var(--muted-foreground)] border-transparent"
             }`}>
-               <Flame size={14} className={solvedToday ? "fill-orange-500" : ""} />
-               <span className="text-[12px] font-black">{streak}</span>
+               <Flame size={13} className={solvedToday ? "fill-orange-500 text-orange-500" : "text-[var(--muted-foreground)]"} />
+               <span className="text-[11px] font-black">{streak}</span>
             </div>
-            <div className="w-px h-4 bg-[var(--border)]" />
+            <div className="w-px h-3.5 bg-[var(--border)]" />
             <NotificationBell />
             <ThemeToggle />
          </div>
@@ -202,28 +215,35 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
               className="flex flex-col h-full bg-[var(--card)] overflow-hidden min-h-0 border-r border-[var(--border)] @container"
               style={{ containerType: 'inline-size', containerName: 'sidebar' }}
             >
-                <div className="flex items-center px-2 border-b border-[var(--border)] h-[44px] shrink-0 gap-1 xl:gap-2 bg-[var(--card)] overflow-hidden">
+                <div className="flex items-center px-2 py-1 border-b border-[var(--border)] h-[44px] shrink-0 gap-1 bg-[var(--card)]/90 backdrop-blur-md overflow-x-auto no-scrollbar scroll-smooth">
                     {([
                       { id: 'description', label: 'Description', icon: Info },
                       ...(problem.type === "SQL" ? [{ id: 'database', label: 'Database', icon: Database }] : []),
                       { id: 'resources', label: 'Resources', icon: Library },
-                      { id: 'submissions', label: 'History', icon: History },
+                      { id: 'submissions', label: 'History', icon: History, badge: submissions.length > 0 ? submissions.length : undefined },
                       ...(selectedSubmission ? [{ id: 'submission-details', label: 'Result', icon: CheckCircle }] : []),
                       { id: 'solutions', label: 'Solutions', icon: MessageCircle },
                       { id: 'ai', label: 'AI Coach', icon: Sparkles }, 
-                    ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"; label: string; icon: typeof Info }[]).map(t => (
+                    ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"; label: string; icon: typeof Info; badge?: number }[]).map(t => (
                     <button
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
                         title={t.label}
-                        className={`flex-tab-btn relative h-full transition-all flex items-center justify-center gap-1.5 px-3 shrink-0 hover:bg-[var(--foreground)]/5 ${
-                            activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        className={`relative h-[32px] transition-all flex items-center justify-center gap-1.5 px-3 rounded-lg shrink-0 cursor-pointer ${
+                            activeTab === t.id 
+                              ? "bg-[var(--foreground)]/10 text-[var(--foreground)] font-black border border-[var(--border)] shadow-xs" 
+                              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 font-semibold"
                         }`}
                     >
-                        <t.icon size={15} className={activeTab === t.id ? "text-[var(--primary)] shrink-0" : "shrink-0"} />
-                        <span className={`text-[10px] font-black uppercase tracking-wider tab-label-${t.id} truncate`}>
+                        <t.icon size={13} className={activeTab === t.id ? "text-[#8F44F0] shrink-0" : "shrink-0 opacity-70"} />
+                        <span className="text-[10px] uppercase tracking-wider whitespace-nowrap">
                             {t.label}
                         </span>
+                        {t.badge !== undefined && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#8F44F0]/15 text-[#8F44F0] font-black">
+                            {t.badge}
+                          </span>
+                        )}
                         {t.id === 'submission-details' && (
                           <span 
                             onClick={(e) => {
@@ -235,9 +255,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                           >
                             <X size={10} />
                           </span>
-                        )}
-                        {activeTab === t.id && (
-                            <motion.div layoutId="left-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)] shadow-[0_0_12px_rgba(143,68,240,0.5)]" />
                         )}
                     </button>
                     ))}
@@ -380,25 +397,32 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
         <div className="md:hidden flex flex-col h-full bg-[var(--card)] overflow-hidden relative">
             {mobileMainTab === 'others' ? (
                 <>
-                    <div className="flex items-center px-4 border-b border-[var(--border)] h-[44px] shrink-0 gap-6 bg-[var(--card)] overflow-x-auto no-scrollbar">
+                    <div className="flex items-center px-2 py-1 border-b border-[var(--border)] h-[44px] shrink-0 gap-1 bg-[var(--card)]/90 backdrop-blur-md overflow-x-auto no-scrollbar scroll-smooth">
                         {([
                             { id: 'description', label: 'Description', icon: Info },
                             ...(problem.type === "SQL" ? [{ id: 'database', label: 'Database', icon: Database }] : []),
                             { id: 'resources', label: 'Resources', icon: Library },
-                            { id: 'submissions', label: 'History', icon: History },
+                            { id: 'submissions', label: 'History', icon: History, badge: submissions.length > 0 ? submissions.length : undefined },
                             ...(selectedSubmission ? [{ id: 'submission-details', label: 'Result', icon: CheckCircle }] : []),
                             { id: 'solutions', label: 'Solutions', icon: MessageCircle },
                             { id: 'ai', label: 'Coach', icon: Sparkles }, 
-                        ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"; label: string; icon: typeof Info }[]).map(t => (
+                        ] as { id: "description" | "resources" | "submissions" | "solutions" | "ai" | "database" | "submission-details"; label: string; icon: typeof Info; badge?: number }[]).map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setActiveTab(t.id)}
-                                className={`relative h-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 px-1 shrink-0 ${
-                                    activeTab === t.id ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                                className={`relative h-[32px] text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 px-2.5 rounded-lg shrink-0 cursor-pointer ${
+                                    activeTab === t.id 
+                                      ? "bg-[var(--foreground)]/10 text-[var(--foreground)] border border-[var(--border)] shadow-xs" 
+                                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5 font-semibold"
                                 }`}
                             >
-                                <t.icon size={13} className={activeTab === t.id ? "text-[var(--primary)]" : ""} />
-                                {t.label}
+                                <t.icon size={13} className={activeTab === t.id ? "text-[#8F44F0]" : "opacity-70"} />
+                                <span>{t.label}</span>
+                                {t.badge !== undefined && (
+                                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#8F44F0]/15 text-[#8F44F0] font-black">
+                                    {t.badge}
+                                  </span>
+                                )}
                                 {t.id === 'submission-details' && (
                                   <span 
                                     onClick={(e) => {
@@ -410,9 +434,6 @@ export default function WorkspaceClient({ problem, examples }: WorkspaceClientPr
                                   >
                                     <X size={10} />
                                   </span>
-                                )}
-                                {activeTab === t.id && (
-                                    <motion.div layoutId="mobile-tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--primary)]" />
                                 )}
                             </button>
                         ))}
