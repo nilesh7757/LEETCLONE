@@ -21,27 +21,23 @@ interface CardStats {
   prs: number;
 }
 
-export default function Hero() {
+interface HeroProps {
+  initialProblemsCount?: number;
+  initialUserCount?: number;
+}
 
-  // Selected Tier in detail showcase
-  const [selectedDetailTier, setSelectedDetailTier] = useState<CardTier>("toty");
-
+export default function Hero({ initialProblemsCount, initialUserCount }: HeroProps) {
   // Platform stats counters
-  const [problemsCount, setProblemsCount] = useState<number | null>(null);
-  const [userCount, setUserCount] = useState<number | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [problemsCount, setProblemsCount] = useState<number>(initialProblemsCount ?? 108);
+  const [userCount, setUserCount] = useState<number>(initialUserCount ?? 17);
 
   useEffect(() => {
-    setTimeout(() => {
-      setMounted(true);
-    }, 0);
-
     // Fetch actual problems count from public API
     fetch("/api/problems?limit=1")
       .then(res => res.json())
       .then(data => {
-        if (data?.pagination?.total !== undefined) {
-          setProblemsCount(data.pagination.total);
+        if (data?.totalCount !== undefined) {
+          setProblemsCount(data.totalCount);
         }
       })
       .catch(err => console.error("Error fetching problems count:", err));
@@ -107,13 +103,13 @@ export default function Hero() {
             <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg border-t border-[var(--border)] pt-8 text-left">
               <div>
                 <div className="text-2xl sm:text-3xl font-black text-[var(--foreground)]">
-                  {mounted && problemsCount !== null ? problemsCount : 62}
+                  {problemsCount}
                 </div>
                 <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-1">Curated Problems</div>
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-black text-[#8F44F0] flex items-center gap-1.5">
-                  {mounted && userCount !== null ? userCount : 3}
+                  {userCount}
                   <span className="w-2.5 h-2.5 rounded-full bg-[#4ade80] inline-block animate-pulse" />
                 </div>
                 <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-black tracking-widest mt-1">Active Coders</div>

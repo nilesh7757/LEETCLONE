@@ -5,7 +5,7 @@ import Logo from "@/components/ui/Logo";
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--background)]">
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center relative">
       {/* Background Ambience */}
       <div className="absolute inset-0 pointer-events-none -z-10">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[var(--primary)]/10 rounded-full blur-[100px]" />

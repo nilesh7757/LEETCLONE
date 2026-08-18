@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Code2, ArrowLeft, Home, Terminal } from "lucide-react";
 
-const GLITCH_CHARS = "!@#$%^&*<>/\\|{}[]01";
+const GLITCH_CHARS = "!@#$%^&*#|{}[]01";
 
-function useGlitch(text: string, active: boolean) {
+function useGlitch(text: string, active: boolean, mounted: boolean) {
   const [display, setDisplay] = useState(text);
 
   useEffect(() => {
-    if (!active) {
+    if (!active || !mounted) {
       setDisplay(text);
       return;
     }
@@ -30,24 +31,28 @@ function useGlitch(text: string, active: boolean) {
       if (frame > text.length * 2 + 10) clearInterval(interval);
     }, 40);
     return () => clearInterval(interval);
-  }, [text, active]);
+  }, [text, active, mounted]);
 
-  return display;
+  return mounted ? display : text;
 }
 
 export default function NotFound() {
+  const router = useRouter();
   const [glitching, setGlitching] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => setMounted(true), 0);
-    // Trigger glitch on mount
-    setTimeout(() => setGlitching(true), 300);
-    setTimeout(() => setGlitching(false), 2500);
+    setMounted(true);
+    const t1 = setTimeout(() => setGlitching(true), 300);
+    const t2 = setTimeout(() => setGlitching(false), 2500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
-  const errorCode = useGlitch("404", glitching);
-  const errorMsg = useGlitch("PAGE_NOT_FOUND", glitching);
+  const errorCode = useGlitch("404", glitching, mounted);
+  const errorMsg = useGlitch("PAGE_NOT_FOUND", glitching, mounted);
 
   return (
     <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col items-center justify-center overflow-hidden px-4">
@@ -129,7 +134,7 @@ export default function NotFound() {
             Home
           </Link>
           <button
-            onClick={() => history.back()}
+            onClick={() => router.back()}
             className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[var(--input)] text-[var(--foreground)] font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--accent)] transition-all text-sm uppercase tracking-wider active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />

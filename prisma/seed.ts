@@ -3,17 +3,8 @@ import { PrismaClient, ProblemType } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🚀 Starting Clean Slate Seeding...");
+  console.log("🚀 Starting Safe Seeding (Upsert Mode)...");
 
-  // 1. CLEAR EXISTING DATA
-  console.log("🧹 Clearing existing problems and study plans...");
-  await prisma.studyPlanProblem.deleteMany({});
-  await prisma.studyPlanEnrollment.deleteMany({});
-  await prisma.studyPlan.deleteMany({});
-  await prisma.commentVote.deleteMany({});
-  await prisma.comment.deleteMany({});
-  await prisma.submission.deleteMany({});
-  await prisma.problem.deleteMany({});
 
   const problemsData = [
     {
@@ -386,24 +377,33 @@ if __name__ == "__main__":
 
   const problemIds: Record<string, string> = {};
 
-  console.log("📝 Creating problems...");
+  console.log("📝 Creating problems (upsert)...");
   for (const prob of problemsData) {
-    const created = await prisma.problem.create({
-      data: {
+    const created = await prisma.problem.upsert({
+      where: { slug: prob.slug },
+      update: {
+        ...prob,
+        isPublic: true,
+        isVerified: true,
+        source: "SYSTEM",
+      },
+      create: {
         ...prob,
         isPublic: true,
         isVerified: true,
         source: "SYSTEM",
       },
     });
-    console.log(`   ✅ Created: ${prob.title}`);
+    console.log(`   ✅ Synced: ${prob.title}`);
     problemIds[prob.slug] = created.id;
   }
 
   // Create Study Plans
   console.log("📚 Creating Study Plans...");
-  const prepPlan = await prisma.studyPlan.create({
-    data: {
+  const prepPlan = await prisma.studyPlan.upsert({
+    where: { slug: "top-50-essentials" },
+    update: {},
+    create: {
       title: "LogiQuest Top 50 Essentials",
       slug: "top-50-essentials",
       description: "Master the fundamental patterns including Sliding Window, Two Pointers, and Stacks.",
@@ -424,13 +424,22 @@ if __name__ == "__main__":
   ];
 
   for (const assign of assignments) {
-      await prisma.studyPlanProblem.create({
-          data: {
-              studyPlanId: prepPlan.id,
-              problemId: problemIds[assign.slug],
-              order: assign.order
+    if (problemIds[assign.slug]) {
+      await prisma.studyPlanProblem.upsert({
+        where: {
+          studyPlanId_problemId: {
+            studyPlanId: prepPlan.id,
+            problemId: problemIds[assign.slug],
           }
+        },
+        update: { order: assign.order },
+        create: {
+          studyPlanId: prepPlan.id,
+          problemId: problemIds[assign.slug],
+          order: assign.order
+        }
       });
+    }
   }
 
   console.log("\n✨ Seeding completed successfully! Every problem now supports dynamic evaluation.");

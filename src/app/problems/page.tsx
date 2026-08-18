@@ -27,30 +27,9 @@ interface PageProps {
   }>;
 }
 
-async function getStats(userId?: string) {
-  const totalProblems = await prisma.problem.count();
-  
-  let solvedCount = 0;
-  let attemptCount = 0;
-
-  if (userId) {
-    const submissions = await prisma.submission.findMany({
-      where: { userId },
-      select: { status: true, problemId: true }
-    });
-    
-    const uniqueSolved = new Set(submissions.filter(s => s.status === "Accepted").map(s => s.problemId));
-    solvedCount = uniqueSolved.size;
-    attemptCount = new Set(submissions.map(s => s.problemId)).size;
-  }
-
-  return { totalProblems, solvedCount, attemptCount };
-}
-
 export default async function ProblemsPage({ searchParams }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id;
-  const stats = await getStats(userId);
   
   const resolvedSearchParams = await searchParams;
   const currentTab = resolvedSearchParams.tab === "mine" 
@@ -113,48 +92,51 @@ export default async function ProblemsPage({ searchParams }: PageProps) {
     };
   }
 
-  const [problems, totalCount] = await prisma.$transaction([
+  // Execute all required queries in parallel
+  const [problems, totalCount, totalPlatformProblems, userSubmissions] = await Promise.all([
     prisma.problem.findMany({
       where: whereClause as Prisma.ProblemWhereInput,
-      include: {
-        submissions: {
-          select: {
-            status: true
-          }
-        },
-        ...(userId ? {
-          starredBy: {
-            where: { userId },
-            select: { id: true }
-          }
-        } : {})
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        category: true,
+        companyTags: true,
+        submissions: { select: { status: true } },
+        starredBy: userId ? { where: { userId }, select: { id: true } } : false,
       },
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
     }),
-    prisma.problem.count({ where: whereClause as Prisma.ProblemWhereInput })
+    prisma.problem.count({ where: whereClause as Prisma.ProblemWhereInput }),
+    prisma.problem.count(),
+    userId
+      ? prisma.submission.findMany({
+          where: { userId },
+          select: { problemId: true, status: true },
+        })
+      : Promise.resolve([]),
   ]);
 
-  const solvedProblemIds: Set<string> = new Set();
-  const attemptedProblemIds: Set<string> = new Set();
+  const solvedProblemIds = new Set<string>();
+  const attemptedProblemIds = new Set<string>();
 
-  if (userId) {
-    const allSubmissions = await prisma.submission.findMany({
-      where: {
-        userId: userId,
-        problemId: { in: problems.map(p => p.id) }
-      },
-      select: { problemId: true, status: true },
-    });
-
-    allSubmissions.forEach(sub => {
+  if (userId && Array.isArray(userSubmissions)) {
+    userSubmissions.forEach(sub => {
       attemptedProblemIds.add(sub.problemId);
       if (sub.status === "Accepted") {
         solvedProblemIds.add(sub.problemId);
       }
     });
   }
+
+  const stats = {
+    totalProblems: totalPlatformProblems,
+    solvedCount: solvedProblemIds.size,
+    attemptCount: attemptedProblemIds.size,
+  };
 
   const problemsWithStatus = problems.map(problem => {
     const total = problem.submissions.length;

@@ -40,19 +40,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth(); // Fetch session on the server
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} antialiased`}
       >
-        <SessionProvider session={session}>
+        <SessionProvider>
           <ThemeProvider
             attribute="data-theme"
             defaultTheme="dark"

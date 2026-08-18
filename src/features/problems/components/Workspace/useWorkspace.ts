@@ -77,11 +77,16 @@ export function useWorkspace(problem: Problem, initialExamples: TestCase[]) {
 
   const fetchStreak = useCallback(async () => {
     try {
-      const { data } = await axios.get("/api/profile/streak");
-      setStreak(data.streak);
-      setSolvedToday(data.solvedToday);
-    } catch (err) {
-      console.error("Failed to fetch streak", err);
+      const { data } = await axios.get("/api/profile/streak", {
+        validateStatus: (status) => status < 500,
+      });
+      if (data) {
+        setStreak(data.streak || 0);
+        setSolvedToday(!!data.solvedToday);
+      }
+    } catch {
+      setStreak(0);
+      setSolvedToday(false);
     }
   }, []);
 

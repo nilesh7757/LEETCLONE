@@ -46,8 +46,19 @@ next-env.d.ts
 /src/generated/prisma
 /prisma/placement-seed.ts
 
-# obsidian
+# obsidian & ide
 .obsidian/
+.idea/
+.vscode/
+
+# test artifacts & scratch
+.playwright-mcp/
+test-results/
+playwright-report/
+blob-report/
+scratch/
+Documents/
+linkedin/
 
 .early.coverage
 certificates

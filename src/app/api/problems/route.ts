@@ -77,7 +77,7 @@ export async function GET(req: Request) {
     }
 
     // Query database
-    const [problems, totalCount] = await prisma.$transaction([
+    const [problems, totalCount] = await Promise.all([
       prisma.problem.findMany({
         where: whereClause as Prisma.ProblemWhereInput,
         include: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, ChevronLeft, ChevronRight, LayoutPanelTop, Terminal, Layers } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, LayoutPanelTop, Terminal, Layers, X, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Step {
@@ -21,10 +21,12 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
   const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [show, setShow] = useState(false);
 
   const generateVisualization = async () => {
     setIsGenerating(true);
+    setErrorMessage(null);
     setShow(true);
     try {
       const res = await fetch("/api/ai/visualize", {
@@ -32,10 +34,15 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
         body: JSON.stringify({ code, language, input, problemTitle }),
       });
       const data = await res.json();
-      setSteps(data.steps || []);
-      setCurrentStep(0);
+      if (data.steps && data.steps.length > 0) {
+        setSteps(data.steps);
+        setCurrentStep(0);
+      } else {
+        setErrorMessage(data.error || "No visualization steps were generated. Ensure AI API keys are configured.");
+      }
     } catch (e) {
       console.error("Failed to generate visualization", e);
+      setErrorMessage("Failed to connect to the visualization service.");
     } finally {
       setIsGenerating(false);
     }
@@ -68,8 +75,12 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
             </div>
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[var(--foreground)]">Execution Visualizer</h2>
           </div>
-          <button onClick={() => setShow(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-[var(--muted-foreground)]">
-             <Terminal size={20} />
+          <button 
+            onClick={() => setShow(false)} 
+            aria-label="Close visualizer"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+             <X size={20} />
           </button>
         </div>
 
@@ -82,6 +93,19 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                   <div className="w-10 h-10 border-4 border-[var(--viz-blue)]/30 border-t-[var(--viz-blue)] rounded-full animate-spin" />
                   <p className="text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)]">AI Analyzing Path...</p>
+                </div>
+              ) : errorMessage ? (
+                <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold">
+                    <AlertCircle size={16} />
+                    <span>Visualization Notice</span>
+                  </div>
+                  <p className="text-xs leading-relaxed">{errorMessage}</p>
+                </div>
+              ) : steps.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-center text-[var(--muted-foreground)]">
+                  <Terminal size={24} className="opacity-30" />
+                  <p className="text-xs">No execution steps available.</p>
                 </div>
               ) : (
                 steps.map((step, idx) => (
@@ -98,7 +122,7 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
             </div>
 
             {/* Controls */}
-            {!isGenerating && (
+            {!isGenerating && steps.length > 0 && (
               <div className="mt-8 flex items-center justify-between gap-4">
                 <button 
                   onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
@@ -138,13 +162,13 @@ export default function AIVisualizer({ code, language, input, problemTitle }: AI
                </div>
              </div>
              
-             {/* Code Preview (Static Placeholder for now, could integrate Monaco) */}
+             {/* Code Preview */}
              <div className="mt-auto">
                 <div className="p-6 bg-[var(--muted)] rounded-3xl border border-[var(--border)] font-mono text-xs text-[var(--muted-foreground)]/80 leading-loose overflow-hidden relative">
                    <div className="absolute top-0 right-0 p-4 text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Source Preview</div>
                    <pre className="whitespace-pre-wrap">
                       {code.split('\n').map((line, i) => (
-                        <div key={i} className={`${steps[currentStep]?.highlightLines.includes(i + 1) ? "text-[var(--viz-blue)] font-bold bg-[var(--viz-blue)]/10 -mx-6 px-6" : ""}`}>
+                        <div key={i} className={`${steps[currentStep]?.highlightLines?.includes(i + 1) ? "text-[var(--viz-blue)] font-bold bg-[var(--viz-blue)]/10 -mx-6 px-6" : ""}`}>
                           <span className="inline-block w-8 opacity-20">{i + 1}</span> {line}
                         </div>
                       ))}
